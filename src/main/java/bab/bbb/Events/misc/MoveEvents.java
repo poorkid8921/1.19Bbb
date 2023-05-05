@@ -19,6 +19,13 @@ public class MoveEvents implements Listener {
         if (p.isOp())
             return;
 
+        if (p.getAllowFlight())
+        {
+            e.getPlayer().teleport(e.getFrom());
+            e.setCancelled(true);
+            return;
+        }
+
         Player player = e.getPlayer();
         if (player.isInsideVehicle() && !player.getVehicle().isValid())
             player.getVehicle().eject();

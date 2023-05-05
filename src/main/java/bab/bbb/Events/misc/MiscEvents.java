@@ -158,6 +158,8 @@ public class MiscEvents implements Listener {
                                 p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                         }
                     }
+                    if (!e.getPlayer().getChunk().isLoaded())
+                        return;
                     int randX = new Random().nextInt(maxX - minX + 1) + minX;
                     int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
                     int y = respawnWorld.getHighestBlockYAt(randX, randZ);
@@ -221,7 +223,6 @@ public class MiscEvents implements Listener {
             }
         }
     }
-
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
         apply(e.getPlayer());

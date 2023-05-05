@@ -62,9 +62,10 @@ public class HomeCommand implements TabExecutor {
                         }
                     }.runTaskLater(Bbb.getInstance(), 100);
                     return true;
-                } else
-                    Methods.errormsg(player, "couldn't find the home &e" + args[0]);
+                }
             }
+
+            Methods.errormsg(player, "couldn't find the home &e" + args[0]);
         }
         return true;
     }

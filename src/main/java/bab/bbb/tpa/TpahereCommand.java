@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TpahereCommand implements CommandExecutor, TabExecutor {
+public class TpahereCommand implements CommandExecutor {
     private final Bbb plugin;
 
     public TpahereCommand(Bbb plugin) {
@@ -91,20 +91,5 @@ public class TpahereCommand implements CommandExecutor, TabExecutor {
             }
         }.runTaskLater(plugin, 30 * 20);
         return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("tpahere")) {
-            List<String> list = new ArrayList<String>();
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                list.add(p.getName());
-            }
-            if (args[0] != null)
-                return list.stream().filter(lis -> lis.startsWith(args[0])).collect(Collectors.toList());
-            else
-                return new ArrayList<>(list);
-        }
-        return Collections.emptyList();
     }
 }

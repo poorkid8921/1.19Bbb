@@ -11,21 +11,19 @@ import java.io.*;
 import java.util.*;
 
 public class HomeIO {
-    private static File homesFolder = null;
-    private static HashMap<UUID, ArrayList<Home>> homes = null;
+    private static final File homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");
+    private static final HashMap<UUID, ArrayList<Home>> homes = new HashMap<>();
 
     public HomeIO() {
-        HomeIO.homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");;
-        homes = new HashMap<>();
     }
 
     public static File getHomesFolder() {
         return homesFolder;
     }
+
     public static HashMap<UUID, ArrayList<Home>> getHomes() {
         return homes;
     }
-
     private static Home parseHome(File mapFile) {
         try {
             @Cleanup FileInputStream fis = new FileInputStream(mapFile);
