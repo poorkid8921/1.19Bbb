@@ -160,9 +160,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
             StringBuilder msgargs = new StringBuilder();
 
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < args.length; i++)
                 msgargs.append(args[i]).append(" ");
-            }
 
             if (msgargs.toString().equals("")) {
                 Methods.errormsg(player, "the message is invalid");
@@ -238,21 +237,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
 
         return false;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("ignore")) {
-            List<String> list = new ArrayList<>();
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                list.add(p.getName());
-            }
-            if (args[0] != null)
-                return list.stream().filter(lis -> lis.startsWith(args[0])).collect(Collectors.toList());
-            else
-                return new ArrayList<>(list);
-        }
-        return Collections.emptyList();
     }
 
     @Override
