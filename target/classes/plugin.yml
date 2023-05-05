@@ -1,0 +1,42 @@
+name: Anarchy
+version: '1.0-SNAPSHOT'
+main: bab.bbb.Bbb
+api-version: 1.19
+
+commands:
+  discord:
+    description: E
+    usage: /<command>
+    aliases: d
+  tpa:
+    description: Send a teleport request to a player on the server.
+    usage: /<command>
+    aliases: [tpask ]
+  tpahere:
+    description: Send a teleport here request to a player on the server.
+    usage: /<command>
+  tpaccept:
+    description: Accept a teleport request.
+    usage: /<command>
+    aliases: [tpyes, tpy]
+  tpdeny:
+    description: Deny a teleport request.
+    usage: /<command>
+    aliases: [tpno, tpn]
+  nick:
+    description: Set a nickname
+    usage: /<command>
+    aliases: [nickname]
+  msg:
+    description: message a player
+    usage: /<command>
+    aliases: [ whisper, tell ]
+  secure:
+    usage: /<command>
+    aliases: [ reg ]
+  delhome:
+    usage: /<command>
+  home:
+    usage: /<command>
+  sethome:
+    usage: /<command>
