@@ -41,10 +41,10 @@ import static bab.bbb.utils.ItemUtils.isSpawnEgg;
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
     public FileConfiguration config = this.getConfig();
     private static double tps;
-    private final ArrayList<TpaRequest> requests = new ArrayList<TpaRequest>();
+    private final ArrayList<TpaRequest> requests = new ArrayList<>();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    public HashMap<String, OfflinePlayer> nick2Player = new HashMap<String, OfflinePlayer>();
+    public HashMap<String, OfflinePlayer> nick2Player = new HashMap<>();
     private static Bbb instance;
 
     @Override
@@ -243,7 +243,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("ignore")) {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             for (Player p : Bukkit.getOnlinePlayers()) {
                 list.add(p.getName());
             }
@@ -411,7 +411,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
     public static void checkInventory(final Inventory inventory, final Location location, final boolean checkRecursive, final boolean isInsideShulker) {
         final List<ItemStack> removeItemStacks = new ArrayList<>();
-        final List<ItemStack> bookItemStacks = new ArrayList<>();
 
         boolean wasFixed = false;
         int fixesIllegals = 0;

@@ -22,9 +22,9 @@ public class BetterChat implements Listener {
 
     @EventHandler
     private void CmdProcess(PlayerCommandPreprocessEvent e) {
-        if (cm.checkCooldown(e.getPlayer())) {
+        if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
-        } else {
+        else {
             e.setCancelled(true);
             Methods.errormsg(e.getPlayer(), "you're sending messages too fast");
         }
@@ -34,9 +34,9 @@ public class BetterChat implements Listener {
     private void onPlayerChat(AsyncPlayerChatEvent e) {
         e.setCancelled(true);
 
-        if (cm.checkCooldown(e.getPlayer())) {
+        if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
-        } else {
+        else {
             Methods.errormsg(e.getPlayer(), "you're sending messages too fast");
             return;
         }

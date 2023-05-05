@@ -36,8 +36,6 @@ motd:
 admin-whitelist:
     - "bigmilkercock"
     - "Catto69420"
-    - "SFTB_"
-    - "Bye"
 
 auto-restart: false
 auto-restart-minutes: 360

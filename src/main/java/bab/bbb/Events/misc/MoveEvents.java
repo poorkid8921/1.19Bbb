@@ -26,7 +26,7 @@ public class MoveEvents implements Listener {
         if (!player.isValid() && !player.isDead())
             player.kickPlayer(Methods.translatestring("&7Disconnected"));
 
-        if (p.getWorld().getEnvironment().getId() == -1) {
+        if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
             if (p.getLocation().getY() > 128) {
                 if (Bbb.getInstance().getConfig().getBoolean("anti-netherroof")) {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
@@ -39,7 +39,6 @@ public class MoveEvents implements Listener {
             }
         }
 
-        // e fly speed cap
         if (p.isGliding()) {
             if (Bbb.getTPSofLastSecond() <= cfgtps) {
                 e.setCancelled(true);
@@ -52,11 +51,8 @@ public class MoveEvents implements Listener {
             if (speed > 2.10) {
                 e.setCancelled(true);
                 Methods.elytraflag(p, 2, 0, 0, null);
-            } else {
-                p.sendActionBar(Methods.translatestring("&7%speed%&6/&72.00")
-                        .replace("%speed%", speed(speed))
-                );
-            }
+            } else
+                p.sendActionBar(Methods.translatestring("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
         }
     }
 }
