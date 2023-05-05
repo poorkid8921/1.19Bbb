@@ -19,13 +19,6 @@ public class MoveEvents implements Listener {
         if (p.isOp())
             return;
 
-        if (p.getAllowFlight())
-        {
-            e.getPlayer().teleport(e.getFrom());
-            e.setCancelled(true);
-            return;
-        }
-
         Player player = e.getPlayer();
         if (player.isInsideVehicle() && !player.getVehicle().isValid())
             player.getVehicle().eject();
@@ -60,6 +53,14 @@ public class MoveEvents implements Listener {
                 Methods.elytraflag(p, 2, 0, 0, null);
             } else
                 p.sendActionBar(Methods.translatestring("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
+        }
+        else
+        {
+            if (p.getAllowFlight() || p.isFlying())
+            {
+                e.getPlayer().teleport(e.getFrom());
+                e.setCancelled(true);
+            }
         }
     }
 }
