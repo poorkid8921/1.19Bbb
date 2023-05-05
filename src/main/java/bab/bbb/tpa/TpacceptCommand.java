@@ -14,10 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 
 public class TpacceptCommand implements CommandExecutor {
-    public static boolean isSpawn(Player player, int spawn_radius) {
-        return (new Point(player.getLocation().getBlockX(), player.getLocation().getBlockZ()).distance(new Point(0, 0)) < spawn_radius);
-    }
-
     private final Bbb plugin;
 
     public TpacceptCommand(Bbb plugin) {
@@ -38,7 +34,6 @@ public class TpacceptCommand implements CommandExecutor {
 
         TpaRequest request = plugin.getRequest(user);
         String targetName = request.getSender().getName();
-        //Bukkit.getOnlinePlayers().toArray();
 
         Player recipient = Bukkit.getPlayer(targetName);
 
@@ -51,10 +46,6 @@ public class TpacceptCommand implements CommandExecutor {
             Methods.errormsg(user, "can't teleport whilst being combat tagged");
             return true;
         }
-
-        //if (isSpawn(user, 1000)) {
-        //      Methods.errormsg(user, "you're too close to spawn");
-        // }
 
         if (request.getType() == Type.TPA) {
             Methods.tpmsg(((Player) sender).getPlayer(), recipient, 10);

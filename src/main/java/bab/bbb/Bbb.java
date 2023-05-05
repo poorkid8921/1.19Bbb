@@ -9,6 +9,7 @@ import bab.bbb.Events.misc.patches.*;
 import bab.bbb.tpa.*;
 import bab.bbb.utils.*;
 import com.comphenix.protocol.ProtocolLibrary;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
@@ -47,15 +48,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public HashMap<String, OfflinePlayer> nick2Player = new HashMap<String, OfflinePlayer>();
     private static Bbb instance;
-    public static ListOrderedMap<String,Long> queue;
 
     @Override
     public void onEnable() {
         instance = this;
-        queue = new ListOrderedMap<>();
 
-        //if (!customConfigFile.exists())
-        //saveResource("data.yml", false);
         this.reloadConfig();
         this.saveCustomConfig();
         DataStore.generatePlayerList();
@@ -122,16 +119,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 () -> new Thread(() -> tps = getServer().getTPS()[0]).start(), 1, 1, TimeUnit.SECONDS
         );
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Tablist(), 0, 100);
-
-        boolean protocolLibInstalled = isProtocolLibInstalled();
-        if (protocolLibInstalled) {
-            //ProtocolLibrary.getProtocolManager().removePacketListeners(this);
-            new PacketFlyTeleportPacketListener(Bbb.getInstance(), 25).register();
-        }
-    }
-
-    public static boolean isProtocolLibInstalled() {
-        return instance.getServer().getPluginManager().isPluginEnabled("ProtocolLib");
     }
 
     public static Bbb getInstance() {
@@ -146,17 +133,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 removeNick(player);
                 player.sendMessage(ChatColor.GRAY + "[" + ChatColor.YELLOW + "INFO" + ChatColor.GRAY + "] your nickname has been removed");
             } else {
-                /*if (args[0].equalsIgnoreCase("&a&b&c&a&b&c&a&b&c&a&b&c&a&b&a&cVERIFIED")) {
-                    if (this.getCustomConfig().getBoolean(player.getUniqueId() + ".verificated") != true) {
-                        this.getCustomConfig().set(player.getUniqueId() + ".verificated", true);
-                        this.saveCustomConfig();
-                        player.sendMessage(Methods.translatestring("&7[&eINFO&7] you have successfully verificated"));
-                        player.sendMessage(Methods.translatestring("&7use &e/secure&7 to stop your account from being accessed by others"));
-                        player.teleport(new Location(Bukkit.getWorld(this.getCustomConfig().getString(player.getUniqueId() + ".leave.world")), this.getCustomConfig().getDouble(player.getUniqueId() + ".leave.x"), this.getCustomConfig().getDouble(player.getUniqueId() + ".leave.y"), this.getCustomConfig().getDouble(player.getUniqueId() + ".leave.z")));
-                    }
-                    return true;
-                }*/
-
                 if (player.isOp()) {
                     StringBuilder builder = new StringBuilder();
                     int a = args.length;
@@ -294,14 +270,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void setnickonjoin(Player p) {
         String s = this.getCustomConfig().getString("otherdata." + p.getUniqueId() + ".nickname");
         if (s != null) {
-            /*PlayerProfile profile = p.getPlayerProfile();
-            profile.setName(ColorUtils.removeColorCodes(s));
-            p.setPlayerProfile(profile);
-
-            for (Player players : Bukkit.getOnlinePlayers()) {
-                players.hidePlayer(p);
-                players.showPlayer(p);
-            }*/
+            //realname(p, ColorUtils.removeColorCodes(s));
 
             p.setPlayerListName(Methods.translatestring(s + org.bukkit.ChatColor.GRAY));
             p.setDisplayName(Methods.translatestring(s + org.bukkit.ChatColor.GRAY));
@@ -329,14 +298,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", nick);
             this.saveCustomConfig();
 
-            /*PlayerProfile profile = p.getPlayerProfile();
-            profile.setName(nickuncolor);
-            p.setPlayerProfile(profile);
-
-            for (Player players : Bukkit.getOnlinePlayers()) {
-                players.hidePlayer(p);
-                players.showPlayer(p);
-            }*/
+            //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
             p.sendMessage(ChatColor.GRAY + "[" + ChatColor.YELLOW + "INFO" + ChatColor.GRAY + "] " + ChatColor.GRAY + "your nickname has been set to " + nickcolor);
@@ -348,23 +310,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return;
         String nickuncolor = ChatColor.stripColor(p.getDisplayName());
         removeNick(nickuncolor);
-        /*PlayerProfile profile = p.getPlayerProfile();
-        profile.setName(ColorUtils.removeColorCodes(p.getName()));
-        p.setPlayerProfile(profile);
-
-        for (Player players : Bukkit.getOnlinePlayers())
-        {
-            players.hidePlayer(p);
-            players.showPlayer(p);
-        }*/
+        //realname(p, nickuncolor);
 
         p.setDisplayName(p.getName());
         p.setPlayerListName(p.getName());
-        /*nick2Player.put(p.getName(), p);
-        List<String> a = this.getCustomConfig().getStringList(".nicknamelist");
-        a.set(a.size() + 1, p.getName());
-        this.getCustomConfig().set(".nicknamelist", a);
-        this.saveCustomConfig();*/
+        nick2Player.put(p.getName(), p);
     }
 
     public void removeNick(String nickuncolor) {
@@ -372,13 +322,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         nick2Player.remove(nickuncolor);
         this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", null);
         this.saveCustomConfig();
-        /*List<String> a = this.getCustomConfig().getStringList(".nicknamelist");
-        for (int i = 0; i < a.size(); i++) {
-            if (a != null && a.get(i).contains(nickuncolor))
-                a.set(i, "");
+    }
+
+    public void realname(Player p, String name)
+    {
+        PlayerProfile profile = p.getPlayerProfile();
+        profile.setName(ColorUtils.removeColorCodes(p.getName()));
+        p.setPlayerProfile(profile);
+
+        for (Player players : Bukkit.getOnlinePlayers())
+        {
+            players.hidePlayer(p);
+            players.showPlayer(p);
         }
-        this.getCustomConfig().set(".nicknamelist", a);
-        th0is.saveCustomConfig();*/
     }
 
     public void reloadCustomConfig() {
@@ -427,19 +383,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
     }
 
-    /*public void removeMinecarts() {
-        for (World world : Bukkit.getWorlds()) {
-            for (Chunk chunk : world.getLoadedChunks()) {
-                if (countMinecartInChunk(chunk) >= 32) {
-                    removeMinecartInChunk(chunk);
-                }
-            }
-        }
-    }*/
-
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
         saveCustomConfig();
         reloadConfig();
     }
@@ -474,7 +419,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         int fixesIllegals = 0;
         int fixesBooks = 0;
 
-        // Loop through Inventory
         for (final ItemStack itemStack : inventory.getContents()) {
             switch (checkItemStack(itemStack, location, checkRecursive)) {
                 case illegal -> {
@@ -493,7 +437,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
    }
 
     public static void checkArmorContents(final PlayerInventory playerInventory, final Location location, final boolean checkRecursive) {
-        // Loop through player's worn armor
         for (final ItemStack itemStack : playerInventory.getArmorContents()) {
             checkItemStack(itemStack, location, checkRecursive);
         }
@@ -513,7 +456,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public static ItemState checkItemStack(ItemStack itemStack, final Location location, final boolean checkRecursive) {
         boolean wasFixed = false;
 
-        // Null Item
         if (itemStack == null)
             return ItemState.empty;
 
@@ -661,5 +603,5 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         return wasFixed ? ItemState.wasFixed : ItemState.clean;
     }
 
-    public enum ItemState {empty, clean, wasFixed, illegal, written_book}
+    public enum ItemState {empty, clean, wasFixed, illegal}
 }

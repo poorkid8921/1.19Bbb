@@ -21,6 +21,7 @@ public class VPNChecker {
     static boolean works4 = false;
     static boolean works5 = false;
     static boolean works6 = false;
+
     public static void checkPlayerAsync(Player p, String ip, String apikey) {
         Bukkit.getScheduler().runTaskAsynchronously(Bbb.getInstance(), () ->
         {
@@ -53,9 +54,6 @@ public class VPNChecker {
             final String finalResult = result;
             Bukkit.getScheduler().runTask(Bbb.getInstance(), () ->
             {
-                //callback.onCheckDone(finalResult);
-
-                //int resultCode2 = 0;
                 if (finalResult.equals("ERROR")) {
                     if (works1) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
@@ -63,45 +61,35 @@ public class VPNChecker {
                         works1 = false;
                     }
 
-                    if (works2)
-                    {
+                    if (works2) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
                         works3 = true;
                         works2 = false;
                     }
 
-                    if (works3)
-                    {
+                    if (works3) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
-                        //works1 = true;
                         works4 = true;
                         works3 = false;
                     }
 
-                    if (works4)
-                    {
+                    if (works4) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
                         works5 = true;
                         works4 = false;
                     }
 
-                    if (works5)
-                    {
+                    if (works5) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
-                        //works1 = true;
                         works6 = true;
                         works5 = false;
                     }
 
-                    if (works6)
-                    {
+                    if (works6) {
                         VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
-                        //works7 = true;
                         works1 = true;
                         works6 = false;
                     }
-                    //resultCode2 = -1;
-                    //VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
                 } else {
                     try {
                         final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
@@ -110,74 +98,41 @@ public class VPNChecker {
                         if (severity2 == 1)
                             p.kickPlayer(ChatColor.RED + "Proxies aren't allowed");
                     } catch (ParseException eee) {
-                        //resultCode2 = -1;
-
                         if (works1) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
                             works2 = true;
                             works1 = false;
                         }
 
-                        if (works2)
-                        {
+                        if (works2) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
                             works3 = true;
                             works2 = false;
                         }
 
-                        if (works3)
-                        {
+                        if (works3) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
-                            //works1 = true;
                             works4 = true;
                             works3 = false;
                         }
 
-                        if (works4)
-                        {
+                        if (works4) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
                             works5 = true;
                             works4 = false;
                         }
 
-                        if (works5)
-                        {
+                        if (works5) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
-                            //works1 = true;
                             works6 = true;
                             works5 = false;
                         }
 
-                        if (works6)
-                        {
+                        if (works6) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
-                            //works7 = true;
                             works1 = true;
                             works6 = false;
                         }
-
-                        /*if (works7 == true)
-                        {
-                            VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
-                            works8 = true;
-                            works7 = false;
-                        }
-
-                        if (works8 == true)
-                        {
-                            VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
-                            works9 = true;
-                            works8 = false;
-                        }
-
-                        if (works9 == true)
-                        {
-                            VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
-                            works1 = true;
-                            works9 = false;
-                        }*/
-
-                        eee.printStackTrace();
                     }
                 }
             });

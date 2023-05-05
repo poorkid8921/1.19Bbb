@@ -22,7 +22,6 @@ public class HomeIO {
     public static File getHomesFolder() {
         return homesFolder;
     }
-
     public static HashMap<UUID, ArrayList<Home>> getHomes() {
         return homes;
     }

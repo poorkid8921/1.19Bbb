@@ -35,9 +35,8 @@ public class TpaCommand implements CommandExecutor, TabExecutor {
 
     @Override
     public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player))
             return true;
-        }
 
         Player user = (Player) sender;
         
@@ -109,7 +108,6 @@ public class TpaCommand implements CommandExecutor, TabExecutor {
                 return list.stream().filter(lis -> lis.startsWith(args[0])).collect(Collectors.toList());
             else
                 return new ArrayList<>(list);
-            //return list.stream().collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

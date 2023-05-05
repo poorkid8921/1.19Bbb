@@ -6,7 +6,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.math.BigDecimal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,16 +44,6 @@ public class Methods {
 
     public static void errormsg(Player p, String s) {
         p.sendMessage(translatestring("&7[&4-&7] " + s));
-    }
-
-    public static String rgb(String text) {
-        Pattern pattern = Pattern.compile("#[a-fA-f0-9]{6}");
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            String color = text.substring(matcher.start(), matcher.end());
-            text = text.replace(color, net.md_5.bungee.api.ChatColor.of(color) + "");
-        }
-        return translateAlternateColorCodes('&', text);
     }
 
     public static String hex(String message) {

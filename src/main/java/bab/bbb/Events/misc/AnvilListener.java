@@ -17,7 +17,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Objects;
 
 public class AnvilListener implements Listener {
-
     private static final char COLOR_CODE = '§';
     Bbb plugin;
 

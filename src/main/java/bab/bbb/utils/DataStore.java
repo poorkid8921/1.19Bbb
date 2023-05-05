@@ -12,7 +12,7 @@ public class DataStore {
     private static Bbb plugin = Bbb.getInstance();
     private static Set<String> playerList = new HashSet<>();
 
-    public DataStore(Bbb bbb) {
+    public DataStore() {
     }
 
     public static synchronized void generatePlayerList() {
