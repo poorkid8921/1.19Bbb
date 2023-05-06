@@ -65,7 +65,8 @@ public class TpacceptCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    recipient.getWorld().strikeLightning(recipient.getLocation());
+                    recipient.getWorld().strikeLightningEffect(recipient.getLocation());
+
                     if (recipient.getVehicle() != null) {
                         if (recipient.getVehicle() instanceof AbstractHorse) {
                             final AbstractHorse donkey = (AbstractHorse) recipient.getVehicle();
@@ -90,6 +91,8 @@ public class TpacceptCommand implements CommandExecutor {
                         players.showPlayer(plugin, recipient);
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
                     recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                    user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+
                 }
             }.runTaskLater(plugin, 100);
         } else if (request.getType() == Type.TPAHERE) {
@@ -99,7 +102,8 @@ public class TpacceptCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    user.getWorld().strikeLightning(user.getLocation());
+                    user.getWorld().strikeLightningEffect(user.getLocation());
+
                     if (user.getVehicle() != null) {
                         if (user.getVehicle() instanceof AbstractHorse) {
                             final AbstractHorse donkey = (AbstractHorse) user.getVehicle();

@@ -206,7 +206,7 @@ public class MiscEvents implements Listener {
         if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
             event.setCancelled(true);
             if (shouldBreakBlock())
-                player.kickPlayer(Methods.translatestring("&7Disconnected"));
+                Methods.maskedkick(player);
         } else
             playersUsingLevers.put(playerUniqueID, System.currentTimeMillis() + 1000);
     }

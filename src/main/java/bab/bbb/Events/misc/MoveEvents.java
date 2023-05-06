@@ -8,7 +8,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.HashSet;
 import java.util.logging.Level;
 
 import static bab.bbb.utils.ElytraUtils.*;
@@ -22,12 +25,12 @@ public class MoveEvents implements Listener {
         if (p.isOp())
             return;
 
-        Player player = e.getPlayer();
-        if (player.isInsideVehicle() && !player.getVehicle().isValid())
-            player.getVehicle().eject();
+        // anti god
+        /*if (p.isInsideVehicle() && !p.getVehicle().isValid())
+            p.getVehicle().eject();
 
-        if (!player.isValid() && !player.isDead())
-            player.kickPlayer(Methods.translatestring("&7Disconnected"));
+        if (!p.isValid() && !p.isDead())
+            Methods.maskedkick(p);*/
 
         if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
             if (p.getLocation().getY() > 128) {
@@ -57,14 +60,5 @@ public class MoveEvents implements Listener {
             } else
                 p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
         }
-        /*else
-        {
-            if (p.getAllowFlight() || p.isFlying())
-            {
-                Bukkit.getServer().getLogger().log(Level.SEVERE, "flagged");
-                e.getPlayer().teleport(e.getFrom());
-                e.setCancelled(true);
-            }
-        }*/
     }
 }
