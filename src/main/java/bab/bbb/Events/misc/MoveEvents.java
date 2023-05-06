@@ -52,7 +52,7 @@ public class MoveEvents implements Listener {
                 e.setCancelled(true);
                 Methods.elytraflag(p, 2, 0, 0, null);
             } else
-                p.sendActionBar(Methods.translatestring("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
+                p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
         }
         else
         {

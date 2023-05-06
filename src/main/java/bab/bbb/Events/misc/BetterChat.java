@@ -76,7 +76,7 @@ public class BetterChat implements Listener {
                 .replace("[CARPET]", "░▒▓");
 
         RainbowText rainbow = new RainbowText(msg);
-        String msgunicode = e.getMessage().replace("A", "ᴀ")
+        String msgunicode = msg.replace("A", "ᴀ")
                 .replace("B", "ʙ")
                 .replace("C", "ᴄ")
                 .replace("D", "ᴅ")
