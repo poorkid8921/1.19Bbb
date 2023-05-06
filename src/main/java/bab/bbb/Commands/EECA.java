@@ -121,12 +121,14 @@ public class EECA implements CommandExecutor, Listener {
                         }
                     }
                 }
+
                 if (args[0].equalsIgnoreCase("stack")) {
                     ItemStack item = player.getItemInHand();
                     if (item.getType() != Material.AIR) {
                         item.setAmount(Integer.parseInt(args[1]));
                     }
                 }
+
                 if (args[0].equalsIgnoreCase("enchant")) {
                     ItemStack item = player.getItemInHand();
                     if (item.getType() != Material.AIR) {

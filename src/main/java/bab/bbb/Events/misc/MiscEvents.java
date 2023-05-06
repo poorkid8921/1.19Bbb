@@ -44,7 +44,8 @@ public class MiscEvents implements Listener {
     private final World respawnWorld = Bukkit.getWorld("world");
     private final HashSet<String> kickMessagesToListenTo = new HashSet<>();
     private final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
-    public static ArrayList<String> antilog = new ArrayList<String>();
+    public static ArrayList<String> antilog = new ArrayList<>();
+    private final ArrayList<String> queue = new ArrayList<>();
 
     public MiscEvents(final Bbb plugin) {
         this.plugin = plugin;
@@ -286,6 +287,18 @@ public class MiscEvents implements Listener {
                         antilog.remove(e.getDamager().getName());
                     }
                 }, 200L);
+            }
+        }
+        else if (e.getEntity() instanceof EnderCrystal && e.getDamager() instanceof Player)
+        {
+            if (queue.contains(e.getDamager().getName()))
+                e.setCancelled(true);
+            else
+            {
+                queue.add(e.getDamager().getName());
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    queue.remove(e.getDamager().getName());
+                }, 3);
             }
         }
 

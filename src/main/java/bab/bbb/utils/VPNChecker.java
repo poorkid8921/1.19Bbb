@@ -96,7 +96,7 @@ public class VPNChecker {
                         long severity2 = (long) obj2.get("block");
 
                         if (severity2 == 1)
-                            p.kickPlayer(ChatColor.RED + "Proxies aren't allowed");
+                            p.kickPlayer(Methods.parseText("&7Proxies aren't &callowed"));
                     } catch (ParseException eee) {
                         if (works1) {
                             VPNChecker.checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");

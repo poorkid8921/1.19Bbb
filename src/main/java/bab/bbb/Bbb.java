@@ -129,7 +129,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (cmd.getName().equals("nick")) {
             if (args.length == 0) {
                 removeNick(player);
-                player.sendMessage(ChatColor.GRAY + "[" + ChatColor.YELLOW + "INFO" + ChatColor.GRAY + "] your nickname has been removed");
+                player.sendMessage(Methods.infostring("your nickname has been removed"));
             } else {
                 if (player.isOp()) {
                     StringBuilder builder = new StringBuilder();
@@ -254,8 +254,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (s != null) {
             //realname(p, ColorUtils.removeColorCodes(s));
 
-            p.setPlayerListName(Methods.translatestring(s + org.bukkit.ChatColor.GRAY));
-            p.setDisplayName(Methods.translatestring(s + org.bukkit.ChatColor.GRAY));
+            p.setPlayerListName(Methods.translatestring(s + "&7"));
+            p.setDisplayName(Methods.translatestring(s + "&7"));
 
             this.nick2Player.put(p.getName(), p.getPlayer());
         }
@@ -272,8 +272,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Methods.errormsg(p, "the nickname you entered is already in use");
         else {
             String prevnick = ColorUtils.removeColorCodes(p.getDisplayName());
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
+            p.setDisplayName(nickcolor + "&7");
+            p.setPlayerListName(nickcolor + "&7");
             nick2Player.remove(prevnick);
             nick2Player.put(nickuncolor, p);
 
@@ -281,9 +281,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             this.saveCustomConfig();
 
             //realname(p, nickuncolor);
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            p.sendMessage(ChatColor.GRAY + "[" + ChatColor.YELLOW + "INFO" + ChatColor.GRAY + "] " + ChatColor.GRAY + "your nickname has been set to " + nickcolor);
+            p.setDisplayName(nickcolor + "&7");
+            p.setPlayerListName(nickcolor + "&7");
+            p.sendMessage(Methods.infostring("your nickname has been set to " + nickcolor));
         }
     }
 
