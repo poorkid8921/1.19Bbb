@@ -17,7 +17,7 @@ public class FrameDupe implements Listener {
 
     @EventHandler
     public void framedupe(EntityDamageByEntityEvent e) {
-        if (e instanceof ItemFrame) {
+        if (e.getEntity() instanceof ItemFrame) {
             int rng = (int) Math.round(random() * 100);
             if (rng < rn) {
                 Random ran = new Random();

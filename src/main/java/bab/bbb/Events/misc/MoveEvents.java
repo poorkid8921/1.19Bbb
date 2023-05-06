@@ -57,7 +57,7 @@ public class MoveEvents implements Listener {
             } else
                 p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
         }
-        else
+        /*else
         {
             if (p.getAllowFlight() || p.isFlying())
             {
@@ -65,6 +65,6 @@ public class MoveEvents implements Listener {
                 e.getPlayer().teleport(e.getFrom());
                 e.setCancelled(true);
             }
-        }
+        }*/
     }
 }

@@ -52,7 +52,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         instance = this;
 
         this.reloadConfig();
-        this.saveCustomConfig();
         DataStore.generatePlayerList();
 
         File homesFolder = new File(getDataFolder(), "homedata");
@@ -276,6 +275,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
             this.saveCustomConfig();
             player.sendMessage(Methods.infostring("successfully ignored &e" + target.getDisplayName()));
+            return true;
+        }
+        else if (cmd.getName().equals("kill"))
+        {
+            player.setHealth(0);
             return true;
         }
 

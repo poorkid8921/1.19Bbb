@@ -46,6 +46,8 @@ public class MiscEvents implements Listener {
     private final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
     public static ArrayList<String> antilog = new ArrayList<>();
     private final ArrayList<String> queue = new ArrayList<>();
+    public static boolean redstoneoff = false;
+    public static boolean can = true;
 
     public MiscEvents(final Bbb plugin) {
         this.plugin = plugin;
@@ -372,20 +374,32 @@ public class MiscEvents implements Listener {
     }
 
     private void process(BlockEvent event) {
-        Block block = event.getBlock();
+        if (redstoneoff == true) {
+            cancelEvent(event);
+            return;
+        }
 
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+            if (redstoneoff == false)
+                redstoneoff = true;
             cancelEvent(event);
-            if (shouldBreakBlock())
-                block.breakNaturally();
-            sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + block.getLocation().getBlockX() + " " + block.getLocation().getBlockY() + " " + block.getLocation().getBlockZ() + " owned by " + getNearbyPlayer(50, block.getLocation()).getName());
-        }
+       }
     }
 
     private void cancelEvent(BlockEvent event) {
         if (event instanceof BlockRedstoneEvent) {
             ((BlockRedstoneEvent) event).setNewCurrent(0);
         } else ((Cancellable) event).setCancelled(true);
+        if (redstoneoff == true && can == true) {
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                redstoneoff = false;
+                can = true;
+                sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + getNearbyPlayer(50, event.getBlock().getLocation()).getName());
+            }, 600);
+            can = false;
+        }
+        if (shouldBreakBlock())
+            event.getBlock().breakNaturally();
     }
 
     private boolean shouldBreakBlock() {

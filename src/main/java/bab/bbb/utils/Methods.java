@@ -72,6 +72,8 @@ public class Methods {
         return hex("&7[&e+&7] " + s);
     }
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
+        p.kickPlayer(Methods.translatestring("&7Disconnected"));
+        /*
         p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         if (msg == 1)
             p.sendActionBar(Methods.translatestring("&7Elytras are currently disabled due to &clag"));
@@ -97,7 +99,7 @@ public class Methods {
             p.getWorld().dropItemNaturally(p.getLocation(), a);
         }
         if (dmg != 0)
-            p.damage(dmg);
+            p.damage(dmg);*/;
     }
 
     public static void tpmsg(Player p, Player target, int u) {

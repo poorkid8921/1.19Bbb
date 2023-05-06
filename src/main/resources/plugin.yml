@@ -43,3 +43,8 @@ commands:
   reply:
     usage: /<command>
     aliases: [ r ]
+  ignore:
+    usage: /<command>
+  kill:
+    usage: /<command>
+    aliases: [ suicide ]

@@ -36,13 +36,13 @@ public class HomeCommand implements TabExecutor {
                 return true;
             }
             if (MiscEvents.antilog.contains(player.getName())) {
-                Methods.errormsg(player, "can't teleport whilst being combat tagged");
+                Methods.errormsg(player, "you can't teleport whilst being combat tagged");
                 return true;
             }
 
             for (Home home : homes) {
                 if (home.getName().equalsIgnoreCase(args[0])) {
-                    player.sendMessage(Methods.translatestring("&7teleporting to home &e" + home.getName() + "&7..."));
+                    player.sendMessage(Methods.infostring("&7teleporting to home &e" + home.getName() + "&7..."));
 
                     new BukkitRunnable() {
                         @Override
