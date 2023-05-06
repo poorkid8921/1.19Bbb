@@ -40,3 +40,6 @@ commands:
     usage: /<command>
   sethome:
     usage: /<command>
+  reply:
+    usage: /<command>
+    aliases: [ r ]

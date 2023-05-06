@@ -28,10 +28,10 @@ tablist-footer: "\n%tps% &7TPS - %players% players - %ping% &7ping"
 
 randommotdenabled: true
 motd:
-    - "&7&o&l2BUILDERS 2TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
-    - "&6&o&l5BUILDERS 5TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
-    - "&4&o&l9BUILDERS 9TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
-    - "&2&o&l8BUILDERS 8TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
+    - "&7&o2BUILDERS 2TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
+    - "&6&o5BUILDERS 5TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
+    - "&c&o9BUILDERS 9TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
+    - "&a&o8BUILDERS 8TOOLS\n&7Current TPS: %tps% &e----- &7Current Player count: %players%"
 
 admin-whitelist:
     - "bigmilkercock"
