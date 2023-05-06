@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import static bab.bbb.utils.ItemUtils.isSpawnEgg;
 
@@ -45,6 +44,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public HashMap<String, OfflinePlayer> nick2Player = new HashMap<>();
+    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
 
     @Override
@@ -148,13 +148,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                Methods.errormsg((Player) sender, "the arguments are invalid");
+                Methods.errormsg(player, "the arguments are invalid");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Methods.errormsg((Player) sender, "the player is invalid");
+                Methods.errormsg(player, "the player is invalid");
                 return true;
             }
 
@@ -181,7 +181,49 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }
 
             player.sendMessage(Methods.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Methods.parseText(player, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            target.sendMessage(Methods.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            lastReceived.put(target.getUniqueId(), player.getUniqueId());
+
+            return true;
+        }else if (cmd.getName().equals("reply")) {
+            if (args.length == 0) {
+                Methods.errormsg(player, "the arguments are invalid");
+                return true;
+            }
+            Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
+
+            if (!lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
+                Methods.errormsg(player, "you have no one to reply to");
+                return true;
+            }
+
+            StringBuilder msgargs = new StringBuilder();
+
+            for (int i = 0; i < args.length; i++)
+                msgargs.append(args[i]).append(" ");
+
+            if (msgargs.toString().equals("")) {
+                Methods.errormsg(player, "the message is invalid");
+                return true;
+            }
+
+            String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + target.getUniqueId() + ".ignorelist");
+            if (b != null && b.contains(player.getName())) {
+                Methods.errormsg(player, "you can't send messages to players ignoring you");
+                return true;
+            }
+
+            String be = Bbb.getInstance().getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            if (be != null && be.contains(target.getName())) {
+                Methods.errormsg(player, "you can't send messages to players you are ignoring");
+                return true;
+            }
+
+            player.sendMessage(Methods.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Methods.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
             return true;
         } else if (cmd.getName().equals("secure")) {
