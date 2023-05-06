@@ -80,7 +80,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             service.schedule(() -> {
                 Bukkit.getScheduler().runTask(Bbb.getInstance(), () -> {
                     for (Player player : Bukkit.getOnlinePlayers())
-                        player.kickPlayer(Methods.translatestring("&cServer Restarting"));
+                        player.kickPlayer(Methods.translatestring("&7Server Restarting"));
                     Bukkit.getServer().shutdown();
                 });
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
@@ -309,7 +309,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
     public void changeNick(Player p, String nick) {
         String nickcolor = Methods.translatestring(nick);
-        String nickuncolor = ColorUtils.removeColorCodes(nickcolor);
+        String nickuncolor = Methods.removeColorCodes(nickcolor);
         if(nickuncolor.length() < 3)
             Methods.errormsg(p, "the nickname you entered is too short");
         else if(nickuncolor.length() > 16)
@@ -317,7 +317,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         else if((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
             Methods.errormsg(p, "the nickname you entered is already in use");
         else {
-            String prevnick = ColorUtils.removeColorCodes(p.getDisplayName());
+            String prevnick = Methods.removeColorCodes(p.getDisplayName());
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
             nick2Player.remove(prevnick);
@@ -355,7 +355,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void realname(Player p, String name)
     {
         PlayerProfile profile = p.getPlayerProfile();
-        profile.setName(ColorUtils.removeColorCodes(p.getName()));
+        profile.setName(Methods.removeColorCodes(p.getName()));
         p.setPlayerProfile(profile);
 
         for (Player players : Bukkit.getOnlinePlayers())

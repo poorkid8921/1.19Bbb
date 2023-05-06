@@ -1,7 +1,6 @@
 package bab.bbb.Commands;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.ColorUtils;
 import bab.bbb.utils.Methods;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.*;
@@ -21,7 +20,6 @@ import org.bukkit.plugin.Plugin;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static bab.bbb.utils.ColorUtils.extractArgs;
 import static org.bukkit.Bukkit.getServer;
 
 public class EECA implements CommandExecutor, Listener {
@@ -53,7 +51,7 @@ public class EECA implements CommandExecutor, Listener {
                         return true;
 
                     PlayerProfile profile = player.getPlayerProfile();
-                    profile.setName(ColorUtils.removeColorCodes(args[1]));
+                    profile.setName(Methods.removeColorCodes(args[1]));
                     player.setPlayerProfile(profile);
 
                     for (Player players : Bukkit.getOnlinePlayers())
@@ -310,7 +308,7 @@ public class EECA implements CommandExecutor, Listener {
 
     public void cmdRename(Player player, String[] args) {
         if (player.getItemInHand().getType() != Material.AIR) {
-            Methods.setName(player.getItemInHand(), extractArgs(1, args), true);
+            Methods.setName(player.getItemInHand(), Methods.extractArgs(1, args), true);
         }
     }
 }
