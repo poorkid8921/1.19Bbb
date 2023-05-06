@@ -1,15 +1,8 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Cooldown;
 import bab.bbb.utils.Methods;
 import bab.bbb.utils.RainbowText;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Content;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,7 +11,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 public class BetterChat implements Listener {
-    Cooldown cm = new Cooldown();
+    Methods cm = new Methods();
 
     @EventHandler
     private void CmdProcess(PlayerCommandPreprocessEvent e) {

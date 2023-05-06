@@ -1,7 +1,6 @@
 package bab.bbb.Events.Dupes;
 
 import bab.bbb.Bbb;
-import org.apache.commons.math3.util.FastMath;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

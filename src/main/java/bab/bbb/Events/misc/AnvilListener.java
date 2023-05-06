@@ -1,6 +1,5 @@
 package bab.bbb.Events.misc;
 
-import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -18,10 +17,8 @@ import java.util.Objects;
 
 public class AnvilListener implements Listener {
     private static final char COLOR_CODE = '§';
-    Bbb plugin;
 
-    public AnvilListener(Bbb plugin) {
-        this.plugin = plugin;
+    public AnvilListener() {
     }
 
     public static String recoverColorCodes(String newName, String oldName) {
@@ -84,8 +81,7 @@ public class AnvilListener implements Listener {
         if (!(checkPreConditions(inv, p)))
             return;
 
-        if (inv.getType().equals(InventoryType.ANVIL) && event.getSlotType() == InventoryType.SlotType.RESULT
-                && event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta() && inv.getItem(0) != null) {
+        if (inv.getType().equals(InventoryType.ANVIL) && event.getSlotType() == InventoryType.SlotType.RESULT && event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta() && inv.getItem(0) != null) {
             ItemStack item = event.getCurrentItem();
             String newName = getDisplayName(item);
             String oldName = getDisplayName(inv.getItem(0));
@@ -101,8 +97,7 @@ public class AnvilListener implements Listener {
     public boolean isRealAnvil(AnvilInventory anvilInventory) {
         if (Objects.requireNonNull(anvilInventory.getLocation()).getBlockX() == 0 && anvilInventory.getLocation().getBlockY() == 0
                 && anvilInventory.getLocation().getBlockZ() == 0) {
-            if (anvilInventory.getLocation().getBlock().getType() != Material.ANVIL)
-                return false;
+            return anvilInventory.getLocation().getBlock().getType() == Material.ANVIL;
         }
         return true;
     }

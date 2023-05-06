@@ -3,7 +3,9 @@ package bab.bbb.Events.misc.patches;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import static bab.bbb.Bbb.*;
+
+import static bab.bbb.Bbb.checkArmorContents;
+import static bab.bbb.Bbb.checkInventory;
 
 public class AntiIllegalsListener implements Listener {
     @EventHandler(ignoreCancelled = true)

@@ -14,6 +14,7 @@ import java.util.UUID;
 public class AntiPacketElytraFly implements Listener {
     private final Bbb plugin = Bbb.getInstance();
     private final HashMap<UUID, Integer> levels = new HashMap<>();
+
     @EventHandler
     private void onElytraOpen(EntityToggleGlideEvent event) {
         if (!(event.getEntity() instanceof Player)) return;

@@ -1,13 +1,20 @@
 package bab.bbb;
 
-import bab.bbb.Commands.*;
+import bab.bbb.Commands.DelHomeCommand;
+import bab.bbb.Commands.EECA;
+import bab.bbb.Commands.HomeCommand;
+import bab.bbb.Commands.SetHomeCommand;
 import bab.bbb.Events.DupeEvent;
 import bab.bbb.Events.Dupes.FrameDupe;
 import bab.bbb.Events.Dupes.Salc1;
 import bab.bbb.Events.misc.*;
-import bab.bbb.Events.misc.patches.*;
+import bab.bbb.Events.misc.patches.AntiBurrow;
+import bab.bbb.Events.misc.patches.AntiIllegalsListener;
+import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
+import bab.bbb.Events.misc.patches.ChestLimit;
 import bab.bbb.tpa.*;
-import bab.bbb.utils.*;
+import bab.bbb.utils.Methods;
+import bab.bbb.utils.Tablist;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
@@ -18,7 +25,9 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +36,7 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -34,8 +44,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import static bab.bbb.utils.ItemUtils.isSpawnEgg;
 
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
     public FileConfiguration config = this.getConfig();
@@ -52,7 +60,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         instance = this;
 
         this.reloadConfig();
-        DataStore.generatePlayerList();
+        Methods.generatePlayerList();
 
         File homesFolder = new File(getDataFolder(), "homedata");
         if (!homesFolder.exists())
@@ -61,7 +69,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         Bukkit.getPluginManager().registerEvents(new MiscEvents(this), this);
         Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
-        Bukkit.getPluginManager().registerEvents(new AnvilListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
 
         if (this.getConfig().getBoolean("randommotdenabled"))
             Bukkit.getPluginManager().registerEvents(new RandomMotd(), this);
@@ -185,7 +193,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
             return true;
-        }else if (cmd.getName().equals("reply")) {
+        } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
                 Methods.errormsg(player, "the arguments are invalid");
                 return true;
@@ -276,9 +284,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             this.saveCustomConfig();
             player.sendMessage(Methods.infostring("successfully ignored &e" + target.getDisplayName()));
             return true;
-        }
-        else if (cmd.getName().equals("kill"))
-        {
+        } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
             return true;
         }
@@ -310,11 +316,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void changeNick(Player p, String nick) {
         String nickcolor = Methods.translatestring(nick);
         String nickuncolor = Methods.removeColorCodes(nickcolor);
-        if(nickuncolor.length() < 3)
+        if (nickuncolor.length() < 3)
             Methods.errormsg(p, "the nickname you entered is too short");
-        else if(nickuncolor.length() > 16)
+        else if (nickuncolor.length() > 16)
             Methods.errormsg(p, "the nickname you entered is too long");
-        else if((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
+        else if ((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
             Methods.errormsg(p, "the nickname you entered is already in use");
         else {
             String prevnick = Methods.removeColorCodes(p.getDisplayName());
@@ -334,7 +340,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     }
 
     public void removeNick(Player p) {
-        if(p.getName().equals(p.getDisplayName()))
+        if (p.getName().equals(p.getDisplayName()))
             return;
         String nickuncolor = ChatColor.stripColor(p.getDisplayName());
         removeNick(nickuncolor);
@@ -352,14 +358,12 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         this.saveCustomConfig();
     }
 
-    public void realname(Player p, String name)
-    {
+    public void realname(Player p, String name) {
         PlayerProfile profile = p.getPlayerProfile();
         profile.setName(Methods.removeColorCodes(p.getName()));
         p.setPlayerProfile(profile);
 
-        for (Player players : Bukkit.getOnlinePlayers())
-        {
+        for (Player players : Bukkit.getOnlinePlayers()) {
             players.hidePlayer(p);
             players.showPlayer(p);
         }
@@ -389,9 +393,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             this.getLogger().log(Level.SEVERE, "Could not save config to " + customConfigFile, ex);
         }
     }
+
     public static double getTPSofLastSecond() {
         return tps;
     }
+
     public static int countMinecartInChunk(Chunk chunk) {
         int count = 0;
 
@@ -417,8 +423,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         reloadConfig();
     }
 
-    public TpaRequest getRequest (Player user) {
-        for (TpaRequest request: requests){
+    public TpaRequest getRequest(Player user) {
+        for (TpaRequest request : requests) {
             if (request.getReciever().getName().equalsIgnoreCase(user.getName())) {
                 return request;
             }
@@ -426,12 +432,12 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         return null;
     }
 
-    public void addRequest (Player sender, Player receiver, Type type) {
+    public void addRequest(Player sender, Player receiver, Type type) {
         TpaRequest tpaRequest = new TpaRequest(sender, receiver, type);
         requests.add(tpaRequest);
     }
 
-    public void removeRequest (Player user) {
+    public void removeRequest(Player user) {
         requests.remove(getRequest(user));
     }
 
@@ -461,7 +467,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             inventory.remove(itemStack2);
             ++fixesIllegals;
         }
-   }
+    }
 
     public static void checkArmorContents(final PlayerInventory playerInventory, final Location location, final boolean checkRecursive) {
         for (final ItemStack itemStack : playerInventory.getArmorContents()) {
@@ -489,7 +495,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (!getInstance().getConfig().getBoolean("anti-illegals"))
             return ItemState.clean;
 
-        if (getInstance().getConfig().getBoolean ("illegal-items")) {
+        if (getInstance().getConfig().getBoolean("illegal-items")) {
             if (itemStack.getType() == Material.BEDROCK) {
                 itemStack.setAmount(0);
                 return ItemState.illegal;
@@ -530,7 +536,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return ItemState.illegal;
             }
 
-            if (isSpawnEgg(itemStack)) {
+            if (Methods.isSpawnEgg(itemStack)) {
                 itemStack.setAmount(0);
                 return ItemState.illegal;
             }
@@ -608,11 +614,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
 
         if (getInstance().getConfig().getBoolean("check-in-shulker-box")) {
-            if (itemStack.getType().toString().contains("SHULKER_BOX") && checkRecursive && itemStack.getItemMeta() instanceof BlockStateMeta) {
-                final BlockStateMeta blockMeta = (BlockStateMeta) itemStack.getItemMeta();
+            if (itemStack.getType().toString().contains("SHULKER_BOX") && checkRecursive && itemStack.getItemMeta() instanceof final BlockStateMeta blockMeta) {
 
-                if (blockMeta.getBlockState() instanceof ShulkerBox) {
-                    final ShulkerBox shulker = (ShulkerBox) blockMeta.getBlockState();
+                if (blockMeta.getBlockState() instanceof final ShulkerBox shulker) {
                     final Inventory inventoryShulker = shulker.getInventory();
 
                     checkInventory(inventoryShulker, location, true, true);

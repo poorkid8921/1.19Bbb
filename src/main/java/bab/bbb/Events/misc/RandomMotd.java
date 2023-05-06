@@ -12,13 +12,14 @@ import java.util.Random;
 
 public class RandomMotd implements Listener {
     private final Bbb plugin = Bbb.getInstance();
+
     @EventHandler
-    public void serverList(PaperServerListPingEvent listPingEvent) {
+    public void serverList(PaperServerListPingEvent e) {
         List<String> list = plugin.getConfig().getStringList("motd");
 
         if (Bukkit.getServer().getOnlinePlayers().size() == 1)
-            listPingEvent.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
+            e.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
         else
-            listPingEvent.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))));
+            e.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))));
     }
 }

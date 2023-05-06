@@ -3,19 +3,18 @@ package bab.bbb.tpa;
 import bab.bbb.Bbb;
 import bab.bbb.Events.misc.MiscEvents;
 import bab.bbb.utils.Methods;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Donkey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.util.Objects;
 
 public class TpacceptCommand implements CommandExecutor {
@@ -33,10 +32,8 @@ public class TpacceptCommand implements CommandExecutor {
 
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
-        if (!(sender instanceof Player))
+        if (!(sender instanceof Player user))
             return true;
-
-        Player user = (Player) sender;
 
         if (plugin.getRequest(user) == null) {
             Methods.errormsg(user, "you don't have any active request");
@@ -68,8 +65,7 @@ public class TpacceptCommand implements CommandExecutor {
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
 
                     if (recipient.getVehicle() != null) {
-                        if (recipient.getVehicle() instanceof AbstractHorse) {
-                            final AbstractHorse donkey = (AbstractHorse) recipient.getVehicle();
+                        if (recipient.getVehicle() instanceof final AbstractHorse donkey) {
                             for (int i = 1; i <= 16; i++) {
                                 ItemStack item = donkey.getInventory().getItem(i);
                                 if (item == null)
@@ -105,8 +101,7 @@ public class TpacceptCommand implements CommandExecutor {
                     user.getWorld().strikeLightningEffect(user.getLocation());
 
                     if (user.getVehicle() != null) {
-                        if (user.getVehicle() instanceof AbstractHorse) {
-                            final AbstractHorse donkey = (AbstractHorse) user.getVehicle();
+                        if (user.getVehicle() instanceof final AbstractHorse donkey) {
                             for (int i = 1; i <= 16; i++) {
                                 ItemStack item = donkey.getInventory().getItem(i);
                                 if (item == null)

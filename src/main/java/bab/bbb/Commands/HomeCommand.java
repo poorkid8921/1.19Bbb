@@ -3,7 +3,6 @@ package bab.bbb.Commands;
 import bab.bbb.Bbb;
 import bab.bbb.Events.misc.MiscEvents;
 import bab.bbb.utils.Home;
-import bab.bbb.utils.HomeIO;
 import bab.bbb.utils.Methods;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
@@ -26,7 +25,7 @@ public class HomeCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
-            List<Home> homes = HomeIO.getHomes().getOrDefault(player.getUniqueId(), null);
+            List<Home> homes = Methods.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
                 Methods.errormsg(player, "you have no home to teleport to");
                 return true;
@@ -78,7 +77,7 @@ public class HomeCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("home")) {
             Player player = (Player) sender;
-            List<Home> homes = HomeIO.getHomes().getOrDefault(player.getUniqueId(), null);
+            List<Home> homes = Methods.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) return Collections.emptyList();
             if (args.length < 1)
                 return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());

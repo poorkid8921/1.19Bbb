@@ -5,7 +5,6 @@ import lombok.Cleanup;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Content;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,12 +15,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static java.lang.String.format;
 import static org.apache.commons.math3.util.FastMath.*;
 import static org.bukkit.ChatColor.translateAlternateColorCodes;
@@ -29,25 +30,70 @@ import static org.bukkit.ChatColor.translateAlternateColorCodes;
 public class Methods {
     static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
     static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
-    static boolean works1 = true;
-    static boolean works2 = false;
-    static boolean works3 = false;
-    static boolean works4 = false;
-    static boolean works5 = false;
-    static boolean works6 = false;
-    private final HashMap<Player, Double> cooldowns = new HashMap<Player, Double>();
-    private final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
-    private static Set<String> playerList = new HashSet<>();
-    private static Bbb plugin = Bbb.getInstance();
-    private static final File homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");
-    private static final HashMap<UUID, ArrayList<Home>> homes = new HashMap<>();
+    public final HashMap<Player, Double> cooldowns = new HashMap<Player, Double>();
+    public final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
+    public static Set<String> playerList = new HashSet<>();
+    public static Bbb plugin = Bbb.getInstance();
+    public static final File homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");
+    public static final HashMap<UUID, ArrayList<Home>> homes = new HashMap<>();
+
     public static File getHomesFolder() {
         return homesFolder;
     }
+
     public static HashMap<UUID, ArrayList<Home>> getHomes() {
         return homes;
     }
-    private static Home parseHome(File mapFile) {
+
+    public static boolean works1 = true;
+    public static boolean works2 = false;
+    public static boolean works3 = false;
+    public static boolean works4 = false;
+    public static boolean works5 = false;
+    public static boolean works6 = false;
+
+    public static int amountOfMaterialInChunk(Chunk chunk, Material material) {
+        int minY = 1;
+        int maxY = chunk.getWorld().getMaxHeight();
+        int count = 0;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = minY; y < maxY; y++) {
+                    if (chunk.getBlock(x, y, z).getType().equals(material)) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    public static boolean isSinkInBlock(Material burrowBlockMaterial) {
+        if (burrowBlockMaterial == null) return false;
+        return switch (burrowBlockMaterial) {
+            case SOUL_SAND, MUD -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isAnvil(Material burrowBlockMaterial) {
+        if (burrowBlockMaterial == null) return false;
+        return switch (burrowBlockMaterial) {
+            case ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isSlab(Material burrowBlockMaterial) {
+        if (burrowBlockMaterial == null) return false;
+        return switch (burrowBlockMaterial) {
+            case ACACIA_SLAB, ANDESITE_SLAB, BIRCH_SLAB, BLACKSTONE_SLAB, BRICK_SLAB, COBBLED_DEEPSLATE_SLAB, COBBLESTONE_SLAB, CRIMSON_SLAB, CUT_COPPER_SLAB, CUT_RED_SANDSTONE_SLAB, CUT_SANDSTONE_SLAB, DARK_OAK_SLAB, DARK_PRISMARINE_SLAB, DEEPSLATE_BRICK_SLAB, DEEPSLATE_TILE_SLAB, DIORITE_SLAB, END_STONE_BRICK_SLAB, EXPOSED_CUT_COPPER_SLAB, GRANITE_SLAB, JUNGLE_SLAB, MANGROVE_SLAB, MOSSY_COBBLESTONE_SLAB, MOSSY_STONE_BRICK_SLAB, MUD_BRICK_SLAB, NETHER_BRICK_SLAB, OAK_SLAB, OXIDIZED_CUT_COPPER_SLAB, PETRIFIED_OAK_SLAB, POLISHED_ANDESITE_SLAB, POLISHED_BLACKSTONE_BRICK_SLAB, POLISHED_BLACKSTONE_SLAB, POLISHED_DEEPSLATE_SLAB, POLISHED_DIORITE_SLAB, POLISHED_GRANITE_SLAB, PRISMARINE_BRICK_SLAB, PRISMARINE_SLAB, PURPUR_SLAB, QUARTZ_SLAB, RED_NETHER_BRICK_SLAB, RED_SANDSTONE_SLAB, SANDSTONE_SLAB, SCULK_SENSOR, SCULK_SHRIEKER, SMOOTH_QUARTZ_SLAB, SMOOTH_RED_SANDSTONE_SLAB, SMOOTH_SANDSTONE_SLAB, SMOOTH_STONE_SLAB, SPRUCE_SLAB, STONE_BRICK_SLAB, STONE_SLAB, WARPED_SLAB, WAXED_CUT_COPPER_SLAB, WAXED_EXPOSED_CUT_COPPER_SLAB, WAXED_OXIDIZED_CUT_COPPER_SLAB, WAXED_WEATHERED_CUT_COPPER_SLAB, WEATHERED_CUT_COPPER_SLAB ->
+                    true;
+            default -> false;
+        };
+    }
+
+    public static Home parseHome(File mapFile) {
         try {
             @Cleanup FileInputStream fis = new FileInputStream(mapFile);
             @Cleanup InputStreamReader isr = new InputStreamReader(fis);
@@ -109,7 +155,7 @@ public class Methods {
         }
     }
 
-    private static String getFileExtension(File file) {
+    public static String getFileExtension(File file) {
         String name = file.getName();
         int index = name.lastIndexOf(".");
         if (index == -1) {
@@ -189,7 +235,7 @@ public class Methods {
         plugin.saveCustomConfig();
     }
 
-    private static synchronized List<String> getAltNames(String ip, String excludeUuid) {
+    public static synchronized List<String> getAltNames(String ip, String excludeUuid) {
         List<String> altList = new ArrayList<String>();
 
         Date oldestDate = new Date(System.currentTimeMillis() - 8640000);
@@ -233,6 +279,7 @@ public class Methods {
                 to.getZ() - from.getZ()
         );
     }
+
     public static String speed(double flySpeed) {
         return format("%.2f", min((double) round(flySpeed * 100.0D) / 100.0D, 20.0D));
     }
@@ -384,7 +431,7 @@ public class Methods {
             });
         });
     }
-    
+
     public static void setName(ItemStack item, String name, boolean overrideDefaultFormat) {
         ItemMeta itemStackMeta = item.getItemMeta();
         itemStackMeta.setDisplayName(formatString(name, overrideDefaultFormat));
@@ -446,8 +493,7 @@ public class Methods {
         p.kickPlayer(Methods.translatestring("&7Disconnected"));
     }
 
-    public static void message(Player e, String msg)
-    {
+    public static void message(Player e, String msg) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(e.getPlayer().getName()))
@@ -458,8 +504,7 @@ public class Methods {
 
     public static void spoiler(Player e, String msg) {
         RainbowText rainbow = new RainbowText(msg);
-        StringBuilder msgg = new StringBuilder();
-        msgg.append("█".repeat(Math.max(1, msg.length() / 3 - 2)));
+        String msgg = "█".repeat(Math.max(1, msg.length() / 3 - 2));
 
         TextComponent spoiler = new TextComponent(Methods.parseText("&7<" + e.getPlayer().getDisplayName() + "&7> " + msgg));
         Text HoverText = new Text(Methods.parseText(e.getPlayer(), msg.replace("||", "")));
@@ -467,7 +512,7 @@ public class Methods {
         if (msg.contains("[gay]") && msg.contains("[/gay]"))
             HoverText = new Text(Methods.parseText(e.getPlayer(), rainbow.getText()));
 
-        spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Content[]{HoverText}));
+        spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
@@ -477,8 +522,7 @@ public class Methods {
         }
     }
 
-    public static String placeholders(String msg)
-    {
+    public static String placeholders(String msg) {
         return Methods.parseText(msg.replace("<3", "❤")
                 .replace("[ARROW]", "➜")
                 .replace("[TICK]", "✔")
@@ -513,8 +557,7 @@ public class Methods {
                 .replace("[AXE]", "&r\uD83E\uDE93"));
     }
 
-    public static String unicode(String msg)
-    {
+    public static String unicode(String msg) {
         return Methods.parseText(msg.replace("A", "ᴀ")
                 .replace("B", "ʙ")
                 .replace("C", "ᴄ")
@@ -566,6 +609,7 @@ public class Methods {
     public static String infostring(String s) {
         return hex("&7[&e+&7] " + s);
     }
+
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
         p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         if (msg == 1)
@@ -585,7 +629,6 @@ public class Methods {
             p.teleport(fromloc);
         else
             p.teleport(new Location(rworld, p.getLocation().getX(), y, p.getLocation().getZ()));
-        //if (p.isGliding())
         p.setGliding(false);
         p.setFlying(false);
         PlayerInventory playerInv = p.getInventory();
@@ -624,11 +667,10 @@ public class Methods {
     }
 
     public static ChatColor getTPSColor(double tps) {
-        if (tps >= 18.0D) {
+        if (tps >= 18.0D)
             return ChatColor.GREEN;
-        } else {
+        else
             return tps >= 15.0D ? ChatColor.YELLOW : ChatColor.RED;
-        }
     }
 
     public static String format1(double tps) {

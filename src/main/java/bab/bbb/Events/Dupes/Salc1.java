@@ -1,6 +1,6 @@
 package bab.bbb.Events.Dupes;
 
-import bab.bbb.utils.PlayerDupeEvent;
+import bab.bbb.Events.misc.PlayerDupeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.ChestedHorse;

@@ -21,8 +21,7 @@ public class TpdenyCommand implements CommandExecutor {
 
         Player player = ((Player) sender).getPlayer();
         TpaRequest request = plugin.getRequest((Player) sender);
-        if (request == null)
-        {
+        if (request == null) {
             Methods.errormsg(player, "you don't have any active request");
             return true;
         }

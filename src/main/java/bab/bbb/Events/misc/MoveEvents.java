@@ -9,7 +9,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import static bab.bbb.utils.ElytraUtils.*;
 public class MoveEvents implements Listener {
     private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
 
@@ -40,20 +39,21 @@ public class MoveEvents implements Listener {
             }
         }
 
-        if (p.isGliding()) {
-            if (Bbb.getTPSofLastSecond() <= cfgtps) {
-                e.setCancelled(true);
-                Methods.elytraflag(p, 1, 1, 0, null);
-                return;
-            }
+        if (!p.isGliding())
+            return;
 
-            double speed = blocksPerTick(e.getFrom(), e.getTo());
-
-            if (speed > 2.10) {
-                e.setCancelled(true);
-                Methods.elytraflag(p, 2, 0, 0, null);
-            } else
-                p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", speed(speed)));
+        if (Bbb.getTPSofLastSecond() <= cfgtps) {
+            e.setCancelled(true);
+            Methods.elytraflag(p, 1, 1, 0, null);
+            return;
         }
+
+        double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
+
+        if (speed > 2.10) {
+            e.setCancelled(true);
+            Methods.elytraflag(p, 2, 0, 0, null);
+        } else
+            p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));
     }
 }

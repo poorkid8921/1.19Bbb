@@ -1,6 +1,6 @@
 package bab.bbb.Events;
 
-import bab.bbb.utils.PlayerDupeEvent;
+import bab.bbb.Events.misc.PlayerDupeEvent;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -19,7 +19,7 @@ public class DupeEvent implements Listener {
         }
         while (items.size() > 450) {
             items.get(items.size() - 1).remove();
-            items.remove(items.size() -1);
+            items.remove(items.size() - 1);
         }
     }
 }

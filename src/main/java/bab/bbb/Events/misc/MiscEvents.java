@@ -1,24 +1,24 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.*;
-import org.bukkit.*;
+import bab.bbb.utils.Methods;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Dispenser;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.*;
-import org.bukkit.event.*;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.inventory.*;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.entity.Entity;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -29,11 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.List;
 import java.util.logging.Level;
-
-import static bab.bbb.utils.ItemUtils.isBook;
-import static bab.bbb.utils.ItemUtils.isShulkerBox;
 
 public class MiscEvents implements Listener {
     private final Bbb plugin;
@@ -59,16 +55,16 @@ public class MiscEvents implements Listener {
 
     private void clearBooks(Player player) {
         for (ItemStack itemInInventory : player.getInventory().getContents()) {
-            if (isBook(itemInInventory)) {
+            if (Methods.isBook(itemInInventory)) {
                 stripPages(itemInInventory);
             }
 
-            if (isShulkerBox(itemInInventory)) {
+            if (Methods.isShulkerBox(itemInInventory)) {
                 BlockStateMeta meta = (BlockStateMeta) itemInInventory.getItemMeta();
                 ShulkerBox shulkerBox = (ShulkerBox) meta.getBlockState();
 
                 for (ItemStack itemInsideShulker : shulkerBox.getInventory().getContents()) {
-                    if (isBook(itemInsideShulker))
+                    if (Methods.isBook(itemInsideShulker))
                         stripPages(itemInsideShulker);
                 }
 
@@ -103,7 +99,7 @@ public class MiscEvents implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                VPNChecker.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
+                Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
                 apply(e.getPlayer());
                 plugin.setnickonjoin(e.getPlayer());
             }
@@ -125,10 +121,10 @@ public class MiscEvents implements Listener {
         String uuid = e.getPlayer().getUniqueId().toString();
         String name = e.getPlayer().getName();
 
-        DataStore.addUpdateIp(ip, uuid, name);
+        Methods.addUpdateIp(ip, uuid, name);
         plugin.saveCustomConfig();
 
-        String altString = DataStore.getFormattedAltString(ip, uuid);
+        String altString = Methods.getFormattedAltString(ip, uuid);
 
         String ac = plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip");
         if (ac != null) {
@@ -142,7 +138,7 @@ public class MiscEvents implements Listener {
         if (altString == "true") {
             Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress());
             e.getPlayer().kickPlayer(Methods.translatestring("&7Alts aren't &callowed"));
-            DataStore.purge(name);
+            Methods.purge(name);
             return;
         }
 
@@ -155,18 +151,20 @@ public class MiscEvents implements Listener {
                     e.getPlayer().sendMessage(Methods.infostring("use &e/secure&7 to stop your account from being accessed by others"));
 
                 if (!e.getPlayer().hasPlayedBefore()) {
+                    if (!e.getPlayer().getChunk().isLoaded())
+                        return;
+
+                    int randX = new Random().nextInt(maxX - minX + 1) + minX;
+                    int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
+                    int y = respawnWorld.getHighestBlockYAt(randX, randZ);
+                    e.getPlayer().teleport(new Location(respawnWorld, randX, y, randZ));
+
                     if (!plugin.config.getBoolean("no-join-messages")) {
                         for (Player p : Bukkit.getOnlinePlayers()) {
                             if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
                                 p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                         }
                     }
-                    if (!e.getPlayer().getChunk().isLoaded())
-                        return;
-                    int randX = new Random().nextInt(maxX - minX + 1) + minX;
-                    int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
-                    int y = respawnWorld.getHighestBlockYAt(randX, randZ);
-                    e.getPlayer().teleport(new Location(respawnWorld, randX, y, randZ));
                 } else {
                     plugin.setnickonjoin(e.getPlayer());
                     if (e.getPlayer().getActivePotionEffects().size() > 0) {
@@ -177,13 +175,14 @@ public class MiscEvents implements Listener {
                         }
                     }
 
+                    Methods.loadHomes(e.getPlayer());
+
                     if (!plugin.config.getBoolean("no-join-messages")) {
                         for (Player p : Bukkit.getOnlinePlayers()) {
                             if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
                                 p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
                         }
                     }
-                    HomeIO.loadHomes(e.getPlayer());
                 }
             }
         }.runTaskLater(plugin, 20);
@@ -217,7 +216,7 @@ public class MiscEvents implements Listener {
         e.quitMessage(null);
 
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
-        HomeIO.getHomes().remove(e.getPlayer().getUniqueId());
+        Methods.getHomes().remove(e.getPlayer().getUniqueId());
 
         if (!plugin.config.getBoolean("no-join-messages")) {
             for (Player p : Bukkit.getOnlinePlayers()) {
@@ -258,10 +257,9 @@ public class MiscEvents implements Listener {
     }
 
     public void dupe_donkey(final Entity riding, final Player p) {
-        if (!(riding instanceof AbstractHorse))
+        if (!(riding instanceof final AbstractHorse donkey))
             return;
 
-        final AbstractHorse donkey = (AbstractHorse) riding;
         for (int i = 1; i <= 16; i++) {
             ItemStack item = donkey.getInventory().getItem(i);
             if (item == null)
@@ -374,13 +372,13 @@ public class MiscEvents implements Listener {
     }
 
     private void process(BlockEvent event) {
-        if (redstoneoff == true) {
+        if (redstoneoff) {
             cancelEvent(event);
             return;
         }
 
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
-            if (redstoneoff == false)
+            if (!redstoneoff)
                 redstoneoff = true;
             cancelEvent(event);
        }
@@ -390,7 +388,7 @@ public class MiscEvents implements Listener {
         if (event instanceof BlockRedstoneEvent) {
             ((BlockRedstoneEvent) event).setNewCurrent(0);
         } else ((Cancellable) event).setCancelled(true);
-        if (redstoneoff == true && can == true) {
+        if (redstoneoff && can) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 redstoneoff = false;
                 can = true;
