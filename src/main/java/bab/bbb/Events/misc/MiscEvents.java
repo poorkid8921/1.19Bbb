@@ -150,7 +150,7 @@ public class MiscEvents implements Listener {
                 apply(e.getPlayer());
 
                 if (plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip") == null)
-                    e.getPlayer().sendMessage(Methods.infostring("&7use &e/secure&7 to stop your account from being accessed by others"));
+                    e.getPlayer().sendMessage(Methods.infostring("use &e/secure&7 to stop your account from being accessed by others"));
 
                 if (!e.getPlayer().hasPlayedBefore()) {
                     if (!plugin.config.getBoolean("no-join-messages")) {
@@ -282,7 +282,7 @@ public class MiscEvents implements Listener {
                 antilog.add(e.getEntity().getName());
                 antilog.add(e.getDamager().getName());
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                    if ((!antilog.contains(e.getEntity().getName())) && (!antilog.contains(e.getDamager().getName()))) {
+                    if (antilog.contains(e.getEntity().getName()) && antilog.contains(e.getDamager().getName())) {
                         antilog.remove(e.getEntity().getName());
                         antilog.remove(e.getDamager().getName());
                     }

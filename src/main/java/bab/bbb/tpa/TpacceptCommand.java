@@ -124,6 +124,7 @@ public class TpacceptCommand implements CommandExecutor {
                         players.showPlayer(plugin, user);
                     user.getWorld().strikeLightningEffect(user.getLocation());
                     user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                    recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
                 }
             }.runTaskLater(plugin, 100);
         }

@@ -65,15 +65,12 @@ public class Methods {
         }
         return translateAlternateColorCodes('&', message);
     }
-
     public static String translatestring(String s) {
         return hex(s);
     }
-
     public static String infostring(String s) {
         return hex("&7[&e+&7] " + s);
     }
-
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
         p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         if (msg == 1)
@@ -95,8 +92,9 @@ public class Methods {
         p.setFlying(false);
         PlayerInventory playerInv = p.getInventory();
         if (playerInv.getChestplate() != null) {
+            ItemStack a = playerInv.getChestplate();
             playerInv.setChestplate(null);
-            p.getWorld().dropItemNaturally(p.getLocation(), playerInv.getChestplate());
+            p.getWorld().dropItemNaturally(p.getLocation(), a);
         }
         if (dmg != 0)
             p.damage(dmg);

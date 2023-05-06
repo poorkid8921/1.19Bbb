@@ -7,6 +7,7 @@ import bab.bbb.utils.HomeIO;
 import bab.bbb.utils.Methods;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -41,12 +42,14 @@ public class HomeCommand implements TabExecutor {
 
             for (Home home : homes) {
                 if (home.getName().equalsIgnoreCase(args[0])) {
-                    player.sendMessage(Methods.translatestring("teleporting to home &e" + home.getName() + "&7..."));
+                    player.sendMessage(Methods.translatestring("&7teleporting to home &e" + home.getName() + "&7..."));
 
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            player.getWorld().strikeLightning(player.getLocation());
+                            player.getWorld().strikeLightningEffect(player.getLocation());
+                            player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+
                             if (player.getVehicle() != null) {
                                 player.getVehicle().teleport(home.getLocation());
                                 player.getVehicle().eject();
@@ -58,7 +61,8 @@ public class HomeCommand implements TabExecutor {
                             player.teleport(home.getLocation());
                             for (Player players : Bukkit.getOnlinePlayers())
                                 players.showPlayer(plugin, player);
-                            player.getWorld().strikeLightning(player.getLocation());
+                            player.getWorld().strikeLightningEffect(player.getLocation());
+                            player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
                         }
                     }.runTaskLater(Bbb.getInstance(), 100);
                     return true;

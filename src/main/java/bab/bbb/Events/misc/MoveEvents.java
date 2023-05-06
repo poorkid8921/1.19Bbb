@@ -8,6 +8,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+
+import java.util.logging.Level;
+
 import static bab.bbb.utils.ElytraUtils.*;
 public class MoveEvents implements Listener {
     private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
@@ -58,6 +61,7 @@ public class MoveEvents implements Listener {
         {
             if (p.getAllowFlight() || p.isFlying())
             {
+                Bukkit.getServer().getLogger().log(Level.SEVERE, "flagged");
                 e.getPlayer().teleport(e.getFrom());
                 e.setCancelled(true);
             }
