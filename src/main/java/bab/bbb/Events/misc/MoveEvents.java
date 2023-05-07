@@ -3,11 +3,15 @@ package bab.bbb.Events.misc;
 import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
 import org.bukkit.*;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
+
+import java.util.logging.Level;
 
 public class MoveEvents implements Listener {
     private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
@@ -32,11 +36,17 @@ public class MoveEvents implements Listener {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
                     if (p.isGliding())
-                        Methods.errormsg(p, "&7Nether roof is &cdisabled");
+                        Methods.errormsg(p, "nether roof is &cdisabled");
                     else
-                        p.sendActionBar(Methods.translatestring("&7Nether roof is &cdisabled"));
+                        p.sendActionBar(Methods.parseText("&7Nether roof is &cdisabled"));
                 }
             }
+        }
+        else if (p.getLocation().getY() > 512) {
+            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+            int y = p.getWorld().getHighestBlockYAt(p.getLocation().getBlockX(), p.getLocation().getBlockZ());
+            p.teleport(new Location(p.getWorld(), p.getLocation().getX(), y, p.getLocation().getZ()));
+            Methods.errormsg(p, "max y is 512");
         }
 
         if (!p.isGliding())
@@ -50,10 +60,9 @@ public class MoveEvents implements Listener {
 
         double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
 
-        if (speed > 2.10) {
-            e.setCancelled(true);
+        if (speed > 2.10)
             Methods.elytraflag(p, 2, 0, 0, null);
-        } else
+        else
             p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));
     }
 }

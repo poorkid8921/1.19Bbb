@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
@@ -20,7 +19,6 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
@@ -38,7 +36,6 @@ public class MiscEvents implements Listener {
     private final int maxX = 100;
     private final int maxZ = 100;
     private final World respawnWorld = Bukkit.getWorld("world");
-    private final HashSet<String> kickMessagesToListenTo = new HashSet<>();
     private final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
     public static ArrayList<String> antilog = new ArrayList<>();
     private final ArrayList<String> queue = new ArrayList<>();
@@ -47,17 +44,12 @@ public class MiscEvents implements Listener {
 
     public MiscEvents(final Bbb plugin) {
         this.plugin = plugin;
-        List<String> configuredKickMessages =
-                Arrays.asList("Kicked for spamming", "Stop spamming!", "NBT", "packet", "float", "flight", "fly", "spam");
-        for (String kickMessage : configuredKickMessages)
-            kickMessagesToListenTo.add(kickMessage.toLowerCase());
     }
 
     private void clearBooks(Player player) {
         for (ItemStack itemInInventory : player.getInventory().getContents()) {
-            if (Methods.isBook(itemInInventory)) {
+            if (Methods.isBook(itemInInventory))
                 stripPages(itemInInventory);
-            }
 
             if (Methods.isShulkerBox(itemInInventory)) {
                 BlockStateMeta meta = (BlockStateMeta) itemInInventory.getItemMeta();
@@ -77,7 +69,6 @@ public class MiscEvents implements Listener {
 
     private void stripPages(ItemStack book) {
         BookMeta bookMeta = (BookMeta) book.getItemMeta();
-
         List<String> pages = new ArrayList<>();
 
         for (String page : bookMeta.getPages()) {
@@ -95,18 +86,6 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
-    public void OnPlayerLogin(PlayerLoginEvent e) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
-                apply(e.getPlayer());
-                plugin.setnickonjoin(e.getPlayer());
-            }
-        }.runTaskLater(plugin, 50);
-    }
-
-    @EventHandler
     private void onPortalUse(EntityPortalEvent event) {
         if (!(event.getEntity() instanceof Player))
             event.setCancelled(true);
@@ -116,6 +95,7 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
+        Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
 
         String ip = Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress();
         String uuid = e.getPlayer().getUniqueId().toString();
@@ -145,8 +125,6 @@ public class MiscEvents implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                apply(e.getPlayer());
-
                 if (plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip") == null)
                     e.getPlayer().sendMessage(Methods.infostring("use &e/secure&7 to stop your account from being accessed by others"));
 
@@ -159,13 +137,15 @@ public class MiscEvents implements Listener {
                     int y = respawnWorld.getHighestBlockYAt(randX, randZ);
                     e.getPlayer().teleport(new Location(respawnWorld, randX, y, randZ));
 
-                    if (!plugin.config.getBoolean("no-join-messages")) {
-                        for (Player p : Bukkit.getOnlinePlayers()) {
-                            if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                                p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
-                        }
+                    if (plugin.config.getBoolean("no-join-messages"))
+                        return;
+
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
+                            p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                     }
                 } else {
+                    apply(e.getPlayer());
                     plugin.setnickonjoin(e.getPlayer());
                     if (e.getPlayer().getActivePotionEffects().size() > 0) {
                         for (PotionEffect effects : e.getPlayer().getActivePotionEffects()) {
@@ -177,13 +157,15 @@ public class MiscEvents implements Listener {
 
                     Methods.loadHomes(e.getPlayer());
 
-                    if (!plugin.config.getBoolean("no-join-messages")) {
-                        for (Player p : Bukkit.getOnlinePlayers()) {
-                            if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                                p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
-                        }
+                    if (plugin.config.getBoolean("no-join-messages"))
+                        return;
+
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
+                            p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
                     }
                 }
+
             }
         }.runTaskLater(plugin, 20);
     }
@@ -221,23 +203,22 @@ public class MiscEvents implements Listener {
         if (!plugin.config.getBoolean("no-join-messages")) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                    p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getDisplayName() + " has left the server"));
+                    p.sendMessage(Methods.parseText("&7" + e.getPlayer().getDisplayName() + " has left the server"));
             }
         }
     }
+
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
         apply(e.getPlayer());
 
-        if (kickMessagesToListenTo.contains(e.getReason().toLowerCase()))
+        if (e.getReason().toLowerCase().contains("spam") || e.getReason().toLowerCase().contains("nbt"))
             e.setCancelled(true);
 
         final Entity vehicle = e.getPlayer().getVehicle();
 
-        if (vehicle == null)
-            return;
-
-        dupe_donkey(vehicle, e.getPlayer());
+        if (vehicle != null)
+            dupe_donkey(vehicle, e.getPlayer());
     }
 
     @EventHandler
@@ -288,13 +269,10 @@ public class MiscEvents implements Listener {
                     }
                 }, 200L);
             }
-        }
-        else if (e.getEntity() instanceof EnderCrystal && e.getDamager() instanceof Player)
-        {
+        } else if (e.getEntity() instanceof EnderCrystal && e.getDamager() instanceof Player) {
             if (queue.contains(e.getDamager().getName()))
                 e.setCancelled(true);
-            else
-            {
+            else {
                 queue.add(e.getDamager().getName());
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     queue.remove(e.getDamager().getName());
@@ -313,23 +291,20 @@ public class MiscEvents implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private void onLiquidSpread(BlockFromToEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps"))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     private void onNoteblockGetsPlayed(NotePlayEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps"))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        if (Bbb.countMinecartInChunk(event.getVehicle().getChunk()) >= 32) {
+        if (Bbb.countMinecartInChunk(event.getVehicle().getChunk()) >= 32)
             Bbb.removeMinecartInChunk(event.getVehicle().getChunk());
-        }
     }
 
     public void sendOpMessage(String s) {
@@ -381,7 +356,7 @@ public class MiscEvents implements Listener {
             if (!redstoneoff)
                 redstoneoff = true;
             cancelEvent(event);
-       }
+        }
     }
 
     private void cancelEvent(BlockEvent event) {
@@ -451,7 +426,7 @@ public class MiscEvents implements Listener {
         if (plugin.config.getBoolean("no-death-messages"))
             e.deathMessage(null);
         else
-            e.setDeathMessage(Methods.translatestring("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", "")));
+            e.setDeathMessage(Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", "")));
 
         if (e.getEntity().getKiller() == null)
             return;
@@ -461,19 +436,5 @@ public class MiscEvents implements Listener {
 
         if (e.getEntity().getKiller().getVehicle().getType() == EntityType.DONKEY)
             dupe_donkey(e.getEntity().getKiller().getVehicle(), e.getEntity().getKiller());
-    }
-
-    @EventHandler
-    public void onEndGateway(VehicleMoveEvent event) {
-        Vehicle vehicle = event.getVehicle();
-        if (vehicle.getWorld().getEnvironment() == World.Environment.THE_END && vehicle.getPassengers().stream().anyMatch(e -> e instanceof Player)) {
-            for (BlockFace face : BlockFace.values()) {
-                Block next = vehicle.getLocation().getBlock().getRelative(face);
-                if (next.getType() == Material.END_GATEWAY) {
-                    vehicle.eject();
-                    vehicle.teleport(new Location(vehicle.getWorld(), 0, 69, 0));
-                }
-            }
-        }
     }
 }

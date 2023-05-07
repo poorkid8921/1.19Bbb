@@ -62,6 +62,9 @@ public class TpacceptCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (request == null)
+                        return;
+                    
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
 
                     if (recipient.getVehicle() != null) {
@@ -74,9 +77,6 @@ public class TpacceptCommand implements CommandExecutor {
                             }
                         }
                         recipient.getVehicle().teleport(user);
-                        Entity vec = recipient.getVehicle();
-                        recipient.getVehicle().eject();
-                        vec.addPassenger(recipient);
                     }
 
                     for (Player players : Bukkit.getOnlinePlayers())
@@ -92,12 +92,15 @@ public class TpacceptCommand implements CommandExecutor {
                 }
             }.runTaskLater(plugin, 100);
         } else if (request.getType() == Type.TPAHERE) {
-            Methods.tpmsg(recipient, ((Player) sender).getPlayer(), 8);
-            Methods.tpmsg(((Player) sender).getPlayer(), recipient, 10);
+            Methods.tpmsg(((Player) sender).getPlayer(), recipient, 7);
+            Methods.tpmsg(recipient, ((Player) sender).getPlayer(), 10);
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (request == null)
+                        return;
+
                     user.getWorld().strikeLightningEffect(user.getLocation());
 
                     if (user.getVehicle() != null) {
@@ -110,9 +113,6 @@ public class TpacceptCommand implements CommandExecutor {
                             }
                         }
                         user.getVehicle().teleport(recipient);
-                        Entity vec = user.getVehicle();
-                        user.getVehicle().eject();
-                        vec.addPassenger(user);
                     }
 
                     for (Player players : Bukkit.getOnlinePlayers())
