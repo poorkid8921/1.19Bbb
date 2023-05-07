@@ -26,7 +26,7 @@ public class Salc1 implements Listener {
                     event.setCancelled(true);
                     for (ItemStack item : entity.getInventory().getContents()) {
                         if (item != null)
-                            entity.getWorld().dropItem(entity.getLocation(), item);
+                            entity.getWorld().dropItemNaturally(entity.getLocation(), item);
                     }
                     entity.setCarryingChest(false);
                 }

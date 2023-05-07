@@ -7,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
@@ -19,6 +21,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
@@ -40,7 +43,6 @@ public class MiscEvents implements Listener {
     public static ArrayList<String> antilog = new ArrayList<>();
     private final ArrayList<String> queue = new ArrayList<>();
     public static boolean redstoneoff = false;
-    public static boolean can = true;
 
     public MiscEvents(final Bbb plugin) {
         this.plugin = plugin;
@@ -95,7 +97,6 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
-        Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
 
         String ip = Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress();
         String uuid = e.getPlayer().getUniqueId().toString();
@@ -109,18 +110,20 @@ public class MiscEvents implements Listener {
         String ac = plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip");
         if (ac != null) {
             if (!e.getPlayer().getAddress().getAddress().getHostAddress().equals(ac)) {
-                Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress());
+                Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
                 e.getPlayer().kickPlayer(Methods.translatestring("&7The account you're trying to access is &2secured"));
                 return;
             }
         }
 
         if (altString == "true") {
-            Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress());
+            Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
             e.getPlayer().kickPlayer(Methods.translatestring("&7Alts aren't &callowed"));
             Methods.purge(name);
             return;
         }
+
+        Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
 
         new BukkitRunnable() {
             @Override
@@ -186,7 +189,7 @@ public class MiscEvents implements Listener {
 
         if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
             event.setCancelled(true);
-            if (shouldBreakBlock())
+            if (easyran())
                 Methods.maskedkick(player);
         } else
             playersUsingLevers.put(playerUniqueID, System.currentTimeMillis() + 1000);
@@ -200,11 +203,12 @@ public class MiscEvents implements Listener {
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
         Methods.getHomes().remove(e.getPlayer().getUniqueId());
 
-        if (!plugin.config.getBoolean("no-join-messages")) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                    p.sendMessage(Methods.parseText("&7" + e.getPlayer().getDisplayName() + " has left the server"));
-            }
+        if (plugin.config.getBoolean("no-join-messages"))
+            return;
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
+                p.sendMessage(Methods.parseText("&7" + e.getPlayer().getDisplayName() + " has left the server"));
         }
     }
 
@@ -214,17 +218,13 @@ public class MiscEvents implements Listener {
 
         if (e.getReason().toLowerCase().contains("spam") || e.getReason().toLowerCase().contains("nbt"))
             e.setCancelled(true);
-
-        final Entity vehicle = e.getPlayer().getVehicle();
-
-        if (vehicle != null)
-            dupe_donkey(vehicle, e.getPlayer());
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
         if (e.isBedSpawn())
             return;
+
         int randX = new Random().nextInt(maxX - minX + 1) + minX;
         int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
         int y = respawnWorld.getHighestBlockYAt(randX, randZ);
@@ -316,18 +316,17 @@ public class MiscEvents implements Listener {
 
     public static Player getNearbyPlayer(int i, Location loc) {
         Player plrs = null;
-        for (Player nearby : loc.getNearbyPlayers(i)) {
+        for (Player nearby : loc.getNearbyPlayers(i))
             plrs = nearby;
-        }
+
         return plrs;
     }
 
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
-            if (event.getSource().getType() == InventoryType.HOPPER) {
+            if (event.getSource().getType() == InventoryType.HOPPER)
                 event.setCancelled(true);
-            }
         }
     }
 
@@ -363,19 +362,17 @@ public class MiscEvents implements Listener {
         if (event instanceof BlockRedstoneEvent) {
             ((BlockRedstoneEvent) event).setNewCurrent(0);
         } else ((Cancellable) event).setCancelled(true);
-        if (redstoneoff && can) {
+
+        if (redstoneoff) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 redstoneoff = false;
-                can = true;
                 sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + getNearbyPlayer(50, event.getBlock().getLocation()).getName());
             }, 600);
-            can = false;
-        }
-        if (shouldBreakBlock())
+        } else if (easyran())
             event.getBlock().breakNaturally();
     }
 
-    private boolean shouldBreakBlock() {
+    private boolean easyran() {
         Random ran = new Random();
         int b = ran.nextInt(9);
         return b == 1;
@@ -434,7 +431,6 @@ public class MiscEvents implements Listener {
         if (e.getEntity().getKiller().getVehicle() == null)
             return;
 
-        if (e.getEntity().getKiller().getVehicle().getType() == EntityType.DONKEY)
-            dupe_donkey(e.getEntity().getKiller().getVehicle(), e.getEntity().getKiller());
+        dupe_donkey(e.getEntity().getKiller().getVehicle(), e.getEntity().getKiller());
     }
 }

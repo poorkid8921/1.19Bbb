@@ -64,7 +64,10 @@ public class TpacceptCommand implements CommandExecutor {
                 public void run() {
                     if (request == null)
                         return;
-                    
+
+                    for (Player players : Bukkit.getOnlinePlayers())
+                        players.hidePlayer(plugin, recipient);
+
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
 
                     if (recipient.getVehicle() != null) {
@@ -79,16 +82,12 @@ public class TpacceptCommand implements CommandExecutor {
                         recipient.getVehicle().teleport(user);
                     }
 
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.hidePlayer(plugin, recipient);
-
                     recipient.teleport(user);
                     for (Player players : Bukkit.getOnlinePlayers())
                         players.showPlayer(plugin, recipient);
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
                     recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
                     user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-
                 }
             }.runTaskLater(plugin, 100);
         } else if (request.getType() == Type.TPAHERE) {
@@ -100,6 +99,9 @@ public class TpacceptCommand implements CommandExecutor {
                 public void run() {
                     if (request == null)
                         return;
+
+                    for (Player players : Bukkit.getOnlinePlayers())
+                        players.hidePlayer(plugin, user);
 
                     user.getWorld().strikeLightningEffect(user.getLocation());
 
@@ -114,9 +116,6 @@ public class TpacceptCommand implements CommandExecutor {
                         }
                         user.getVehicle().teleport(recipient);
                     }
-
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.hidePlayer(plugin, user);
 
                     user.teleport(recipient);
                     for (Player players : Bukkit.getOnlinePlayers())

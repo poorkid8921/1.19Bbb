@@ -42,27 +42,24 @@ public class MoveEvents implements Listener {
                 }
             }
         }
-        else if (p.getLocation().getY() > 512) {
-            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-            int y = p.getWorld().getHighestBlockYAt(p.getLocation().getBlockX(), p.getLocation().getBlockZ());
-            p.teleport(new Location(p.getWorld(), p.getLocation().getX(), y, p.getLocation().getZ()));
-            Methods.errormsg(p, "max y is 512");
+
+        if (p.isGliding()) {
+            if (Bbb.getTPSofLastSecond() <= cfgtps) {
+                e.setCancelled(true);
+                Methods.elytraflag(p, 1, 1, 0, null);
+                return;
+            }
+
+            double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
+
+            if (speed > 2.10)
+                Methods.elytraflag(p, 2, 0, 0, null);
+            else
+                p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));
         }
-
-        if (!p.isGliding())
-            return;
-
-        if (Bbb.getTPSofLastSecond() <= cfgtps) {
+        else if (p.isFlying()) {
+            p.teleport(e.getFrom());
             e.setCancelled(true);
-            Methods.elytraflag(p, 1, 1, 0, null);
-            return;
         }
-
-        double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
-
-        if (speed > 2.10)
-            Methods.elytraflag(p, 2, 0, 0, null);
-        else
-            p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));
     }
 }

@@ -20,7 +20,7 @@ public class FrameDupe implements Listener {
             int rng = (int) Math.round(random() * 100);
             if (rng < rn) {
                 Random ran = new Random();
-                int b = ran.nextInt(3);
+                int b = ran.nextInt(6);
                 for (int i = 0; i < b; i++)
                     e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), ((ItemFrame) e.getEntity()).getItem());
             }

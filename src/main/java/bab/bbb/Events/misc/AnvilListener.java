@@ -38,9 +38,9 @@ public class AnvilListener implements Listener {
     }
 
     public String getDisplayName(ItemStack item) {
-        if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+        if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName())
             return item.getItemMeta().getDisplayName();
-        }
+
         return "";
     }
 
@@ -51,13 +51,12 @@ public class AnvilListener implements Listener {
     @EventHandler
     public void anvilListener(PrepareAnvilEvent event) {
         AnvilInventory inv = event.getInventory();
-        if (event.getViewers().isEmpty()) {
+        if (event.getViewers().isEmpty())
             return;
-        }
+
         HumanEntity p = event.getViewers().get(0);
-        if (!checkPreConditions(inv, p)) {
+        if (!checkPreConditions(inv, p))
             return;
-        }
 
         String oldName = getDisplayName(inv.getItem(0));
         ItemStack newItem = event.getResult();
