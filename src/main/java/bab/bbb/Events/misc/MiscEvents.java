@@ -276,15 +276,15 @@ public class MiscEvents implements Listener {
                 queue.add(e.getDamager().getName());
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     queue.remove(e.getDamager().getName());
-                }, 3);
+                }, 5);
             }
         }
 
-        if (e.getDamage() >= 30.0D) {
+        /*if (e.getDamage() >= 30.0D) {
             e.setCancelled(true);
             if (e.getDamager() instanceof Player)
                 ((Player) e.getDamager()).damage(e.getDamage());
-        }
+        }*/
 
         //e.setDamage((e.getDamage() * 1.25));
     }

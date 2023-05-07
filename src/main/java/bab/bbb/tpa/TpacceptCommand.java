@@ -55,6 +55,34 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
         }
 
+        if (recipient.getVehicle() != null) {
+            if (recipient.getVehicle() instanceof final AbstractHorse donkey) {
+                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
+                    for (int i = 1; i <= 16; i++) {
+                        ItemStack item = donkey.getInventory().getItem(i);
+                        if (item == null)
+                            continue;
+                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
+                    }
+                }
+            }
+            recipient.getVehicle().teleport(user);
+        }
+
+        if (user.getVehicle() != null) {
+            if (user.getVehicle() instanceof final AbstractHorse donkey) {
+                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
+                    for (int i = 1; i <= 16; i++) {
+                        ItemStack item = donkey.getInventory().getItem(i);
+                        if (item == null)
+                            continue;
+                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
+                    }
+                }
+            }
+            user.getVehicle().teleport(recipient);
+        }
+
         if (request.getType() == Type.TPA) {
             Methods.tpmsg(((Player) sender).getPlayer(), recipient, 10);
             Methods.tpmsg(recipient, null, 7);
@@ -69,18 +97,6 @@ public class TpacceptCommand implements CommandExecutor {
                         players.hidePlayer(plugin, recipient);
 
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
-
-                    if (recipient.getVehicle() != null) {
-                        if (recipient.getVehicle() instanceof final AbstractHorse donkey) {
-                            for (int i = 1; i <= 16; i++) {
-                                ItemStack item = donkey.getInventory().getItem(i);
-                                if (item == null)
-                                    continue;
-                                donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                            }
-                        }
-                        recipient.getVehicle().teleport(user);
-                    }
 
                     recipient.teleport(user);
                     for (Player players : Bukkit.getOnlinePlayers())
@@ -104,18 +120,6 @@ public class TpacceptCommand implements CommandExecutor {
                         players.hidePlayer(plugin, user);
 
                     user.getWorld().strikeLightningEffect(user.getLocation());
-
-                    if (user.getVehicle() != null) {
-                        if (user.getVehicle() instanceof final AbstractHorse donkey) {
-                            for (int i = 1; i <= 16; i++) {
-                                ItemStack item = donkey.getInventory().getItem(i);
-                                if (item == null)
-                                    continue;
-                                donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                            }
-                        }
-                        user.getVehicle().teleport(recipient);
-                    }
 
                     user.teleport(recipient);
                     for (Player players : Bukkit.getOnlinePlayers())

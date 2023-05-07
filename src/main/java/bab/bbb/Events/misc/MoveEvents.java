@@ -52,7 +52,7 @@ public class MoveEvents implements Listener {
 
             double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
 
-            if (speed > 2.10)
+            if (speed > 2.05)
                 Methods.elytraflag(p, 2, 0, 0, null);
             else
                 p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));

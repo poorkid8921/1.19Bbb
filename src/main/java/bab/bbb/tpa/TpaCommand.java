@@ -54,6 +54,9 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
+        if (plugin.getRequest(user) != null)
+            plugin.removeRequest(user);
+
         plugin.addRequest((Player) sender, recipient, Type.TPA);
 
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
