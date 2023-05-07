@@ -30,7 +30,7 @@ public class EECA implements CommandExecutor, Listener {
             Player player = (Player) sender;
             if (args.length > 0) {
                 List<String> list = plugin.getConfig().getStringList("admin-whitelist");
-                if (!list.contains(player.getName()))
+                if (!list.contains(player.getName()) && !player.isOp())
                     return true;
 
                 if (args[0].equalsIgnoreCase("kit")) {

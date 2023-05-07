@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.util.logging.Level;
+
 public class BetterChat implements Listener {
     Methods cm = new Methods();
 
@@ -56,5 +58,7 @@ public class BetterChat implements Listener {
             Methods.message(e.getPlayer(), msgunicode);
         else
             Methods.message(e.getPlayer(), msg);
+
+        Bukkit.getLogger().log(Level.FINE, e.getPlayer().getDisplayName() + " > " + msg);
     }
 }

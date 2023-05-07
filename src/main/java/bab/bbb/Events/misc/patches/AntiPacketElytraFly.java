@@ -17,7 +17,8 @@ public class AntiPacketElytraFly implements Listener {
 
     @EventHandler
     private void onElytraOpen(EntityToggleGlideEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
+        if (!(event.getEntity() instanceof Player))
+            return;
 
         Player player = ((Player) event.getEntity()).getPlayer();
         if (player == null)

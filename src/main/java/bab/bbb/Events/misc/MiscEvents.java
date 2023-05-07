@@ -276,7 +276,7 @@ public class MiscEvents implements Listener {
                 queue.add(e.getDamager().getName());
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     queue.remove(e.getDamager().getName());
-                }, 5);
+                }, 3);
             }
         }
 
