@@ -32,6 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 
+import static bab.bbb.Bbb.checkArmorContents;
+import static bab.bbb.Bbb.checkInventory;
+
 public class MiscEvents implements Listener {
     private final Bbb plugin;
     private final int minX = -100;
@@ -41,45 +44,10 @@ public class MiscEvents implements Listener {
     private final World respawnWorld = Bukkit.getWorld("world");
     private final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
     public static ArrayList<String> antilog = new ArrayList<>();
-    private final ArrayList<String> queue = new ArrayList<>();
     public static boolean redstoneoff = false;
 
     public MiscEvents(final Bbb plugin) {
         this.plugin = plugin;
-    }
-
-    private void clearBooks(Player player) {
-        for (ItemStack itemInInventory : player.getInventory().getContents()) {
-            if (Methods.isBook(itemInInventory))
-                stripPages(itemInInventory);
-
-            if (Methods.isShulkerBox(itemInInventory)) {
-                BlockStateMeta meta = (BlockStateMeta) itemInInventory.getItemMeta();
-                ShulkerBox shulkerBox = (ShulkerBox) meta.getBlockState();
-
-                for (ItemStack itemInsideShulker : shulkerBox.getInventory().getContents()) {
-                    if (Methods.isBook(itemInsideShulker))
-                        stripPages(itemInsideShulker);
-                }
-
-                shulkerBox.update();
-                meta.setBlockState(shulkerBox);
-                itemInInventory.setItemMeta(meta);
-            }
-        }
-    }
-
-    private void stripPages(ItemStack book) {
-        BookMeta bookMeta = (BookMeta) book.getItemMeta();
-        List<String> pages = new ArrayList<>();
-
-        for (String page : bookMeta.getPages()) {
-            if (page.getBytes(StandardCharsets.UTF_8).length <= 255)
-                pages.add(page);
-        }
-
-        bookMeta.setPages(pages);
-        book.setItemMeta(bookMeta);
     }
 
     @EventHandler
@@ -213,9 +181,8 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
         e.setCancelled(true);
-
-        if (plugin.getConfig().getBoolean("anti-bookban"))
-            clearBooks(e.getPlayer());
+        checkInventory(e.getPlayer().getInventory(), e.getPlayer().getLocation(), true);
+        checkArmorContents(e.getPlayer().getInventory(), e.getPlayer().getLocation(), true);
     }
 
     @EventHandler
@@ -271,15 +238,9 @@ public class MiscEvents implements Listener {
                     }
                 }, 200L);
             }
-        } else if (e.getEntity() instanceof EnderCrystal && e.getDamager() instanceof Player) {
-            if (queue.contains(e.getDamager().getName()))
+        } else if (e.getEntity() instanceof EnderCrystal) {
+            if (e.getEntity().getTicksLived() <= 3)
                 e.setCancelled(true);
-            else {
-                queue.add(e.getDamager().getName());
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                    queue.remove(e.getDamager().getName());
-                }, 3);
-            }
         }
 
         /*if (e.getDamage() >= 30.0D) {

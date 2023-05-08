@@ -32,12 +32,14 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -491,6 +493,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (!getInstance().getConfig().getBoolean("anti-illegals"))
             return ItemState.clean;
 
+        if (Methods.isBook(itemStack)) {
+            BookMeta bookMeta = (BookMeta) itemStack.getItemMeta();
+            List<String> pages = new ArrayList<>();
+
+            for (String page : bookMeta.getPages()) {
+                if (page.getBytes(StandardCharsets.UTF_8).length <= 255)
+                    pages.add(page);
+            }
+
+            bookMeta.setPages(pages);
+            itemStack.setItemMeta(bookMeta);
+        }
+
         if (getInstance().getConfig().getBoolean("illegal-items")) {
             if (itemStack.getType() == Material.BEDROCK) {
                 itemStack.setAmount(0);
@@ -611,9 +626,18 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
         if (getInstance().getConfig().getBoolean("check-in-shulker-box")) {
             if (itemStack.getType().toString().contains("SHULKER_BOX") && checkRecursive && itemStack.getItemMeta() instanceof final BlockStateMeta blockMeta) {
-
                 if (blockMeta.getBlockState() instanceof final ShulkerBox shulker) {
                     final Inventory inventoryShulker = shulker.getInventory();
+
+                    for (int i = 0; i < inventoryShulker.getSize(); i++)
+                    {
+                        ItemStack a = inventoryShulker.getItem(i);
+                        if (a == null)
+                            continue;
+
+                        if (a.getType().toString().contains("SHULKER_BOX"))
+                            a.setAmount(0);
+                    }
 
                     checkInventory(inventoryShulker, location, true, true);
                     shulker.getInventory().setContents(inventoryShulker.getContents());
