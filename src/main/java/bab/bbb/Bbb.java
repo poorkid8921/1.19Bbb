@@ -318,6 +318,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Methods.errormsg(p, "the nickname you entered is too short");
         else if (nickuncolor.length() > 16)
             Methods.errormsg(p, "the nickname you entered is too long");
+        else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
+            Methods.errormsg(p, "the nickname you entered is invalid");
         else if ((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
             Methods.errormsg(p, "the nickname you entered is already in use");
         else {

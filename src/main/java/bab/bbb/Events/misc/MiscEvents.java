@@ -406,7 +406,7 @@ public class MiscEvents implements Listener {
         String hehe = e.getDeathMessage();
         String hehe2 = "";
         if (hehe != null)
-            hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", ""));
+            hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), "&6" + e.getPlayer().getDisplayName() + "&7").replace("[", "&6").replace("]", "&7").replace(e.getPlayer().getKiller().getMainHand().toString(),"&6" + e.getPlayer().getKiller().getMainHand() + "&7"));
 
         if (plugin.config.getBoolean("no-death-messages"))
             e.deathMessage(null);
