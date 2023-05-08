@@ -365,6 +365,43 @@ public class MiscEvents implements Listener {
         return b == 1;
     }
 
+    public boolean candupe(Player e)
+    {
+        if (e.getPlayer().getInventory().getItemInHand().getType() == Material.TRAPPED_CHEST && e.getPlayer().getInventory().getItemInOffHand().getType() == Material.CHEST)
+            return true;
+
+        return false;
+    }
+
+    @EventHandler
+    public void onVehicleEnter(PlayerInteractAtEntityEvent event) {
+        if (event.getRightClicked() instanceof ChestedHorse) {
+            if (candupe(event.getPlayer())) {
+                ChestedHorse entity = (ChestedHorse) event.getRightClicked();
+                PlayerDupeEvent playerDupeEvent = new PlayerDupeEvent(event.getPlayer(), entity.getLocation().getChunk());
+                Bukkit.getServer().getPluginManager().callEvent(playerDupeEvent);
+                if (!playerDupeEvent.isCancelled()) {
+                    if (entity.getPassenger() == null)
+                        entity.setPassenger(event.getPlayer());
+                    event.setCancelled(true);
+                    for (ItemStack item : entity.getInventory().getContents()) {
+                        if (item != null)
+                            entity.getWorld().dropItemNaturally(entity.getLocation(), item);
+                    }
+                    entity.setCarryingChest(false);
+                }
+            }
+            else
+            {
+                event.setCancelled(true);
+                Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
+                    if (((ChestedHorse) event.getRightClicked()).isCarryingChest())
+                        ((ChestedHorse) event.getRightClicked()).setCarryingChest(false);
+                    event.getRightClicked().eject();
+                }, 4L);
+            }
+        }
+    }
     @EventHandler
     private void onEntityExplode(EntityExplodeEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {

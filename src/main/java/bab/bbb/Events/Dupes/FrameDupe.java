@@ -19,9 +19,6 @@ public class FrameDupe implements Listener {
         if (e.getEntity() instanceof ItemFrame) {
             int rng = (int) Math.round(random() * 100);
             if (rng < rn) {
-                if (((ItemFrame) e.getEntity()).getItem() == null)
-                    return;
-
                 Random ran = new Random();
                 int b = ran.nextInt(5);
                 for (int i = 0; i < b; i++)

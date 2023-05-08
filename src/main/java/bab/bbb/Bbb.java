@@ -6,7 +6,6 @@ import bab.bbb.Commands.HomeCommand;
 import bab.bbb.Commands.SetHomeCommand;
 import bab.bbb.Events.DupeEvent;
 import bab.bbb.Events.Dupes.FrameDupe;
-import bab.bbb.Events.Dupes.Salc1;
 import bab.bbb.Events.misc.*;
 import bab.bbb.Events.misc.patches.AntiBurrow;
 import bab.bbb.Events.misc.patches.AntiIllegalsListener;
@@ -71,7 +70,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
         Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
 
-        if (this.getConfig().getBoolean("randommotdenabled"))
+        if (this.getConfig().getBoolean("random-motd"))
             Bukkit.getPluginManager().registerEvents(new RandomMotd(), this);
 
         if (this.getConfig().getBoolean("better-chat"))
@@ -79,9 +78,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
         if (this.getConfig().getBoolean("anti-illegals"))
             Bukkit.getPluginManager().registerEvents(new AntiIllegalsListener(), this);
-
-        //if (this.getConfig().getBoolean("salc1-donkey-dupe"))
-        Bukkit.getPluginManager().registerEvents(new Salc1(), this);
 
         if (this.getConfig().getBoolean("auto-restart")) {
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
