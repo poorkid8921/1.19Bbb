@@ -80,8 +80,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (this.getConfig().getBoolean("anti-illegals"))
             Bukkit.getPluginManager().registerEvents(new AntiIllegalsListener(), this);
 
-        if (this.getConfig().getBoolean("salc1-donkey-dupe"))
-            Bukkit.getPluginManager().registerEvents(new Salc1(), this);
+        //if (this.getConfig().getBoolean("salc1-donkey-dupe"))
+        Bukkit.getPluginManager().registerEvents(new Salc1(), this);
 
         if (this.getConfig().getBoolean("auto-restart")) {
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();

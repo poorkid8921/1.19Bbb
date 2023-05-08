@@ -236,7 +236,7 @@ public class Methods {
     }
 
     public static synchronized List<String> getAltNames(String ip, String excludeUuid) {
-        List<String> altList = new ArrayList<String>();
+        List<String> altList = new ArrayList<>();
 
         Date oldestDate = new Date(System.currentTimeMillis() - 8640000);
 
@@ -244,7 +244,7 @@ public class Methods {
         if (ipIpConfSect != null) {
             for (String uuid : ipIpConfSect.getKeys(false)) {
                 String uuidData = plugin.getCustomConfig().getString("ip." + ip.replace('.', '_') + "." + uuid);
-                String[] arg = uuidData.split(","); // arg[0]=date, arg[1]=name
+                String[] arg = uuidData.split(",");
                 Date date = new Date(Long.parseLong(arg[0]));
 
                 if (!uuid.equals(excludeUuid) && date.after(oldestDate))
@@ -522,6 +522,21 @@ public class Methods {
         }
     }
 
+    public static void sendOpMessage(String s) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.isOp())
+                p.sendMessage(Methods.translatestring(s));
+        }
+    }
+
+    public static Player getNearbyPlayer(int i, Location loc) {
+        Player plrs = null;
+        for (Player nearby : loc.getNearbyPlayers(i))
+            plrs = nearby;
+
+        return plrs;
+    }
+
     public static String placeholders(String msg) {
         return Methods.parseText(msg.replace("<3", "❤")
                 .replace("[ARROW]", "➜")
@@ -705,18 +720,17 @@ public class Methods {
     }
 
     public static String formatString(String string, boolean overrideDefaultFormat) {
-        if (!overrideDefaultFormat || string.startsWith("&r")) {
+        if (!overrideDefaultFormat || string.startsWith("&r"))
             return Methods.translatestring(string);
-        } else {
+        else
             return Methods.translatestring("&r" + string);
-        }
     }
 
     public static String extractArgs(int nondik, String[] args) {
         StringBuilder sb = new StringBuilder();
-        for (int i = nondik; i < args.length; i++) {
+        for (int i = nondik; i < args.length; i++)
             sb.append(args[i]).append(" ");
-        }
+
         String allArgs = sb.toString().trim();
 
         allArgs = allArgs.replace("[<3]", "\u2764");

@@ -2,7 +2,6 @@ take-anti-lag-measures-if-tps: 14
 disable-the-use-of-packet-elytra-fly: true
 item-frame-dupe: false
 item-frame-dupe-rng: 5
-salc1-donkey-dupe: false
 chest-limit-per-chunk: true
 anti-illegals: true
 illegal-items: true

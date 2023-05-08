@@ -1,5 +1,6 @@
 package bab.bbb.Events.Dupes;
 
+import bab.bbb.Bbb;
 import bab.bbb.Events.misc.PlayerDupeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -15,8 +16,8 @@ import org.bukkit.inventory.ItemStack;
 public class Salc1 implements Listener {
     @EventHandler
     public void onVehicleEnter(PlayerInteractAtEntityEvent event) {
-        if (event.getRightClicked() instanceof Llama || event.getRightClicked() instanceof Mule || event.getRightClicked() instanceof Donkey) {
-            if (event.getPlayer().getInventory().getItemInOffHand().getType() == Material.CHEST) {
+        if (event.getRightClicked() instanceof ChestedHorse) {
+            if (event.getPlayer().getInventory().getItemInHand().getType() == Material.TRAPPED_CHEST) {
                 ChestedHorse entity = (ChestedHorse) event.getRightClicked();
                 PlayerDupeEvent playerDupeEvent = new PlayerDupeEvent(event.getPlayer(), entity.getLocation().getChunk());
                 Bukkit.getServer().getPluginManager().callEvent(playerDupeEvent);
@@ -30,6 +31,14 @@ public class Salc1 implements Listener {
                     }
                     entity.setCarryingChest(false);
                 }
+            }
+            else
+            {
+                event.setCancelled(true);
+                Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
+                    if (((ChestedHorse) event.getRightClicked()).isCarryingChest())
+                        ((ChestedHorse) event.getRightClicked()).setCarryingChest(false);
+                }, 4L);
             }
         }
     }

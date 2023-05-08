@@ -1,5 +1,5 @@
 name: Anarchy
-version: '${project.version}'
+version: 1.0.1
 main: bab.bbb.Bbb
 api-version: 1.19
 

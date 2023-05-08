@@ -30,6 +30,21 @@ public class TpacceptCommand implements CommandExecutor {
         return duped;
     }
 
+    public void dupe(Player user) {
+        if (user.getVehicle() != null) {
+            if (user.getVehicle() instanceof final AbstractHorse donkey) {
+                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
+                    for (int i = 1; i <= 16; i++) {
+                        ItemStack item = donkey.getInventory().getItem(i);
+                        if (item == null)
+                            continue;
+                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
+                    }
+                }
+            }
+        }
+    }
+
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
         if (!(sender instanceof Player user))
@@ -55,33 +70,8 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
         }
 
-        if (recipient.getVehicle() != null) {
-            if (recipient.getVehicle() instanceof final AbstractHorse donkey) {
-                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
-                    for (int i = 1; i <= 16; i++) {
-                        ItemStack item = donkey.getInventory().getItem(i);
-                        if (item == null)
-                            continue;
-                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                    }
-                }
-            }
-            recipient.getVehicle().teleport(user);
-        }
-
-        if (user.getVehicle() != null) {
-            if (user.getVehicle() instanceof final AbstractHorse donkey) {
-                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
-                    for (int i = 1; i <= 16; i++) {
-                        ItemStack item = donkey.getInventory().getItem(i);
-                        if (item == null)
-                            continue;
-                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                    }
-                }
-            }
-            user.getVehicle().teleport(recipient);
-        }
+        dupe(recipient);
+        dupe(user);
 
         if (request.getType() == Type.TPA) {
             Methods.tpmsg(((Player) sender).getPlayer(), recipient, 10);

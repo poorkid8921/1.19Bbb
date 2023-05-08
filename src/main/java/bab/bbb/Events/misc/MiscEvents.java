@@ -7,8 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Container;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
@@ -20,14 +18,16 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
@@ -82,18 +82,18 @@ public class MiscEvents implements Listener {
         book.setItemMeta(bookMeta);
     }
 
-    public void apply(Player p) {
-        if (plugin.getConfig().getBoolean("anti-bookban"))
-            clearBooks(p);
-    }
-
     @EventHandler
     private void onPortalUse(EntityPortalEvent event) {
         if (!(event.getEntity() instanceof Player))
             event.setCancelled(true);
     }
 
-    // pre check
+    @EventHandler
+    private void onTeleport(EntityTeleportEvent event) {
+        if (!(event.getEntity() instanceof Player))
+            event.setCancelled(true);
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
@@ -132,13 +132,14 @@ public class MiscEvents implements Listener {
                     e.getPlayer().sendMessage(Methods.infostring("use &e/secure&7 to stop your account from being accessed by others"));
 
                 if (!e.getPlayer().hasPlayedBefore()) {
-                    if (!e.getPlayer().getChunk().isLoaded())
-                        return;
-
                     int randX = new Random().nextInt(maxX - minX + 1) + minX;
                     int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
                     int y = respawnWorld.getHighestBlockYAt(randX, randZ);
-                    e.getPlayer().teleport(new Location(respawnWorld, randX, y, randZ));
+                    Location found = new Location(respawnWorld, randX, y, randZ);
+
+                    if (!found.getChunk().isLoaded())
+                        found.getChunk().load();
+                    e.getPlayer().teleport(found);
 
                     if (plugin.config.getBoolean("no-join-messages"))
                         return;
@@ -148,13 +149,11 @@ public class MiscEvents implements Listener {
                             p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                     }
                 } else {
-                    apply(e.getPlayer());
                     plugin.setnickonjoin(e.getPlayer());
                     if (e.getPlayer().getActivePotionEffects().size() > 0) {
                         for (PotionEffect effects : e.getPlayer().getActivePotionEffects()) {
-                            if (effects.getAmplifier() > 5) {
+                            if (effects.getAmplifier() > 5)
                                 e.getPlayer().removePotionEffect(effects.getType());
-                            }
                         }
                     }
 
@@ -197,7 +196,6 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onPlayerLeave(final PlayerQuitEvent e) {
-        apply(e.getPlayer());
         e.quitMessage(null);
 
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
@@ -214,10 +212,10 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
-        apply(e.getPlayer());
+        e.setCancelled(true);
 
-        if (e.getReason().toLowerCase().contains("spam") || e.getReason().toLowerCase().contains("nbt"))
-            e.setCancelled(true);
+        if (plugin.getConfig().getBoolean("anti-bookban"))
+            clearBooks(e.getPlayer());
     }
 
     @EventHandler
@@ -228,7 +226,11 @@ public class MiscEvents implements Listener {
         int randX = new Random().nextInt(maxX - minX + 1) + minX;
         int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
         int y = respawnWorld.getHighestBlockYAt(randX, randZ);
-        e.getPlayer().teleport(new Location(respawnWorld, randX, y, randZ));
+        Location found = new Location(respawnWorld, randX, y, randZ);
+        if (!found.getChunk().isLoaded())
+            found.getChunk().load();
+
+        e.getPlayer().teleport(found);
     }
 
     public ItemStack dupe(ItemStack todupe, int amount) {
@@ -307,21 +309,6 @@ public class MiscEvents implements Listener {
             Bbb.removeMinecartInChunk(event.getVehicle().getChunk());
     }
 
-    public void sendOpMessage(String s) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.isOp())
-                p.sendMessage(Methods.translatestring(s));
-        }
-    }
-
-    public static Player getNearbyPlayer(int i, Location loc) {
-        Player plrs = null;
-        for (Player nearby : loc.getNearbyPlayers(i))
-            plrs = nearby;
-
-        return plrs;
-    }
-
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
@@ -340,7 +327,7 @@ public class MiscEvents implements Listener {
         process(event);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
         process(event);
     }
@@ -366,7 +353,7 @@ public class MiscEvents implements Listener {
         if (redstoneoff) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 redstoneoff = false;
-                sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + getNearbyPlayer(50, event.getBlock().getLocation()).getName());
+                Methods.sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
             }, 600);
         } else if (easyran())
             event.getBlock().breakNaturally();
@@ -378,39 +365,32 @@ public class MiscEvents implements Listener {
         return b == 1;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     private void onEntityExplode(EntityExplodeEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     private void onExplodePrime(ExplosionPrimeEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     private void onBlockExplode(BlockExplodeEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler
     private void onDispense(BlockDispenseEvent event) {
         Block dispensedBlock = event.getBlock();
         World world = dispensedBlock.getWorld();
         if (dispensedBlock.getY() <= 1 || dispensedBlock.getY() >= (world.getMaxHeight() - 1))
-            event.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    private void onEntityTeleportEvent(EntityTeleportEvent event) {
-        Entity teleportedEntity = event.getEntity();
-        if (teleportedEntity.getWorld().getEnvironment().equals(World.Environment.THE_END) && !teleportedEntity.isEmpty() && teleportedEntity.getType() != EntityType.PLAYER)
             event.setCancelled(true);
     }
 
@@ -419,11 +399,12 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onKill(PlayerDeathEvent e) {
         String hehe = e.getDeathMessage();
+        String hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", ""));
 
         if (plugin.config.getBoolean("no-death-messages"))
             e.deathMessage(null);
         else
-            e.setDeathMessage(Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", "")));
+            e.setDeathMessage(hehe2);
 
         if (e.getEntity().getKiller() == null)
             return;
