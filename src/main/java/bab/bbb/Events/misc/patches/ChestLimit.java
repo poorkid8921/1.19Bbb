@@ -14,8 +14,10 @@ public class ChestLimit implements Listener {
         Block block = event.getBlock();
 
         if (block instanceof Container) {
-            if (Methods.amountOfMaterialInChunk(event.getBlock().getChunk(), block.getType()) > 500)
+            if (Methods.amountOfMaterialInChunk(event.getBlock().getChunk(), block.getType()) > 500) {
                 event.setCancelled(true);
+                Methods.sendOpMessage("&7[&4ALERT&7]&e " + event.getPlayer().getDisplayName() + " &7tried to place blocks above limit");
+            }
         }
     }
 }

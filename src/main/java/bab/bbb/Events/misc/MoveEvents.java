@@ -39,6 +39,8 @@ public class MoveEvents implements Listener {
                         Methods.errormsg(p, "nether roof is &cdisabled");
                     else
                         p.sendActionBar(Methods.parseText("&7Nether roof is &cdisabled"));
+
+                    Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to get above nether roof");
                 }
             }
         }
@@ -60,6 +62,7 @@ public class MoveEvents implements Listener {
         else if (p.isFlying()) {
             p.teleport(e.getFrom());
             e.setCancelled(true);
+            Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to fly");
         }
     }
 }

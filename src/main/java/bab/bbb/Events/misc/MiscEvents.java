@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -18,17 +17,11 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
-import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -52,14 +45,18 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     private void onPortalUse(EntityPortalEvent event) {
-        if (!(event.getEntity() instanceof Player))
+        if (!(event.getEntity() instanceof Player)) {
             event.setCancelled(true);
+            Methods.sendOpMessage("&7[&4ALERT&7] a " + event.getEntity().getType() + " tried to get into a portal");
+        }
     }
 
     @EventHandler
     private void onTeleport(EntityTeleportEvent event) {
-        if (!(event.getEntity() instanceof Player))
+        if (!(event.getEntity() instanceof Player)) {
             event.setCancelled(true);
+            Methods.sendOpMessage("&7[&4ALERT&7] a " + event.getEntity().getType() + " tried to teleport");
+        }
     }
 
     @EventHandler
@@ -156,6 +153,7 @@ public class MiscEvents implements Listener {
 
         if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
             event.setCancelled(true);
+            Methods.sendOpMessage("&7[&4ALERT&7] stopped &e" + player.getDisplayName() + " &7from spamming levers");
             if (easyran())
                 Methods.maskedkick(player);
         } else
@@ -180,7 +178,8 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
-        e.setCancelled(true);
+        if (e.getReason().equalsIgnoreCase("spam") || e.getReason().equalsIgnoreCase("nbt"))
+            e.setCancelled(true);
         checkInventory(e.getPlayer().getInventory(), e.getPlayer().getLocation(), true);
         checkArmorContents(e.getPlayer().getInventory(), e.getPlayer().getLocation(), true);
     }
@@ -188,6 +187,9 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
         if (e.isBedSpawn())
+            return;
+
+        if (respawnWorld == null)
             return;
 
         int randX = new Random().nextInt(maxX - minX + 1) + minX;
@@ -239,7 +241,7 @@ public class MiscEvents implements Listener {
                 }, 200L);
             }
         } else if (e.getEntity() instanceof EnderCrystal) {
-            if (e.getEntity().getTicksLived() <= 3)
+            if (e.getEntity().getTicksLived() < 4)
                 e.setCancelled(true);
         }
 
@@ -266,8 +268,11 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        if (Bbb.countMinecartInChunk(event.getVehicle().getChunk()) >= 32)
+        if (Bbb.countMinecartInChunk(event.getVehicle().getChunk()) >= 32) {
             Bbb.removeMinecartInChunk(event.getVehicle().getChunk());
+            Methods.sendOpMessage("&7[&4ALERT&7] prevented too many minecarts at &e" + event.getVehicle().getChunk().getX() + "&7,&e " + event.getVehicle().getChunk().getZ());
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -314,7 +319,7 @@ public class MiscEvents implements Listener {
         if (redstoneoff) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 redstoneoff = false;
-                Methods.sendOpMessage("&7[&4ANTI-LAG&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
+                Methods.sendOpMessage("&7[&4ALERT&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
             }, 600);
         } else if (easyran())
             event.getBlock().breakNaturally();
@@ -388,8 +393,10 @@ public class MiscEvents implements Listener {
     private void onDispense(BlockDispenseEvent event) {
         Block dispensedBlock = event.getBlock();
         World world = dispensedBlock.getWorld();
-        if (dispensedBlock.getY() <= 1 || dispensedBlock.getY() >= (world.getMaxHeight() - 1))
+        if (dispensedBlock.getY() <= 1 || dispensedBlock.getY() >= (world.getMaxHeight() - 1)) {
             event.setCancelled(true);
+            Methods.sendOpMessage("&7[&4ALERT&7] prevented crash at &e" + dispensedBlock.getX() + " " + dispensedBlock.getY() + " " + dispensedBlock.getZ());
+        }
     }
 
     // DONKEY KILL DUPE
@@ -397,7 +404,9 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onKill(PlayerDeathEvent e) {
         String hehe = e.getDeathMessage();
-        String hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", ""));
+        String hehe2 = "";
+        if (hehe != null)
+            hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), e.getPlayer().getDisplayName()).replace("[", "").replace("]", ""));
 
         if (plugin.config.getBoolean("no-death-messages"))
             e.deathMessage(null);

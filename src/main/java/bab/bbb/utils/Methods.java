@@ -292,15 +292,6 @@ public class Methods {
         };
     }
 
-    public static boolean isShulkerBox(ItemStack item) {
-        if (item == null) return false;
-        return switch (item.getType()) {
-            case SHULKER_BOX, BLACK_SHULKER_BOX, BLUE_SHULKER_BOX, BROWN_SHULKER_BOX, CYAN_SHULKER_BOX, GRAY_SHULKER_BOX, GREEN_SHULKER_BOX, LIGHT_BLUE_SHULKER_BOX, LIGHT_GRAY_SHULKER_BOX, LIME_SHULKER_BOX, MAGENTA_SHULKER_BOX, ORANGE_SHULKER_BOX, PINK_SHULKER_BOX, PURPLE_SHULKER_BOX, RED_SHULKER_BOX, WHITE_SHULKER_BOX, YELLOW_SHULKER_BOX ->
-                    true;
-            default -> false;
-        };
-    }
-
     public static boolean isShulkerBox(Material material) {
         return switch (material) {
             case SHULKER_BOX, BLACK_SHULKER_BOX, BLUE_SHULKER_BOX, BROWN_SHULKER_BOX, CYAN_SHULKER_BOX, GRAY_SHULKER_BOX, GREEN_SHULKER_BOX, LIGHT_BLUE_SHULKER_BOX, LIGHT_GRAY_SHULKER_BOX, LIME_SHULKER_BOX, MAGENTA_SHULKER_BOX, ORANGE_SHULKER_BOX, PINK_SHULKER_BOX, PURPLE_SHULKER_BOX, RED_SHULKER_BOX, WHITE_SHULKER_BOX, YELLOW_SHULKER_BOX ->
@@ -388,9 +379,10 @@ public class Methods {
                         final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
                         long severity2 = (long) obj2.get("block");
 
-                        if (severity2 == 1)
+                        if (severity2 == 1) {
                             p.kickPlayer(Methods.parseText("&7Proxies aren't &callowed"));
-                    } catch (ParseException eee) {
+                            Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
+                        }} catch (ParseException eee) {
                         if (works1) {
                             checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
                             works2 = true;
@@ -629,10 +621,13 @@ public class Methods {
         p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         if (msg == 1)
             p.sendActionBar(Methods.translatestring("&7Elytras are currently disabled due to &clag"));
-        else if (msg == 0)
+        else if (msg == 0) {
             p.sendActionBar(Methods.translatestring("&7You're moving &ctoo fast"));
+            Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
+        }
         else {
             maskedkick(p);
+            Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
             //p.sendActionBar(Methods.translatestring("&7Packet elytra fly isn't &callowed"));
             return;
         }
