@@ -5,10 +5,7 @@ import bab.bbb.utils.Methods;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -69,9 +66,8 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
-        e.joinMessage(null);
-
+    public void onPlayerLogin(PlayerLoginEvent e)
+    {
         String ip = Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress();
         String uuid = e.getPlayer().getUniqueId().toString();
         String name = e.getPlayer().getName();
@@ -85,19 +81,26 @@ public class MiscEvents implements Listener {
         if (ac != null) {
             if (!e.getPlayer().getAddress().getAddress().getHostAddress().equals(ac)) {
                 Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
-                e.getPlayer().kickPlayer(Methods.translatestring("&7The account you're trying to access is &2secured"));
+                e.disallow(PlayerLoginEvent.Result.KICK_OTHER, Methods.translatestring("&7The account you're trying to access is &2secured"));
+                e.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 return;
             }
         }
 
-        if (altString == "true") {
+        if (altString.equals("true")) {
             Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
-            e.getPlayer().kickPlayer(Methods.translatestring("&7Alts aren't &callowed"));
+            e.disallow(PlayerLoginEvent.Result.KICK_OTHER, Methods.translatestring("&7Alts aren't &callowed"));
+            e.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             Methods.purge(name);
             return;
         }
 
         Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        e.joinMessage(null);
 
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             if (plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip") == null)
