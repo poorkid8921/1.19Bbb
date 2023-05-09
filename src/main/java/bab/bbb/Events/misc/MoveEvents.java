@@ -3,15 +3,11 @@ package bab.bbb.Events.misc;
 import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
 import org.bukkit.*;
-import org.bukkit.entity.Boat;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerVelocityEvent;
-
-import java.util.logging.Level;
 
 public class MoveEvents implements Listener {
     private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
@@ -35,8 +31,10 @@ public class MoveEvents implements Listener {
                 if (Bbb.getInstance().getConfig().getBoolean("anti-netherroof")) {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
-                    if (p.isGliding())
+                    if (p.isGliding()) {
                         Methods.errormsg(p, "nether roof is &cdisabled");
+                        p.setGliding(false);
+                    }
                     else
                         p.sendActionBar(Methods.parseText("&7Nether roof is &cdisabled"));
 
@@ -48,7 +46,7 @@ public class MoveEvents implements Listener {
         if (p.isGliding()) {
             if (Bbb.getTPSofLastSecond() <= cfgtps) {
                 e.setCancelled(true);
-                Methods.elytraflag(p, 1, 1, 0, null);
+                Methods.elytraflag(p, 1, 1, 1, e.getFrom());
                 return;
             }
 

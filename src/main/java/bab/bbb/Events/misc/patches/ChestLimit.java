@@ -1,6 +1,7 @@
 package bab.bbb.Events.misc.patches;
 
 import bab.bbb.utils.Methods;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.event.EventHandler;
@@ -15,6 +16,12 @@ public class ChestLimit implements Listener {
 
         if (block instanceof Container) {
             if (Methods.amountOfMaterialInChunk(event.getBlock().getChunk(), block.getType()) > 500) {
+                event.setCancelled(true);
+                Methods.sendOpMessage("&7[&4ALERT&7]&e " + event.getPlayer().getDisplayName() + " &7tried to place blocks above limit");
+            }
+        }
+        else if (block.getType() == Material.PLAYER_HEAD) {
+            if (Methods.amountOfMaterialInChunk(event.getBlock().getChunk(), block.getType()) > 30) {
                 event.setCancelled(true);
                 Methods.sendOpMessage("&7[&4ALERT&7]&e " + event.getPlayer().getDisplayName() + " &7tried to place blocks above limit");
             }

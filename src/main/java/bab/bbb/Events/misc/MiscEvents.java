@@ -2,10 +2,7 @@ package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
@@ -52,6 +49,17 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
+    private void onPortal(PlayerPortalEvent event) {
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            Player player = event.getPlayer();
+            if (player.getLocation().getBlock().getType().equals(Material.NETHER_PORTAL)) {
+                player.teleport(event.getFrom());
+                player.playSound(player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, 1.0F, 1.0F);
+            }
+        }, 200);
+    }
+
+    @EventHandler
     private void onTeleport(EntityTeleportEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             event.setCancelled(true);
@@ -90,11 +98,53 @@ public class MiscEvents implements Listener {
 
         Methods.checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
 
-        new BukkitRunnable() {
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            if (plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip") == null)
+                Methods.infomsg(e.getPlayer(), "use &e/secure&7 to stop your account from being accessed by others");
+
+            if (!e.getPlayer().hasPlayedBefore()) {
+                int randX = new Random().nextInt(maxX - minX + 1) + minX;
+                int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
+                int y = respawnWorld.getHighestBlockYAt(randX, randZ);
+                Location found = new Location(respawnWorld, randX, y, randZ);
+
+                if (!found.getChunk().isLoaded())
+                    found.getChunk().load();
+                e.getPlayer().teleport(found);
+
+                if (plugin.config.getBoolean("no-join-messages"))
+                    return;
+
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
+                        p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
+                }
+            } else {
+                plugin.setnickonjoin(e.getPlayer());
+                if (e.getPlayer().getActivePotionEffects().size() > 0) {
+                    for (PotionEffect effects : e.getPlayer().getActivePotionEffects()) {
+                        if (effects.getAmplifier() > 5)
+                            e.getPlayer().removePotionEffect(effects.getType());
+                    }
+                }
+
+                Methods.loadHomes(e.getPlayer());
+
+                if (plugin.config.getBoolean("no-join-messages"))
+                    return;
+
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
+                        p.sendMessage(Methods.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
+                }
+            }
+        }, 20);
+
+        /*new BukkitRunnable() {
             @Override
             public void run() {
                 if (plugin.getCustomConfig().getString("otherdata." + e.getPlayer().getUniqueId() + ".ip") == null)
-                    e.getPlayer().sendMessage(Methods.infostring("use &e/secure&7 to stop your account from being accessed by others"));
+                    e.getPlayer().sendMessage(Methods.infomsg("use &e/secure&7 to stop your account from being accessed by others"));
 
                 if (!e.getPlayer().hasPlayedBefore()) {
                     int randX = new Random().nextInt(maxX - minX + 1) + minX;
@@ -134,7 +184,7 @@ public class MiscEvents implements Listener {
                 }
 
             }
-        }.runTaskLater(plugin, 20);
+        }.runTaskLater(plugin, 20);*/
     }
 
     @EventHandler
@@ -153,10 +203,18 @@ public class MiscEvents implements Listener {
 
         if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
             event.setCancelled(true);
-            Methods.sendOpMessage("&7[&4ALERT&7] stopped &e" + player.getDisplayName() + " &7from spamming levers");
-            if (easyran())
+            if (event.getPlayer().isGliding()) {
+                Methods.errormsg(event.getPlayer(), "wait a second before using a lever again");
+                event.getPlayer().setGliding(false);
+            }
+            else
+                event.getPlayer().sendActionBar(Methods.parseText("&7wait a second before using a lever again"));
+
+            if (easyran()) {
                 Methods.maskedkick(player);
-        } else
+                Methods.sendOpMessage("&7[&4ALERT&7] stopped &e" + player.getDisplayName() + " &7from spamming levers");
+            }
+        }else
             playersUsingLevers.put(playerUniqueID, System.currentTimeMillis() + 1000);
     }
 
@@ -240,7 +298,8 @@ public class MiscEvents implements Listener {
                     }
                 }, 200L);
             }
-        } else if (e.getEntity() instanceof EnderCrystal) {
+        }
+        else if (e.getEntity() instanceof EnderCrystal) {
             if (e.getEntity().getTicksLived() < 4)
                 e.setCancelled(true);
         }
@@ -319,10 +378,12 @@ public class MiscEvents implements Listener {
         if (redstoneoff) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 redstoneoff = false;
-                Methods.sendOpMessage("&7[&4ALERT&7] Broke lag machine at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + " owned by " + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
+                Methods.sendOpMessage("&7[&4ALERT&7] Broke redstone piece at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + "&7 owned by &e" + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
             }, 600);
-        } else if (easyran())
+        } else if (easyran()) {
             event.getBlock().breakNaturally();
+            Methods.sendOpMessage("&7[&4ALERT&7] Broke redstone piece at &r" + event.getBlock().getLocation().getBlockX() + " " + event.getBlock().getLocation().getBlockY() + " " + event.getBlock().getLocation().getBlockZ() + "&7 owned by &e" + Methods.getNearbyPlayer(50, event.getBlock().getLocation()).getName());
+        }
     }
 
     private boolean easyran() {
@@ -331,8 +392,7 @@ public class MiscEvents implements Listener {
         return b == 1;
     }
 
-    public boolean candupe(Player e)
-    {
+    public boolean candupe(Player e) {
         if (e.getPlayer().getInventory().getItemInHand().getType() == Material.TRAPPED_CHEST && e.getPlayer().getInventory().getItemInOffHand().getType() == Material.CHEST)
             return true;
 
@@ -356,9 +416,7 @@ public class MiscEvents implements Listener {
                     }
                     entity.setCarryingChest(false);
                 }
-            }
-            else
-            {
+            } else {
                 event.setCancelled(true);
                 Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
                     if (((ChestedHorse) event.getRightClicked()).isCarryingChest())
@@ -368,6 +426,7 @@ public class MiscEvents implements Listener {
             }
         }
     }
+
     @EventHandler
     private void onEntityExplode(EntityExplodeEvent event) {
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
@@ -406,7 +465,17 @@ public class MiscEvents implements Listener {
         String hehe = e.getDeathMessage();
         String hehe2 = "";
         if (hehe != null)
-            hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), "&6" + e.getPlayer().getDisplayName() + "&7").replace("[", "&6").replace("]", "&7").replace(e.getPlayer().getKiller().getMainHand().toString(),"&6" + e.getPlayer().getKiller().getMainHand() + "&7"));
+            hehe2 = Methods.parseText("&7" + hehe.replace(e.getPlayer().getName(), "&6" + e.getPlayer().getDisplayName() + "&7").replace("[", "&6").replace("]", "&7"));
+
+        if (e.getEntity().getKiller() != null) {
+            hehe2 = hehe2.replace(e.getPlayer().getKiller().getName(), "&6" + e.getPlayer().getKiller().getDisplayName() + "&7");
+            if (e.getPlayer().getKiller().getItemInHand().getType() != Material.AIR)
+                hehe2 = hehe2.replace(e.getPlayer().getKiller().getMainHand().name().toString(), "&6" + e.getPlayer().getKiller().getMainHand().name() + "&7");
+            Random ran = new Random();
+            int b = ran.nextInt(100);
+            if (b <= 5)
+                Bukkit.getWorld(e.getEntity().getWorld().getName()).dropItemNaturally(new Location(e.getEntity().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), Methods.getHead(e.getEntity().getPlayer()));
+        }
 
         if (plugin.config.getBoolean("no-death-messages"))
             e.deathMessage(null);

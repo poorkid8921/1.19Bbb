@@ -134,7 +134,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (cmd.getName().equals("nick")) {
             if (args.length == 0) {
                 removeNick(player);
-                player.sendMessage(Methods.infostring("your nickname has been removed"));
+                Methods.infomsg(player, "your nickname has been removed");
             } else {
                 if (player.isOp()) {
                     StringBuilder builder = new StringBuilder();
@@ -240,14 +240,14 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
             this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", player.getAddress().getAddress().getHostAddress());
             this.saveCustomConfig();
-            player.sendMessage(Methods.infostring("you have successfully secured your account"));
+            Methods.infomsg(player, "you have successfully secured your account");
 
             return true;
         } else if (cmd.getName().equals("ignore")) {
             String b = this.getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (b != null) {
-                    player.sendMessage(Methods.infostring("your ignored players are: " + b.replace(", ", "&e, &7")));
+                    Methods.infomsg(player, "your ignored players are: " + b.replace(", ", "&e, &7"));
                     return true;
                 }
                 Methods.errormsg(player, "the arguments are invalid");
@@ -271,7 +271,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 if (b.contains(target.getName())) {
                     this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", b.replace(target.getName() + ", ", ""));
                     this.saveCustomConfig();
-                    player.sendMessage(Methods.infostring("successfully un ignored &e" + target.getDisplayName()));
+                    Methods.infomsg(player, "successfully un ignored &e" + target.getDisplayName());
                     return true;
                 }
 
@@ -280,7 +280,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
             this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
             this.saveCustomConfig();
-            player.sendMessage(Methods.infostring("successfully ignored &e" + target.getDisplayName()));
+            Methods.infomsg(player, "successfully ignored &e" + target.getDisplayName());
             return true;
         } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
@@ -314,6 +314,24 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void changeNick(Player p, String nick) {
         String nickcolor = Methods.translatestring(nick);
         String nickuncolor = Methods.removeColorCodes(nickcolor);
+
+        if (p.isOp()) {
+            String prevnick = Methods.removeColorCodes(p.getDisplayName());
+            p.setDisplayName(nickcolor + ChatColor.GRAY);
+            p.setPlayerListName(nickcolor + ChatColor.GRAY);
+            nick2Player.remove(prevnick);
+            nick2Player.put(nickuncolor, p);
+
+            this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", nick);
+            this.saveCustomConfig();
+
+            //realname(p, nickuncolor);
+            p.setDisplayName(nickcolor + ChatColor.GRAY);
+            p.setPlayerListName(nickcolor + ChatColor.GRAY);
+            Methods.infomsg(p,"your nickname has been set to " + nickcolor);
+            return;
+        }
+
         if (nickuncolor.length() < 3)
             Methods.errormsg(p, "the nickname you entered is too short");
         else if (nickuncolor.length() > 16)
@@ -335,7 +353,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            p.sendMessage(Methods.infostring("your nickname has been set to " + nickcolor));
+            Methods.infomsg(p,"your nickname has been set to " + nickcolor);
         }
     }
 
@@ -456,7 +474,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             switch (checkItemStack(itemStack, location, checkRecursive)) {
                 case illegal -> {
                     removeItemStacks.add(itemStack);
-                    Bukkit.getServer().getLogger().log(Level.SEVERE, "removed illegal");
+                    Bukkit.getServer().getLogger().info("removed illegal");
                 }
                 case wasFixed -> wasFixed = true;
             }
@@ -481,7 +499,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return meta.hasItemFlag(ItemFlag.HIDE_ATTRIBUTES) || meta.hasItemFlag(ItemFlag.HIDE_DESTROYS)
                     || meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS) || meta.hasItemFlag(ItemFlag.HIDE_PLACED_ON)
                     || meta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS) || meta.hasItemFlag(ItemFlag.HIDE_UNBREAKABLE)
-                    || meta.hasLore() || meta.hasAttributeModifiers() || meta.hasItemFlag(ItemFlag.HIDE_DYE);
+                    || meta.hasAttributeModifiers() || meta.hasItemFlag(ItemFlag.HIDE_DYE);
         }
         return false;
     }
@@ -564,8 +582,15 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return ItemState.illegal;
             }
 
-            if (itemStack.getItemMeta().isUnbreakable() || itemStack.getDurability() < 0 || itemStack.getDurability() > 2031)
+            if (itemStack.getItemMeta().hasLore()) {
+                itemStack.getItemMeta().setLore(null);
+                return ItemState.illegal;
+            }
+
+            if (itemStack.getItemMeta().isUnbreakable() || itemStack.getDurability() < 0 || itemStack.getDurability() > 2031) {
                 itemStack.setDurability(itemStack.getType().getMaxDurability());
+                return ItemState.illegal;
+            }
         }
 
         if (getInstance().getConfig().getBoolean("overstacked-items")) {

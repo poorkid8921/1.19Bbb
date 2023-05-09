@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -279,9 +280,17 @@ public class Methods {
                 to.getZ() - from.getZ()
         );
     }
-
     public static String speed(double flySpeed) {
         return format("%.2f", min((double) round(flySpeed * 100.0D) / 100.0D, 20.0D));
+    }
+
+    public static ItemStack getHead(Player player) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+        SkullMeta skull = (SkullMeta) item.getItemMeta();
+        skull.setDisplayName(player.getDisplayName());
+        skull.setOwner(player.getName());
+        item.setItemMeta(skull);
+        return item;
     }
 
     public static boolean isBook(ItemStack item) {
@@ -458,7 +467,7 @@ public class Methods {
         p.sendMessage(translatestring("&7[&4-&7] " + s));
     }
 
-    public static String hex(String message) {
+    public static String translatestring(String message) {
         Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
         Matcher matcher = pattern.matcher(message);
         while (matcher.find()) {
@@ -477,10 +486,6 @@ public class Methods {
         return translateAlternateColorCodes('&', message);
     }
 
-    public static String translatestring(String s) {
-        return hex(s);
-    }
-
     public static void maskedkick(Player p) {
         p.kickPlayer(Methods.translatestring("&7Disconnected"));
     }
@@ -494,24 +499,23 @@ public class Methods {
         }
     }
 
-    public static void spoiler(Player e, String msg) {
-        RainbowText rainbow = new RainbowText(msg);
-        String msgg = "█".repeat(Math.max(1, msg.length() / 3 - 2));
-
-        TextComponent spoiler = new TextComponent(Methods.parseText("&7<" + e.getPlayer().getDisplayName() + "&7> " + msgg));
-        Text HoverText = new Text(Methods.parseText(e.getPlayer(), msg.replace("||", "")));
-
-        if (msg.contains("[gay]") && msg.contains("[/gay]"))
-            HoverText = new Text(Methods.parseText(e.getPlayer(), rainbow.getText()));
-
-        spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
-
+    public static void messagecomponent(Player e, BaseComponent[] msg) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(e.getPlayer().getName()))
                 return;
-            p.sendMessage(new BaseComponent[]{spoiler});
+            p.sendMessage(Methods.parseText(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
         }
+    }
+
+    public static TextComponent spoiler(String msg) {
+        String msgg = "█".repeat(Math.max(1, msg.length() / 3 - 2));
+
+        TextComponent spoiler = new TextComponent(msgg);
+        Text HoverText = new Text(msg);
+        spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
+
+        return spoiler;
     }
 
     public static void sendOpMessage(String s) {
@@ -548,10 +552,8 @@ public class Methods {
                 .replace("[HEART]", "❤")
                 .replace("[SUN]", "✹")
                 .replace("||", "")
-                .replace("[gay]", "")
-                .replace("[/gay]", "")
+                .replace("[rainbow]", "")
                 .replace("[unicode]", "")
-                .replace("[/unicode]", "")
                 .replace("[%]", "‱")
                 .replace("[1/4]", "¼")
                 .replace("[1/2]", "½")
@@ -561,7 +563,8 @@ public class Methods {
                 .replace("[BOW]", "&r\uD83C\uDFF9")
                 .replace("[SKULL]", "&r☠")
                 .replace("[HEART2]", "&r❣")
-                .replace("[AXE]", "&r\uD83E\uDE93"));
+                .replace("[AXE]", "&r\uD83E\uDE93")
+                .replace("[base64]", ""));
     }
 
     public static String unicode(String msg) {
@@ -613,8 +616,8 @@ public class Methods {
                 .replace("z", "ᴢ"));
     }
 
-    public static String infostring(String s) {
-        return hex("&7[&e+&7] " + s);
+    public static void infomsg(Player p, String s) {
+        p.sendMessage(translatestring("&7[&e+&7] " + s));
     }
 
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
@@ -654,25 +657,25 @@ public class Methods {
     public static void tpmsg(Player p, Player target, int u) {
         switch (u) {
             case 1 -> // tp has been sent to
-                    p.sendMessage(Methods.infostring("the teleport request has been sent to &e" + target.getDisplayName()));
+                    Methods.infomsg(p,"the teleport request has been sent to &e" + target.getDisplayName());
             case 2 -> // timed out msg
-                    p.sendMessage(Methods.infostring("your teleport request to &e" + target.getDisplayName() + " &7has timed out"));
+                    Methods.infomsg(p,"your teleport request to &e" + target.getDisplayName() + " &7has timed out");
             case 3 -> // tpa wants to teleport to you
-                    p.sendMessage(Methods.infostring("&e" + target.getDisplayName() + " &7wants to teleport to you"));
+                    Methods.infomsg(p,"&e" + target.getDisplayName() + " &7wants to teleport to you");
             case 4 -> // tpahere wants to teleport to you
-                    p.sendMessage(Methods.infostring("&e" + target.getDisplayName() + " &7wants you to teleport to them"));
+                    Methods.infomsg(p,"&e" + target.getDisplayName() + " &7wants you to teleport to them");
             case 5 -> // has been denied
-                    p.sendMessage(Methods.infostring("your request to &e" + target.getDisplayName() + " &7was denied"));
+                    Methods.infomsg(p,"your request to &e" + target.getDisplayName() + " &7was denied");
             case 6 -> // you have denied
-                    p.sendMessage(Methods.infostring("you have denied &e" + target.getDisplayName() + "&7's request"));
+                    Methods.infomsg(p,"you have denied &e" + target.getDisplayName() + "&7's request");
             case 7 -> // teleporting...
-                    p.sendMessage(Methods.infostring("teleporting..."));
+                    Methods.infomsg(p,"teleporting...");
             case 8 -> // teleporting to player...
-                    p.sendMessage(Methods.infostring("teleporting to &e" + target.getDisplayName() + " &7..."));
+                    Methods.infomsg(p,"teleporting to &e" + target.getDisplayName() + " &7...");
             case 9 -> // isn't online anymore
-                    p.sendMessage(Methods.infostring("&e" + target.getDisplayName() + " &7isn't online anymore"));
+                    Methods.infomsg(p,"&e" + target.getDisplayName() + " &7isn't online anymore");
             case 10 -> // teleporting player...
-                    p.sendMessage(Methods.infostring("teleporting &e" + target.getDisplayName() + "&7..."));
+                    Methods.infomsg(p,"teleporting &e" + target.getDisplayName() + "&7...");
         }
     }
 

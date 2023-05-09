@@ -37,7 +37,7 @@ public class SetHomeCommand implements CommandExecutor {
             if (!playerFolder.exists())
                 playerFolder.mkdir();
             Methods.save(playerFolder, home.getName() + ".map", home);
-            player.sendMessage(Methods.infostring("successfully setted home &e" + args[0] + " &7to your position"));
+            Methods.infomsg(player, "successfully setted home &e" + args[0] + " &7to your position");
         }
         return true;
     }

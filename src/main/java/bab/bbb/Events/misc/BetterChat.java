@@ -3,6 +3,7 @@ package bab.bbb.Events.misc;
 import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
 import bab.bbb.utils.RainbowText;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,7 +11,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.util.logging.Level;
+import java.util.Arrays;
+import java.util.Base64;
 
 public class BetterChat implements Listener {
     Methods cm = new Methods();
@@ -36,29 +38,38 @@ public class BetterChat implements Listener {
             return;
         }
 
-        if (e.getMessage().length() > 256) {
+        String msg = Methods.placeholders(e.getMessage());
+
+        if (Methods.removeColorCodes(msg).length() > 256) {
             Methods.errormsg(e.getPlayer(), "your message is too big");
             return;
         }
 
-        String msg = Methods.placeholders(e.getMessage());
         RainbowText rainbow = new RainbowText(msg);
-        String msgunicode = Methods.unicode(msg);
+
+        if (e.getMessage().contains("[rainbow]"))
+            msg = rainbow.getText();
+
+        if (e.getMessage().contains("[unicode]"))
+            msg = Methods.unicode(msg);
+
+        if (e.getMessage().contains("[base64]"))
+            msg = Base64.getEncoder().encodeToString(msg.getBytes());
+
+        if (e.getMessage().startsWith(">"))
+            msg = "&2" + msg.replace(">","");
+
+        if (e.getMessage().startsWith("<"))
+            msg = "&4" + msg.replace("<","");
 
         if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||"))
-            Methods.spoiler(e.getPlayer(), msg);
-        else if (e.getMessage().startsWith("[gay]") && e.getMessage().endsWith("[/gay]")) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
-                if (b != null && b.contains(e.getPlayer().getName()))
-                    return;
-                p.sendMessage(Methods.parseText(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + rainbow.getText()));
-            }
-        } else if (e.getMessage().startsWith("[unicode]") && e.getMessage().endsWith("[/unicode]"))
-            Methods.message(e.getPlayer(), msgunicode);
-        else
-            Methods.message(e.getPlayer(), msg);
+        {
+            Methods.messagecomponent(e.getPlayer(), new BaseComponent[]{Methods.spoiler(msg)});
+            Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
+            return;
+        }
 
-        Bukkit.getLogger().log(Level.FINE, e.getPlayer().getDisplayName() + " > " + msg);
+        Methods.message(e.getPlayer(), msg);
+        Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
     }
 }

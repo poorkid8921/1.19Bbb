@@ -41,7 +41,7 @@ public class HomeCommand implements TabExecutor {
 
             for (Home home : homes) {
                 if (home.getName().equalsIgnoreCase(args[0])) {
-                    player.sendMessage(Methods.infostring("&7teleporting to home &e" + home.getName() + "&7..."));
+                    Methods.infomsg(player, "&7teleporting to home &e" + home.getName() + "&7...");
 
                     new BukkitRunnable() {
                         @Override
