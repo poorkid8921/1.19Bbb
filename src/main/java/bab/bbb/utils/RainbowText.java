@@ -11,9 +11,9 @@ public class RainbowText {
     private final String prefix = "";
 
     public RainbowText(String text) {
-        if (text != null) {
+        if (text != null)
             this.text = text;
-        }
+
         rainbowArray = RAINBOW;
         updateFancy();
     }
@@ -26,14 +26,12 @@ public class RainbowText {
             String t1 = fancyText;
             if (!letter.equalsIgnoreCase(" ")) {
                 fancyText = t1 + rainbowArray.get(spot) + prefix + letter;
-                if (spot == rainbowArray.size() - 1) {
+                if (spot == rainbowArray.size() - 1)
                     spot = 0;
-                } else {
+                else
                     spot++;
-                }
-            } else {
+            } else
                 fancyText = t1 + letter;
-            }
         }
         this.fancyText = fancyText;
     }

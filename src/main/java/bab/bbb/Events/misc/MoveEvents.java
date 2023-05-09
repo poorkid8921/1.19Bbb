@@ -59,7 +59,10 @@ public class MoveEvents implements Listener {
         }
         else if (p.isFlying()) {
             p.teleport(e.getFrom());
-            e.setCancelled(true);
+            World rworld = Bukkit.getWorld(p.getWorld().getName());
+
+            int y = rworld.getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
+            p.teleport(new Location(rworld, p.getLocation().getX(), y, p.getLocation().getZ()));
             Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to fly");
         }
     }

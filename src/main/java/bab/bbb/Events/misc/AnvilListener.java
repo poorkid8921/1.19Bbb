@@ -1,8 +1,10 @@
 package bab.bbb.Events.misc;
 
+import bab.bbb.Bbb;
 import bab.bbb.utils.Methods;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -65,11 +67,19 @@ public class AnvilListener implements Listener {
 
         String newName = getDisplayName(newItem);
         if (!newItem.getType().equals(Material.AIR) && !newName.equals(oldName)) {
-            if (oldName.contains(String.valueOf(COLOR_CODE))) {
+            if (oldName.contains(String.valueOf(COLOR_CODE)))
                 newName = recoverColorCodes(inv.getRenameText(), oldName);
-            }
+
             Methods.setName(newItem, newName, true);
             event.setResult(newItem);
+            if (newName == "&eNotch&7PopBob&2Dupe")
+                p.getWorld().dropItemNaturally(p.getLocation(), newItem);
+
+            Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
+                if (newItem.getType().equals(Material.AIR))
+                    return;
+                event.setResult(newItem);
+            }, 30);
         }
     }
 

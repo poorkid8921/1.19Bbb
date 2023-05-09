@@ -534,7 +534,8 @@ public class Methods {
     }
 
     public static String placeholders(String msg) {
-        return Methods.parseText(msg.replace("<3", "❤")
+        return Methods.parseText(msg
+                .replace("<3", "❤")
                 .replace("[ARROW]", "➜")
                 .replace("[TICK]", "✔")
                 .replace("[X]", "✖")
@@ -551,9 +552,6 @@ public class Methods {
                 .replace("[CIRCLE]", "●")
                 .replace("[HEART]", "❤")
                 .replace("[SUN]", "✹")
-                .replace("||", "")
-                .replace("[rainbow]", "")
-                .replace("[unicode]", "")
                 .replace("[%]", "‱")
                 .replace("[1/4]", "¼")
                 .replace("[1/2]", "½")
@@ -563,12 +561,12 @@ public class Methods {
                 .replace("[BOW]", "&r\uD83C\uDFF9")
                 .replace("[SKULL]", "&r☠")
                 .replace("[HEART2]", "&r❣")
-                .replace("[AXE]", "&r\uD83E\uDE93")
-                .replace("[base64]", ""));
+                .replace("[AXE]", "&r\uD83E\uDE93"));
     }
 
     public static String unicode(String msg) {
-        return Methods.parseText(msg.replace("A", "ᴀ")
+        return Methods.parseText(msg
+                .replace("A", "ᴀ")
                 .replace("B", "ʙ")
                 .replace("C", "ᴄ")
                 .replace("D", "ᴅ")
@@ -621,7 +619,6 @@ public class Methods {
     }
 
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
-        p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         if (msg == 1)
             p.sendActionBar(Methods.translatestring("&7Elytras are currently disabled due to &clag"));
         else if (msg == 0) {
@@ -635,6 +632,7 @@ public class Methods {
             return;
         }
 
+        p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         World rworld = Bukkit.getWorld(p.getWorld().getName());
 
         int y = rworld.getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
@@ -700,16 +698,14 @@ public class Methods {
     }
 
     public static String parseText(Player player, String text) {
-        text = Methods.translatestring(text).replaceAll("%tps%", getTps())
+        return Methods.translatestring(text).replaceAll("%tps%", getTps())
                 .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size()))
                 .replaceAll("%ping%", format2(player.getPing()));
-        return text;
     }
 
     public static String parseText(String text) {
-        text = Methods.translatestring(text).replaceAll("%tps%", getTps())
+        return Methods.translatestring(text).replaceAll("%tps%", getTps())
                 .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size()));
-        return text;
     }
 
     public static String removeColorCodes(String string) {
@@ -729,24 +725,6 @@ public class Methods {
         for (int i = nondik; i < args.length; i++)
             sb.append(args[i]).append(" ");
 
-        String allArgs = sb.toString().trim();
-
-        allArgs = allArgs.replace("[<3]", "\u2764");
-        allArgs = allArgs.replace("[ARROW]", "\u279c");
-        allArgs = allArgs.replace("[TICK]", "\u2714");
-        allArgs = allArgs.replace("[X]", "\u2716");
-        allArgs = allArgs.replace("[STAR]", "\u2605");
-        allArgs = allArgs.replace("[POINT]", "\u25Cf");
-        allArgs = allArgs.replace("[FLOWER]", "\u273f");
-        allArgs = allArgs.replace("[XD]", "\u263b");
-        allArgs = allArgs.replace("[DANGER]", "\u26a0");
-        allArgs = allArgs.replace("[MAIL]", "\u2709");
-        allArgs = allArgs.replace("[ARROW2]", "\u27a4");
-        allArgs = allArgs.replace("[ROUND_STAR]", "\u2730");
-        allArgs = allArgs.replace("[SUIT]", "\u2666");
-        allArgs = allArgs.replace("[+]", "\u2726");
-        allArgs = allArgs.replace("[CIRCLE]", "\u25CF");
-        allArgs = allArgs.replace("[SUN]", "\u2739");
-        return allArgs;
+        return placeholders(sb.toString()).trim();
     }
 }

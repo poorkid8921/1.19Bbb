@@ -45,16 +45,14 @@ public class BetterChat implements Listener {
             return;
         }
 
-        RainbowText rainbow = new RainbowText(msg);
-
         if (e.getMessage().contains("[rainbow]"))
-            msg = rainbow.getText();
+            msg = new RainbowText(msg).getText().replace("[rainbow]", "");
 
         if (e.getMessage().contains("[unicode]"))
-            msg = Methods.unicode(msg);
+            msg = Methods.unicode(msg.replace("[unicode]", ""));
 
-        if (e.getMessage().contains("[base64]"))
-            msg = Base64.getEncoder().encodeToString(msg.getBytes());
+        //if (e.getMessage().contains("[base64]"))
+        //    msg = Base64.getEncoder().encodeToString(msg.replace("[base64]", "").getBytes());
 
         if (e.getMessage().startsWith(">"))
             msg = "&2" + msg.replace(">","");
@@ -64,7 +62,7 @@ public class BetterChat implements Listener {
 
         if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||"))
         {
-            Methods.messagecomponent(e.getPlayer(), new BaseComponent[]{Methods.spoiler(msg)});
+            Methods.messagecomponent(e.getPlayer(), new BaseComponent[]{Methods.spoiler(msg.replace("||", ""))});
             Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
             return;
         }
