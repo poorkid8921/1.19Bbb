@@ -21,8 +21,8 @@ no-death-messages: false
 no-join-messages: false
 no-quit-messages: false
 
-tablist-header: "&7&o&l2BUILDERS\n&7&o&l2TOOLS     \n"
-tablist-footer: "\n%tps% &7TPS - %players% players - %ping% &7ping"
+tablist-header: "&7&o&l2BUILDERS\n&7&o&l2TOOLS      \n"
+tablist-footer: "\n%tps% &7TPS - %players% players - %ping%&7ms"
 
 randommotdenabled: true
 motd:

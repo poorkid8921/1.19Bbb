@@ -59,21 +59,20 @@ public class TpaCommand implements CommandExecutor {
             plugin.removeRequest(user);
 
         plugin.addRequest(user, recipient, Type.TPA);
-
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         Utils.tpmsg(recipient, user, 3);
-        TextComponent accept = new TextComponent(Utils.placeholders("&7[&2✔&7] &2ACCEPT"));
+        TextComponent accept = new TextComponent(Utils.parseText("&7[&2✔&7] &2ACCEPT"));
         Text acceptHoverText = new Text("Click to accept the teleport request");
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(Utils.placeholders("&7[&c✖&7] &cDENY"));
+        TextComponent deny = new TextComponent(Utils.parseText("&7[&c✖&7] &cDENY"));
         Text denyHoverText = new Text("Click to deny the teleport request");
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
-        Utils.tpmsg(user, recipient, 1);
 
         TextComponent bemptyspace = new TextComponent("       ");
         recipient.sendMessage(bemptyspace, accept, bemptyspace, deny);
+        Utils.tpmsg(user, recipient, 1);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -83,7 +82,6 @@ public class TpaCommand implements CommandExecutor {
                 }
             }
         }.runTaskLater(plugin, 30 * 20);
-
         return true;
     }
 }

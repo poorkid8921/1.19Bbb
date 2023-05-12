@@ -24,28 +24,6 @@ public class TpacceptCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    public ItemStack dupe(ItemStack todupe, int amount) {
-        ItemStack duped = todupe.clone();
-        duped.setAmount(amount);
-        return duped;
-    }
-
-    public void dupe(Player user) {
-        if (user.getVehicle() != null) {
-            if (user.getVehicle() instanceof AbstractHorse) {
-                AbstractHorse donkey = (AbstractHorse) user.getVehicle();
-                if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
-                    for (int i = 1; i <= 16; i++) {
-                        ItemStack item = donkey.getInventory().getItem(i);
-                        if (item == null)
-                            continue;
-                        donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                    }
-                }
-            }
-        }
-    }
-
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
             return true;
@@ -69,9 +47,6 @@ public class TpacceptCommand implements CommandExecutor {
             Utils.errormsg(user, "can't teleport whilst being combat tagged");
             return true;
         }
-
-        dupe(recipient);
-        dupe(user);
 
         if (request.getType() == Type.TPA) {
             Utils.tpmsg(((Player) sender).getPlayer(), recipient, 10);

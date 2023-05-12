@@ -24,59 +24,62 @@ public class TpahereCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+    @Override
+    public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player user))
             return true;
-        }
 
         if (args.length < 1) {
-            Utils.errormsg(player, "the arguments are invalid");
+            Utils.errormsg(user, "the arguments are invalid");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            Utils.errormsg(player, "player &e" + args[0] + " &7couldn't be found");
+            Utils.errormsg(user, "player &e" + args[0] + " &7couldn't be found");
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            Utils.errormsg(player, "you can't teleport to yourself");
+            Utils.errormsg(user, "you can't teleport to yourself");
             return true;
         }
 
         if (plugin.getRequest(recipient) != null) {
-            Utils.errormsg(player, "player &e" + recipient.getDisplayName() + " &7already has an active request");
+            Utils.errormsg(user, "player &e" + recipient.getDisplayName() + " &7already has an active request");
             return true;
         }
 
-        if (MiscEvents.combattag.contains(player.getName())) {
-            Utils.errormsg(player, "you can't send tpa requests whilst being combat tagged");
+        if (MiscEvents.combattag.contains(user.getName())) {
+            Utils.errormsg(user, "you can't send tpa requests whilst being combat tagged");
             return true;
         }
 
-        plugin.addRequest((Player) sender, recipient, Type.TPAHERE);
+        if (plugin.getRequest(user) != null)
+            plugin.removeRequest(user);
+
+        plugin.addRequest(user, recipient, Type.TPAHERE);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        Utils.tpmsg(recipient, player, 4);
-        TextComponent accept = new TextComponent(Utils.placeholders("&7[&2✔&7] &2ACCEPT"));
+        Utils.tpmsg(recipient, user, 4);
+        TextComponent accept = new TextComponent(Utils.parseText("&7[&2✔&7] &2ACCEPT"));
         Text acceptHoverText = new Text("Click to accept the teleport request");
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(Utils.placeholders("&7[&c✖&7] &cDENY"));
+        TextComponent deny = new TextComponent(Utils.parseText("&7[&c✖&7] &cDENY"));
         Text denyHoverText = new Text("Click to deny the teleport request");
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
 
         TextComponent bemptyspace = new TextComponent("       ");
         recipient.sendMessage(bemptyspace, accept, bemptyspace, deny);
-        Utils.tpmsg(player, recipient, 1);
+        Utils.tpmsg(user, recipient, 1);
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (plugin.getRequest(recipient) != null) {
                     plugin.removeRequest(recipient);
-                    Utils.tpmsg(player, recipient, 2);
+                    Utils.tpmsg(user, recipient, 2);
                 }
             }
         }.runTaskLater(plugin, 30 * 20);

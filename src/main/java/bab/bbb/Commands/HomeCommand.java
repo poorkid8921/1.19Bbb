@@ -25,12 +25,6 @@ import java.util.stream.Collectors;
 public class HomeCommand implements TabExecutor {
     private final Bbb plugin = Bbb.getInstance();
 
-    public ItemStack dupe(ItemStack todupe, int amount) {
-        ItemStack duped = todupe.clone();
-        duped.setAmount(amount);
-        return duped;
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
@@ -44,12 +38,10 @@ public class HomeCommand implements TabExecutor {
                 return true;
             }
 
-            String homestr;
+            String homestr = "home";
 
-            if (args.length >= 1)
+            if (args.length > 0)
                 homestr = args[0];
-            else
-                homestr = "home";
 
             for (Home home : homes) {
                 if (home.getName().equalsIgnoreCase(homestr)) {
@@ -60,19 +52,6 @@ public class HomeCommand implements TabExecutor {
                         public void run() {
                             player.getWorld().strikeLightningEffect(player.getLocation());
                             player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-
-                            if (player.getVehicle() != null) {
-                                if (player.getVehicle() instanceof final AbstractHorse donkey) {
-                                    if (((AbstractHorse) player.getVehicle()).getInventory().getViewers().size() > 0) {
-                                        for (int i = 1; i <= 16; i++) {
-                                            ItemStack item = donkey.getInventory().getItem(i);
-                                            if (item == null)
-                                                continue;
-                                            donkey.getWorld().dropItem(donkey.getLocation(), dupe(Objects.requireNonNull(donkey.getInventory().getItem(i)), item.getAmount()));
-                                        }
-                                    }
-                                }
-                            }
 
                             for (Player players : Bukkit.getOnlinePlayers())
                                 players.hidePlayer(plugin, player);

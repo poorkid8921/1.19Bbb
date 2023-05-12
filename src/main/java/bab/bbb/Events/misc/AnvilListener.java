@@ -3,21 +3,13 @@ package bab.bbb.Events.misc;
 import bab.bbb.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.AnvilInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Objects;
-
 public class AnvilListener implements Listener {
-    private static final char COLOR_CODE = '§';
-
     public AnvilListener() {
     }
 
@@ -49,11 +41,5 @@ public class AnvilListener implements Listener {
             if (newName.equals("&eNotch&7PopBob&fSex&2Dupe"))
                 p.getWorld().dropItemNaturally(p.getLocation(), newItem);
         }
-    }
-
-    public boolean isRealAnvil(AnvilInventory anvilInventory) {
-        if (Objects.requireNonNull(anvilInventory.getLocation()).getBlockX() == 0 && anvilInventory.getLocation().getBlockY() == 0 && anvilInventory.getLocation().getBlockZ() == 0)
-            return anvilInventory.getLocation().getBlock().getType() == Material.ANVIL;
-        return true;
     }
 }

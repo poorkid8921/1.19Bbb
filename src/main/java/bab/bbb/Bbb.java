@@ -1,7 +1,7 @@
 package bab.bbb;
 
 import bab.bbb.Commands.DelHomeCommand;
-import bab.bbb.Commands.EECA;
+import bab.bbb.Commands.Discord;
 import bab.bbb.Commands.HomeCommand;
 import bab.bbb.Commands.SetHomeCommand;
 import bab.bbb.Events.DupeEvent;
@@ -87,7 +87,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             service.schedule(() -> {
                 Bukkit.getScheduler().runTask(Bbb.getInstance(), () -> {
                     for (Player player : Bukkit.getOnlinePlayers())
-                        player.kickPlayer(Utils.translatestring("&7Server Restarting"));
+                        player.kickPlayer(Utils.parseText("&7Server Restarting"));
                     Bukkit.getServer().shutdown();
                 });
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
@@ -104,7 +104,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (this.getConfig().getBoolean("anti-burrow"))
             Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
 
-        this.getCommand("discord").setExecutor(new EECA());
+        this.getCommand("discord").setExecutor(new Discord());
         if (config.getBoolean("tpa")) {
             this.getCommand("tpa").setExecutor(new TpaCommand(this));
             this.getCommand("tpaccept").setExecutor(new TpacceptCommand(this));
@@ -185,8 +185,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(Utils.placeholders("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.placeholders("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
@@ -204,8 +204,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
             StringBuilder msgargs = new StringBuilder();
 
-            for (int i = 0; i < args.length; i++)
-                msgargs.append(args[i]).append(" ");
+            for (String arg : args) msgargs.append(arg).append(" ");
 
             if (msgargs.toString().equals("")) {
                 Utils.errormsg(player, "the message is invalid");
@@ -224,8 +223,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(Utils.placeholders("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.placeholders("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.parseText(player,"&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.parseText(target,"&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
@@ -304,15 +303,15 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (s != null) {
             //realname(p, ColorUtils.removeColorCodes(s));
 
-            p.setPlayerListName(Utils.translatestring(s + ChatColor.GRAY));
-            p.setDisplayName(Utils.translatestring(s + ChatColor.GRAY));
+            p.setPlayerListName(Utils.parseText(s + ChatColor.GRAY));
+            p.setDisplayName(Utils.parseText(s + ChatColor.GRAY));
 
             this.nick2Player.put(p.getName(), p.getPlayer());
         }
     }
 
     public void changeNick(Player p, String nick) {
-        String nickcolor = Utils.translatestring(nick);
+        String nickcolor = Utils.parseText(nick);
         String nickuncolor = Utils.removeColorCodes(nickcolor);
 
         if (p.isOp()) {
@@ -328,7 +327,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p,"your nickname has been set to " + nickcolor);
+            Utils.infomsg(p,"your nickname has been set to &e" + nickcolor);
             return;
         }
 

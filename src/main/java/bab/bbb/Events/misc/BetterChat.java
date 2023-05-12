@@ -14,7 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import static bab.bbb.utils.Utils.placeholders;
+import static bab.bbb.utils.Utils.parseText;
 
 public class BetterChat implements Listener {
     Utils cm = new Utils();
@@ -43,7 +43,7 @@ public class BetterChat implements Listener {
             return;
         }
 
-        String msg = Utils.placeholders(e.getMessage());
+        String msg = Utils.parseText(e.getPlayer(), e.getMessage());
 
         if (Utils.removeColorCodes(msg).length() > 256) {
             Utils.errormsg(e.getPlayer(), "your message is too big");
@@ -66,8 +66,8 @@ public class BetterChat implements Listener {
             msg = "&4" + msg.replace("<", "");
 
         if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||")) {
-            TextComponent spoiler = new TextComponent(placeholders("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
-            Text HoverText = new Text(placeholders(msg.replace("||", "")));
+            TextComponent spoiler = new TextComponent(parseText("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
+            Text HoverText = new Text(parseText(e.getPlayer(), msg.replace("||", "")));
 
             spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
 

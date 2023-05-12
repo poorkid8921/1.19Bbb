@@ -17,17 +17,17 @@ public class SetHomeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
-            String homestr;
-            if (args.length >= 1)
+            String homestr = "home";
+
+            if (args.length > 0)
                 homestr = args[0];
-            else
-                homestr = "home";
 
             Home home = new Home(homestr, player.getUniqueId(), player.getLocation());
             List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null)
                 homes = new ArrayList<>();
-            if (homes.stream().anyMatch(h -> h.getName().equals(homestr))) {
+            String finalHomestr = homestr;
+            if (homes.stream().anyMatch(h -> h.getName().equals(finalHomestr))) {
                 Utils.errormsg(player, "the home already exists");
                 return true;
             }

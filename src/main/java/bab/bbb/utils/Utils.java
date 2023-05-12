@@ -4,7 +4,6 @@ import bab.bbb.Bbb;
 import lombok.Cleanup;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
@@ -36,12 +35,15 @@ public class Utils {
     public static Bbb plugin = Bbb.getInstance();
     public static final File homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");
     public static final HashMap<UUID, ArrayList<Home>> homes = new HashMap<>();
+
     public static File getHomesFolder() {
         return homesFolder;
     }
+
     public static HashMap<UUID, ArrayList<Home>> getHomes() {
         return homes;
     }
+
     public static boolean works1 = true;
     public static boolean works2 = false;
     public static boolean works3 = false;
@@ -276,6 +278,7 @@ public class Utils {
                 to.getZ() - from.getZ()
         );
     }
+
     public static String speed(double flySpeed) {
         return format("%.2f", min((double) round(flySpeed * 100.0D) / 100.0D, 20.0D));
     }
@@ -385,9 +388,10 @@ public class Utils {
                         long severity2 = (long) obj2.get("block");
 
                         if (severity2 == 1) {
-                            p.kickPlayer(Utils.parseText("&7Proxies aren't &callowed"));
-                            Utils.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
-                        }} catch (ParseException eee) {
+                            p.kickPlayer(parseText("&7Proxies aren't &callowed"));
+                            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
+                        }
+                    } catch (ParseException eee) {
                         if (works1) {
                             checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
                             works2 = true;
@@ -460,7 +464,7 @@ public class Utils {
     }
 
     public static void errormsg(Player p, String s) {
-        p.sendMessage(placeholders("&7[&4-&7] " + s));
+        p.sendMessage(parseText("&7[&4-&7] " + s));
     }
 
     public static String translatestring(String message) {
@@ -483,7 +487,7 @@ public class Utils {
     }
 
     public static void maskedkick(Player p) {
-        p.kickPlayer(Utils.translatestring("&7Disconnected"));
+        p.kickPlayer(parseText("&7Disconnected"));
     }
 
     public static void message(Player e, String msg) {
@@ -491,14 +495,14 @@ public class Utils {
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(e.getPlayer().getName()))
                 continue;
-            p.sendMessage(Utils.parseText(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
+            p.sendMessage(parseText(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
         }
     }
 
     public static void sendOpMessage(String s) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.isOp())
-                p.sendMessage(Utils.translatestring(s));
+                p.sendMessage(parseText(s));
         }
     }
 
@@ -510,41 +514,8 @@ public class Utils {
         return plrs;
     }
 
-    public static String placeholders(String msg) {
-        return Utils.parseText(msg)
-                .replace("<3", "❤")
-                .replace("[ARROW]", "➜")
-                .replace("[TICK]", "✔")
-                .replace("[X]", "✖")
-                .replace("[STAR]", "★")
-                .replace("[POINT]", "●")
-                .replace("[FLOWER]", "✿")
-                .replace("[XD]", "☻")
-                .replace("[DANGER]", "⚠")
-                .replace("[MAIL]", "✉")
-                .replace("[ARROW2]", "➤")
-                .replace("[ROUND_STAR]", "✰")
-                .replace("[SUIT]", "♦")
-                .replace("[+]", "✦")
-                .replace("[CIRCLE]", "●")
-                .replace("[HEART]", "❤")
-                .replace("[SUN]", "✹")
-                .replace("[%]", "‱")
-                .replace("[1/4]", "¼")
-                .replace("[1/2]", "½")
-                .replace("[3/4]", "¾")
-                .replace("[SAD]", "☹")
-                .replace("[CARPET]", "░▒▓")
-                .replace("[BOW]", "\uD83C\uDFF9")
-                .replace("[SKULL]", "☠")
-                .replace("[unicode]", "")
-                .replace("[rainbow]", "")
-                .replace("[HEART2]", "❣")
-                .replace("[AXE]", "\uD83E\uDE93");
-    }
-
     public static String unicode(String msg) {
-        return Utils.parseText(msg
+        return parseText(msg
                 .replace("A", "ᴀ")
                 .replace("B", "ʙ")
                 .replace("C", "ᴄ")
@@ -594,20 +565,19 @@ public class Utils {
     }
 
     public static void infomsg(Player p, String s) {
-        p.sendMessage(placeholders("&7[&e+&7] " + s));
+        p.sendMessage(parseText(p, "&7[&e+&7] " + s));
     }
 
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
         if (msg == 1)
-            p.sendActionBar(Utils.translatestring("&7Elytras are currently disabled due to &clag"));
+            p.sendActionBar(parseText("&7Elytras are currently disabled due to &clag"));
         else if (msg == 0) {
-            p.sendActionBar(Utils.translatestring("&7You're moving &ctoo fast"));
-            Utils.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
-        }
-        else {
+            p.sendActionBar(parseText("&7You're moving &ctoo fast"));
+            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
+        } else {
             maskedkick(p);
-            Utils.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
-            //p.sendActionBar(Methods.translatestring("&7Packet elytra fly isn't &callowed"));
+            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
+            //p.sendActionBar(Methods.parseText("&7Packet elytra fly isn't &callowed"));
             return;
         }
 
@@ -634,25 +604,25 @@ public class Utils {
     public static void tpmsg(Player p, Player target, int u) {
         switch (u) {
             case 1 -> // tp has been sent to
-                    Utils.infomsg(p,"the teleport request has been sent to &e" + target.getDisplayName());
+                    infomsg(p, "the teleport request has been sent to &e" + target.getDisplayName());
             case 2 -> // timed out msg
-                    Utils.infomsg(p,"your teleport request to &e" + target.getDisplayName() + " &7has timed out");
+                    infomsg(p, "your teleport request to &e" + target.getDisplayName() + " &7has timed out");
             case 3 -> // tpa wants to teleport to you
-                    Utils.infomsg(p,"&e" + target.getDisplayName() + " &7wants to teleport to you");
+                    infomsg(p, "&e" + target.getDisplayName() + " &7wants to teleport to you");
             case 4 -> // tpahere wants to teleport to you
-                    Utils.infomsg(p,"&e" + target.getDisplayName() + " &7wants you to teleport to them");
+                    infomsg(p, "&e" + target.getDisplayName() + " &7wants you to teleport to them");
             case 5 -> // has been denied
-                    Utils.infomsg(p,"your request to &e" + target.getDisplayName() + " &7was denied");
+                    infomsg(p, "your request to &e" + target.getDisplayName() + " &7was denied");
             case 6 -> // you have denied
-                    Utils.infomsg(p,"you have denied &e" + target.getDisplayName() + "&7's request");
+                    infomsg(p, "you have denied &e" + target.getDisplayName() + "&7's request");
             case 7 -> // teleporting...
-                    Utils.infomsg(p,"teleporting...");
+                    infomsg(p, "teleporting...");
             case 8 -> // teleporting to player...
-                    Utils.infomsg(p,"teleporting to &e" + target.getDisplayName() + " &7...");
+                    infomsg(p, "teleporting to &e" + target.getDisplayName() + " &7...");
             case 9 -> // isn't online anymore
-                    Utils.infomsg(p,"&e" + target.getDisplayName() + " &7isn't online anymore");
+                    infomsg(p, "&e" + target.getDisplayName() + " &7isn't online anymore");
             case 10 -> // teleporting player...
-                    Utils.infomsg(p,"teleporting &e" + target.getDisplayName() + "&7...");
+                    infomsg(p, "teleporting &e" + target.getDisplayName() + "&7...");
         }
     }
 
@@ -673,18 +643,44 @@ public class Utils {
     }
 
     public static String getTps() {
-        return Utils.translatestring(format1(Bukkit.getServer().getTPS()[0]));
+        return parseText(format1(Bukkit.getServer().getTPS()[0]));
     }
 
     public static String parseText(Player player, String text) {
-        return Utils.translatestring(text).replaceAll("%tps%", getTps())
-                .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size()))
-                .replaceAll("%ping%", format2(player.getPing()));
+        return parseText(text).replaceAll("%ping%", format2(player.getPing()));
     }
 
     public static String parseText(String text) {
-        return Utils.translatestring(text).replaceAll("%tps%", getTps())
-                .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size()));
+        return translatestring(text).replaceAll("%tps%", getTps()).replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size())
+                .replace("<3", "❤")
+                .replace("[ARROW]", "➜")
+                .replace("[TICK]", "✔")
+                .replace("[X]", "✖")
+                .replace("[STAR]", "★")
+                .replace("[POINT]", "●")
+                .replace("[FLOWER]", "✿")
+                .replace("[XD]", "☻")
+                .replace("[DANGER]", "⚠")
+                .replace("[MAIL]", "✉")
+                .replace("[ARROW2]", "➤")
+                .replace("[ROUND_STAR]", "✰")
+                .replace("[SUIT]", "♦")
+                .replace("[+]", "✦")
+                .replace("[CIRCLE]", "●")
+                .replace("[HEART]", "❤")
+                .replace("[SUN]", "✹")
+                .replace("[%]", "‱")
+                .replace("[1/4]", "¼")
+                .replace("[1/2]", "½")
+                .replace("[3/4]", "¾")
+                .replace("[SAD]", "☹")
+                .replace("[CARPET]", "░▒▓")
+                .replace("[BOW]", "\uD83C\uDFF9")
+                .replace("[SKULL]", "☠")
+                .replace("[unicode]", "")
+                .replace("[rainbow]", "")
+                .replace("[HEART2]", "❣")
+                .replace("[AXE]", "\uD83E\uDE93"));
     }
 
     public static String removeColorCodes(String string) {
@@ -694,9 +690,9 @@ public class Utils {
 
     public static String formatString(String string, boolean overrideDefaultFormat) {
         if (!overrideDefaultFormat || string.startsWith("&r"))
-            return Utils.translatestring(string);
+            return parseText(string);
         else
-            return Utils.translatestring("&r" + string);
+            return parseText("&r" + string);
     }
 
     public static String extractArgs(int nondik, String[] args) {
@@ -704,7 +700,7 @@ public class Utils {
         for (int i = nondik; i < args.length; i++)
             sb.append(args[i]).append(" ");
 
-        return placeholders(sb.toString()).trim();
+        return parseText(sb.toString()).trim();
     }
 
     public static void updateColorTranslationForAnvilOutput(AnvilInventory anvilInventory) {
@@ -721,39 +717,39 @@ public class Utils {
         }.runTaskLater(Bbb.getInstance(), 0L);
     }
 
-    public static ItemStack translateOutputItemNameColorBasedOnInputItem(ItemStack outputItem, ItemStack inputItem) {
+    public static void translateOutputItemNameColorBasedOnInputItem(ItemStack outputItem, ItemStack inputItem) {
         ItemMeta outputItemMeta = outputItem.getItemMeta();
         if (outputItemMeta == null || !outputItemMeta.hasDisplayName())
-            return outputItem;
+            return;
 
         String outputName = outputItemMeta.getDisplayName();
         ItemMeta inputItemMeta = inputItem.getItemMeta();
-        if (inputItemMeta == null || !inputItemMeta.hasDisplayName())
-            return translateNameColor(outputItem);
+        if (inputItemMeta == null || !inputItemMeta.hasDisplayName()) {
+            translateNameColor(outputItem);
+            return;
+        }
 
         String inputName = inputItemMeta.getDisplayName();
         if (doesOutputNameMatchInputName(outputName, inputName)) {
             outputItemMeta.setDisplayName(inputName);
             outputItem.setItemMeta(outputItemMeta);
         }
-        return translateNameColor(outputItem);
+        translateNameColor(outputItem);
     }
 
-    public static ItemStack translateNameColor(ItemStack itemStack) {
+    public static void translateNameColor(ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null)
-            return itemStack;
+            return;
 
         String untranslatedName = itemMeta.getDisplayName();
-        String translatedName = placeholders(untranslatedName);
+        String translatedName = parseText(untranslatedName);
         itemMeta.setDisplayName(translatedName);
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
     }
 
     private static boolean doesOutputNameMatchInputName(String outputName, String inputName) {
-        return stripChars(outputName, '&', ChatColor.COLOR_CHAR)
-                .equals(stripChars(inputName, ChatColor.COLOR_CHAR));
+        return stripChars(outputName, '&', ChatColor.COLOR_CHAR).equals(stripChars(inputName, ChatColor.COLOR_CHAR));
     }
 
     public static String stripChars(String str, char... chars) {

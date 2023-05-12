@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 import static bab.bbb.Bbb.checkInventory;
-import static bab.bbb.utils.Utils.placeholders;
+import static bab.bbb.utils.Utils.parseText;
 
 public class MiscEvents implements Listener {
     private final Bbb plugin;
@@ -76,7 +76,7 @@ public class MiscEvents implements Listener {
         if (ac != null) {
             if (!e.getPlayer().getAddress().getAddress().getHostAddress().equals(ac)) {
                 Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
-                e.getPlayer().kickPlayer(Utils.translatestring("&7The account you're trying to access is &2secured"));
+                e.getPlayer().kickPlayer(Utils.parseText("&7The account you're trying to access is &2secured"));
                 return;
             }
         }
@@ -86,7 +86,7 @@ public class MiscEvents implements Listener {
             Utils.loadHomes(e.getPlayer());
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                    p.sendMessage(Utils.translatestring("&6" + e.getPlayer().getDisplayName() + " &7has joined the server"));
+                    p.sendMessage(Utils.parseText("&6" + e.getPlayer().getDisplayName() + " &7has joined the server"));
             }
             return;
         }
@@ -98,7 +98,7 @@ public class MiscEvents implements Listener {
 
         if (altString == "true") {
             Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
-            e.getPlayer().kickPlayer(Utils.translatestring("&7Alts aren't &callowed"));
+            e.getPlayer().kickPlayer(Utils.parseText("&7Alts aren't &callowed"));
             Utils.purge(name);
             return;
         }
@@ -126,7 +126,7 @@ public class MiscEvents implements Listener {
 
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                        p.sendMessage(Utils.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
+                        p.sendMessage(Utils.parseText("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                 }
             } else {
                 plugin.setnickonjoin(e.getPlayer());
@@ -144,7 +144,7 @@ public class MiscEvents implements Listener {
 
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                        p.sendMessage(Utils.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
+                        p.sendMessage(Utils.parseText("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
                 }
             }
         }, 20);
@@ -170,7 +170,7 @@ public class MiscEvents implements Listener {
 
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                            p.sendMessage(Utils.translatestring("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
+                            p.sendMessage(Utils.parseText("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                     }
                 } else {
                     plugin.setnickonjoin(e.getPlayer());
@@ -188,7 +188,7 @@ public class MiscEvents implements Listener {
 
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
-                            p.sendMessage(Utils.translatestring("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
+                            p.sendMessage(Utils.parseText("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
                     }
                 }
 
@@ -216,7 +216,7 @@ public class MiscEvents implements Listener {
                 Utils.errormsg(event.getPlayer(), "wait a second before using a lever again");
                 event.getPlayer().setGliding(false);
             } else
-                event.getPlayer().sendActionBar(placeholders("&7wait a second before using a lever again"));
+                event.getPlayer().sendActionBar(parseText("&7wait a second before using a lever again"));
 
             if (hardran()) {
                 Utils.maskedkick(player);
@@ -237,7 +237,7 @@ public class MiscEvents implements Listener {
             return;
 
         for (Player p : Bukkit.getOnlinePlayers())
-            p.sendMessage(placeholders("&7" + e.getPlayer().getDisplayName() + " has left the server"));
+            p.sendMessage(parseText("&7" + e.getPlayer().getDisplayName() + " has left the server"));
     }
 
     @EventHandler
@@ -458,18 +458,18 @@ public class MiscEvents implements Listener {
         String hehe = e.getDeathMessage();
         String hehe2 = "";
         if (hehe != null)
-            hehe2 = placeholders("&7" + hehe.replace(e.getPlayer().getName(), "&6" + e.getPlayer().getDisplayName() + "&7").replace("[", "&6").replace("]", "&7"));
+            hehe2 = parseText(e.getPlayer(), "&7" + hehe.replace(e.getPlayer().getName(), "&6" + e.getPlayer().getDisplayName() + "&7").replace("[", "&6").replace("]", "&7"));
 
-        if (e.getEntity().getKiller() != null) {
+        if (e.getPlayer().getKiller() != null) {
             hehe2 = hehe2.replace(e.getPlayer().getKiller().getName(), "&6" + e.getPlayer().getKiller().getDisplayName() + "&7");
             if (!e.getPlayer().getKiller().getItemInHand().getType().equals(Material.AIR))
                 hehe2 = hehe2.replace(e.getPlayer().getKiller().getMainHand().name(), "&6" + e.getPlayer().getKiller().getItemInHand().getItemMeta().getDisplayName() + "&7");
-            hehe2 = placeholders(hehe2);
+            hehe2 = parseText(e.getPlayer().getKiller(), hehe2);
 
             Random ran = new Random();
             int b = ran.nextInt(1000);
             if (b < 2)
-                Bukkit.getWorld(e.getEntity().getWorld().getName()).dropItemNaturally(new Location(e.getEntity().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), Utils.getHead(e.getEntity().getPlayer()));
+                Bukkit.getWorld(e.getPlayer().getWorld().getName()).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), Utils.getHead(e.getEntity().getPlayer()));
         }
 
         if (plugin.config.getBoolean("no-death-messages"))
@@ -477,14 +477,14 @@ public class MiscEvents implements Listener {
         else
             e.setDeathMessage(hehe2);
 
-        if (e.getEntity().getKiller() == null)
+        if (e.getPlayer().getKiller() == null)
             return;
 
         // - lifesteal
         //e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() - 2);
         //e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() + 2);
 
-        if (e.getEntity().getKiller().getVehicle() == null)
+        if (e.getPlayer().getKiller().getVehicle() == null)
             return;
 
         dupe_donkey(e.getEntity().getKiller().getVehicle(), e.getEntity().getKiller());
