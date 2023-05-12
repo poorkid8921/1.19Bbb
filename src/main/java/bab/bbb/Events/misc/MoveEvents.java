@@ -9,6 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
+@SuppressWarnings("deprecation")
 public class MoveEvents implements Listener {
     private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
 
@@ -32,7 +33,7 @@ public class MoveEvents implements Listener {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
                     if (p.isGliding()) {
-                        Utils.errormsg(p, "nether roof is &cdisabled");
+                        Utils.errormsg(p, "Nether roof is &cdisabled");
                         p.setGliding(false);
                     }
                     else
@@ -56,14 +57,6 @@ public class MoveEvents implements Listener {
                 Utils.elytraflag(p, 2, 0, 0, null);
             else
                 p.sendActionBar(Utils.parseText("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
-        }
-        else if (p.isFlying()) {
-            p.teleport(e.getFrom());
-            World rworld = Bukkit.getWorld(p.getWorld().getName());
-
-            int y = rworld.getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
-            p.teleport(new Location(rworld, p.getLocation().getX(), y, p.getLocation().getZ()));
-            Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getDisplayName() + " &7tried to fly");
         }
     }
 }

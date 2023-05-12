@@ -3,7 +3,6 @@ package bab.bbb.Events.Dupes;
 import bab.bbb.Bbb;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class DonkeyDupe implements Listener {
     public ItemStack dupe(ItemStack todupe, int amount) {
         ItemStack duped = todupe.clone();

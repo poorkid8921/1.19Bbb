@@ -1,11 +1,11 @@
 name: Anarchy
-version: 1.0.1
+version: 1.0.2
 main: bab.bbb.Bbb
 api-version: 1.19
 
 commands:
   discord:
-    description: E
+    description: Show the discord link
     usage: /<command>
     aliases: d
   tpa:
@@ -24,27 +24,34 @@ commands:
     usage: /<command>
     aliases: [tpno, tpn]
   nick:
-    description: Set a nickname
+    description: Set a nickname.
     usage: /<command>
     aliases: [nickname]
   msg:
-    description: message a player
+    description: PM a player.
     usage: /<command>
     aliases: [ whisper, tell ]
   secure:
+    description: Secure your account from being accessed by others.
     usage: /<command>
     aliases: [ reg ]
   delhome:
+    description: Delete the specified home.
     usage: /<command>
   home:
+    description: Teleport to your home(s).
     usage: /<command>
   sethome:
+    description: Set your home location.
     usage: /<command>
   reply:
+    description: Reply to a message.
     usage: /<command>
     aliases: [ r ]
   ignore:
+    description: Ignore a player.
     usage: /<command>
   kill:
+    description: Suicide.
     usage: /<command>
     aliases: [ suicide ]

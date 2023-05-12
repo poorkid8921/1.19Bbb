@@ -1,10 +1,8 @@
 package bab.bbb;
 
-import bab.bbb.Commands.DelHomeCommand;
-import bab.bbb.Commands.Discord;
-import bab.bbb.Commands.HomeCommand;
-import bab.bbb.Commands.SetHomeCommand;
+import bab.bbb.Commands.*;
 import bab.bbb.Events.DupeEvent;
+import bab.bbb.Events.Dupes.DonkeyDupe;
 import bab.bbb.Events.Dupes.FrameDupe;
 import bab.bbb.Events.misc.*;
 import bab.bbb.Events.misc.patches.AntiBurrow;
@@ -12,6 +10,7 @@ import bab.bbb.Events.misc.patches.AntiIllegalsListener;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
 import bab.bbb.Events.misc.patches.ChestLimit;
 import bab.bbb.tpa.*;
+import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import bab.bbb.utils.Tablist;
 import bab.bbb.utils.Type;
@@ -37,6 +36,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,41 +46,74 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
     public FileConfiguration config = this.getConfig();
-    private static double tps;
     private final ArrayList<TpaRequest> requests = new ArrayList<>();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    public HashMap<String, OfflinePlayer> nick2Player = new HashMap<>();
     public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
-
+    public final HashSet<String> linkRegexes = new HashSet<>();
+    public final HashSet<String> allowedCommands = new HashSet<>();
     @Override
     public void onEnable() {
         instance = this;
 
-        this.reloadConfig();
+        this.saveDefaultConfig();
+        this.saveCustomConfig();
         Utils.generatePlayerList();
 
         File homesFolder = new File(getDataFolder(), "homedata");
         if (!homesFolder.exists())
             homesFolder.mkdir();
 
+        linkRegexes.addAll(Arrays.asList(
+                "(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})",
+                "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z()]{1,6}\\b([-a-zA-Z()@:%_+.~#?&/=]*)"
+        ));
+
+        List<String> configuredAllowedCommands = Arrays.asList(
+                "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
+        );
+        for (String configuredAllowedCmd : configuredAllowedCommands)
+                allowedCommands.add(configuredAllowedCmd.toLowerCase());
+
         Bukkit.getPluginManager().registerEvents(new MiscEvents(this), this);
         Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
         Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
+        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
 
         if (this.getConfig().getBoolean("random-motd"))
             Bukkit.getPluginManager().registerEvents(new RandomMotd(), this);
-
         if (this.getConfig().getBoolean("better-chat"))
             Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
-
         if (this.getConfig().getBoolean("anti-illegals"))
             Bukkit.getPluginManager().registerEvents(new AntiIllegalsListener(), this);
+        if (this.getConfig().getBoolean("item-frame-dupe") && this.getConfig().getInt("item-frame-dupe-rng") > 0)
+            Bukkit.getPluginManager().registerEvents(new FrameDupe(), this);
+        if (this.getConfig().getBoolean("disable-the-use-of-packet-elytra-fly"))
+            Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
+        if (this.getConfig().getBoolean("anti-burrow"))
+            Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
+        if (config.getBoolean("tpa")) {
+            Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand(this));
+            Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand(this));
+            Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand(this));
+            Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand(this));
+        }
+        if (config.getBoolean("home")) {
+            Objects.requireNonNull(this.getCommand("delhome")).setExecutor(new DelHomeCommand());
+            Objects.requireNonNull(this.getCommand("home")).setExecutor(new HomeCommand());
+            Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHomeCommand());
+        }
+
+        Bukkit.getPluginManager().registerEvents(new DonkeyDupe(), this);
+        Bukkit.getScheduler().runTaskTimer(this, new Tablist(), 0, 100);
 
         if (this.getConfig().getBoolean("auto-restart")) {
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -93,48 +126,49 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
         }
 
-        if (this.getConfig().getBoolean("item-frame-dupe") && this.getConfig().getInt("item-frame-dupe-rng") > 0)
-            Bukkit.getPluginManager().registerEvents(new FrameDupe(), this);
-
-        if (this.getConfig().getBoolean("disable-the-use-of-packet-elytra-fly"))
-            Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
-
-        Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
-
-        if (this.getConfig().getBoolean("anti-burrow"))
-            Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
-
-        this.getCommand("discord").setExecutor(new Discord());
-        if (config.getBoolean("tpa")) {
-            this.getCommand("tpa").setExecutor(new TpaCommand(this));
-            this.getCommand("tpaccept").setExecutor(new TpacceptCommand(this));
-            this.getCommand("tpahere").setExecutor(new TpahereCommand(this));
-            this.getCommand("tpdeny").setExecutor(new TpdenyCommand(this));
+        if (this.getCustomConfig().get("otherdata.nicknames") == null)
+        {
+            this.getCustomConfig().set("otherdata.nicknames", "");
+            this.saveCustomConfig();
         }
-        if (config.getBoolean("home")) {
-            this.getCommand("delhome").setExecutor(new DelHomeCommand());
-            this.getCommand("home").setExecutor(new HomeCommand());
-            this.getCommand("sethome").setExecutor(new SetHomeCommand());
-        }
-
-        tps = getServer().getTPS()[0];
-        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
-                () -> new Thread(() -> tps = getServer().getTPS()[0]).start(), 1, 1, TimeUnit.SECONDS
-        );
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Tablist(), 0, 100);
     }
 
     public static Bbb getInstance() {
         return instance;
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("home")) {
+            Player player = (Player) sender;
+            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
+            if (homes == null) return Collections.emptyList();
+            if (args.length < 1)
+                return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+            else
+                return homes.stream().map(Home::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+        } else if (cmd.getName().equalsIgnoreCase("delhome")) {
+            Player player = (Player) sender;
+            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
+            if (homes == null) return Collections.emptyList();
+            if (args.length < 1)
+                return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+            else
+                return homes.stream().map(Home::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
+        } else {
+            if (args.length > 1) {
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
+            } else return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+        }
+    }
+
+    public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
         Player player = (Player) sender;
 
         if (cmd.getName().equals("nick")) {
             if (args.length == 0) {
                 removeNick(player);
-                Utils.infomsg(player, "your nickname has been removed");
+                Utils.infomsg(player, "Your nickname has been removed");
             } else {
                 if (player.isOp()) {
                     StringBuilder builder = new StringBuilder();
@@ -153,13 +187,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                Utils.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "The arguments are invalid");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Utils.errormsg(player, "the player is invalid");
+                Utils.errormsg(player, "The player is invalid");
                 return true;
             }
 
@@ -169,36 +203,36 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 msgargs.append(args[i]).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Utils.errormsg(player, "the message is invalid");
+                Utils.errormsg(player, "The message is invalid");
                 return true;
             }
 
-            String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + target.getUniqueId() + ".ignorelist");
+            String b = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(player.getName())) {
-                Utils.errormsg(player, "you can't send messages to players ignoring you");
+                Utils.errormsg(player, "You can't send messages to players ignoring you");
                 return true;
             }
 
-            String be = Bbb.getInstance().getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (be != null && be.contains(target.getName())) {
-                Utils.errormsg(player, "you can't send messages to players you are ignoring");
+                Utils.errormsg(player, "You can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Utils.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.parseText(player, "&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.parseText(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
-                Utils.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "The arguments are invalid");
                 return true;
             }
             Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
             if (target == null || !lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
-                Utils.errormsg(player, "you have no one to reply to");
+                Utils.errormsg(player, "You have no one to reply to");
                 return true;
             }
 
@@ -207,24 +241,24 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             for (String arg : args) msgargs.append(arg).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Utils.errormsg(player, "the message is invalid");
+                Utils.errormsg(player, "The message is invalid");
                 return true;
             }
 
-            String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + target.getUniqueId() + ".ignorelist");
+            String b = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(player.getName())) {
-                Utils.errormsg(player, "you can't send messages to players ignoring you");
+                Utils.errormsg(player, "You can't send messages to players ignoring you");
                 return true;
             }
 
-            String be = Bbb.getInstance().getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (be != null && be.contains(target.getName())) {
-                Utils.errormsg(player, "you can't send messages to players you are ignoring");
+                Utils.errormsg(player, "You can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Utils.parseText(player,"&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.parseText(target,"&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.parseText(player, "&7you reply to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.parseText(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
@@ -233,53 +267,53 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             if (getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ip") != null) {
                 this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", null);
                 this.saveCustomConfig();
-                Utils.errormsg(player, "your account has been unsecured");
+                Utils.errormsg(player, "Your account has been unsecured");
                 return true;
             }
 
-            this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", player.getAddress().getAddress().getHostAddress());
-            this.saveCustomConfig();
-            Utils.infomsg(player, "you have successfully secured your account");
+            Utils.setData("otherdata." + player.getUniqueId() + ".ip", Objects.requireNonNull(player.getAddress()).getAddress().getHostAddress());
+            Utils.saveData();
+            Utils.infomsg(player, "You have successfully secured your account");
 
             return true;
         } else if (cmd.getName().equals("ignore")) {
-            String b = this.getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            String b = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (b != null) {
-                    Utils.infomsg(player, "your ignored players are: " + b.replace(", ", "&e, &7"));
+                    Utils.infomsg(player, "Your ignored players are: " + b.replace(", ", "&e, &7"));
                     return true;
                 }
-                Utils.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "The arguments are invalid");
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Utils.errormsg(player, "the player is invalid");
+                Utils.errormsg(player, "The player is invalid");
                 return true;
             }
 
             if (target.getName().equals(player.getName())) {
-                Utils.errormsg(player, "you can't ignore yourself");
+                Utils.errormsg(player, "You can't ignore yourself");
                 return true;
             }
 
             String breplace = target.getName() + ", ";
             if (b != null) {
                 if (b.contains(target.getName())) {
-                    this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", b.replace(target.getName() + ", ", ""));
-                    this.saveCustomConfig();
-                    Utils.infomsg(player, "successfully un ignored &e" + target.getDisplayName());
+                    Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", b.replace(target.getName() + ", ", ""));
+                    Utils.saveData();
+                    Utils.infomsg(player, "Successfully un ignored &e" + target.getDisplayName());
                     return true;
                 }
 
                 breplace += b;
             }
 
-            this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
-            this.saveCustomConfig();
-            Utils.infomsg(player, "successfully ignored &e" + target.getDisplayName());
+            Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
+            Utils.saveData();
+            Utils.infomsg(player, "Successfully ignored &e" + target.getDisplayName());
             return true;
         } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
@@ -289,24 +323,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         return false;
     }
 
-    @Override
-    public void reloadConfig() {
-        super.reloadConfig();
-
-        saveDefaultConfig();
-        config = getConfig();
-        saveConfig();
-    }
-
     public void setnickonjoin(Player p) {
-        String s = this.getCustomConfig().getString("otherdata." + p.getUniqueId() + ".nickname");
+        String s = Utils.getString("otherdata." + p.getUniqueId() + ".nickname");
         if (s != null) {
             //realname(p, ColorUtils.removeColorCodes(s));
 
             p.setPlayerListName(Utils.parseText(s + ChatColor.GRAY));
             p.setDisplayName(Utils.parseText(s + ChatColor.GRAY));
-
-            this.nick2Player.put(p.getName(), p.getPlayer());
         }
     }
 
@@ -315,64 +338,58 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         String nickuncolor = Utils.removeColorCodes(nickcolor);
 
         if (p.isOp()) {
-            String prevnick = Utils.removeColorCodes(p.getDisplayName());
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            nick2Player.remove(prevnick);
-            nick2Player.put(nickuncolor, p);
 
-            this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", nick);
-            this.saveCustomConfig();
+            Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
+            Utils.saveData();
 
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p,"your nickname has been set to &e" + nickcolor);
+            Utils.infomsg(p, "&e[&4OP&e]&7 Your nickname has been set to &e" + nickcolor);
             return;
         }
 
+        String strr = this.getCustomConfig().getString("otherdata.nicknames");
+        boolean inuse = Utils.isduplicated(strr, nickuncolor);
+
         if (nickuncolor.length() < 3)
-            Utils.errormsg(p, "the nickname you entered is too short");
+            Utils.errormsg(p, "The nickname you entered is too short");
         else if (nickuncolor.length() > 16)
-            Utils.errormsg(p, "the nickname you entered is too long");
+            Utils.errormsg(p, "The nickname you entered is too long");
         else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
-            Utils.errormsg(p, "the nickname you entered is invalid");
-        else if ((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
-            Utils.errormsg(p, "the nickname you entered is already in use");
+            Utils.errormsg(p, "The nickname you entered is invalid");
+        else if (inuse)
+            Utils.errormsg(p, "The nickname you entered is already in use");
         else {
             String prevnick = Utils.removeColorCodes(p.getDisplayName());
+            String str = strr.replace("_" + prevnick, "_" + nickuncolor).replace("_" + p.getName(), "");
+
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            nick2Player.remove(prevnick);
-            nick2Player.put(nickuncolor, p);
 
-            this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", nick);
-            this.saveCustomConfig();
+            Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
+            Utils.setData("otherdata.nicknames", str);
+            Utils.saveData();
 
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p,"your nickname has been set to " + nickcolor);
+            Utils.infomsg(p, "Your nickname has been set to " + nickcolor);
         }
     }
 
     public void removeNick(Player p) {
         if (p.getName().equals(p.getDisplayName()))
             return;
-        String nickuncolor = ChatColor.stripColor(p.getDisplayName());
-        removeNick(nickuncolor);
+        String strr = Objects.requireNonNull(Utils.getString("otherdata.nicknames")).replace("_" + Utils.removeColorCodes(Objects.requireNonNull(p.getPlayer()).getDisplayName()), "_" + p.getPlayer().getName());
         //realname(p, nickuncolor);
 
         p.setDisplayName(p.getName());
         p.setPlayerListName(p.getName());
-        nick2Player.put(p.getName(), p);
-    }
-
-    public void removeNick(String nickuncolor) {
-        OfflinePlayer p = nick2Player.get(nickuncolor);
-        nick2Player.remove(nickuncolor);
-        this.getCustomConfig().set("otherdata." + p.getUniqueId() + ".nickname", null);
-        this.saveCustomConfig();
+        Utils.setData("otherdata.nicknames", strr);
+        Utils.saveData();
     }
 
     public void realname(Player p, String name) {
@@ -412,7 +429,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     }
 
     public static double getTPSofLastSecond() {
-        return tps;
+        return Bukkit.getServer().getTPS()[0];
     }
 
     public static int countMinecartInChunk(Chunk chunk) {

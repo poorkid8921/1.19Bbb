@@ -21,20 +21,37 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.apache.commons.math3.util.FastMath.*;
 import static org.bukkit.ChatColor.translateAlternateColorCodes;
 
+@SuppressWarnings("deprecation")
 public class Utils {
-    static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
-    static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
-    public final HashMap<Player, Double> cooldowns = new HashMap<Player, Double>();
-    public final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
-    public static Set<String> playerList = new HashSet<>();
-    public static Bbb plugin = Bbb.getInstance();
     public static final File homesFolder = new File(Bbb.getInstance().getDataFolder(), "homedata");
     public static final HashMap<UUID, ArrayList<Home>> homes = new HashMap<>();
+    public static final int minX = -100;
+    public static final int minZ = -100;
+    public static final int maxX = 100;
+    public static final int maxZ = 100;
+    public static final World respawnWorld = Bukkit.getWorld("world");
+    public static final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
+    public static final HashMap<UUID, Long> playersClickingBeds = new HashMap<>();
+    public static final HashMap<UUID, Long> playersClickingAnchors = new HashMap<>();
+    public static final ArrayList<String> combattag = new ArrayList<>();
+    public static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
+    public static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
+    public static final Set<String> playerList = new HashSet<>();
+    public static final Bbb plugin = Bbb.getInstance();
+    public static boolean works1 = true;
+    public static boolean works2 = false;
+    public static boolean works3 = false;
+    public static boolean works4 = false;
+    public static boolean works5 = false;
+    public static boolean works6 = false;
+    public final HashMap<Player, Double> cooldowns = new HashMap<Player, Double>();
+    public final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
 
     public static File getHomesFolder() {
         return homesFolder;
@@ -44,12 +61,18 @@ public class Utils {
         return homes;
     }
 
-    public static boolean works1 = true;
-    public static boolean works2 = false;
-    public static boolean works3 = false;
-    public static boolean works4 = false;
-    public static boolean works5 = false;
-    public static boolean works6 = false;
+    public static String getCommandLabel(String cmd) {
+        String[] parts = cmd.split(" ");
+        if (parts[0].startsWith("/"))
+            parts[0] = parts[0].substring(1);
+        return parts[0];
+    }
+
+    public static boolean isduplicated(String strr, String strtofind) {
+        String[] array = strr.split("_");
+        Stream<String> stream = Stream.of(array);
+        return stream.anyMatch(str -> str.equalsIgnoreCase(strtofind));
+    }
 
     public static int amountOfMaterialInChunk(Chunk chunk, Material material) {
         int minY = 1;
@@ -98,7 +121,7 @@ public class Utils {
             @Cleanup InputStreamReader isr = new InputStreamReader(fis);
             @Cleanup BufferedReader reader = new BufferedReader(isr);
             String[] lines = reader.lines().toArray(String[]::new);
-            String[] locArray = lines[1].split("::");
+            String[] locArray = lines[1].split("_");
             double x = Double.parseDouble(locArray[0]), y = Double.parseDouble(locArray[1]), z = Double.parseDouble(locArray[2]);
             World world = Bukkit.getWorld(locArray[3]);
             UUID owner = UUID.fromString(lines[0]);
@@ -112,11 +135,11 @@ public class Utils {
     }
 
     public static void loadHomes(Player player) {
-        for (File data : homesFolder.listFiles()) {
+        for (File data : Objects.requireNonNull(homesFolder.listFiles())) {
             if (!data.isDirectory()) continue;
             if (!data.getName().equals(player.getUniqueId().toString())) continue;
             ArrayList<Home> homeList = new ArrayList<>();
-            for (File mapFile : data.listFiles()) {
+            for (File mapFile : Objects.requireNonNull(data.listFiles())) {
                 if (!getFileExtension(mapFile).equals(".map")) continue;
                 homeList.add(parseHome(mapFile));
             }
@@ -131,7 +154,8 @@ public class Utils {
         try {
             if (!dataFolder.exists()) dataFolder.mkdir();
             File file = new File(dataFolder, fileName);
-            if (!file.exists()) file.createNewFile();
+            if (!file.exists())
+                file.createNewFile();
             UUID owner = home.getOwner();
             Location loc = home.getLocation();
             String name = home.getName();
@@ -140,7 +164,7 @@ public class Utils {
             String world = loc.getWorld().getName();
             String[] serialized = new String[3];
             serialized[0] = owner.toString();
-            serialized[1] = x + "::" + y + "::" + z + "::" + world;
+            serialized[1] = x + "_" + y + "_" + z + "_" + world;
             serialized[2] = name;
             for (String str : serialized) fw.write(str + "\n");
             if (homes.containsKey(owner)) {
@@ -181,10 +205,10 @@ public class Utils {
         ConfigurationSection ipConfSect = plugin.getCustomConfig().getConfigurationSection("ip");
         if (ipConfSect != null) {
             for (String ip : ipConfSect.getKeys(false)) {
-                Set<String> uuidKeys = plugin.getCustomConfig().getConfigurationSection("ip." + ip).getKeys(false);
+                Set<String> uuidKeys = Objects.requireNonNull(getConfigurationSection("ip." + ip)).getKeys(false);
 
                 for (String uuid : uuidKeys) {
-                    String uuidData = plugin.getCustomConfig().getString("ip." + ip + "." + uuid);
+                    String uuidData = getString("ip." + ip + "." + uuid);
                     String[] arg = uuidData.split(",");
                     playerList.add(arg[1].toLowerCase());
                 }
@@ -193,17 +217,17 @@ public class Utils {
     }
 
     public static synchronized void purge(String name) {
-        List<String> removeList = new ArrayList<String>();
+        List<String> removeList = new ArrayList<>();
         Date oldestDate = new Date(System.currentTimeMillis() - 8640000);
 
         ConfigurationSection ipConfSect = plugin.getCustomConfig().getConfigurationSection("ip");
         if (ipConfSect != null) {
             for (String ip : ipConfSect.getKeys(false)) {
-                Set<String> uuidKeys = plugin.getCustomConfig().getConfigurationSection("ip." + ip).getKeys(false);
+                Set<String> uuidKeys = Objects.requireNonNull(plugin.getCustomConfig().getConfigurationSection("ip." + ip)).getKeys(false);
                 int remainingKeys = uuidKeys.size();
 
                 for (String uuid : uuidKeys) {
-                    String uuidData = plugin.getCustomConfig().getString("ip." + ip + "." + uuid);
+                    String uuidData = getString("ip." + ip + "." + uuid);
                     String[] arg = uuidData.split(",");
                     Date date = new Date(Long.parseLong(arg[0]));
 
@@ -222,16 +246,16 @@ public class Utils {
         }
 
         for (String key : removeList)
-            plugin.getCustomConfig().set(key, null);
+            setData(key, null);
 
-        plugin.saveCustomConfig();
+        saveData();
     }
 
     public static synchronized void addUpdateIp(String ip, String uuid, String name) {
         Date date = new Date();
         plugin.getCustomConfig().set("ip." + ip.replace('.', '_') + "." + uuid, date.getTime() + "," + name);
         playerList.add(name.toLowerCase());
-        plugin.saveCustomConfig();
+        saveData();
     }
 
     public static synchronized List<String> getAltNames(String ip, String excludeUuid) {
@@ -242,7 +266,7 @@ public class Utils {
         ConfigurationSection ipIpConfSect = plugin.getCustomConfig().getConfigurationSection("ip." + ip.replace('.', '_'));
         if (ipIpConfSect != null) {
             for (String uuid : ipIpConfSect.getKeys(false)) {
-                String uuidData = plugin.getCustomConfig().getString("ip." + ip.replace('.', '_') + "." + uuid);
+                String uuidData = getString("ip." + ip.replace('.', '_') + "." + uuid);
                 String[] arg = uuidData.split(",");
                 Date date = new Date(Long.parseLong(arg[0]));
 
@@ -261,15 +285,6 @@ public class Utils {
         if (!altList.isEmpty())
             return "true";
         return null;
-    }
-
-    public void setCooldown(Player player) {
-        double delay = System.currentTimeMillis() + (deley * 1000L);
-        cooldowns.put(player, delay);
-    }
-
-    public boolean checkCooldown(Player player) {
-        return !cooldowns.containsKey(player) || cooldowns.get(player) <= System.currentTimeMillis();
     }
 
     public static double blocksPerTick(Location from, Location to) {
@@ -348,37 +363,37 @@ public class Utils {
             {
                 if (finalResult.equals("ERROR")) {
                     if (works1) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
                         works2 = true;
                         works1 = false;
                     }
 
                     if (works2) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
                         works3 = true;
                         works2 = false;
                     }
 
                     if (works3) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
                         works4 = true;
                         works3 = false;
                     }
 
                     if (works4) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
                         works5 = true;
                         works4 = false;
                     }
 
                     if (works5) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
                         works6 = true;
                         works5 = false;
                     }
 
                     if (works6) {
-                        checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
+                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
                         works1 = true;
                         works6 = false;
                     }
@@ -393,37 +408,37 @@ public class Utils {
                         }
                     } catch (ParseException eee) {
                         if (works1) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
                             works2 = true;
                             works1 = false;
                         }
 
                         if (works2) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
                             works3 = true;
                             works2 = false;
                         }
 
                         if (works3) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
                             works4 = true;
                             works3 = false;
                         }
 
                         if (works4) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
                             works5 = true;
                             works4 = false;
                         }
 
                         if (works5) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
                             works6 = true;
                             works5 = false;
                         }
 
                         if (works6) {
-                            checkPlayerAsync(p, p.getAddress().getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
+                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
                             works1 = true;
                             works6 = false;
                         }
@@ -437,30 +452,6 @@ public class Utils {
         ItemMeta itemStackMeta = item.getItemMeta();
         itemStackMeta.setDisplayName(formatString(name, overrideDefaultFormat));
         item.setItemMeta(itemStackMeta);
-    }
-
-    public static double[] linear(double from, double to, int max) {
-        final double[] res = new double[max];
-        for (int i = 0; i < max; i++) {
-            res[i] = from + i * ((to - from) / (max - 1));
-        }
-        return res;
-    }
-
-    public static String hsvGradient(String str, Color from, Color to) {
-        final float[] hsvFrom = java.awt.Color.RGBtoHSB(from.getRed(), from.getGreen(), from.getBlue(), null);
-        final float[] hsvTo = java.awt.Color.RGBtoHSB(to.getRed(), to.getGreen(), to.getBlue(), null);
-
-        final double[] h = linear(hsvFrom[0], hsvTo[0], str.length());
-        final double[] s = linear(hsvFrom[1], hsvTo[1], str.length());
-        final double[] v = linear(hsvFrom[2], hsvTo[2], str.length());
-
-        final StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < str.length(); i++) {
-            builder.append(net.md_5.bungee.api.ChatColor.of(java.awt.Color.getHSBColor((float) h[i], (float) s[i], (float) v[i]))).append(str.charAt(i));
-        }
-        return builder.toString();
     }
 
     public static void errormsg(Player p, String s) {
@@ -483,6 +474,35 @@ public class Utils {
             message = message.replace(hexCode, builder.toString());
             matcher = pattern.matcher(message);
         }
+        message = message.replace("<3", "❤")
+                .replace("[ARROW]", "➜")
+                .replace("[unicode]", "")
+                .replace("[rainbow]", "")
+                .replace("[TICK]", "✔")
+                .replace("[X]", "✖")
+                .replace("[STAR]", "★")
+                .replace("[POINT]", "●")
+                .replace("[FLOWER]", "✿")
+                .replace("[XD]", "☻")
+                .replace("[DANGER]", "⚠")
+                .replace("[MAIL]", "✉")
+                .replace("[ARROW2]", "➤")
+                .replace("[ROUND_STAR]", "✰")
+                .replace("[SUIT]", "♦")
+                .replace("[+]", "✦")
+                .replace("[CIRCLE]", "●")
+                .replace("[HEART]", "❤")
+                .replace("[SUN]", "✹")
+                .replace("[%]", "‱")
+                .replace("[1/4]", "¼")
+                .replace("[1/2]", "½")
+                .replace("[3/4]", "¾")
+                .replace("[SAD]", "☹")
+                .replace("[CARPET]", "░▒▓")
+                .replace("[BOW]", "\uD83C\uDFF9")
+                .replace("[SKULL]", "☠")
+                .replace("[HEART2]", "❣")
+                .replace("[AXE]", "\uD83E\uDE93");
         return translateAlternateColorCodes('&', message);
     }
 
@@ -492,10 +512,10 @@ public class Utils {
 
     public static void message(Player e, String msg) {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
-            if (b != null && b.contains(e.getPlayer().getName()))
+            String b = Utils.getString("otherdata." + p.getUniqueId() + ".ignorelist");
+            if (b != null && b.contains(Objects.requireNonNull(e.getPlayer()).getName()))
                 continue;
-            p.sendMessage(parseText(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
+            p.sendMessage(parseText(Objects.requireNonNull(e.getPlayer()), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
         }
     }
 
@@ -604,25 +624,25 @@ public class Utils {
     public static void tpmsg(Player p, Player target, int u) {
         switch (u) {
             case 1 -> // tp has been sent to
-                    infomsg(p, "the teleport request has been sent to &e" + target.getDisplayName());
+                    infomsg(p, "The teleport request has been sent to &e" + target.getDisplayName());
             case 2 -> // timed out msg
-                    infomsg(p, "your teleport request to &e" + target.getDisplayName() + " &7has timed out");
+                    infomsg(p, "Your teleport request to &e" + target.getDisplayName() + " &7has timed out");
             case 3 -> // tpa wants to teleport to you
                     infomsg(p, "&e" + target.getDisplayName() + " &7wants to teleport to you");
             case 4 -> // tpahere wants to teleport to you
                     infomsg(p, "&e" + target.getDisplayName() + " &7wants you to teleport to them");
             case 5 -> // has been denied
-                    infomsg(p, "your request to &e" + target.getDisplayName() + " &7was denied");
+                    infomsg(p, "Your request to &e" + target.getDisplayName() + " &7was denied");
             case 6 -> // you have denied
-                    infomsg(p, "you have denied &e" + target.getDisplayName() + "&7's request");
+                    infomsg(p, "You have denied &e" + target.getDisplayName() + "&7's request");
             case 7 -> // teleporting...
-                    infomsg(p, "teleporting...");
+                    infomsg(p, "Teleporting...");
             case 8 -> // teleporting to player...
-                    infomsg(p, "teleporting to &e" + target.getDisplayName() + " &7...");
+                    infomsg(p, "Teleporting to &e" + target.getDisplayName() + " &7...");
             case 9 -> // isn't online anymore
                     infomsg(p, "&e" + target.getDisplayName() + " &7isn't online anymore");
             case 10 -> // teleporting player...
-                    infomsg(p, "teleporting &e" + target.getDisplayName() + "&7...");
+                    infomsg(p, "Teleporting &e" + target.getDisplayName() + "&7...");
         }
     }
 
@@ -643,44 +663,19 @@ public class Utils {
     }
 
     public static String getTps() {
-        return parseText(format1(Bukkit.getServer().getTPS()[0]));
+        return translatestring(format1(Bbb.getTPSofLastSecond()));
+    }
+
+    public static String translate(String text) {
+        return translatestring(text.replaceAll("%tps%", getTps()).replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size())));
     }
 
     public static String parseText(Player player, String text) {
-        return parseText(text).replaceAll("%ping%", format2(player.getPing()));
+        return translate(text.replaceAll("%ping%", format2(player.getPing())));
     }
 
     public static String parseText(String text) {
-        return translatestring(text).replaceAll("%tps%", getTps()).replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size())
-                .replace("<3", "❤")
-                .replace("[ARROW]", "➜")
-                .replace("[TICK]", "✔")
-                .replace("[X]", "✖")
-                .replace("[STAR]", "★")
-                .replace("[POINT]", "●")
-                .replace("[FLOWER]", "✿")
-                .replace("[XD]", "☻")
-                .replace("[DANGER]", "⚠")
-                .replace("[MAIL]", "✉")
-                .replace("[ARROW2]", "➤")
-                .replace("[ROUND_STAR]", "✰")
-                .replace("[SUIT]", "♦")
-                .replace("[+]", "✦")
-                .replace("[CIRCLE]", "●")
-                .replace("[HEART]", "❤")
-                .replace("[SUN]", "✹")
-                .replace("[%]", "‱")
-                .replace("[1/4]", "¼")
-                .replace("[1/2]", "½")
-                .replace("[3/4]", "¾")
-                .replace("[SAD]", "☹")
-                .replace("[CARPET]", "░▒▓")
-                .replace("[BOW]", "\uD83C\uDFF9")
-                .replace("[SKULL]", "☠")
-                .replace("[unicode]", "")
-                .replace("[rainbow]", "")
-                .replace("[HEART2]", "❣")
-                .replace("[AXE]", "\uD83E\uDE93"));
+        return translate(text);
     }
 
     public static String removeColorCodes(String string) {
@@ -748,7 +743,7 @@ public class Utils {
         itemStack.setItemMeta(itemMeta);
     }
 
-    private static boolean doesOutputNameMatchInputName(String outputName, String inputName) {
+    public static boolean doesOutputNameMatchInputName(String outputName, String inputName) {
         return stripChars(outputName, '&', ChatColor.COLOR_CHAR).equals(stripChars(inputName, ChatColor.COLOR_CHAR));
     }
 
@@ -758,5 +753,106 @@ public class Utils {
             strippedStr = str.replaceAll(String.valueOf(c), "");
         }
         return strippedStr;
+    }
+
+    public static void setData(String from, String to) {
+        plugin.getCustomConfig().set(from, to);
+    }
+
+    public static Boolean isLong(String from) {
+        return plugin.getCustomConfig().isLong(from);
+    }
+
+    public static Boolean isBoolean(String from) {
+        return plugin.getCustomConfig().isBoolean(from);
+    }
+
+    public static Boolean isColor(String from) {
+        return plugin.getCustomConfig().isColor(from);
+    }
+
+    public static Boolean isInt(String from) {
+        return plugin.getCustomConfig().isInt(from);
+    }
+
+    public static Boolean isDouble(String from) {
+        return plugin.getCustomConfig().isDouble(from);
+    }
+
+    public static Boolean isConfigurationSection(String from) {
+        return plugin.getCustomConfig().isConfigurationSection(from);
+    }
+
+    public static ConfigurationSection getConfigurationSection(String from) {
+        return plugin.getCustomConfig().getConfigurationSection(from);
+    }
+
+    public static Boolean isItemStack(String from) {
+        return plugin.getCustomConfig().isItemStack(from);
+    }
+
+    public static Boolean isOfflinePlayer(String from) {
+        return plugin.getCustomConfig().isOfflinePlayer(from);
+    }
+
+    public static Boolean isLocation(String from) {
+        return plugin.getCustomConfig().isLocation(from);
+    }
+
+    public static Boolean isList(String from) {
+        return plugin.getCustomConfig().isList(from);
+    }
+
+    public static Boolean isString(String from) {
+        return plugin.getCustomConfig().isString(from);
+    }
+
+    public static Boolean isVector(String from) {
+        return plugin.getCustomConfig().isVector(from);
+    }
+
+    public static Boolean isSet(String from) {
+        return plugin.getCustomConfig().isSet(from);
+    }
+
+    public static Object getObject(String from) {
+        return plugin.getCustomConfig().get(from);
+    }
+
+    public static String getString(String from) {
+        return plugin.getCustomConfig().getString(from);
+    }
+
+    public static Boolean getBoolean(String from) {
+        return plugin.getCustomConfig().getBoolean(from);
+    }
+
+    public static List<String> getStringList(String from) {
+        return getStringList(from);
+    }
+
+    public static Integer getInt(String from) {
+        return plugin.getCustomConfig().getInt(from);
+    }
+
+    public static List<Integer> getIntList(String from) {
+        return plugin.getCustomConfig().getIntegerList(from);
+    }
+
+    public static Double getDouble(String from) {
+        return plugin.getCustomConfig().getDouble(from);
+    }
+
+    public static void saveData() {
+        plugin.saveCustomConfig();
+    }
+
+    public void setCooldown(Player player) {
+        double delay = System.currentTimeMillis() + (deley * 1000L);
+        cooldowns.put(player, delay);
+    }
+
+    public Boolean checkCooldown(Player player) {
+        return !cooldowns.containsKey(player) || cooldowns.get(player) <= System.currentTimeMillis();
     }
 }

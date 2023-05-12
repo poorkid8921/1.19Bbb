@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import java.util.List;
 import java.util.Random;
 
+@SuppressWarnings("deprecation")
 public class RandomMotd implements Listener {
     private final Bbb plugin = Bbb.getInstance();
 

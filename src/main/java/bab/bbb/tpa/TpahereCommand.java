@@ -1,7 +1,6 @@
 package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
-import bab.bbb.Events.misc.MiscEvents;
 import bab.bbb.utils.Utils;
 import bab.bbb.utils.Type;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -17,6 +16,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import static bab.bbb.utils.Utils.*;
+
+@SuppressWarnings("deprecation")
 public class TpahereCommand implements CommandExecutor {
     private final Bbb plugin;
 
@@ -25,34 +27,34 @@ public class TpahereCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
             return true;
 
         if (args.length < 1) {
-            Utils.errormsg(user, "the arguments are invalid");
+            Utils.errormsg(user, "The arguments are invalid");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            Utils.errormsg(user, "player &e" + args[0] + " &7couldn't be found");
+            Utils.errormsg(user, "Player &e" + args[0] + " &7couldn't be found");
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            Utils.errormsg(user, "you can't teleport to yourself");
+            Utils.errormsg(user, "You can't teleport to yourself");
             return true;
         }
 
         if (plugin.getRequest(recipient) != null) {
-            Utils.errormsg(user, "player &e" + recipient.getDisplayName() + " &7already has an active request");
+            Utils.errormsg(user, "Player &e" + recipient.getDisplayName() + " &7already has an active request");
             return true;
         }
 
-        if (MiscEvents.combattag.contains(user.getName())) {
-            Utils.errormsg(user, "you can't send tpa requests whilst being combat tagged");
+        if (combattag.contains(user.getName())) {
+            Utils.errormsg(user, "You can't send tpa requests whilst being combat tagged");
             return true;
         }
 

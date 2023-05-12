@@ -1,22 +1,19 @@
 package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
-import bab.bbb.Events.misc.MiscEvents;
-import bab.bbb.utils.Utils;
 import bab.bbb.utils.Type;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import static bab.bbb.utils.Utils.*;
 
+@SuppressWarnings("deprecation")
 public class TpacceptCommand implements CommandExecutor {
     private final Bbb plugin;
 
@@ -29,7 +26,7 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
 
         if (plugin.getRequest(user) == null) {
-            Utils.errormsg(user, "you don't have any active request");
+            errormsg(user, "You don't have any active request");
             return true;
         }
 
@@ -39,18 +36,18 @@ public class TpacceptCommand implements CommandExecutor {
         Player recipient = Bukkit.getPlayer(targetName);
 
         if (recipient == null) {
-            Utils.errormsg(user, "player &e" + request.getSender().getDisplayName() + " isn't online anymore");
+            errormsg(user, "Player &e" + request.getSender().getDisplayName() + " isn't online anymore");
             return true;
         }
 
-        if (MiscEvents.combattag.contains(user.getName())) {
-            Utils.errormsg(user, "can't teleport whilst being combat tagged");
+        if (combattag.contains(user.getName())) {
+            errormsg(user, "Can't teleport whilst being combat tagged");
             return true;
         }
 
         if (request.getType() == Type.TPA) {
-            Utils.tpmsg(((Player) sender).getPlayer(), recipient, 10);
-            Utils.tpmsg(recipient, null, 7);
+            tpmsg(((Player) sender).getPlayer(), recipient, 10);
+            tpmsg(recipient, null, 7);
 
             new BukkitRunnable() {
                 @Override
@@ -69,8 +66,8 @@ public class TpacceptCommand implements CommandExecutor {
                 }
             }.runTaskLater(plugin, 100);
         } else if (request.getType() == Type.TPAHERE) {
-            Utils.tpmsg(((Player) sender).getPlayer(), recipient, 7);
-            Utils.tpmsg(recipient, ((Player) sender).getPlayer(), 10);
+            tpmsg(((Player) sender).getPlayer(), recipient, 7);
+            tpmsg(recipient, ((Player) sender).getPlayer(), 10);
 
             new BukkitRunnable() {
                 @Override

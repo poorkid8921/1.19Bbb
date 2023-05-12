@@ -8,7 +8,6 @@ public class RainbowText {
     private String fancyText = "";
     private static final List<String> RAINBOW = Arrays.asList("§4", "§c", "§6", "§e", "§a", "§2", "§b", "§3" /**/, "§9", "§1",/**/ "§5", "§d"); // size is 12
     private final List<String> rainbowArray;
-    private final String prefix = "";
 
     public RainbowText(String text) {
         if (text != null)
@@ -25,6 +24,7 @@ public class RainbowText {
             String letter = Character.toString(l);
             String t1 = fancyText;
             if (!letter.equalsIgnoreCase(" ")) {
+                String prefix = "";
                 fancyText = t1 + rainbowArray.get(spot) + prefix + letter;
                 if (spot == rainbowArray.size() - 1)
                     spot = 0;

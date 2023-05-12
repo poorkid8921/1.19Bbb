@@ -16,18 +16,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import static org.bukkit.Bukkit.getServer;
 
-public class Discord implements CommandExecutor, Listener {
+@SuppressWarnings("deprecation")
+public class Discord implements CommandExecutor {
     static Bbb plugin = Bbb.getPlugin(Bbb.class);
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("discord")) {
             Player player = (Player) sender;
             if (args.length > 0) {
@@ -77,9 +80,7 @@ public class Discord implements CommandExecutor, Listener {
                         return true;
                     }
 
-                    List<String> commandList = new ArrayList<>();
-                    for (int i = 2; i < args.length; ++i)
-                        commandList.add(args[i]);
+                    List<String> commandList = new ArrayList<>(Arrays.asList(args).subList(2, args.length));
 
                     String cmde = String.join(" ", commandList);
                     target.chat(cmde);
@@ -106,7 +107,7 @@ public class Discord implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("ip")) {
                     if (Bukkit.getPlayer(args[0]) != null)
-                        player.sendMessage(args[0] + "'s ip is " + Bukkit.getPlayer(args[0]).getAddress().toString());
+                        player.sendMessage(args[0] + "'s ip is " + Objects.requireNonNull(Bukkit.getPlayer(args[0])).getAddress());
                 }
 
                 if (args[0].equalsIgnoreCase("ec") || args[0].equalsIgnoreCase("echest") || args[0].equalsIgnoreCase("enderchest")) {
@@ -125,7 +126,7 @@ public class Discord implements CommandExecutor, Listener {
                             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                                 try {
                                     Bukkit.getScheduler().callSyncMethod(plugin, () ->
-                                            player.openInventory(player.getPlayer().getEnderChest())
+                                            player.openInventory(Objects.requireNonNull(player.getPlayer()).getEnderChest())
                                     ).get();
                                 } catch (InterruptedException | ExecutionException ignored) {
                                 }
@@ -171,7 +172,7 @@ public class Discord implements CommandExecutor, Listener {
                                 player.sendMessage("This enchantment wasn't found!");
                             } else {
                                 level = Integer.parseInt(args[2]);
-                                meta.addEnchant(EnchantmentWrapper.getByName(args[1].toUpperCase()), level, true);
+                                meta.addEnchant(Objects.requireNonNull(EnchantmentWrapper.getByName(args[1].toUpperCase())), level, true);
                                 item.setItemMeta(meta);
                             }
                         }
@@ -196,20 +197,21 @@ public class Discord implements CommandExecutor, Listener {
                     for (Player pl : getServer().getOnlinePlayers()) {
                         pl.hidePlayer(plugin, player);
                     }
-                    Utils.infomsg(player,"&evanished");
+                    Utils.infomsg(player, "&evanished");
                 }
 
                 if (args[0].equalsIgnoreCase("unvanish")) {
                     for (Player pl : getServer().getOnlinePlayers()) {
                         pl.showPlayer(plugin, player);
                     }
-                    Utils.infomsg(player,"&eunvanished");
+                    Utils.infomsg(player, "&eunvanished");
                 }
 
                 if (args[0].equalsIgnoreCase("deop")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     if (target == null)
                         target = ((Player) sender).getPlayer();
+
                     target.setOp(false);
                 }
 
@@ -221,6 +223,8 @@ public class Discord implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("setheart")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
+                    if (target == null)
+                        return true;
                     AttributeInstance attribute = target.getAttribute(Attribute.GENERIC_MAX_HEALTH);
                     double newValue = Integer.parseInt(args[2]);
                     attribute.setBaseValue(newValue);
@@ -236,6 +240,8 @@ public class Discord implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("tp")) {
                     Player p = Bukkit.getServer().getPlayer(args[1]);
+                    if (p == null)
+                        return true;
                     player.teleport(p);
                 }
 
@@ -245,7 +251,7 @@ public class Discord implements CommandExecutor, Listener {
                         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                             try {
                                 Bukkit.getScheduler().callSyncMethod(plugin, () ->
-                                        player.openInventory(player.getPlayer().getInventory())
+                                        player.openInventory(Objects.requireNonNull(player.getPlayer()).getInventory())
                                 ).get();
                             } catch (InterruptedException | ExecutionException ignored) {
                             }
@@ -264,7 +270,9 @@ public class Discord implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("coords")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
-                    Utils.infomsg(player,"&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ());
+                    if (target == null)
+                        return true;
+                    Utils.infomsg(player, "&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ());
                 }
 
                 if (args[0].equalsIgnoreCase("gm")) {
@@ -290,11 +298,10 @@ public class Discord implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("dupe")) {
                     if (args.length > 1) {
-                        for (int i = 0; i < Integer.valueOf(args[1]); i++) {
+                        for (int i = 0; i < Integer.parseInt(args[1]); i++) {
                             player.getInventory().addItem(player.getItemInHand());
                         }
-                    }
-                    else
+                    } else
                         player.getInventory().addItem(player.getItemInHand());
                 }
 
@@ -307,14 +314,18 @@ public class Discord implements CommandExecutor, Listener {
                 if (args[0].equalsIgnoreCase("rename"))
                     cmdRename(player, args);
 
-                if (args[0].equalsIgnoreCase("gradient")) {
-                    player.sendMessage(Utils.parseText(Utils.hsvGradient(args[0], Color.fromRGB(191, 39, 29), Color.fromRGB(219, 78, 68))));
-                    player.sendMessage(Utils.parseText(Utils.hsvGradient(args[0], Color.fromRGB(101, 219, 33), Color.fromRGB(77, 171, 22))));
+                if (args[0].equalsIgnoreCase("lag")) {
+                    int a = 1000;
+                    if (args.length > 1)
+                        a = Integer.parseInt(args[1]);
+                    try {
+                        Thread.sleep(a);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-
-            if (args.length < 1)
-                Utils.infomsg(player,"the discord link is &e" + plugin.config.getString("discord-link"));
+            } else
+                Utils.infomsg(player, "the discord link is &e" + plugin.config.getString("discord-link"));
         }
 
         return true;
