@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 
-import static bab.bbb.utils.Methods.parseText;
+import static bab.bbb.utils.Utils.parseText;
 
 @RequiredArgsConstructor
 public class Tablist implements Runnable {

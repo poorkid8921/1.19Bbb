@@ -2,7 +2,6 @@ take-anti-lag-measures-if-tps: 14
 disable-the-use-of-packet-elytra-fly: true
 item-frame-dupe: false
 item-frame-dupe-rng: 5
-chest-limit-per-chunk: true
 anti-illegals: true
 illegal-items: true
 overstacked-items: true
@@ -22,7 +21,7 @@ no-death-messages: false
 no-join-messages: false
 no-quit-messages: false
 
-tablist-header: "&7&o&l2BUILDERS\n&7&o&l2TOOLS    \n"
+tablist-header: "&7&o&l2BUILDERS\n&7&o&l2TOOLS     \n"
 tablist-footer: "\n%tps% &7TPS - %players% players - %ping% &7ping"
 
 randommotdenabled: true

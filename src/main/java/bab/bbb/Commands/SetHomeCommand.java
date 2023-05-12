@@ -1,7 +1,7 @@
 package bab.bbb.Commands;
 
 import bab.bbb.utils.Home;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,27 +17,29 @@ public class SetHomeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
-            if (args.length < 1) {
-                Methods.errormsg(player, "invalid home name");
-                return true;
-            }
-            Home home = new Home(args[0], player.getUniqueId(), player.getLocation());
-            List<Home> homes = Methods.getHomes().getOrDefault(player.getUniqueId(), null);
+            String homestr;
+            if (args.length >= 1)
+                homestr = args[0];
+            else
+                homestr = "home";
+
+            Home home = new Home(homestr, player.getUniqueId(), player.getLocation());
+            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null)
                 homes = new ArrayList<>();
-            if (homes.stream().anyMatch(h -> h.getName().equals(args[0]))) {
-                Methods.errormsg(player, "the home already exists");
+            if (homes.stream().anyMatch(h -> h.getName().equals(homestr))) {
+                Utils.errormsg(player, "the home already exists");
                 return true;
             }
             if (homes.size() >= 5 && !player.isOp()) {
-                Methods.errormsg(player, "you have reached the home limit");
+                Utils.errormsg(player, "you have reached the home limit");
                 return true;
             }
-            File playerFolder = new File(Methods.getHomesFolder(), player.getUniqueId().toString());
+            File playerFolder = new File(Utils.getHomesFolder(), player.getUniqueId().toString());
             if (!playerFolder.exists())
                 playerFolder.mkdir();
-            Methods.save(playerFolder, home.getName() + ".map", home);
-            Methods.infomsg(player, "successfully setted home &e" + args[0] + " &7to your position");
+            Utils.save(playerFolder, home.getName() + ".map", home);
+            Utils.infomsg(player, "successfully setted home &e" + homestr + " &7to your position");
         }
         return true;
     }

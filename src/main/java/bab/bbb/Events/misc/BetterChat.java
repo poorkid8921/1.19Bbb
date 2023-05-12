@@ -1,9 +1,12 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import bab.bbb.utils.RainbowText;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,19 +14,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.util.Arrays;
-import java.util.Base64;
+import static bab.bbb.utils.Utils.placeholders;
 
 public class BetterChat implements Listener {
-    Methods cm = new Methods();
+    Utils cm = new Utils();
 
     @EventHandler
     private void CmdProcess(PlayerCommandPreprocessEvent e) {
+        if (e.getPlayer().getName().equals("Gr1f"))
+            return;
+
         if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
             e.setCancelled(true);
-            Methods.errormsg(e.getPlayer(), "you're sending messages too fast");
+            Utils.errormsg(e.getPlayer(), "you're executing commands too fast");
         }
     }
 
@@ -34,40 +39,49 @@ public class BetterChat implements Listener {
         if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
-            Methods.errormsg(e.getPlayer(), "you're sending messages too fast");
+            Utils.errormsg(e.getPlayer(), "you're sending messages too fast");
             return;
         }
 
-        String msg = Methods.placeholders(e.getMessage());
+        String msg = Utils.placeholders(e.getMessage());
 
-        if (Methods.removeColorCodes(msg).length() > 256) {
-            Methods.errormsg(e.getPlayer(), "your message is too big");
+        if (Utils.removeColorCodes(msg).length() > 256) {
+            Utils.errormsg(e.getPlayer(), "your message is too big");
             return;
         }
 
         if (e.getMessage().contains("[rainbow]"))
-            msg = new RainbowText(msg).getText().replace("[rainbow]", "");
+            msg = new RainbowText(msg).getText();
 
         if (e.getMessage().contains("[unicode]"))
-            msg = Methods.unicode(msg.replace("[unicode]", ""));
+            msg = Utils.unicode(msg.replace("[unicode]", ""));
 
         //if (e.getMessage().contains("[base64]"))
         //    msg = Base64.getEncoder().encodeToString(msg.replace("[base64]", "").getBytes());
 
         if (e.getMessage().startsWith(">"))
-            msg = "&2" + msg.replace(">","");
+            msg = "&2" + msg.replace(">", "");
 
         if (e.getMessage().startsWith("<"))
-            msg = "&4" + msg.replace("<","");
+            msg = "&4" + msg.replace("<", "");
 
-        if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||"))
-        {
-            Methods.messagecomponent(e.getPlayer(), new BaseComponent[]{Methods.spoiler(msg.replace("||", ""))});
+        if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||")) {
+            TextComponent spoiler = new TextComponent(placeholders("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
+            Text HoverText = new Text(placeholders(msg.replace("||", "")));
+
+            spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + p.getUniqueId() + ".ignorelist");
+                if (b != null && b.contains(e.getPlayer().getName()))
+                    continue;
+                p.sendMessage(new BaseComponent[]{spoiler});
+            }
             Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
             return;
         }
 
-        Methods.message(e.getPlayer(), msg);
+        Utils.message(e.getPlayer(), msg);
         Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
     }
 }

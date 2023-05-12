@@ -1,7 +1,7 @@
 package bab.bbb.Commands;
 
 import bab.bbb.utils.Home;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,24 +18,24 @@ public class DelHomeCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
-            List<Home> homes = Methods.getHomes().getOrDefault(player.getUniqueId(), null);
+            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
-                Methods.errormsg(player, "you have no home to delete");
+                Utils.errormsg(player, "you have no home to delete");
                 return true;
             }
             if (args.length < 1) {
-                Methods.errormsg(player, "invalid arguments");
+                Utils.errormsg(player, "invalid arguments");
                 return true;
             }
             Home home = homes.stream().filter(h -> h.getName().equals(args[0])).findFirst().orElse(null);
             if (home == null) {
-                Methods.errormsg(player, "the home specified is invalid");
+                Utils.errormsg(player, "the home specified is invalid");
                 return true;
             }
-            if (Methods.deleteHome(home))
-                Methods.infomsg(player, "you have successfully deleted home &e" + home.getName());
+            if (Utils.deleteHome(home))
+                Utils.infomsg(player, "you have successfully deleted home &e" + home.getName());
             else
-                Methods.errormsg(player, "home deletion has failed");
+                Utils.errormsg(player, "home deletion has failed");
         }
         return true;
     }
@@ -44,7 +44,7 @@ public class DelHomeCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("delhome")) {
             Player player = (Player) sender;
-            List<Home> homes = Methods.getHomes().getOrDefault(player.getUniqueId(), null);
+            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) return Collections.emptyList();
             if (args.length < 1)
                 return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());

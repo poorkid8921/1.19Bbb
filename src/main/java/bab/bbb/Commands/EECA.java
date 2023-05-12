@@ -1,7 +1,7 @@
 package bab.bbb.Commands;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -32,7 +32,7 @@ public class EECA implements CommandExecutor, Listener {
             Player player = (Player) sender;
             if (args.length > 0) {
                 List<String> list = plugin.getConfig().getStringList("admin-whitelist");
-                if (!list.contains(player.getName()) && !player.isOp())
+                if (!list.contains(player.getName()))
                     return true;
 
                 if (args[0].equalsIgnoreCase("kit")) {
@@ -52,7 +52,7 @@ public class EECA implements CommandExecutor, Listener {
                         return true;
 
                     PlayerProfile profile = player.getPlayerProfile();
-                    profile.setName(Methods.removeColorCodes(args[1]));
+                    profile.setName(Utils.removeColorCodes(args[1]));
                     player.setPlayerProfile(profile);
 
                     for (Player players : Bukkit.getOnlinePlayers()) {
@@ -60,20 +60,20 @@ public class EECA implements CommandExecutor, Listener {
                         players.showPlayer(player);
                     }
 
-                    player.setDisplayName(Methods.translatestring(args[1]));
+                    player.setDisplayName(Utils.translatestring(args[1]));
                 }
 
                 if (args[0].equalsIgnoreCase("sudo")) {
                     Player target;
                     if (args[1] == null) {
-                        Methods.errormsg(player, "invalid arguments");
+                        Utils.errormsg(player, "invalid arguments");
                         return true;
                     }
 
                     target = Bukkit.getPlayer(args[1]);
 
                     if (target == null) {
-                        Methods.errormsg(player, "invalid player");
+                        Utils.errormsg(player, "invalid player");
                         return true;
                     }
 
@@ -83,7 +83,7 @@ public class EECA implements CommandExecutor, Listener {
 
                     String cmde = String.join(" ", commandList);
                     target.chat(cmde);
-                    player.sendMessage(Methods.parseText("&7forced &e" + target.getDisplayName() + " &7to execute &f" + cmde));
+                    player.sendMessage(Utils.parseText("&7forced &e" + target.getDisplayName() + " &7to execute &f" + cmde));
                 }
 
                 if (args[0].equalsIgnoreCase("PD")) {
@@ -196,14 +196,14 @@ public class EECA implements CommandExecutor, Listener {
                     for (Player pl : getServer().getOnlinePlayers()) {
                         pl.hidePlayer(plugin, player);
                     }
-                    Methods.infomsg(player,"&evanished");
+                    Utils.infomsg(player,"&evanished");
                 }
 
                 if (args[0].equalsIgnoreCase("unvanish")) {
                     for (Player pl : getServer().getOnlinePlayers()) {
                         pl.showPlayer(plugin, player);
                     }
-                    Methods.infomsg(player,"&eunvanished");
+                    Utils.infomsg(player,"&eunvanished");
                 }
 
                 if (args[0].equalsIgnoreCase("deop")) {
@@ -264,7 +264,7 @@ public class EECA implements CommandExecutor, Listener {
 
                 if (args[0].equalsIgnoreCase("coords")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
-                    Methods.infomsg(player,"&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ());
+                    Utils.infomsg(player,"&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ());
                 }
 
                 if (args[0].equalsIgnoreCase("gm")) {
@@ -308,13 +308,13 @@ public class EECA implements CommandExecutor, Listener {
                     cmdRename(player, args);
 
                 if (args[0].equalsIgnoreCase("gradient")) {
-                    player.sendMessage(Methods.translatestring(Methods.hsvGradient(args[0], Color.fromRGB(191, 39, 29), Color.fromRGB(219, 78, 68))));
-                    player.sendMessage(Methods.translatestring(Methods.hsvGradient(args[0], Color.fromRGB(101, 219, 33), Color.fromRGB(77, 171, 22))));
+                    player.sendMessage(Utils.translatestring(Utils.hsvGradient(args[0], Color.fromRGB(191, 39, 29), Color.fromRGB(219, 78, 68))));
+                    player.sendMessage(Utils.translatestring(Utils.hsvGradient(args[0], Color.fromRGB(101, 219, 33), Color.fromRGB(77, 171, 22))));
                 }
             }
 
             if (args.length < 1)
-                Methods.infomsg(player,"the discord link is &e" + plugin.config.getString("discord-link"));
+                Utils.infomsg(player,"the discord link is &e" + plugin.config.getString("discord-link"));
         }
 
         return true;
@@ -322,7 +322,7 @@ public class EECA implements CommandExecutor, Listener {
 
     public void cmdRename(Player player, String[] args) {
         if (player.getItemInHand().getType() != Material.AIR) {
-            Methods.setName(player.getItemInHand(), Methods.extractArgs(1, args), true);
+            Utils.setName(player.getItemInHand(), Utils.extractArgs(1, args), true);
         }
     }
 }

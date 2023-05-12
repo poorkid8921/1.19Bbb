@@ -12,8 +12,9 @@ import bab.bbb.Events.misc.patches.AntiIllegalsListener;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
 import bab.bbb.Events.misc.patches.ChestLimit;
 import bab.bbb.tpa.*;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import bab.bbb.utils.Tablist;
+import bab.bbb.utils.Type;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
@@ -61,7 +62,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         instance = this;
 
         this.reloadConfig();
-        Methods.generatePlayerList();
+        Utils.generatePlayerList();
 
         File homesFolder = new File(getDataFolder(), "homedata");
         if (!homesFolder.exists())
@@ -86,7 +87,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             service.schedule(() -> {
                 Bukkit.getScheduler().runTask(Bbb.getInstance(), () -> {
                     for (Player player : Bukkit.getOnlinePlayers())
-                        player.kickPlayer(Methods.translatestring("&7Server Restarting"));
+                        player.kickPlayer(Utils.translatestring("&7Server Restarting"));
                     Bukkit.getServer().shutdown();
                 });
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
@@ -98,8 +99,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (this.getConfig().getBoolean("disable-the-use-of-packet-elytra-fly"))
             Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
 
-        if (this.getConfig().getBoolean("chest-limit-per-chunk"))
-            Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
+        Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
 
         if (this.getConfig().getBoolean("anti-burrow"))
             Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
@@ -134,7 +134,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (cmd.getName().equals("nick")) {
             if (args.length == 0) {
                 removeNick(player);
-                Methods.infomsg(player, "your nickname has been removed");
+                Utils.infomsg(player, "your nickname has been removed");
             } else {
                 if (player.isOp()) {
                     StringBuilder builder = new StringBuilder();
@@ -153,13 +153,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                Methods.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "the arguments are invalid");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Methods.errormsg(player, "the player is invalid");
+                Utils.errormsg(player, "the player is invalid");
                 return true;
             }
 
@@ -169,36 +169,36 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 msgargs.append(args[i]).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Methods.errormsg(player, "the message is invalid");
+                Utils.errormsg(player, "the message is invalid");
                 return true;
             }
 
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(player.getName())) {
-                Methods.errormsg(player, "you can't send messages to players ignoring you");
+                Utils.errormsg(player, "you can't send messages to players ignoring you");
                 return true;
             }
 
             String be = Bbb.getInstance().getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (be != null && be.contains(target.getName())) {
-                Methods.errormsg(player, "you can't send messages to players you are ignoring");
+                Utils.errormsg(player, "you can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Methods.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Methods.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.placeholders("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.placeholders("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
-                Methods.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "the arguments are invalid");
                 return true;
             }
             Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
             if (target == null || !lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
-                Methods.errormsg(player, "you have no one to reply to");
+                Utils.errormsg(player, "you have no one to reply to");
                 return true;
             }
 
@@ -208,24 +208,24 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 msgargs.append(args[i]).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Methods.errormsg(player, "the message is invalid");
+                Utils.errormsg(player, "the message is invalid");
                 return true;
             }
 
             String b = Bbb.getInstance().getCustomConfig().getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(player.getName())) {
-                Methods.errormsg(player, "you can't send messages to players ignoring you");
+                Utils.errormsg(player, "you can't send messages to players ignoring you");
                 return true;
             }
 
             String be = Bbb.getInstance().getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (be != null && be.contains(target.getName())) {
-                Methods.errormsg(player, "you can't send messages to players you are ignoring");
+                Utils.errormsg(player, "you can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Methods.parseText("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Methods.parseText("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.placeholders("&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.placeholders("&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
@@ -234,35 +234,35 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             if (getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ip") != null) {
                 this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", null);
                 this.saveCustomConfig();
-                Methods.errormsg(player, "your account has been unsecured");
+                Utils.errormsg(player, "your account has been unsecured");
                 return true;
             }
 
             this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", player.getAddress().getAddress().getHostAddress());
             this.saveCustomConfig();
-            Methods.infomsg(player, "you have successfully secured your account");
+            Utils.infomsg(player, "you have successfully secured your account");
 
             return true;
         } else if (cmd.getName().equals("ignore")) {
             String b = this.getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (b != null) {
-                    Methods.infomsg(player, "your ignored players are: " + b.replace(", ", "&e, &7"));
+                    Utils.infomsg(player, "your ignored players are: " + b.replace(", ", "&e, &7"));
                     return true;
                 }
-                Methods.errormsg(player, "the arguments are invalid");
+                Utils.errormsg(player, "the arguments are invalid");
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Methods.errormsg(player, "the player is invalid");
+                Utils.errormsg(player, "the player is invalid");
                 return true;
             }
 
             if (target.getName().equals(player.getName())) {
-                Methods.errormsg(player, "you can't ignore yourself");
+                Utils.errormsg(player, "you can't ignore yourself");
                 return true;
             }
 
@@ -271,7 +271,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 if (b.contains(target.getName())) {
                     this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", b.replace(target.getName() + ", ", ""));
                     this.saveCustomConfig();
-                    Methods.infomsg(player, "successfully un ignored &e" + target.getDisplayName());
+                    Utils.infomsg(player, "successfully un ignored &e" + target.getDisplayName());
                     return true;
                 }
 
@@ -280,7 +280,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
             this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
             this.saveCustomConfig();
-            Methods.infomsg(player, "successfully ignored &e" + target.getDisplayName());
+            Utils.infomsg(player, "successfully ignored &e" + target.getDisplayName());
             return true;
         } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
@@ -304,19 +304,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (s != null) {
             //realname(p, ColorUtils.removeColorCodes(s));
 
-            p.setPlayerListName(Methods.translatestring(s + ChatColor.GRAY));
-            p.setDisplayName(Methods.translatestring(s + ChatColor.GRAY));
+            p.setPlayerListName(Utils.translatestring(s + ChatColor.GRAY));
+            p.setDisplayName(Utils.translatestring(s + ChatColor.GRAY));
 
             this.nick2Player.put(p.getName(), p.getPlayer());
         }
     }
 
     public void changeNick(Player p, String nick) {
-        String nickcolor = Methods.translatestring(nick);
-        String nickuncolor = Methods.removeColorCodes(nickcolor);
+        String nickcolor = Utils.translatestring(nick);
+        String nickuncolor = Utils.removeColorCodes(nickcolor);
 
         if (p.isOp()) {
-            String prevnick = Methods.removeColorCodes(p.getDisplayName());
+            String prevnick = Utils.removeColorCodes(p.getDisplayName());
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
             nick2Player.remove(prevnick);
@@ -328,20 +328,20 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Methods.infomsg(p,"your nickname has been set to " + nickcolor);
+            Utils.infomsg(p,"your nickname has been set to " + nickcolor);
             return;
         }
 
         if (nickuncolor.length() < 3)
-            Methods.errormsg(p, "the nickname you entered is too short");
+            Utils.errormsg(p, "the nickname you entered is too short");
         else if (nickuncolor.length() > 16)
-            Methods.errormsg(p, "the nickname you entered is too long");
+            Utils.errormsg(p, "the nickname you entered is too long");
         else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
-            Methods.errormsg(p, "the nickname you entered is invalid");
+            Utils.errormsg(p, "the nickname you entered is invalid");
         else if ((nick2Player.containsKey(nickuncolor) && (!nick2Player.get(nickuncolor).getName().equals(p.getName()) || !nick2Player.get(nickuncolor).getPlayer().getDisplayName().equals(p.getDisplayName()))))
-            Methods.errormsg(p, "the nickname you entered is already in use");
+            Utils.errormsg(p, "the nickname you entered is already in use");
         else {
-            String prevnick = Methods.removeColorCodes(p.getDisplayName());
+            String prevnick = Utils.removeColorCodes(p.getDisplayName());
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
             nick2Player.remove(prevnick);
@@ -353,7 +353,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Methods.infomsg(p,"your nickname has been set to " + nickcolor);
+            Utils.infomsg(p,"your nickname has been set to " + nickcolor);
         }
     }
 
@@ -378,7 +378,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
     public void realname(Player p, String name) {
         PlayerProfile profile = p.getPlayerProfile();
-        profile.setName(Methods.removeColorCodes(p.getName()));
+        profile.setName(Utils.removeColorCodes(p.getName()));
         p.setPlayerProfile(profile);
 
         for (Player players : Bukkit.getOnlinePlayers()) {
@@ -513,7 +513,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (!getInstance().getConfig().getBoolean("anti-illegals"))
             return ItemState.clean;
 
-        if (Methods.isBook(itemStack)) {
+        if (Utils.isBook(itemStack)) {
             BookMeta bookMeta = (BookMeta) itemStack.getItemMeta();
             List<String> pages = new ArrayList<>();
 
@@ -567,7 +567,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return ItemState.illegal;
             }
 
-            if (Methods.isSpawnEgg(itemStack)) {
+            if (Utils.isSpawnEgg(itemStack)) {
                 itemStack.setAmount(0);
                 return ItemState.illegal;
             }
@@ -623,7 +623,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             if (itemStack.getType() == Material.POTION || itemStack.getType() == Material.SPLASH_POTION || itemStack.getType() == Material.LINGERING_POTION) {
                 PotionMeta meta = (PotionMeta) itemStack.getItemMeta();
 
-                if (meta.getCustomEffects().size() > 0) {
+                if (meta.hasCustomEffects()) {
                     meta.clearCustomEffects();
                     itemStack.setItemMeta(meta);
                     wasFixed = true;

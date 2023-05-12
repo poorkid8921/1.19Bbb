@@ -1,7 +1,7 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -18,8 +18,8 @@ public class RandomMotd implements Listener {
         List<String> list = plugin.getConfig().getStringList("motd");
 
         if (Bukkit.getServer().getOnlinePlayers().size() == 1)
-            e.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
+            e.setMotd(Utils.placeholders(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
         else
-            e.setMotd(Methods.parseText(list.get(new Random().nextInt(list.size()))));
+            e.setMotd(Utils.placeholders(list.get(new Random().nextInt(list.size()))));
     }
 }

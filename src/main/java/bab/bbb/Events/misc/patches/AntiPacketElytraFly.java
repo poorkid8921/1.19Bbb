@@ -1,7 +1,7 @@
 package bab.bbb.Events.misc.patches;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,7 +27,7 @@ public class AntiPacketElytraFly implements Listener {
 
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
             event.setCancelled(true);
-            Methods.elytraflag(player, 1, 1, 0, null);
+            Utils.elytraflag(player, 1, 1, 0, null);
             return;
         }
 
@@ -37,7 +37,7 @@ public class AntiPacketElytraFly implements Listener {
         if (level != null) {
             if (level > 25) {
                 event.setCancelled(true);
-                Methods.elytraflag(player, 2, 2, 1, from);
+                Utils.elytraflag(player, 2, 2, 1, from);
             } else {
                 levels.merge(playerUniqueID, 1, Integer::sum);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> levels.put(playerUniqueID, levels.get(playerUniqueID) - 1), 200L);

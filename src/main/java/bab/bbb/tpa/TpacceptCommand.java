@@ -2,14 +2,14 @@ package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
 import bab.bbb.Events.misc.MiscEvents;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
+import bab.bbb.utils.Type;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,7 +32,8 @@ public class TpacceptCommand implements CommandExecutor {
 
     public void dupe(Player user) {
         if (user.getVehicle() != null) {
-            if (user.getVehicle() instanceof final AbstractHorse donkey) {
+            if (user.getVehicle() instanceof AbstractHorse) {
+                AbstractHorse donkey = (AbstractHorse) user.getVehicle();
                 if (((AbstractHorse) user.getVehicle()).getInventory().getViewers().size() > 0) {
                     for (int i = 1; i <= 16; i++) {
                         ItemStack item = donkey.getInventory().getItem(i);
@@ -46,12 +47,11 @@ public class TpacceptCommand implements CommandExecutor {
     }
 
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-
         if (!(sender instanceof Player user))
             return true;
 
         if (plugin.getRequest(user) == null) {
-            Methods.errormsg(user, "you don't have any active request");
+            Utils.errormsg(user, "you don't have any active request");
             return true;
         }
 
@@ -61,12 +61,12 @@ public class TpacceptCommand implements CommandExecutor {
         Player recipient = Bukkit.getPlayer(targetName);
 
         if (recipient == null) {
-            Methods.errormsg(user, "player &e" + request.getSender().getDisplayName() + " isn't online anymore");
+            Utils.errormsg(user, "player &e" + request.getSender().getDisplayName() + " isn't online anymore");
             return true;
         }
 
-        if (MiscEvents.antilog.contains(user.getName())) {
-            Methods.errormsg(user, "can't teleport whilst being combat tagged");
+        if (MiscEvents.combattag.contains(user.getName())) {
+            Utils.errormsg(user, "can't teleport whilst being combat tagged");
             return true;
         }
 
@@ -74,15 +74,12 @@ public class TpacceptCommand implements CommandExecutor {
         dupe(user);
 
         if (request.getType() == Type.TPA) {
-            Methods.tpmsg(((Player) sender).getPlayer(), recipient, 10);
-            Methods.tpmsg(recipient, null, 7);
+            Utils.tpmsg(((Player) sender).getPlayer(), recipient, 10);
+            Utils.tpmsg(recipient, null, 7);
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (request == null)
-                        return;
-
                     for (Player players : Bukkit.getOnlinePlayers())
                         players.hidePlayer(plugin, recipient);
 
@@ -97,15 +94,12 @@ public class TpacceptCommand implements CommandExecutor {
                 }
             }.runTaskLater(plugin, 100);
         } else if (request.getType() == Type.TPAHERE) {
-            Methods.tpmsg(((Player) sender).getPlayer(), recipient, 7);
-            Methods.tpmsg(recipient, ((Player) sender).getPlayer(), 10);
+            Utils.tpmsg(((Player) sender).getPlayer(), recipient, 7);
+            Utils.tpmsg(recipient, ((Player) sender).getPlayer(), 10);
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (request == null)
-                        return;
-
                     for (Player players : Bukkit.getOnlinePlayers())
                         players.hidePlayer(plugin, user);
 

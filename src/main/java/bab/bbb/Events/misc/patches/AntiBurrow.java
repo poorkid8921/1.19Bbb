@@ -1,6 +1,6 @@
 package bab.bbb.Events.misc.patches;
 
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,19 +18,19 @@ public class AntiBurrow implements Listener {
         Block burrowBlock = playerLocation.getBlock();
         Material burrowBlockMaterial = burrowBlock.getType();
 
-        if (burrowBlockMaterial.equals(Material.AIR) || burrowBlockMaterial.equals(Material.SAND) || burrowBlockMaterial.equals(Material.GRAVEL) || Methods.isShulkerBox(burrowBlockMaterial) || burrowBlockMaterial.equals(Material.FARMLAND))
+        if (burrowBlockMaterial.equals(Material.AIR) || burrowBlockMaterial.equals(Material.SAND) || burrowBlockMaterial.equals(Material.GRAVEL) || Utils.isShulkerBox(burrowBlockMaterial) || burrowBlockMaterial.equals(Material.FARMLAND))
             return;
 
         Block blockAboveBurrowBlock = burrowBlock.getRelative(BlockFace.UP);
         if (blockAboveBurrowBlock.getType().equals(Material.AIR)) {
-            if (burrowBlockMaterial.isOccluding() && !Methods.isSinkInBlock(burrowBlockMaterial)) {
-                if (!Methods.isSlab(burrowBlockMaterial)) {
+            if (burrowBlockMaterial.isOccluding() && !Utils.isSinkInBlock(burrowBlockMaterial)) {
+                if (!Utils.isSlab(burrowBlockMaterial)) {
                     player.damage(1.0);
                     player.teleport(blockAboveBurrowBlock.getLocation().add(0.5, 0, 0.5));
                 }
             }
 
-            if (burrowBlockMaterial.equals(Material.ENDER_CHEST) || Methods.isSinkInBlock(burrowBlockMaterial)) {
+            if (burrowBlockMaterial.equals(Material.ENDER_CHEST) || Utils.isSinkInBlock(burrowBlockMaterial)) {
                 if (playerLocation.getY() - playerLocation.getBlockY() < 0.875) {
                     player.damage(1.0);
                     player.teleport(blockAboveBurrowBlock.getLocation().add(0.5, 0, 0.5));
@@ -44,7 +44,7 @@ public class AntiBurrow implements Listener {
                 }
             }
 
-            if (Methods.isAnvil(burrowBlockMaterial)) {
+            if (Utils.isAnvil(burrowBlockMaterial)) {
                 player.damage(1.0);
                 burrowBlock.breakNaturally();
             }

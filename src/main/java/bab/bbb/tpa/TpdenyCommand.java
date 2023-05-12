@@ -1,7 +1,7 @@
 package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,14 +22,14 @@ public class TpdenyCommand implements CommandExecutor {
         Player player = ((Player) sender).getPlayer();
         TpaRequest request = plugin.getRequest((Player) sender);
         if (request == null) {
-            Methods.errormsg(player, "you don't have any active request");
+            Utils.errormsg(player, "you don't have any active request");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(request.getSender().getName());
 
-        Methods.tpmsg(player, recipient, 6);
-        Methods.tpmsg(recipient, player, 5);
+        Utils.tpmsg(player, recipient, 6);
+        Utils.tpmsg(recipient, player, 5);
         plugin.removeRequest((Player) sender);
 
         return true;

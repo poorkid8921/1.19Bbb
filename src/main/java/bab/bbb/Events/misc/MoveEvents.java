@@ -1,7 +1,7 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Methods;
+import bab.bbb.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,13 +32,13 @@ public class MoveEvents implements Listener {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
                     if (p.isGliding()) {
-                        Methods.errormsg(p, "nether roof is &cdisabled");
+                        Utils.errormsg(p, "nether roof is &cdisabled");
                         p.setGliding(false);
                     }
                     else
-                        p.sendActionBar(Methods.parseText("&7Nether roof is &cdisabled"));
+                        p.sendActionBar(Utils.placeholders("&7Nether roof is &cdisabled"));
 
-                    Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to get above nether roof");
+                    Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getDisplayName() + " &7tried to get above nether roof");
                 }
             }
         }
@@ -46,16 +46,16 @@ public class MoveEvents implements Listener {
         if (p.isGliding()) {
             if (Bbb.getTPSofLastSecond() <= cfgtps) {
                 e.setCancelled(true);
-                Methods.elytraflag(p, 1, 1, 1, e.getFrom());
+                Utils.elytraflag(p, 1, 1, 1, e.getFrom());
                 return;
             }
 
-            double speed = Methods.blocksPerTick(e.getFrom(), e.getTo());
+            double speed = Utils.blocksPerTick(e.getFrom(), e.getTo());
 
             if (speed > 2.05)
-                Methods.elytraflag(p, 2, 0, 0, null);
+                Utils.elytraflag(p, 2, 0, 0, null);
             else
-                p.sendActionBar(Methods.parseText("&7%speed%&6/&72.00").replace("%speed%", Methods.speed(speed)));
+                p.sendActionBar(Utils.placeholders("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
         }
         else if (p.isFlying()) {
             p.teleport(e.getFrom());
@@ -63,7 +63,7 @@ public class MoveEvents implements Listener {
 
             int y = rworld.getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
             p.teleport(new Location(rworld, p.getLocation().getX(), y, p.getLocation().getZ()));
-            Methods.sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to fly");
+            Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getDisplayName() + " &7tried to fly");
         }
     }
 }
