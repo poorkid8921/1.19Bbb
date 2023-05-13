@@ -19,8 +19,8 @@ public class RandomMotd implements Listener {
         List<String> list = plugin.getConfig().getStringList("motd");
 
         if (Bukkit.getServer().getOnlinePlayers().size() == 1)
-            e.setMotd(Utils.parseText(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
+            e.setMotd(Utils.translate(list.get(new Random().nextInt(list.size()))).replace("players", "player"));
         else
-            e.setMotd(Utils.parseText(list.get(new Random().nextInt(list.size()))));
+            e.setMotd(Utils.translate(list.get(new Random().nextInt(list.size()))));
     }
 }

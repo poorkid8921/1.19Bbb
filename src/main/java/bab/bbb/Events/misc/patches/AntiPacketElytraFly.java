@@ -11,6 +11,8 @@ import org.bukkit.event.entity.EntityToggleGlideEvent;
 import java.util.HashMap;
 import java.util.UUID;
 
+import static bab.bbb.utils.Utils.combattag;
+
 public class AntiPacketElytraFly implements Listener {
     private final Bbb plugin = Bbb.getInstance();
     private final HashMap<UUID, Integer> levels = new HashMap<>();
@@ -24,6 +26,13 @@ public class AntiPacketElytraFly implements Listener {
         if (player == null)
             return;
         Location from = player.getLocation();
+
+        if (combattag.contains(player.getName()))
+        {
+            Utils.errormsg(player, "You can't use elytra whilst being combat tagged");
+            event.setCancelled(true);
+            return;
+        }
 
         if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
             event.setCancelled(true);

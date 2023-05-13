@@ -37,7 +37,7 @@ public class MoveEvents implements Listener {
                         p.setGliding(false);
                     }
                     else
-                        p.sendActionBar(Utils.parseText("&7Nether roof is &cdisabled"));
+                        p.sendActionBar(Utils.translate("&7Nether roof is &cdisabled"));
 
                     Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getDisplayName() + " &7tried to get above nether roof");
                 }
@@ -56,7 +56,7 @@ public class MoveEvents implements Listener {
             if (speed > 2.05)
                 Utils.elytraflag(p, 2, 0, 0, null);
             else
-                p.sendActionBar(Utils.parseText("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
+                p.sendActionBar(Utils.translate("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
         }
     }
 }

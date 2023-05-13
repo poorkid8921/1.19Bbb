@@ -121,7 +121,7 @@ public class Utils {
             @Cleanup InputStreamReader isr = new InputStreamReader(fis);
             @Cleanup BufferedReader reader = new BufferedReader(isr);
             String[] lines = reader.lines().toArray(String[]::new);
-            String[] locArray = lines[1].split("_");
+            String[] locArray = lines[1].split(", ");
             double x = Double.parseDouble(locArray[0]), y = Double.parseDouble(locArray[1]), z = Double.parseDouble(locArray[2]);
             World world = Bukkit.getWorld(locArray[3]);
             UUID owner = UUID.fromString(lines[0]);
@@ -164,7 +164,7 @@ public class Utils {
             String world = loc.getWorld().getName();
             String[] serialized = new String[3];
             serialized[0] = owner.toString();
-            serialized[1] = x + "_" + y + "_" + z + "_" + world;
+            serialized[1] = x + ", " + y + ", " + z + ", " + world;
             serialized[2] = name;
             for (String str : serialized) fw.write(str + "\n");
             if (homes.containsKey(owner)) {
@@ -403,7 +403,7 @@ public class Utils {
                         long severity2 = (long) obj2.get("block");
 
                         if (severity2 == 1) {
-                            p.kickPlayer(parseText("&7Proxies aren't &callowed"));
+                            p.kickPlayer(translate("&7Proxies aren't &callowed"));
                             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
                         }
                     } catch (ParseException eee) {
@@ -455,7 +455,7 @@ public class Utils {
     }
 
     public static void errormsg(Player p, String s) {
-        p.sendMessage(parseText("&7[&4-&7] " + s));
+        p.sendMessage(translate("&7[&4-&7] " + s));
     }
 
     public static String translatestring(String message) {
@@ -476,8 +476,6 @@ public class Utils {
         }
         message = message.replace("<3", "❤")
                 .replace("[ARROW]", "➜")
-                .replace("[unicode]", "")
-                .replace("[rainbow]", "")
                 .replace("[TICK]", "✔")
                 .replace("[X]", "✖")
                 .replace("[STAR]", "★")
@@ -502,12 +500,14 @@ public class Utils {
                 .replace("[BOW]", "\uD83C\uDFF9")
                 .replace("[SKULL]", "☠")
                 .replace("[HEART2]", "❣")
+                .replace("[unicode]", "")
+                .replace("[rainbow]", "")
                 .replace("[AXE]", "\uD83E\uDE93");
         return translateAlternateColorCodes('&', message);
     }
 
     public static void maskedkick(Player p) {
-        p.kickPlayer(parseText("&7Disconnected"));
+        p.kickPlayer(translate("&7Disconnected"));
     }
 
     public static void message(Player e, String msg) {
@@ -515,14 +515,14 @@ public class Utils {
             String b = Utils.getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(Objects.requireNonNull(e.getPlayer()).getName()))
                 continue;
-            p.sendMessage(parseText(Objects.requireNonNull(e.getPlayer()), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
+            p.sendMessage(translate(Objects.requireNonNull(e.getPlayer()), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
         }
     }
 
     public static void sendOpMessage(String s) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.isOp())
-                p.sendMessage(parseText(s));
+                p.sendMessage(translate(s));
         }
     }
 
@@ -535,7 +535,7 @@ public class Utils {
     }
 
     public static String unicode(String msg) {
-        return parseText(msg
+        return translate(msg
                 .replace("A", "ᴀ")
                 .replace("B", "ʙ")
                 .replace("C", "ᴄ")
@@ -585,19 +585,19 @@ public class Utils {
     }
 
     public static void infomsg(Player p, String s) {
-        p.sendMessage(parseText(p, "&7[&e+&7] " + s));
+        p.sendMessage(translate(p, "&7[&e+&7] " + s));
     }
 
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
         if (msg == 1)
-            p.sendActionBar(parseText("&7Elytras are currently disabled due to &clag"));
+            p.sendActionBar(translate("&7Elytras are currently disabled due to &clag"));
         else if (msg == 0) {
-            p.sendActionBar(parseText("&7You're moving &ctoo fast"));
+            p.sendActionBar(translate("&7You're moving &ctoo fast"));
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
         } else {
             maskedkick(p);
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
-            //p.sendActionBar(Methods.parseText("&7Packet elytra fly isn't &callowed"));
+            //p.sendActionBar(Methods.translate("&7Packet elytra fly isn't &callowed"));
             return;
         }
 
@@ -667,15 +667,14 @@ public class Utils {
     }
 
     public static String translate(String text) {
-        return translatestring(text.replaceAll("%tps%", getTps()).replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size())));
+        return translatestring(text.replaceAll("%tps%", getTps())
+                .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size())));
     }
 
-    public static String parseText(Player player, String text) {
-        return translate(text.replaceAll("%ping%", format2(player.getPing())));
-    }
-
-    public static String parseText(String text) {
-        return translate(text);
+    public static String translate(Player player, String text) {
+        return translatestring(text.replaceAll("%tps%", getTps())
+                .replaceAll("%players%", Integer.toString(Bukkit.getServer().getOnlinePlayers().size()))
+                .replaceAll("%ping%", format2(player.getPing())));
     }
 
     public static String removeColorCodes(String string) {
@@ -685,9 +684,9 @@ public class Utils {
 
     public static String formatString(String string, boolean overrideDefaultFormat) {
         if (!overrideDefaultFormat || string.startsWith("&r"))
-            return parseText(string);
+            return translate(string);
         else
-            return parseText("&r" + string);
+            return translate("&r" + string);
     }
 
     public static String extractArgs(int nondik, String[] args) {
@@ -695,7 +694,7 @@ public class Utils {
         for (int i = nondik; i < args.length; i++)
             sb.append(args[i]).append(" ");
 
-        return parseText(sb.toString()).trim();
+        return translate(sb.toString()).trim();
     }
 
     public static void updateColorTranslationForAnvilOutput(AnvilInventory anvilInventory) {
@@ -738,7 +737,7 @@ public class Utils {
             return;
 
         String untranslatedName = itemMeta.getDisplayName();
-        String translatedName = parseText(untranslatedName);
+        String translatedName = translate(untranslatedName);
         itemMeta.setDisplayName(translatedName);
         itemStack.setItemMeta(itemMeta);
     }

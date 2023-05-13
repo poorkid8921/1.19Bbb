@@ -64,11 +64,11 @@ public class TpahereCommand implements CommandExecutor {
         plugin.addRequest(user, recipient, Type.TPAHERE);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         Utils.tpmsg(recipient, user, 4);
-        TextComponent accept = new TextComponent(Utils.parseText("&7[&2✔&7] &2ACCEPT"));
+        TextComponent accept = new TextComponent(Utils.translate("&7[&2✔&7] &2ACCEPT"));
         Text acceptHoverText = new Text("Click to accept the teleport request");
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(Utils.parseText("&7[&c✖&7] &cDENY"));
+        TextComponent deny = new TextComponent(Utils.translate("&7[&c✖&7] &cDENY"));
         Text denyHoverText = new Text("Click to deny the teleport request");
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));

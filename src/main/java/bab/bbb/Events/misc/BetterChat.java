@@ -14,11 +14,22 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import static bab.bbb.utils.Utils.parseText;
+import java.util.Arrays;
+import java.util.HashSet;
+
+import static bab.bbb.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public class BetterChat implements Listener {
     Utils cm = new Utils();
+    Bbb plugin = Bbb.getInstance();
+    public final HashSet<String> linkRegexes = new HashSet<>(Arrays.asList(
+            "(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})",
+            "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z()]{1,6}\\b([-a-zA-Z()@:%_+.~#?&/=]*)"
+    ));
+    public final HashSet<String> whitelistedcomms = new HashSet<>(Arrays.asList(
+            "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
+    ));
 
     @EventHandler
     private void CmdProcess(PlayerCommandPreprocessEvent e) {
@@ -39,23 +50,10 @@ public class BetterChat implements Listener {
         fullCommand = "/"+commandLabel+fullCommand;
         e.setMessage(fullCommand);
 
-        if (!Bbb.getInstance().allowedCommands.contains(commandLabel)) {
+        if (whitelistedcomms.contains(commandLabel)) {
             e.setCancelled(true);
             Utils.errormsg(e.getPlayer(), "&4Bad command&7.");
         }
-       /*     return;
-        }
-
-        String message = e.getMessage();
-        String commandLabel = Utils.getCommandLabel(message).toLowerCase();
-        String fullCommand = message.substring(commandLabel.length()+1);
-        fullCommand = "/"+commandLabel+fullCommand;
-        e.setMessage(fullCommand);
-
-        if (!Bbb.getInstance().allowedCommands.contains(commandLabel)) {
-            e.setCancelled(true);
-            Utils.errormsg(e.getPlayer(), "&4Bad command&7. Type &e/help&7 for a list of commands.");
-        }*/
     }
 
     @EventHandler
@@ -77,7 +75,7 @@ public class BetterChat implements Listener {
         }
 
         for (String word : msg.split(" ")) {
-            for (String regex : Bbb.getInstance().linkRegexes) {
+            for (String regex : linkRegexes) {
                 if (word.matches(regex)) {
                     Utils.errormsg(e.getPlayer(), "Links aren't allowed");
                     return;
@@ -101,8 +99,8 @@ public class BetterChat implements Listener {
             msg = "&4" + msg.replace("<", "");
 
         if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||")) {
-            TextComponent spoiler = new TextComponent(parseText("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
-            Text HoverText = new Text(parseText(e.getPlayer(), msg.replace("||", "")));
+            TextComponent spoiler = new TextComponent(translate("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
+            Text HoverText = new Text(translate(e.getPlayer(), msg.replace("||", "")));
 
             spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
 

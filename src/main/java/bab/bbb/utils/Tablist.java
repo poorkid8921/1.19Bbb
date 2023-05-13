@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Collection;
 
-import static bab.bbb.utils.Utils.parseText;
+import static bab.bbb.utils.Utils.translate;
 
 @RequiredArgsConstructor
 public class Tablist implements Runnable {
@@ -24,14 +24,14 @@ public class Tablist implements Runnable {
             if (players.size() == 1) {
                 for (Player player : players) {
                     player.setPlayerListHeaderFooter(
-                            new ComponentBuilder(parseText(player, sh)).create(),
-                            new ComponentBuilder(parseText(player, sf).replace("players", "player")).create());
+                            new ComponentBuilder(translate(player, sh)).create(),
+                            new ComponentBuilder(translate(player, sf).replace("players", "player")).create());
                 }
             } else {
                 for (Player player : players) {
                     player.setPlayerListHeaderFooter(
-                            new ComponentBuilder(parseText(player, sh)).create(),
-                            new ComponentBuilder(parseText(player, sf)).create());
+                            new ComponentBuilder(translate(player, sh)).create(),
+                            new ComponentBuilder(translate(player, sf)).create());
                 }
             }
         } catch (Exception e) {

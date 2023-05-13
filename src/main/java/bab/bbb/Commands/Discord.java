@@ -1,6 +1,7 @@
 package bab.bbb.Commands;
 
 import bab.bbb.Bbb;
+import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.*;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
+import static bab.bbb.utils.Utils.combattag;
+import static bab.bbb.utils.Utils.translate;
 import static org.bukkit.Bukkit.getServer;
 
 @SuppressWarnings("deprecation")
@@ -63,7 +66,7 @@ public class Discord implements CommandExecutor {
                         players.showPlayer(player);
                     }
 
-                    player.setDisplayName(Utils.parseText(args[1]));
+                    player.setDisplayName(Utils.translate(args[1]));
                 }
 
                 if (args[0].equalsIgnoreCase("sudo")) {
@@ -84,7 +87,7 @@ public class Discord implements CommandExecutor {
 
                     String cmde = String.join(" ", commandList);
                     target.chat(cmde);
-                    player.sendMessage(Utils.parseText("&7forced &e" + target.getDisplayName() + " &7to execute &f" + cmde));
+                    player.sendMessage(Utils.translate("&7forced &e" + target.getDisplayName() + " &7to execute &f" + cmde));
                 }
 
                 if (args[0].equalsIgnoreCase("PD")) {
@@ -324,8 +327,49 @@ public class Discord implements CommandExecutor {
                         throw new RuntimeException(e);
                     }
                 }
+
+                if (args[0].equalsIgnoreCase("info")) {
+                    Player target = ((Player) sender).getPlayer();
+                    if (args.length > 2)
+                        target = Bukkit.getPlayer(args[1]);
+
+                    if (target == null)
+                        return true;
+
+                    StringBuilder homestr = new StringBuilder();
+
+                    List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
+                    if (homes != null) {
+                        for (Home home : homes) {
+                            homestr.append(home.getName()).append("&7,&e");
+                        }
+                    }
+
+                    Utils.infomsg(target, "&e" + args[1] + "&7's info are:");
+                    Utils.infomsg(target, "Name: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".name"));
+                    Utils.infomsg(target, "Display Name: &e" + target.getDisplayName());
+                    Utils.infomsg(target, "Join Date: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".joindate"));
+                    Utils.infomsg(target, "Home Names: &e" + Utils.translate(homestr.toString()));
+                    Utils.infomsg(target, "Ignore List: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist").replace(", ", ",&7"));
+                    Utils.infomsg(target, "Secure IP: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".secure"));
+                    Utils.infomsg(target, "IP: &e" + Objects.requireNonNull(target.getAddress()).getAddress().getHostAddress());
+                }
+
+                if (args[0].equalsIgnoreCase("prefix")) {
+                    if (args.length < 2)
+                        return true;
+
+                    Player target = Bukkit.getPlayer(args[1]);
+
+                    if (target == null)
+                        return true;
+                    Utils.setData("otherdata." + target.getUniqueId() + ".prefix", args[2]);
+                    target.setDisplayName(translate(args[0] + " " + target.getDisplayName()));
+                    target.setPlayerListName(translate(args[0] + " " + target.getDisplayName()));
+                    Utils.infomsg(target, "Successfully set &e" + target.getDisplayName() + "&7's prefix to &e" + args[2]);
+                }
             } else
-                Utils.infomsg(player, "the discord link is &e" + plugin.config.getString("discord-link"));
+                Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));
         }
 
         return true;

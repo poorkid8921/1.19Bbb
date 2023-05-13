@@ -46,7 +46,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
@@ -56,8 +55,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
-    public final HashSet<String> linkRegexes = new HashSet<>();
-    public final HashSet<String> allowedCommands = new HashSet<>();
+
     @Override
     public void onEnable() {
         instance = this;
@@ -69,17 +67,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         File homesFolder = new File(getDataFolder(), "homedata");
         if (!homesFolder.exists())
             homesFolder.mkdir();
-
-        linkRegexes.addAll(Arrays.asList(
-                "(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})",
-                "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z()]{1,6}\\b([-a-zA-Z()@:%_+.~#?&/=]*)"
-        ));
-
-        List<String> configuredAllowedCommands = Arrays.asList(
-                "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
-        );
-        for (String configuredAllowedCmd : configuredAllowedCommands)
-                allowedCommands.add(configuredAllowedCmd.toLowerCase());
 
         Bukkit.getPluginManager().registerEvents(new MiscEvents(this), this);
         Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
@@ -120,7 +107,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             service.schedule(() -> {
                 Bukkit.getScheduler().runTask(Bbb.getInstance(), () -> {
                     for (Player player : Bukkit.getOnlinePlayers())
-                        player.kickPlayer(Utils.parseText("&7Server Restarting"));
+                        player.kickPlayer(Utils.translate("&7Server Restarting"));
                     Bukkit.getServer().shutdown();
                 });
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
@@ -135,31 +122,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
     public static Bbb getInstance() {
         return instance;
-    }
-
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("home")) {
-            Player player = (Player) sender;
-            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
-            if (homes == null) return Collections.emptyList();
-            if (args.length < 1)
-                return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
-            else
-                return homes.stream().map(Home::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
-        } else if (cmd.getName().equalsIgnoreCase("delhome")) {
-            Player player = (Player) sender;
-            List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
-            if (homes == null) return Collections.emptyList();
-            if (args.length < 1)
-                return homes.stream().map(Home::getName).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
-            else
-                return homes.stream().map(Home::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).sorted(String::compareToIgnoreCase).collect(Collectors.toList());
-        } else {
-            if (args.length > 1) {
-                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
-            } else return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
-        }
     }
 
     public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
@@ -214,13 +176,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }
 
             String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
-            if (be != null && be.contains(target.getName())) {
+            if (b != null && be.contains(target.getName())) {
                 Utils.errormsg(player, "You can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Utils.parseText(player, "&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.parseText(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(Utils.translate(player, "&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.translate(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
@@ -245,42 +207,41 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            String b = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
-            if (b != null && b.contains(player.getName())) {
-                Utils.errormsg(player, "You can't send messages to players ignoring you");
-                return true;
-            }
-
-            String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
-            if (be != null && be.contains(target.getName())) {
+            String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            if (ignoreclient != null && ignoreclient.contains(target.getName())) {
                 Utils.errormsg(player, "You can't send messages to players you are ignoring");
                 return true;
             }
 
-            player.sendMessage(Utils.parseText(player, "&7you reply to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.parseText(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            String ignoretarget = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
+            if (ignoretarget != null && ignoretarget.contains(player.getName())) {
+                Utils.errormsg(player, "You can't send messages to players ignoring you");
+                return true;
+            }
+
+            player.sendMessage(Utils.translate(player, "&7you reply to " + target.getDisplayName() + "&7: " + msgargs));
+            target.sendMessage(Utils.translate(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
             return true;
         } else if (cmd.getName().equals("secure")) {
-            if (getCustomConfig().getString("otherdata." + player.getUniqueId() + ".ip") != null) {
-                this.getCustomConfig().set("otherdata." + player.getUniqueId() + ".ip", null);
-                this.saveCustomConfig();
+            if (Utils.getString("otherdata." + player.getUniqueId() + ".secure") != null) {
+                Utils.setData("otherdata." + player.getUniqueId() + ".secure", "");
+                Utils.saveData();
                 Utils.errormsg(player, "Your account has been unsecured");
                 return true;
             }
 
-            Utils.setData("otherdata." + player.getUniqueId() + ".ip", Objects.requireNonNull(player.getAddress()).getAddress().getHostAddress());
+            Utils.setData("otherdata." + player.getUniqueId() + ".secure", Objects.requireNonNull(player.getAddress()).getAddress().getHostAddress());
             Utils.saveData();
             Utils.infomsg(player, "You have successfully secured your account");
-
             return true;
         } else if (cmd.getName().equals("ignore")) {
-            String b = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
-                if (b != null) {
-                    Utils.infomsg(player, "Your ignored players are: " + b.replace(", ", "&e, &7"));
+                if (ignoreclient != null) {
+                    Utils.infomsg(player, "Your ignored players are: " + ignoreclient.replace(", ", "&e, &7"));
                     return true;
                 }
                 Utils.errormsg(player, "The arguments are invalid");
@@ -300,17 +261,15 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }
 
             String breplace = target.getName() + ", ";
-            if (b != null) {
-                if (b.contains(target.getName())) {
-                    Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", b.replace(target.getName() + ", ", ""));
-                    Utils.saveData();
-                    Utils.infomsg(player, "Successfully un ignored &e" + target.getDisplayName());
-                    return true;
-                }
 
-                breplace += b;
+            if (ignoreclient != null && ignoreclient.contains(target.getName())) {
+                Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", ignoreclient.replace(target.getName() + ", ", ""));
+                Utils.saveData();
+                Utils.infomsg(player, "Successfully un ignored &e" + target.getDisplayName());
+                return true;
             }
 
+            breplace += ignoreclient;
             Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
             Utils.saveData();
             Utils.infomsg(player, "Successfully ignored &e" + target.getDisplayName());
@@ -326,15 +285,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void setnickonjoin(Player p) {
         String s = Utils.getString("otherdata." + p.getUniqueId() + ".nickname");
         if (s != null) {
+            String str = s;
             //realname(p, ColorUtils.removeColorCodes(s));
 
-            p.setPlayerListName(Utils.parseText(s + ChatColor.GRAY));
-            p.setDisplayName(Utils.parseText(s + ChatColor.GRAY));
+            if (Utils.getString("otherdata." + p.getUniqueId() + ".prefix") != null)
+                str = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + str;
+
+            p.setPlayerListName(Utils.translate(str + ChatColor.GRAY));
+            p.setDisplayName(Utils.translate(str + ChatColor.GRAY));
         }
     }
 
     public void changeNick(Player p, String nick) {
-        String nickcolor = Utils.parseText(nick);
+        String nickcolor = Utils.translate(nick);
         String nickuncolor = Utils.removeColorCodes(nickcolor);
 
         if (p.isOp()) {
@@ -352,6 +315,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
 
         String strr = this.getCustomConfig().getString("otherdata.nicknames");
+        if (strr == null)
+            return;
+
         boolean inuse = Utils.isduplicated(strr, nickuncolor);
 
         if (nickuncolor.length() < 3)
@@ -364,10 +330,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Utils.errormsg(p, "The nickname you entered is already in use");
         else {
             String prevnick = Utils.removeColorCodes(p.getDisplayName());
+            if (Utils.getString("otherdata." + p.getUniqueId() + ".prefix") != null) {
+                nick = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + nick;
+                nickuncolor = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + nickuncolor;
+            }
             String str = strr.replace("_" + prevnick, "_" + nickuncolor).replace("_" + p.getName(), "");
-
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
 
             Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
             Utils.setData("otherdata.nicknames", str);
@@ -376,7 +343,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             //realname(p, nickuncolor);
             p.setDisplayName(nickcolor + ChatColor.GRAY);
             p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p, "Your nickname has been set to " + nickcolor);
+            Utils.infomsg(p, "Your nickname has been set to &e" + nickcolor);
         }
     }
 
