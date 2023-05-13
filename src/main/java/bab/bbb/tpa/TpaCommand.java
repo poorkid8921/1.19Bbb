@@ -31,29 +31,29 @@ public class TpaCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            errormsg(user, "The arguments are invalid");
+            errormsgs(user, 1, "");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            errormsg(user, "Player &e" + args[0] + " &7couldn't be found");
+            errormsgs(user, 2, args[0]);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            errormsg(user, "You can't teleport to yourself");
+            tpmsg(user, recipient, 14);
             return true;
         }
 
         if (plugin.getRequest(recipient) != null) {
-            errormsg(user, "Player &e" + recipient.getDisplayName() + " &7already has an active request");
+            tpmsg(user, recipient, 13);
             return true;
         }
 
         if (combattag.contains(user.getName())) {
-            errormsg(user, "You can't send tpa requests whilst being combat tagged");
+            tpmsg(user, recipient, 11);
             return true;
         }
 

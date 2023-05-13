@@ -33,7 +33,7 @@ public class MoveEvents implements Listener {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
                     if (p.isGliding()) {
-                        Utils.errormsg(p, "Nether roof is &cdisabled");
+                        Utils.errormsgs(p, 27, "");
                         p.setGliding(false);
                     }
                     else

@@ -81,14 +81,16 @@ public class MiscEvents implements Listener {
 
         String str = getString("otherdata.nicknames");
 
-        if (!str.contains(e.getPlayer().getName()))
+        if (!str.contains(e.getPlayer().getName())) {
             Utils.setData("otherdata.nicknames", "_" + e.getPlayer().getName() + str);
+            Utils.setData("otherdata.nicknames", "!" + e.getPlayer().getName() + str);
+        }
 
         addUpdateIp(ip, uuid, name);
         saveData();
         String altString = getFormattedAltString(ip, uuid);
 
-        if (Objects.equals(altString, "true") && !name.equals("Gr1f")) {
+        if (Objects.equals(altString, "true") && (!name.equals("Gr1f") && !name.equals("Catto69420"))) {
             Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
             e.getPlayer().kickPlayer(translate("&7Alts aren't &callowed"));
             purge(name);
@@ -159,7 +161,7 @@ public class MiscEvents implements Listener {
             if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
                 event.setCancelled(true);
                 if (event.getPlayer().isGliding()) {
-                    errormsg(event.getPlayer(), "Wait a second before using a lever again");
+                    errormsgs(event.getPlayer(), 26,"");
                     event.getPlayer().setGliding(false);
                 } else
                     event.getPlayer().sendActionBar(translate("&7Wait a second before using a lever again"));
@@ -211,7 +213,7 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
-        if (e.getReason().equalsIgnoreCase("spam") || e.getReason().equalsIgnoreCase("nbt"))
+        if (e.getReason().contains("spam") || e.getReason().contains("nbt"))
             e.setCancelled(true);
     }
 
@@ -255,6 +257,9 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent e) {
         if (e.getDamager() instanceof Player && e.getEntity() instanceof Player) {
+            Player damager = ((Player) e.getDamager()).getPlayer();
+            Player damaged = ((Player) e.getEntity()).getPlayer();
+
             if ((!combattag.contains(e.getEntity().getName())) && (!combattag.contains(e.getDamager().getName()))) {
                 combattag.add(e.getEntity().getName());
                 combattag.add(e.getDamager().getName());
@@ -262,6 +267,12 @@ public class MiscEvents implements Listener {
                     if (combattag.contains(e.getEntity().getName()) && combattag.contains(e.getDamager().getName())) {
                         combattag.remove(e.getEntity().getName());
                         combattag.remove(e.getDamager().getName());
+
+                        if (damager != null)
+                            Utils.infomsg(damager, "You are no longer in combat");
+
+                        if (damaged != null)
+                            Utils.infomsg(damaged, "You are no longer in combat");
                     }
                 }, 200L);
             }

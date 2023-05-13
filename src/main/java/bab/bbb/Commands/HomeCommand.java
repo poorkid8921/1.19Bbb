@@ -28,11 +28,11 @@ public class HomeCommand implements TabExecutor {
         if (sender instanceof Player player) {
             List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
-                Utils.errormsg(player, "You have no home to teleport to");
+                Utils.errormsgs(player,16, "");
                 return true;
             }
             if (combattag.contains(player.getName())) {
-                Utils.errormsg(player, "You can't teleport whilst being combat tagged");
+                Utils.errormsgs(player, 17, "");
                 return true;
             }
 
@@ -65,7 +65,7 @@ public class HomeCommand implements TabExecutor {
                 }
             }
 
-            Utils.errormsg(player, "Couldn't find the home &e" + args[0]);
+            Utils.errormsgs(player, 18, args[0]);
         }
         return true;
     }

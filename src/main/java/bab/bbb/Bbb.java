@@ -125,7 +125,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     }
 
     public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
-        Player player = (Player) sender;
+        if (!(sender instanceof Player player))
+            return true;
 
         if (cmd.getName().equals("nick")) {
             if (args.length == 0) {
@@ -149,13 +150,13 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                Utils.errormsg(player, "The arguments are invalid");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Utils.errormsg(player, "The player is invalid");
+                Utils.errormsgs(player, 2, args[0]);
                 return true;
             }
 
@@ -165,19 +166,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 msgargs.append(args[i]).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Utils.errormsg(player, "The message is invalid");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
 
             String b = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(player.getName())) {
-                Utils.errormsg(player, "You can't send messages to players ignoring you");
+                Utils.errormsgs(player, 4, "");
                 return true;
             }
 
             String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (b != null && be.contains(target.getName())) {
-                Utils.errormsg(player, "You can't send messages to players you are ignoring");
+                Utils.errormsgs(player, 5, "");
                 return true;
             }
 
@@ -189,12 +190,12 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
-                Utils.errormsg(player, "The arguments are invalid");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
             Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
             if (target == null || !lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
-                Utils.errormsg(player, "You have no one to reply to");
+                Utils.errormsgs(player, 6, "");
                 return true;
             }
 
@@ -203,19 +204,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             for (String arg : args) msgargs.append(arg).append(" ");
 
             if (msgargs.toString().equals("")) {
-                Utils.errormsg(player, "The message is invalid");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
 
             String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (ignoreclient != null && ignoreclient.contains(target.getName())) {
-                Utils.errormsg(player, "You can't send messages to players you are ignoring");
+                Utils.errormsgs(player, 5, "");
                 return true;
             }
 
             String ignoretarget = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
             if (ignoretarget != null && ignoretarget.contains(player.getName())) {
-                Utils.errormsg(player, "You can't send messages to players ignoring you");
+                Utils.errormsgs(player, 4, "");
                 return true;
             }
 
@@ -229,7 +230,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             if (Utils.getString("otherdata." + player.getUniqueId() + ".secure") != null) {
                 Utils.setData("otherdata." + player.getUniqueId() + ".secure", "");
                 Utils.saveData();
-                Utils.errormsg(player, "Your account has been unsecured");
+                Utils.infomsg(player, "Your account has been unsecured");
                 return true;
             }
 
@@ -244,19 +245,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                     Utils.infomsg(player, "Your ignored players are: " + ignoreclient.replace(", ", "&e, &7"));
                     return true;
                 }
-                Utils.errormsg(player, "The arguments are invalid");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                Utils.errormsg(player, "The player is invalid");
+                Utils.errormsgs(player, 2, "");
                 return true;
             }
 
             if (target.getName().equals(player.getName())) {
-                Utils.errormsg(player, "You can't ignore yourself");
+                Utils.errormsgs(player, 8, "");
                 return true;
             }
 
@@ -318,16 +319,16 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (strr == null)
             return;
 
-        boolean inuse = Utils.isduplicated(strr, nickuncolor);
+        boolean inuse = Utils.isduplicated(strr, nickuncolor) && Utils.isduplicatedname(strr, nickuncolor);
 
         if (nickuncolor.length() < 3)
-            Utils.errormsg(p, "The nickname you entered is too short");
+            Utils.errormsgs(p, 9, "");
         else if (nickuncolor.length() > 16)
-            Utils.errormsg(p, "The nickname you entered is too long");
+            Utils.errormsgs(p, 10, "");
         else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
-            Utils.errormsg(p, "The nickname you entered is invalid");
+            Utils.errormsgs(p, 11, "");
         else if (inuse)
-            Utils.errormsg(p, "The nickname you entered is already in use");
+            Utils.errormsgs(p, 12, "");
         else {
             String prevnick = Utils.removeColorCodes(p.getDisplayName());
             if (Utils.getString("otherdata." + p.getUniqueId() + ".prefix") != null) {

@@ -32,29 +32,29 @@ public class TpahereCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            Utils.errormsg(user, "The arguments are invalid");
+            Utils.errormsgs(user, 1, "");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            Utils.errormsg(user, "Player &e" + args[0] + " &7couldn't be found");
+            Utils.errormsgs(user, 2, args[0]);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            Utils.errormsg(user, "You can't teleport to yourself");
+            tpmsg(user, recipient, 14);
             return true;
         }
 
         if (plugin.getRequest(recipient) != null) {
-            Utils.errormsg(user, "Player &e" + recipient.getDisplayName() + " &7already has an active request");
+            tpmsg(user, recipient, 14);
             return true;
         }
 
         if (combattag.contains(user.getName())) {
-            Utils.errormsg(user, "You can't send tpa requests whilst being combat tagged");
+            tpmsg(user, recipient, 11);
             return true;
         }
 

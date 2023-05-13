@@ -20,22 +20,22 @@ public class DelHomeCommand implements TabExecutor {
         if (sender instanceof Player player) {
             List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
-                Utils.errormsg(player, "You have no home to delete");
+                Utils.errormsgs(player, 13, "");
                 return true;
             }
             if (args.length < 1) {
-                Utils.errormsg(player, "Invalid arguments");
+                Utils.errormsgs(player, 1, "");
                 return true;
             }
             Home home = homes.stream().filter(h -> h.getName().equals(args[0])).findFirst().orElse(null);
             if (home == null) {
-                Utils.errormsg(player, "The home specified is invalid");
+                Utils.errormsgs(player, 14, "");
                 return true;
             }
             if (Utils.deleteHome(home))
                 Utils.infomsg(player, "You have successfully deleted home &e" + home.getName());
             else
-                Utils.errormsg(player, "Home deletion has failed");
+                Utils.errormsgs(player, 15, home.getName());
         }
         return true;
     }

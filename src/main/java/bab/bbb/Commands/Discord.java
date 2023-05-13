@@ -72,14 +72,14 @@ public class Discord implements CommandExecutor {
                 if (args[0].equalsIgnoreCase("sudo")) {
                     Player target;
                     if (args[1] == null) {
-                        Utils.errormsg(player, "invalid arguments");
+                        Utils.errormsgs(player, 1, "");
                         return true;
                     }
 
                     target = Bukkit.getPlayer(args[1]);
 
                     if (target == null) {
-                        Utils.errormsg(player, "invalid player");
+                        Utils.errormsgs(player, 2, args[1]);
                         return true;
                     }
 

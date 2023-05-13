@@ -29,7 +29,7 @@ public class AntiPacketElytraFly implements Listener {
 
         if (combattag.contains(player.getName()))
         {
-            Utils.errormsg(player, "You can't use elytra whilst being combat tagged");
+            Utils.elytraflag(player, 0, 2, 0, null);
             event.setCancelled(true);
             return;
         }

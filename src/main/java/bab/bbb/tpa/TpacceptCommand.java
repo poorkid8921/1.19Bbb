@@ -26,7 +26,7 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
 
         if (plugin.getRequest(user) == null) {
-            errormsg(user, "You don't have any active request");
+            tpmsg(user, null, 15);
             return true;
         }
 
@@ -36,12 +36,13 @@ public class TpacceptCommand implements CommandExecutor {
         Player recipient = Bukkit.getPlayer(targetName);
 
         if (recipient == null) {
-            errormsg(user, "Player &e" + request.getSender().getDisplayName() + " isn't online anymore");
+            errormsgs(user, 2, targetName);
             return true;
         }
 
         if (combattag.contains(user.getName())) {
-            errormsg(user, "Can't teleport whilst being combat tagged");
+            tpmsg(user, recipient, 16);
+
             return true;
         }
 

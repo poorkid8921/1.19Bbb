@@ -11,6 +11,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -70,6 +71,12 @@ public class Utils {
 
     public static boolean isduplicated(String strr, String strtofind) {
         String[] array = strr.split("_");
+        Stream<String> stream = Stream.of(array);
+        return stream.anyMatch(str -> str.equalsIgnoreCase(strtofind));
+    }
+
+    public static boolean isduplicatedname(String strr, String strtofind) {
+        String[] array = strr.split("!");
         Stream<String> stream = Stream.of(array);
         return stream.anyMatch(str -> str.equalsIgnoreCase(strtofind));
     }
@@ -594,6 +601,8 @@ public class Utils {
         else if (msg == 0) {
             p.sendActionBar(translate("&7You're moving &ctoo fast"));
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
+        } else if (msg == 2) {
+            Utils.errormsgs(p, 28, "");
         } else {
             maskedkick(p);
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
@@ -606,7 +615,7 @@ public class Utils {
 
         int y = rworld.getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
         if (from == 1)
-            p.teleport(fromloc);
+            p.teleport(fromloc.add(new Vector(0, 1, 0)));
         else
             p.teleport(new Location(rworld, p.getLocation().getX(), y, p.getLocation().getZ()));
         p.setGliding(false);
@@ -643,6 +652,58 @@ public class Utils {
                     infomsg(p, "&e" + target.getDisplayName() + " &7isn't online anymore");
             case 10 -> // teleporting player...
                     infomsg(p, "Teleporting &e" + target.getDisplayName() + "&7...");
+            case 11 -> // combat
+                    errormsg(p, "You can't send tpa requests whilst being in combat");
+            case 12 -> // home combat
+                    errormsg(p, "You can't teleport to home whilst being in combat");
+            case 13 -> // active request
+                    errormsg(p, "Player &e" + target.getDisplayName() + " &7already has an active request");
+            case 14 -> // target=player
+                    errormsg(p, "You can't teleport to yourself");
+            case 15 -> // null tp req
+                    errormsg(p, "You have no active teleport request");
+            case 16 -> // tp combat
+                    errormsg(p, "You can't accept teleport requests whilst being in combat");
+        }
+    }
+
+    public static void errormsgs(Player p, int u, String str) {
+        switch (u) {
+            // nickname
+            case 9  -> errormsg(p, translate("&7[&4-&7] The nickname you entered is too short"));
+            case 10 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is too long"));
+            case 11 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is invalid"));
+            case 12 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is already taken"));
+
+            // chat
+            case 6  -> errormsg(p, translate("&7[&4-&7] You have no one to reply to"));
+            case 22 -> errormsg(p, translate("&7[&4-&7] You're executing commands too fast"));
+            case 23 -> errormsg(p, translate("&7[&4-&7] You're sending messages too fast"));
+            case 24 -> errormsg(p, translate("&7[&4-&7] Your message is too long"));
+            case 25 -> errormsg(p, translate("&7[&4-&7] You can't send links"));
+
+            // other
+            case 1  -> errormsg(p, translate("&7[&4-&7] The arguments are invalid"));
+            case 2  -> errormsg(p, translate("&7[&4-&7] Player &e" + str + " &7couldn't be found"));
+            case 17 -> errormsg(p, translate("&7[&4-&7] You can't teleport whilst being in combat"));
+            case 21 -> errormsg(p, translate("&7[&4-&7] &4Bad command"));
+            case 26 -> errormsg(p, translate("&7[&4-&7] Wait a second before using a lever again"));
+            case 27 -> errormsg(p, translate("&7[&4-&7] Nether roof is disabled"));
+            case 28 -> errormsg(p, translate("&7[&4-&7] You can't fly with elytra whilst being in combat"));
+
+            // homes
+            case 13 -> errormsg(p, translate("&7[&4-&7] You have no home to delete"));
+            case 14 -> errormsg(p, translate("&7[&4-&7] The specified home is invalid"));
+            case 15 -> errormsg(p, translate("&7[&4-&7] Home deletion for home &e" + str + " &7has failed"));
+            case 16 -> errormsg(p, translate("&7[&4-&7] You have no home to teleport to"));
+            case 18 -> errormsg(p, translate("&7[&4-&7] Couldn't find the home &e" + str));
+            case 19 -> errormsg(p, translate("&7[&4-&7] Home &e" + str + " &7already exists"));
+            case 20 -> errormsg(p, translate("&7[&4-&7] You have reached the home limit"));
+
+            // ignore
+            case 4  -> errormsg(p, translate("&7[&4-&7] You can't send messages to players ignoring you"));
+            case 5  -> errormsg(p, translate("&7[&4-&7] You can't send messages to players you are ignoring"));
+            case 8  -> errormsg(p, translate("&7[&4-&7] You can't ignore yourself"));
         }
     }
 

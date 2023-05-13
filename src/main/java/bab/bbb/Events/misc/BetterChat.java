@@ -40,7 +40,7 @@ public class BetterChat implements Listener {
             cm.setCooldown(e.getPlayer());
         else {
             e.setCancelled(true);
-            Utils.errormsg(e.getPlayer(), "You're executing commands too fast");
+            Utils.errormsgs(e.getPlayer(),22, "");
             return;
         }
 
@@ -50,9 +50,9 @@ public class BetterChat implements Listener {
         fullCommand = "/"+commandLabel+fullCommand;
         e.setMessage(fullCommand);
 
-        if (whitelistedcomms.contains(commandLabel)) {
+        if (!whitelistedcomms.contains(commandLabel)) {
             e.setCancelled(true);
-            Utils.errormsg(e.getPlayer(), "&4Bad command&7.");
+            Utils.errormsgs(e.getPlayer(),21, "");
         }
     }
 
@@ -63,21 +63,21 @@ public class BetterChat implements Listener {
         if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
-            Utils.errormsg(e.getPlayer(), "You're sending messages too fast");
+            Utils.errormsgs(e.getPlayer(),23, "");
             return;
         }
 
         String msg = e.getMessage();
 
-        if (Utils.removeColorCodes(msg).length() > 256) {
-            Utils.errormsg(e.getPlayer(), "Your message is too long");
+        if (Utils.removeColorCodes(msg).length() > 420) {
+            Utils.errormsgs(e.getPlayer(),24, "");
             return;
         }
 
         for (String word : msg.split(" ")) {
             for (String regex : linkRegexes) {
                 if (word.matches(regex)) {
-                    Utils.errormsg(e.getPlayer(), "Links aren't allowed");
+                    Utils.errormsgs(e.getPlayer(), 25, "");
                     return;
                 }
             }

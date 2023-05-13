@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static bab.bbb.utils.Utils.tpmsg;
+
 public class TpdenyCommand implements CommandExecutor {
     private final Bbb plugin;
 
@@ -24,17 +26,16 @@ public class TpdenyCommand implements CommandExecutor {
         if (player == null)
             return true;
 
-        TpaRequest request = plugin.getRequest((Player) sender);
+        TpaRequest request = plugin.getRequest(player);
         if (request == null) {
-            Utils.errormsg(player, "You don't have any active request");
+            tpmsg(player, null, 15);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(request.getSender().getName());
-
         Utils.tpmsg(player, recipient, 6);
         Utils.tpmsg(recipient, player, 5);
-        plugin.removeRequest((Player) sender);
+        plugin.removeRequest(player);
 
         return true;
     }

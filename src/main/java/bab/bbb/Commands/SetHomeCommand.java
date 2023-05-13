@@ -31,18 +31,18 @@ public class SetHomeCommand implements CommandExecutor {
                 homes = new ArrayList<>();
             String finalHomestr = homestr;
             if (homes.stream().anyMatch(h -> h.getName().equals(finalHomestr))) {
-                Utils.errormsg(player, "That home already exists");
+                Utils.errormsgs(player, 19, home.getName());
                 return true;
             }
             if (homes.size() >= 5 && !player.isOp()) {
-                Utils.errormsg(player, "You have reached the home limit");
+                Utils.errormsgs(player, 20, home.getName());
                 return true;
             }
             File playerFolder = new File(Utils.getHomesFolder(), player.getUniqueId().toString());
             if (!playerFolder.exists())
                 playerFolder.mkdir();
             Utils.save(playerFolder, home.getName() + ".map", home);
-            Utils.infomsg(player, "Successfully setted home &e" + homestr + " &7to your position");
+            Utils.infomsg(player, "Successfully setted home &e" + homestr + " &7to your current position");
         }
         return true;
     }
