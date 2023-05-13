@@ -2,11 +2,15 @@ package bab.bbb.Events.misc.patches;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -29,7 +33,9 @@ public class AntiPacketElytraFly implements Listener {
 
         if (combattag.contains(player.getName()))
         {
-            Utils.elytraflag(player, 0, 2, 0, null);
+            player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+            player.teleport(from.add(new Vector(0, 1, 0)));
+            Utils.errormsgs(player, 28, "");
             event.setCancelled(true);
             return;
         }

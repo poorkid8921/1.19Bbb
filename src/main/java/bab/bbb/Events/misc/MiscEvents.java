@@ -1,7 +1,7 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
-import bab.bbb.utils.Utils;
+import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -63,6 +63,13 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
+    private void onTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        vanish(player);
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> unVanish(player), 10);
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
 
@@ -81,10 +88,13 @@ public class MiscEvents implements Listener {
 
         String str = getString("otherdata.nicknames");
 
-        if (!str.contains(e.getPlayer().getName())) {
-            Utils.setData("otherdata.nicknames", "_" + e.getPlayer().getName() + str);
-            Utils.setData("otherdata.nicknames", "!" + e.getPlayer().getName() + str);
-        }
+        if (!str.contains(e.getPlayer().getName()))
+            setData("otherdata.nicknames", ":_:" + e.getPlayer().getName() + str);
+
+        String stnr = getString("otherdata.realnames");
+
+        if (!stnr.contains(e.getPlayer().getName()))
+            setData("otherdata.realnames", ":_:" + e.getPlayer().getName() + stnr);
 
         addUpdateIp(ip, uuid, name);
         saveData();
@@ -110,11 +120,9 @@ public class MiscEvents implements Listener {
                 setData("otherdata." + e.getPlayer().getUniqueId() + ".joindate", dtf.format(now));
                 saveData();
 
-                int randX = new Random().nextInt(maxX - minX + 1) + minX;
-                int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
-                int y = respawnWorld.getHighestBlockYAt(randX, randZ);
-                Location found = new Location(respawnWorld, randX, y, randZ);
-                e.getPlayer().teleport(found);
+                Location respawn = null;
+                while (respawn == null) respawn = calcSpawnLocation();
+                PaperLib.teleportAsync(e.getPlayer(), respawn);
 
                 //e.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(100);
 
@@ -161,7 +169,7 @@ public class MiscEvents implements Listener {
             if (playersUsingLevers.containsKey(playerUniqueID) && playersUsingLevers.get(playerUniqueID) > System.currentTimeMillis()) {
                 event.setCancelled(true);
                 if (event.getPlayer().isGliding()) {
-                    errormsgs(event.getPlayer(), 26,"");
+                    errormsgs(event.getPlayer(), 26, "");
                     event.getPlayer().setGliding(false);
                 } else
                     event.getPlayer().sendActionBar(translate("&7Wait a second before using a lever again"));
@@ -197,6 +205,8 @@ public class MiscEvents implements Listener {
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
         playersClickingBeds.remove(e.getPlayer().getUniqueId());
         playersClickingAnchors.remove(e.getPlayer().getUniqueId());
+        combattag.remove(e.getPlayer().getName());
+
         getHomes().remove(e.getPlayer().getUniqueId());
 
         /*plugin.getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.X", e.getPlayer().getLocation().getX());
@@ -219,14 +229,15 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
+        vanish(e.getPlayer());
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> unVanish(e.getPlayer()), 10);
+
         if (e.isBedSpawn())
             return;
 
-        int randX = new Random().nextInt(maxX - minX + 1) + minX;
-        int randZ = new Random().nextInt(maxZ - minZ + 1) + minZ;
-        int y = respawnWorld.getHighestBlockYAt(randX, randZ);
-        Location found = new Location(respawnWorld, randX, y, randZ);
-        e.getPlayer().teleport(found);
+        Location respawn = null;
+        while (respawn == null) respawn = calcSpawnLocation();
+        PaperLib.teleportAsync(e.getPlayer(), respawn);
     }
 
     public ItemStack dupe(ItemStack todupe, int amount) {
@@ -263,16 +274,18 @@ public class MiscEvents implements Listener {
             if ((!combattag.contains(e.getEntity().getName())) && (!combattag.contains(e.getDamager().getName()))) {
                 combattag.add(e.getEntity().getName());
                 combattag.add(e.getDamager().getName());
+                infomsg(damager, "You are now in combat with &e" + damaged.getDisplayName());
+                infomsg(damaged, "You are now in combat with &e" + damager.getDisplayName());
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     if (combattag.contains(e.getEntity().getName()) && combattag.contains(e.getDamager().getName())) {
                         combattag.remove(e.getEntity().getName());
                         combattag.remove(e.getDamager().getName());
 
                         if (damager != null)
-                            Utils.infomsg(damager, "You are no longer in combat");
+                            infomsg(damager, "You are no longer in combat");
 
                         if (damaged != null)
-                            Utils.infomsg(damaged, "You are no longer in combat");
+                            infomsg(damaged, "You are no longer in combat");
                     }
                 }, 200L);
             }
@@ -350,22 +363,6 @@ public class MiscEvents implements Listener {
         }
     }
 
-    private boolean easyran() {
-        Random ran = new Random();
-        int b = ran.nextInt(9);
-        return b == 1;
-    }
-
-    private boolean hardran() {
-        Random ran = new Random();
-        int b = ran.nextInt(100);
-        return b == 1;
-    }
-
-    public boolean candupe(Player e) {
-        return e.getPlayer().getInventory().getItemInHand().getType() == Material.TRAPPED_CHEST && e.getPlayer().getInventory().getItemInOffHand().getType() == Material.CHEST;
-    }
-
     @EventHandler
     public void onVehicleEnter(PlayerInteractAtEntityEvent event) {
         if (event.getRightClicked() instanceof ChestedHorse) {
@@ -383,14 +380,14 @@ public class MiscEvents implements Listener {
                     }
                     entity.setCarryingChest(false);
                 }
-            } else {
+            }/* else {
                 event.setCancelled(true);
                 Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
                     if (((ChestedHorse) event.getRightClicked()).isCarryingChest())
                         ((ChestedHorse) event.getRightClicked()).setCarryingChest(false);
                     event.getRightClicked().eject();
                 }, 4L);
-            }
+            }*/
         }
     }
 
@@ -446,6 +443,11 @@ public class MiscEvents implements Listener {
                 if (b < 2)
                     Bukkit.getWorld(e.getPlayer().getWorld().getName()).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), getHead(e.getPlayer()));
             }, 1);
+            if (combattag.contains(e.getPlayer().getName()) && combattag.contains(e.getPlayer().getKiller().getName())) {
+                combattag.remove(e.getPlayer().getName());
+                combattag.remove(e.getPlayer().getKiller().getName());
+                infomsg(e.getPlayer().getKiller(), "You are no longer in combat");
+            }
         }
 
         if (plugin.config.getBoolean("no-death-messages"))
@@ -457,8 +459,12 @@ public class MiscEvents implements Listener {
             return;
 
         // - lifesteal
-        //e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() - 2);
-        //e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() + 2);
+        /*double health = e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+        double healthE = e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+        if (health <= 40) {
+            e.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(healthE - 2);
+            e.getEntity().getKiller().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health + 2);
+        }*/
 
         if (e.getPlayer().getKiller().getVehicle() == null)
             return;

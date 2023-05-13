@@ -57,11 +57,20 @@ public class DonkeyDupe implements Listener {
             entity.setCustomName(donkey.getName());
             entity.setCustomNameVisible(false);
             entity.setAdult();
+            entity.setTamed(true);
             entity.setInvulnerable(true);
             entity.setCarryingChest(true);
             entity.setInvisible(true);
             entity.setSilent(true);
-            entity.getInventory().setContents(cloned.getContents());
+
+            /*entity.getInventory().setContents(cloned.getContents());
+            for (int ia = 0; ia < cloned.getSize(); ia++) {
+                entity.getInventory().setItem(ia, cloned.getItem(ia));
+            }*/
+            for (ItemStack ia : cloned.getContents()) {
+                if (ia != null)
+                    entity.getInventory().addItem(ia);
+            }
 
             human.closeInventory();
             human.openInventory(((ChestedHorse) a).getInventory());

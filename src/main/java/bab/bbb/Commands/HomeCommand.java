@@ -28,9 +28,10 @@ public class HomeCommand implements TabExecutor {
         if (sender instanceof Player player) {
             List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
-                Utils.errormsgs(player,16, "");
+                Utils.errormsgs(player, 16, "");
                 return true;
             }
+
             if (combattag.contains(player.getName())) {
                 Utils.errormsgs(player, 17, "");
                 return true;
@@ -41,28 +42,26 @@ public class HomeCommand implements TabExecutor {
             if (args.length > 0)
                 homestr = args[0];
 
-            for (Home home : homes) {
-                if (home.getName().equalsIgnoreCase(homestr)) {
-                    Utils.infomsg(player, "&7Teleporting to home &e" + home.getName() + "&7...");
+            try {
+                for (Home home : homes) {
+                    if (home.getName().equalsIgnoreCase(homestr)) {
+                        Utils.infomsg(player, "&7Teleporting to home &e" + home.getName() + "&7...");
 
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            player.getWorld().strikeLightningEffect(player.getLocation());
-                            player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-
-                            for (Player players : Bukkit.getOnlinePlayers())
-                                players.hidePlayer(plugin, player);
-
-                            player.teleport(home.getLocation());
-                            for (Player players : Bukkit.getOnlinePlayers())
-                                players.showPlayer(plugin, player);
-                            player.getWorld().strikeLightningEffect(player.getLocation());
-                            player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                        }
-                    }.runTaskLater(Bbb.getInstance(), 100);
-                    return true;
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                player.getWorld().strikeLightningEffect(player.getLocation());
+                                player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                                player.teleport(home.getLocation());
+                                player.getWorld().strikeLightningEffect(player.getLocation());
+                                player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                            }
+                        }.runTaskLater(Bbb.getInstance(), 100);
+                        return true;
+                    }
                 }
+            } catch (RuntimeException e) {
+                e.printStackTrace();
             }
 
             Utils.errormsgs(player, 18, args[0]);

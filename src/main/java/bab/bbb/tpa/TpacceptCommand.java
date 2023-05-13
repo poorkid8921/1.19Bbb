@@ -53,14 +53,14 @@ public class TpacceptCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.hidePlayer(plugin, recipient);
+                    //for (Player players : Bukkit.getOnlinePlayers())
+                    //    players.hidePlayer(plugin, recipient);
 
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
 
                     recipient.teleport(user);
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.showPlayer(plugin, recipient);
+                    //for (Player players : Bukkit.getOnlinePlayers())
+                    //    players.showPlayer(plugin, recipient);
                     recipient.getWorld().strikeLightningEffect(recipient.getLocation());
                     recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
                     user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
@@ -73,14 +73,14 @@ public class TpacceptCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.hidePlayer(plugin, user);
+                    //for (Player players : Bukkit.getOnlinePlayers())
+                    //    players.hidePlayer(plugin, user);
 
                     user.getWorld().strikeLightningEffect(user.getLocation());
 
                     user.teleport(recipient);
-                    for (Player players : Bukkit.getOnlinePlayers())
-                        players.showPlayer(plugin, user);
+                    //for (Player players : Bukkit.getOnlinePlayers())
+                    //    players.showPlayer(plugin, user);
                     user.getWorld().strikeLightningEffect(user.getLocation());
                     user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
                     recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);

@@ -3,6 +3,7 @@ package bab.bbb.utils;
 import bab.bbb.Bbb;
 import lombok.Cleanup;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.AnvilInventory;
@@ -45,6 +46,9 @@ public class Utils {
     public static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
     public static final Set<String> playerList = new HashSet<>();
     public static final Bbb plugin = Bbb.getInstance();
+    public static final HashSet<String> bannedblocks = new HashSet<>(Arrays.asList(
+            "WATER", "LAVA", "AIR", "CACTUS"
+    ));
     public static boolean works1 = true;
     public static boolean works2 = false;
     public static boolean works3 = false;
@@ -62,6 +66,34 @@ public class Utils {
         return homes;
     }
 
+    public static void vanish(Player player) {
+        for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
+            onlinePlayer.hidePlayer(plugin, player);
+        }
+    }
+
+    public static void unVanish(Player player) {
+        for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
+            onlinePlayer.showPlayer(plugin, player);
+        }
+    }
+
+    public static boolean candupe(Player e) {
+        return e.getPlayer().getInventory().getItemInHand().getType() == Material.TRAPPED_CHEST && e.getPlayer().getInventory().getItemInOffHand().getType() == Material.CHEST;
+    }
+
+    public static boolean easyran() {
+        Random ran = new Random();
+        int b = ran.nextInt(9);
+        return b == 1;
+    }
+
+    public static boolean hardran() {
+        Random ran = new Random();
+        int b = ran.nextInt(100);
+        return b == 1;
+    }
+
     public static String getCommandLabel(String cmd) {
         String[] parts = cmd.split(" ");
         if (parts[0].startsWith("/"))
@@ -69,14 +101,8 @@ public class Utils {
         return parts[0];
     }
 
-    public static boolean isduplicated(String strr, String strtofind) {
-        String[] array = strr.split("_");
-        Stream<String> stream = Stream.of(array);
-        return stream.anyMatch(str -> str.equalsIgnoreCase(strtofind));
-    }
-
-    public static boolean isduplicatedname(String strr, String strtofind) {
-        String[] array = strr.split("!");
+    public static boolean isduplicatednick(String strr, String strtofind) {
+        String[] array = strr.split(":_:");
         Stream<String> stream = Stream.of(array);
         return stream.anyMatch(str -> str.equalsIgnoreCase(strtofind));
     }
@@ -238,17 +264,15 @@ public class Utils {
                     String[] arg = uuidData.split(",");
                     Date date = new Date(Long.parseLong(arg[0]));
 
-                    if ((name.equals("") && date.before(oldestDate)) ||
-                            (name.equalsIgnoreCase(arg[1]))) {
+                    if ((name.equals("") && date.before(oldestDate)) || (name.equalsIgnoreCase(arg[1]))) {
                         removeList.add("ip." + ip + "." + uuid);
                         --remainingKeys;
                         playerList.remove(arg[1].toLowerCase());
                     }
                 }
 
-                if (remainingKeys <= 0) {
+                if (remainingKeys <= 0)
                     removeList.add("ip." + ip);
-                }
             }
         }
 
@@ -258,9 +282,19 @@ public class Utils {
         saveData();
     }
 
+    public static Location calcSpawnLocation() {
+        int x = new Random().nextInt(maxX - minX + 1) + minX;
+        int z = new Random().nextInt(maxZ - minZ + 1) + minZ;
+        int y = respawnWorld.getHighestBlockYAt(x, z);
+        Block blockAt = respawnWorld.getBlockAt(x, y, z);
+        if (bannedblocks.toString().toLowerCase().contains(blockAt.getType().name().toLowerCase()))
+            return null;
+        return new Location(respawnWorld, x, y, z).add(new Vector(0,3,0));
+    }
+
     public static synchronized void addUpdateIp(String ip, String uuid, String name) {
         Date date = new Date();
-        plugin.getCustomConfig().set("ip." + ip.replace('.', '_') + "." + uuid, date.getTime() + "," + name);
+        Utils.setData("ip." + ip.replace('.', '_') + "." + uuid, date.getTime() + "," + name);
         playerList.add(name.toLowerCase());
         saveData();
     }
@@ -601,8 +635,6 @@ public class Utils {
         else if (msg == 0) {
             p.sendActionBar(translate("&7You're moving &ctoo fast"));
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
-        } else if (msg == 2) {
-            Utils.errormsgs(p, 28, "");
         } else {
             maskedkick(p);
             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
@@ -670,40 +702,39 @@ public class Utils {
     public static void errormsgs(Player p, int u, String str) {
         switch (u) {
             // nickname
-            case 9  -> errormsg(p, translate("&7[&4-&7] The nickname you entered is too short"));
-            case 10 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is too long"));
-            case 11 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is invalid"));
-            case 12 -> errormsg(p, translate("&7[&4-&7] The nickname you entered is already taken"));
+            case 9 -> errormsg(p, translate("The nickname you entered is too short"));
+            case 10 -> errormsg(p, translate("The nickname you entered is too long"));
+            case 11 -> errormsg(p, translate("The nickname you entered is invalid"));
+            case 12 -> errormsg(p, translate("The nickname you entered is already taken"));
 
             // chat
-            case 6  -> errormsg(p, translate("&7[&4-&7] You have no one to reply to"));
-            case 22 -> errormsg(p, translate("&7[&4-&7] You're executing commands too fast"));
-            case 23 -> errormsg(p, translate("&7[&4-&7] You're sending messages too fast"));
-            case 24 -> errormsg(p, translate("&7[&4-&7] Your message is too long"));
-            case 25 -> errormsg(p, translate("&7[&4-&7] You can't send links"));
+            case 6 -> errormsg(p, translate("You have no one to reply to"));
+            case 22 -> errormsg(p, translate("You're executing commands too fast"));
+            case 23 -> errormsg(p, translate("You're sending messages too fast"));
+            case 24 -> errormsg(p, translate("Your message is too long"));
+            case 25 -> errormsg(p, translate("You can't send links"));
 
             // other
-            case 1  -> errormsg(p, translate("&7[&4-&7] The arguments are invalid"));
-            case 2  -> errormsg(p, translate("&7[&4-&7] Player &e" + str + " &7couldn't be found"));
-            case 17 -> errormsg(p, translate("&7[&4-&7] You can't teleport whilst being in combat"));
-            case 21 -> errormsg(p, translate("&7[&4-&7] &4Bad command"));
-            case 26 -> errormsg(p, translate("&7[&4-&7] Wait a second before using a lever again"));
-            case 27 -> errormsg(p, translate("&7[&4-&7] Nether roof is disabled"));
-            case 28 -> errormsg(p, translate("&7[&4-&7] You can't fly with elytra whilst being in combat"));
+            case 1 -> errormsg(p, translate("The arguments are invalid"));
+            case 2 -> errormsg(p, translate("Player &e" + str + " &7couldn't be found"));
+            case 17 -> errormsg(p, translate("You can't teleport whilst being in combat"));
+            case 21 -> errormsg(p, translate("&4Bad command"));
+            case 26 -> errormsg(p, translate("Wait a second before using a lever again"));
+            case 27 -> errormsg(p, translate("Nether roof is disabled"));
+            case 28 -> errormsg(p, translate("You can't fly with elytra whilst being in combat"));
 
             // homes
-            case 13 -> errormsg(p, translate("&7[&4-&7] You have no home to delete"));
-            case 14 -> errormsg(p, translate("&7[&4-&7] The specified home is invalid"));
-            case 15 -> errormsg(p, translate("&7[&4-&7] Home deletion for home &e" + str + " &7has failed"));
-            case 16 -> errormsg(p, translate("&7[&4-&7] You have no home to teleport to"));
-            case 18 -> errormsg(p, translate("&7[&4-&7] Couldn't find the home &e" + str));
-            case 19 -> errormsg(p, translate("&7[&4-&7] Home &e" + str + " &7already exists"));
-            case 20 -> errormsg(p, translate("&7[&4-&7] You have reached the home limit"));
+            case 13 -> errormsg(p, translate("You have no home to delete"));
+            case 15 -> errormsg(p, translate("Home deletion for home &e" + str + " &7has failed"));
+            case 16 -> errormsg(p, translate("You have no home to teleport to"));
+            case 18 -> errormsg(p, translate("Couldn't find the home &e" + str));
+            case 19 -> errormsg(p, translate("Home &e" + str + " &7already exists"));
+            case 20 -> errormsg(p, translate("You have reached the home limit"));
 
             // ignore
-            case 4  -> errormsg(p, translate("&7[&4-&7] You can't send messages to players ignoring you"));
-            case 5  -> errormsg(p, translate("&7[&4-&7] You can't send messages to players you are ignoring"));
-            case 8  -> errormsg(p, translate("&7[&4-&7] You can't ignore yourself"));
+            case 4 -> errormsg(p, translate("You can't send messages to players ignoring you"));
+            case 5 -> errormsg(p, translate("You can't send messages to players you are ignoring"));
+            case 8 -> errormsg(p, translate("You can't ignore yourself"));
         }
     }
 

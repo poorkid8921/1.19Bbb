@@ -8,6 +8,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.util.Vector;
+
+import static bab.bbb.utils.Utils.combattag;
 
 @SuppressWarnings("deprecation")
 public class MoveEvents implements Listener {
@@ -46,8 +49,18 @@ public class MoveEvents implements Listener {
 
         if (p.isGliding()) {
             if (Bbb.getTPSofLastSecond() <= cfgtps) {
-                e.setCancelled(true);
                 Utils.elytraflag(p, 1, 1, 1, e.getFrom());
+                e.setCancelled(true);
+                return;
+            }
+
+            if (combattag.contains(p.getName()))
+            {
+                p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                p.teleport(e.getFrom().add(new Vector(0, 1, 0)));
+                Utils.errormsgs(p, 28, "");
+                e.setCancelled(true);
+                p.setGliding(false);
                 return;
             }
 

@@ -29,7 +29,7 @@ public class DelHomeCommand implements TabExecutor {
             }
             Home home = homes.stream().filter(h -> h.getName().equals(args[0])).findFirst().orElse(null);
             if (home == null) {
-                Utils.errormsgs(player, 14, "");
+                Utils.errormsgs(player, 18, args[0]);
                 return true;
             }
             if (Utils.deleteHome(home))

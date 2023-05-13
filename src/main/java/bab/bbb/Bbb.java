@@ -15,6 +15,7 @@ import bab.bbb.utils.Utils;
 import bab.bbb.utils.Tablist;
 import bab.bbb.utils.Type;
 import com.destroystokyo.paper.profile.PlayerProfile;
+import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
@@ -46,6 +47,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.stream.Stream;
+
+import static bab.bbb.utils.Utils.getString;
+import static bab.bbb.utils.Utils.setData;
 
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
@@ -113,18 +118,26 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
         }
 
-        if (this.getCustomConfig().get("otherdata.nicknames") == null)
+        if (Utils.getString("otherdata.nicknames") == null)
         {
-            this.getCustomConfig().set("otherdata.nicknames", "");
-            this.saveCustomConfig();
+            Utils.setData("otherdata.nicknames", "");
+            Utils.saveData();
         }
+
+        if (Utils.getString("otherdata.realnames") == null)
+        {
+            Utils.setData("otherdata.realnames", "");
+            Utils.saveData();
+        }
+
+        PaperLib.suggestPaper(Bbb.getInstance());
     }
 
     public static Bbb getInstance() {
         return instance;
     }
 
-    public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player))
             return true;
 
@@ -186,7 +199,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             target.sendMessage(Utils.translate(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
-
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
@@ -228,7 +240,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return true;
         } else if (cmd.getName().equals("secure")) {
             if (Utils.getString("otherdata." + player.getUniqueId() + ".secure") != null) {
-                Utils.setData("otherdata." + player.getUniqueId() + ".secure", "");
+                Utils.setData("otherdata." + player.getUniqueId() + ".secure", null);
                 Utils.saveData();
                 Utils.infomsg(player, "Your account has been unsecured");
                 return true;
@@ -289,9 +301,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             String str = s;
             //realname(p, ColorUtils.removeColorCodes(s));
 
-            if (Utils.getString("otherdata." + p.getUniqueId() + ".prefix") != null)
-                str = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + str;
-
             p.setPlayerListName(Utils.translate(str + ChatColor.GRAY));
             p.setDisplayName(Utils.translate(str + ChatColor.GRAY));
         }
@@ -315,11 +324,15 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             return;
         }
 
-        String strr = this.getCustomConfig().getString("otherdata.nicknames");
+        String strr = Utils.getString("otherdata.nicknames");
         if (strr == null)
             return;
 
-        boolean inuse = Utils.isduplicated(strr, nickuncolor) && Utils.isduplicatedname(strr, nickuncolor);
+        String strrr = Utils.getString("otherdata.realnames");
+        if (strrr == null)
+            return;
+
+        boolean inuse = Utils.isduplicatednick(strr, nickuncolor) || Utils.isduplicatednick(strrr, p.getName());
 
         if (nickuncolor.length() < 3)
             Utils.errormsgs(p, 9, "");
@@ -327,15 +340,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Utils.errormsgs(p, 10, "");
         else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
             Utils.errormsgs(p, 11, "");
-        else if (inuse)
+        else if (inuse && !(strr.equalsIgnoreCase(p.getDisplayName())))
             Utils.errormsgs(p, 12, "");
         else {
             String prevnick = Utils.removeColorCodes(p.getDisplayName());
-            if (Utils.getString("otherdata." + p.getUniqueId() + ".prefix") != null) {
-                nick = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + nick;
-                nickuncolor = Utils.getString("otherdata." + p.getUniqueId() + ".prefix") + " " + nickuncolor;
-            }
-            String str = strr.replace("_" + prevnick, "_" + nickuncolor).replace("_" + p.getName(), "");
+            String str = strr.replace(":_:" + prevnick, ":_:" + nickuncolor);
 
             Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
             Utils.setData("otherdata.nicknames", str);
@@ -351,7 +360,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void removeNick(Player p) {
         if (p.getName().equals(p.getDisplayName()))
             return;
-        String strr = Objects.requireNonNull(Utils.getString("otherdata.nicknames")).replace("_" + Utils.removeColorCodes(Objects.requireNonNull(p.getPlayer()).getDisplayName()), "_" + p.getPlayer().getName());
+        String strr = Objects.requireNonNull(Utils.getString("otherdata.nicknames")).replace(":_:" + Utils.removeColorCodes(Objects.requireNonNull(p.getPlayer()).getDisplayName()), ":_:" + p.getPlayer().getName());
         //realname(p, nickuncolor);
 
         p.setDisplayName(p.getName());

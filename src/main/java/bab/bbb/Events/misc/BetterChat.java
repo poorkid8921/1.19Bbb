@@ -3,6 +3,7 @@ package bab.bbb.Events.misc;
 import bab.bbb.Bbb;
 import bab.bbb.utils.RainbowText;
 import bab.bbb.utils.Utils;
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -15,6 +16,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import static bab.bbb.utils.Utils.translate;
@@ -22,13 +24,12 @@ import static bab.bbb.utils.Utils.translate;
 @SuppressWarnings("deprecation")
 public class BetterChat implements Listener {
     Utils cm = new Utils();
-    Bbb plugin = Bbb.getInstance();
     public final HashSet<String> linkRegexes = new HashSet<>(Arrays.asList(
             "(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})",
             "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z()]{1,6}\\b([-a-zA-Z()@:%_+.~#?&/=]*)"
     ));
     public final HashSet<String> whitelistedcomms = new HashSet<>(Arrays.asList(
-            "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
+            "anarchy", "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
     ));
 
     @EventHandler
@@ -63,6 +64,11 @@ public class BetterChat implements Listener {
         if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
+            if (Utils.hardran())
+            {
+                e.getPlayer().kickPlayer(translate("&7Keep the spam to the &eminimum"));
+                return;
+            }
             Utils.errormsgs(e.getPlayer(),23, "");
             return;
         }
