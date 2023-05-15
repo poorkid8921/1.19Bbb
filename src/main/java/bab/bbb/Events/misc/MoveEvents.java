@@ -57,7 +57,8 @@ public class MoveEvents implements Listener {
             if (combattag.contains(p.getName()))
             {
                 p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
-                p.teleport(e.getFrom().add(new Vector(0, 1, 0)));
+                int y = p.getWorld().getHighestBlockYAt((int) e.getFrom().getX(), (int) e.getFrom().getZ()) + 2;
+                p.teleport(new Location(e.getFrom().getWorld(), e.getFrom().getX(), y, e.getFrom().getX()));
                 Utils.errormsgs(p, 28, "");
                 e.setCancelled(true);
                 p.setGliding(false);

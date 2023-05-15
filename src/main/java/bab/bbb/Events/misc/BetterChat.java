@@ -34,16 +34,16 @@ public class BetterChat implements Listener {
 
     @EventHandler
     private void CmdProcess(PlayerCommandPreprocessEvent e) {
-        if (e.getPlayer().getName().equals("Gr1f") || e.getPlayer().isOp())
+        if (e.getPlayer().isOp())
             return;
 
-        if (cm.checkCooldown(e.getPlayer()))
+        /*if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
             e.setCancelled(true);
             Utils.errormsgs(e.getPlayer(),22, "");
             return;
-        }
+        }*/
 
         String message = e.getMessage();
         String commandLabel = Utils.getCommandLabel(message).toLowerCase();
@@ -73,14 +73,14 @@ public class BetterChat implements Listener {
             return;
         }
 
-        String msg = e.getMessage();
+        String translatedmsg = Utils.translate(e.getPlayer(), e.getMessage());
 
-        if (Utils.removeColorCodes(msg).length() > 420) {
+        if (Utils.removeColorCodes(translatedmsg).length() > 255) {
             Utils.errormsgs(e.getPlayer(),24, "");
             return;
         }
 
-        for (String word : msg.split(" ")) {
+        for (String word : e.getMessage().split(" ")) {
             for (String regex : linkRegexes) {
                 if (word.matches(regex)) {
                     Utils.errormsgs(e.getPlayer(), 25, "");
@@ -90,23 +90,23 @@ public class BetterChat implements Listener {
         }
 
         if (e.getMessage().contains("[rainbow]"))
-            msg = new RainbowText(msg).getText();
+            translatedmsg = new RainbowText(translatedmsg).getText();
 
         if (e.getMessage().contains("[unicode]"))
-            msg = Utils.unicode(msg);
+            translatedmsg = Utils.unicode(translatedmsg);
 
         //if (e.getMessage().contains("[base64]"))
         //    msg = Base64.getEncoder().encodeToString(msg.replace("[base64]", "").getBytes());
 
         if (e.getMessage().startsWith(">"))
-            msg = "&2" + msg.replace(">", "");
+            translatedmsg = "&2" + translatedmsg.replace(">", "");
 
         if (e.getMessage().startsWith("<"))
-            msg = "&4" + msg.replace("<", "");
+            translatedmsg = "&4" + translatedmsg.replace("<", "");
 
         if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||")) {
-            TextComponent spoiler = new TextComponent(translate("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, msg.length() / 3 - 2))));
-            Text HoverText = new Text(translate(e.getPlayer(), msg.replace("||", "")));
+            TextComponent spoiler = new TextComponent("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, translatedmsg.length() / 3 - 2)));
+            Text HoverText = new Text(translate(e.getPlayer(), translatedmsg.replace("||", "")));
 
             spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
 
@@ -116,11 +116,11 @@ public class BetterChat implements Listener {
                     continue;
                 p.sendMessage(new BaseComponent[]{spoiler});
             }
-            Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
+            Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + translatedmsg);
             return;
         }
 
-        Utils.message(e.getPlayer(), msg);
-        Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + msg);
+        Utils.message(e.getPlayer(), translatedmsg);
+        Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + translatedmsg);
     }
 }

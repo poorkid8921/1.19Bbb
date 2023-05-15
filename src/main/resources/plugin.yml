@@ -1,5 +1,5 @@
 name: Anarchy
-version: 1.0.3
+version: 1.0.4
 main: bab.bbb.Bbb
 api-version: 1.19
 
@@ -9,11 +9,11 @@ commands:
     usage: /<command>
     aliases: d
   tpa:
-    description: Send a teleport request to a player on the server.
+    description: Send a teleport request to a player.
     usage: /<command>
     aliases: [tpask ]
   tpahere:
-    description: Send a teleport here request to a player on the server.
+    description: Send a teleport here request to a player.
     usage: /<command>
   tpaccept:
     description: Accept a teleport request.
@@ -28,7 +28,7 @@ commands:
     usage: /<command>
     aliases: [nickname]
   msg:
-    description: PM a player.
+    description: Send message to a player.
     usage: /<command>
     aliases: [ whisper, tell ]
   secure:
@@ -45,7 +45,7 @@ commands:
     description: Set your home location.
     usage: /<command>
   reply:
-    description: Reply to a message.
+    description: Reply to a player.
     usage: /<command>
     aliases: [ r ]
   ignore:

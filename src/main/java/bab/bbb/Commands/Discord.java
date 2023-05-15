@@ -329,38 +329,6 @@ public class Discord implements CommandExecutor {
                         throw new RuntimeException(e);
                     }
                 }
-
-                if (args[0].equalsIgnoreCase("info")) {
-                    Player target = ((Player) sender).getPlayer();
-                    if (args.length > 1)
-                        target = Bukkit.getPlayer(args[1]);
-
-                    if (target == null)
-                        return true;
-
-                    StringBuilder homestr = new StringBuilder();
-
-                    List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
-                    if (homes != null) {
-                        for (Home home : homes) {
-                            homestr.append(home.getName()).append("&7,&e");
-                        }
-                    }
-
-                    String il = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
-                    String si = Utils.getString("otherdata." + target.getUniqueId() + ".secure");
-
-                    Utils.infomsg(target, "&e" + target.getDisplayName() + "&7's info are:");
-                    Utils.infomsg(target, "Name: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".name"));
-                    Utils.infomsg(target, "Display Name: &e" + target.getDisplayName());
-                    Utils.infomsg(target, "Join Date: &e" + Utils.getString("otherdata." + target.getUniqueId() + ".joindate"));
-                    Utils.infomsg(target, "Home Names: &e" + translate(homestr.toString()));
-                    if (il != null)
-                        Utils.infomsg(target, "Ignore List: &e" + translate(il.replace(", ", ",&7")));
-                    if (si != null)
-                        Utils.infomsg(target, "Secure IP: &e" + si);
-                    Utils.infomsg(target, "IP: &e" + Objects.requireNonNull(target.getAddress()).getAddress().getHostAddress());
-                }
             } else
                 Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));
         }

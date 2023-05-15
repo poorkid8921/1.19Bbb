@@ -556,7 +556,7 @@ public class Utils {
             String b = Utils.getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(Objects.requireNonNull(e.getPlayer()).getName()))
                 continue;
-            p.sendMessage(translate(Objects.requireNonNull(e.getPlayer()), "&7<" + e.getPlayer().getDisplayName() + "&7> " + msg));
+            p.sendMessage("&7<" + e.getPlayer().getDisplayName() + "&7> " + msg);
         }
     }
 
