@@ -10,10 +10,8 @@ import bab.bbb.Events.misc.patches.AntiIllegalsListener;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
 import bab.bbb.Events.misc.patches.ChestLimit;
 import bab.bbb.tpa.*;
-import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import bab.bbb.utils.Tablist;
-import bab.bbb.utils.Type;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import io.papermc.lib.PaperLib;
 import org.bukkit.*;
@@ -47,40 +45,28 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.stream.Stream;
-
-import static bab.bbb.utils.Utils.getString;
-import static bab.bbb.utils.Utils.setData;
 
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
     public FileConfiguration config = this.getConfig();
-    private final ArrayList<TpaRequest> requests = new ArrayList<>();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
+    public int frameduperng = this.getConfig().getInt("item-frame-dupe-rng");
+    public List<String> list = this.getConfig().getStringList("motd");
+    public int tps = this.getConfig().getInt("take-anti-lag-measures-if-tps");
 
-    @Override
-    public void onEnable() {
-        instance = this;
-
-        this.saveDefaultConfig();
-        this.saveCustomConfig();
-        Utils.generatePlayerList();
-
-        File homesFolder = new File(getDataFolder(), "homedata");
-        if (!homesFolder.exists())
-            homesFolder.mkdir();
-
-        Bukkit.getPluginManager().registerEvents(new MiscEvents(this), this);
+    public void register()
+    {
+        Bukkit.getPluginManager().registerEvents(new MiscEvents(), this);
         Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
         Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
         Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
-        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
+        Bukkit.getPluginManager().registerEvents(new DonkeyDupe(), this);
 
-        if (this.getConfig().getBoolean("random-motd"))
+        if (this.getConfig().getBoolean("randommotdenabled"))
             Bukkit.getPluginManager().registerEvents(new RandomMotd(), this);
         if (this.getConfig().getBoolean("better-chat"))
             Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
@@ -92,11 +78,14 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
         if (this.getConfig().getBoolean("anti-burrow"))
             Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
+
+        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
+
         if (config.getBoolean("tpa")) {
-            Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand(this));
-            Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand(this));
-            Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand(this));
-            Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand(this));
+            Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
+            Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
+            Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
+            Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand());
         }
         if (config.getBoolean("home")) {
             Objects.requireNonNull(this.getCommand("delhome")).setExecutor(new DelHomeCommand());
@@ -104,7 +93,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHomeCommand());
         }
 
-        Bukkit.getPluginManager().registerEvents(new DonkeyDupe(), this);
         Bukkit.getScheduler().runTaskTimer(this, new Tablist(), 0, 100);
 
         if (this.getConfig().getBoolean("auto-restart")) {
@@ -118,19 +106,29 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
         }
 
-        if (Utils.getString("otherdata.nicknames") == null)
-        {
-            Utils.setData("otherdata.nicknames", "");
-            Utils.saveData();
-        }
-
-        if (Utils.getString("otherdata.realnames") == null)
-        {
-            Utils.setData("otherdata.realnames", "");
-            Utils.saveData();
-        }
-
         PaperLib.suggestPaper(Bbb.getInstance());
+    }
+
+    @Override
+    public void onEnable() {
+        instance = this;
+
+        this.saveDefaultConfig();
+        if (!customConfigFile.exists()) {
+            this.saveCustomConfig();
+            if (Utils.getString("otherdata.realnames") == null && Utils.getString("otherdata.nicknames") == null) {
+                Utils.setData("otherdata.nicknames", "");
+                Utils.setData("otherdata.realnames", "");
+                Utils.saveData();
+            }
+        }
+        Utils.generatePlayerList();
+
+        File homesFolder = new File(getDataFolder(), "homedata");
+        if (!homesFolder.exists())
+            homesFolder.mkdir();
+
+        register();
     }
 
     public static Bbb getInstance() {
@@ -432,24 +430,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     public void onDisable() {
         saveCustomConfig();
         reloadConfig();
-    }
-
-    public TpaRequest getRequest(Player user) {
-        for (TpaRequest request : requests) {
-            if (request.getReciever().getName().equalsIgnoreCase(user.getName())) {
-                return request;
-            }
-        }
-        return null;
-    }
-
-    public void addRequest(Player sender, Player receiver, Type type) {
-        TpaRequest tpaRequest = new TpaRequest(sender, receiver, type);
-        requests.add(tpaRequest);
-    }
-
-    public void removeRequest(Player user) {
-        requests.remove(getRequest(user));
     }
 
     public static void checkInventory(final Inventory inventory, final Location location, final boolean checkRecursive) {

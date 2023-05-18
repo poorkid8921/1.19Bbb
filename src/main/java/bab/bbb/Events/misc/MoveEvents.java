@@ -8,14 +8,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.util.Vector;
 
 import static bab.bbb.utils.Utils.combattag;
 
 @SuppressWarnings("deprecation")
 public class MoveEvents implements Listener {
-    private static final int cfgtps = Bbb.getInstance().config.getInt("take-anti-lag-measures-if-tps");
-
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
@@ -48,7 +45,7 @@ public class MoveEvents implements Listener {
         }
 
         if (p.isGliding()) {
-            if (Bbb.getTPSofLastSecond() <= cfgtps) {
+            if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
                 Utils.elytraflag(p, 1, 1, 1, e.getFrom());
                 e.setCancelled(true);
                 return;

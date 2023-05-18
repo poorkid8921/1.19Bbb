@@ -12,10 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import static bab.bbb.utils.Utils.tpmsg;
 
 public class TpdenyCommand implements CommandExecutor {
-    private final Bbb plugin;
-
-    public TpdenyCommand(Bbb plugin) {
-        this.plugin = plugin;
+    public TpdenyCommand() {
     }
 
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -26,7 +23,7 @@ public class TpdenyCommand implements CommandExecutor {
         if (player == null)
             return true;
 
-        TpaRequest request = plugin.getRequest(player);
+        TpaRequest request = Utils.getRequest(player);
         if (request == null) {
             tpmsg(player, null, 15);
             return true;
@@ -35,7 +32,7 @@ public class TpdenyCommand implements CommandExecutor {
         Player recipient = Bukkit.getPlayer(request.getSender().getName());
         Utils.tpmsg(player, recipient, 6);
         Utils.tpmsg(recipient, player, 5);
-        plugin.removeRequest(player);
+        Utils.removeRequest(player);
 
         return true;
     }

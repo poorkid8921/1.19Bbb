@@ -29,10 +29,7 @@ import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class MiscEvents implements Listener {
-    private final Bbb plugin;
-
-    public MiscEvents(final Bbb plugin) {
-        this.plugin = plugin;
+    public MiscEvents() {
     }
 
     @EventHandler
@@ -45,7 +42,7 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     private void onPortal(PlayerPortalEvent event) {
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
             Player player = event.getPlayer();
             if (player.getLocation().getBlock().getType().equals(Material.NETHER_PORTAL)) {
                 player.teleport(event.getFrom());
@@ -66,7 +63,7 @@ public class MiscEvents implements Listener {
     private void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         vanish(player);
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> unVanish(player), 10);
+        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> unVanish(player), 10);
     }
 
     @EventHandler
@@ -76,8 +73,10 @@ public class MiscEvents implements Listener {
         String ip = Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress();
         String uuid = e.getPlayer().getUniqueId().toString();
         String name = e.getPlayer().getName();
-
         String ac = getString("otherdata." + e.getPlayer().getUniqueId() + ".secure");
+        String str = getString("otherdata.nicknames");
+        String stnr = getString("otherdata.realnames");
+
         if (ac != null) {
             if (!e.getPlayer().getAddress().getAddress().getHostAddress().equals(ac)) {
                 Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
@@ -86,12 +85,8 @@ public class MiscEvents implements Listener {
             }
         }
 
-        String str = getString("otherdata.nicknames");
-
         if (!str.contains(e.getPlayer().getName()))
             setData("otherdata.nicknames", ":_:" + e.getPlayer().getName() + str);
-
-        String stnr = getString("otherdata.realnames");
 
         if (!stnr.contains(e.getPlayer().getName()))
             setData("otherdata.realnames", ":_:" + e.getPlayer().getName() + stnr);
@@ -100,19 +95,19 @@ public class MiscEvents implements Listener {
         saveData();
         String altString = getFormattedAltString(ip, uuid);
 
-        if (Objects.equals(altString, "true") && (!name.equals("Gr1f") && !name.equals("Catto69420"))) {
+        if (Objects.equals(altString, "true") && !name.equals("Gr1f")) {
             Bukkit.getLogger().log(Level.WARNING, e.getPlayer().getAddress().getAddress().getHostAddress() + " - IS TRYING TO ACCESS " + e.getPlayer().getDisplayName());
             e.getPlayer().kickPlayer(translate("&7Alts aren't &callowed"));
             purge(name);
             return;
         }
 
-        checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0ODE6S1E4bERNYTJieWV1aW9ZdWhYNUdzdWhycE9MdVFQdUE=");
+        checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "32402b-e47483-b093j0-872921");
 
         if (getString("otherdata." + e.getPlayer().getUniqueId() + ".secure") == null)
             infomsg(e.getPlayer(), "Use &e/secure&7 to stop your account from being accessed by others");
 
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
             if (!e.getPlayer().hasPlayedBefore()) {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                 LocalDateTime now = LocalDateTime.now();
@@ -126,14 +121,14 @@ public class MiscEvents implements Listener {
 
                 //e.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(100);
 
-                if (!plugin.config.getBoolean("no-join-messages")) {
+                if (!Bbb.getInstance().config.getBoolean("no-join-messages")) {
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
                             p.sendMessage(translate("&7" + e.getPlayer().getName() + " has joined the server for the first time"));
                     }
                 }
             } else {
-                plugin.setnickonjoin(e.getPlayer());
+                Bbb.getInstance().setnickonjoin(e.getPlayer());
                 if (e.getPlayer().getActivePotionEffects().size() > 0) {
                     for (PotionEffect effects : e.getPlayer().getActivePotionEffects()) {
                         if (effects.getAmplifier() > 5)
@@ -143,7 +138,7 @@ public class MiscEvents implements Listener {
 
                 loadHomes(e.getPlayer());
 
-                if (!plugin.config.getBoolean("no-join-messages")) {
+                if (!Bbb.getInstance().config.getBoolean("no-join-messages")) {
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (!e.getPlayer().getDisplayName().equalsIgnoreCase(p.getDisplayName()))
                             p.sendMessage(translate("&7" + e.getPlayer().getDisplayName() + " has joined the server"));
@@ -209,12 +204,12 @@ public class MiscEvents implements Listener {
 
         getHomes().remove(e.getPlayer().getUniqueId());
 
-        /*plugin.getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.X", e.getPlayer().getLocation().getX());
-        plugin.getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Y", e.getPlayer().getLocation().getY());
-        plugin.getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Z", e.getPlayer().getLocation().getZ());
-        plugin.getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.WORLD", e.getPlayer().getLocation().getWorld().getName());
+        /*Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.X", e.getPlayer().getLocation().getX());
+        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Y", e.getPlayer().getLocation().getY());
+        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Z", e.getPlayer().getLocation().getZ());
+        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.WORLD", e.getPlayer().getLocation().getWorld().getName());
 */
-        if (plugin.config.getBoolean("no-join-messages"))
+        if (Bbb.getInstance().config.getBoolean("no-join-messages"))
             return;
 
         for (Player p : Bukkit.getOnlinePlayers())
@@ -230,7 +225,7 @@ public class MiscEvents implements Listener {
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
         vanish(e.getPlayer());
-        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> unVanish(e.getPlayer()), 10);
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> unVanish(e.getPlayer()), 10);
 
         if (e.isBedSpawn())
             return;
@@ -259,8 +254,8 @@ public class MiscEvents implements Listener {
 
         if (p != null) {
             for (Player players : Bukkit.getOnlinePlayers()) {
-                players.hidePlayer(plugin, p);
-                players.showPlayer(plugin, p);
+                players.hidePlayer(Bbb.getInstance(), p);
+                players.showPlayer(Bbb.getInstance(), p);
             }
         }
     }
@@ -276,16 +271,13 @@ public class MiscEvents implements Listener {
                 combattag.add(e.getDamager().getName());
                 infomsg(damager, "You are now in combat with &e" + damaged.getDisplayName());
                 infomsg(damaged, "You are now in combat with &e" + damager.getDisplayName());
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
                     if (combattag.contains(e.getEntity().getName()) && combattag.contains(e.getDamager().getName())) {
                         combattag.remove(e.getEntity().getName());
                         combattag.remove(e.getDamager().getName());
 
-                        if (damager != null)
-                            infomsg(damager, "You are no longer in combat");
-
-                        if (damaged != null)
-                            infomsg(damaged, "You are no longer in combat");
+                        infomsg(damager, "You are no longer in combat");
+                        infomsg(damaged, "You are no longer in combat");
                     }
                 }, 200L);
             }
@@ -303,15 +295,15 @@ public class MiscEvents implements Listener {
         //e.setDamage((e.getDamage() * 1.25));
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     private void onLiquidSpread(BlockFromToEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps"))
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps)
             event.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     private void onNoteblockGetsPlayed(NotePlayEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps"))
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps)
             event.setCancelled(true);
     }
 
@@ -326,7 +318,7 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
             if (event.getSource().getType() == InventoryType.HOPPER)
                 event.setCancelled(true);
         }
@@ -348,7 +340,7 @@ public class MiscEvents implements Listener {
     }
 
     private void process(BlockEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps"))
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps)
             cancelEvent(event);
     }
 
@@ -393,21 +385,21 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     private void onEntityExplode(EntityExplodeEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     private void onExplodePrime(ExplosionPrimeEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     private void onBlockExplode(BlockExplodeEvent event) {
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
             event.setCancelled(true);
         }
     }
@@ -437,7 +429,7 @@ public class MiscEvents implements Listener {
                 hehe2 = hehe2.replace(e.getPlayer().getKiller().getMainHand().name(), "&6" + e.getPlayer().getKiller().getItemInHand().getItemMeta().getDisplayName() + "&7");
             hehe2 = translate(e.getPlayer().getKiller(), hehe2);
 
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
                 Random ran = new Random();
                 int b = ran.nextInt(100);
                 if (b < 2)
@@ -450,7 +442,7 @@ public class MiscEvents implements Listener {
             }
         }
 
-        if (plugin.config.getBoolean("no-death-messages"))
+        if (Bbb.getInstance().config.getBoolean("no-death-messages"))
             e.deathMessage(null);
         else
             e.setDeathMessage(hehe2);

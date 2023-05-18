@@ -33,7 +33,7 @@ public class DelHomeCommand implements TabExecutor {
                 return true;
             }
             if (Utils.deleteHome(home))
-                Utils.infomsg(player, "You have successfully deleted home &e" + home.getName());
+                Utils.infomsg(player, "Successfully deleted home &e" + home.getName());
             else
                 Utils.errormsgs(player, 15, home.getName());
         }

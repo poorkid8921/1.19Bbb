@@ -2,37 +2,34 @@ package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Type;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import static bab.bbb.utils.Utils.*;
 
-@SuppressWarnings("deprecation")
 public class TpacceptCommand implements CommandExecutor {
-    private final Bbb plugin;
-
-    public TpacceptCommand(Bbb plugin) {
-        this.plugin = plugin;
+    public TpacceptCommand() {
     }
 
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
             return true;
 
-        if (plugin.getRequest(user) == null) {
+        TpaRequest request = getRequest(user);
+
+        if (request == null) {
             tpmsg(user, null, 15);
             return true;
         }
 
-        TpaRequest request = plugin.getRequest(user);
         String targetName = request.getSender().getName();
-
         Player recipient = Bukkit.getPlayer(targetName);
 
         if (recipient == null) {
@@ -42,53 +39,42 @@ public class TpacceptCommand implements CommandExecutor {
 
         if (combattag.contains(user.getName())) {
             tpmsg(user, recipient, 16);
-
             return true;
         }
+
+        World a = user.getWorld();
+        World b = recipient.getWorld();
 
         if (request.getType() == Type.TPA) {
             tpmsg(((Player) sender).getPlayer(), recipient, 10);
             tpmsg(recipient, null, 7);
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    //for (Player players : Bukkit.getOnlinePlayers())
-                    //    players.hidePlayer(plugin, recipient);
+            b.strikeLightningEffect(recipient.getLocation());
 
-                    recipient.getWorld().strikeLightningEffect(recipient.getLocation());
-
-                    recipient.teleport(user);
-                    //for (Player players : Bukkit.getOnlinePlayers())
-                    //    players.showPlayer(plugin, recipient);
-                    recipient.getWorld().strikeLightningEffect(recipient.getLocation());
-                    recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                    user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                }
-            }.runTaskLater(plugin, 100);
+            PaperLib.teleportAsync(recipient, user.getLocation()).thenAccept(result -> {
+                if (result) {
+                    b.strikeLightningEffect(recipient.getLocation());
+                    b.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                    a.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                } else
+                    errormsgs(recipient, 30, targetName);
+            });
         } else if (request.getType() == Type.TPAHERE) {
             tpmsg(((Player) sender).getPlayer(), recipient, 7);
             tpmsg(recipient, ((Player) sender).getPlayer(), 10);
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    //for (Player players : Bukkit.getOnlinePlayers())
-                    //    players.hidePlayer(plugin, user);
-
-                    user.getWorld().strikeLightningEffect(user.getLocation());
-
-                    user.teleport(recipient);
-                    //for (Player players : Bukkit.getOnlinePlayers())
-                    //    players.showPlayer(plugin, user);
-                    user.getWorld().strikeLightningEffect(user.getLocation());
-                    user.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                    recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                }
-            }.runTaskLater(plugin, 100);
+            a.strikeLightningEffect(user.getLocation());
+            PaperLib.teleportAsync(user, recipient.getLocation()).thenAccept(result -> {
+                if (result) {
+                    a.strikeLightningEffect(user.getLocation());
+                    a.playSound(user.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                    b.playSound(recipient.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                } else
+                    errormsgs(user, 30, targetName);
+            });
         }
 
-        plugin.removeRequest(user);
+        removeRequest(user);
         return true;
     }
 }

@@ -20,10 +20,7 @@ import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class TpahereCommand implements CommandExecutor {
-    private final Bbb plugin;
-
-    public TpahereCommand(Bbb plugin) {
-        this.plugin = plugin;
+    public TpahereCommand() {
     }
 
     @Override
@@ -48,7 +45,7 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (plugin.getRequest(recipient) != null) {
+        if (Utils.getRequest(recipient) != null) {
             tpmsg(user, recipient, 14);
             return true;
         }
@@ -58,10 +55,10 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (plugin.getRequest(user) != null)
-            plugin.removeRequest(user);
+        if (Utils.getRequest(user) != null)
+            Utils.removeRequest(user);
 
-        plugin.addRequest(user, recipient, Type.TPAHERE);
+        Utils.addRequest(user, recipient, Type.TPAHERE);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         Utils.tpmsg(recipient, user, 4);
         TextComponent accept = new TextComponent(Utils.translate("&7[&2✔&7] &2ACCEPT"));
@@ -79,12 +76,12 @@ public class TpahereCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (plugin.getRequest(recipient) != null) {
-                    plugin.removeRequest(recipient);
+                if (Utils.getRequest(recipient) != null) {
+                    Utils.removeRequest(recipient);
                     Utils.tpmsg(user, recipient, 2);
                 }
             }
-        }.runTaskLater(plugin, 30 * 20);
+        }.runTaskLater(Bbb.getInstance(), 30 * 20);
         return true;
     }
 }

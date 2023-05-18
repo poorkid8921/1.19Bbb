@@ -1,9 +1,7 @@
 package bab.bbb.Events.misc;
 
-import bab.bbb.Bbb;
 import bab.bbb.utils.RainbowText;
 import bab.bbb.utils.Utils;
-import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -16,7 +14,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 
 import static bab.bbb.utils.Utils.translate;

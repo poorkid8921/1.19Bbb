@@ -2,6 +2,7 @@ package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Type;
+import bab.bbb.utils.Utils;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -19,10 +20,7 @@ import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class TpaCommand implements CommandExecutor {
-    private final Bbb plugin;
-
-    public TpaCommand(final Bbb plugin) {
-        this.plugin = plugin;
+    public TpaCommand() {
     }
 
     @Override
@@ -47,7 +45,7 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        if (plugin.getRequest(recipient) != null) {
+        if (Utils.getRequest(recipient) != null) {
             tpmsg(user, recipient, 13);
             return true;
         }
@@ -57,10 +55,10 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        if (plugin.getRequest(user) != null)
-            plugin.removeRequest(user);
+        if (Utils.getRequest(user) != null)
+            Utils.removeRequest(user);
 
-        plugin.addRequest(user, recipient, Type.TPA);
+        Utils.addRequest(user, recipient, Type.TPA);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         tpmsg(recipient, user, 3);
         TextComponent accept = new TextComponent(translate("&7[&2✔&7] &2ACCEPT"));
@@ -78,12 +76,12 @@ public class TpaCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (plugin.getRequest(recipient) != null) {
-                    plugin.removeRequest(recipient);
+                if (Utils.getRequest(recipient) != null) {
+                    Utils.removeRequest(recipient);
                     tpmsg(user, recipient, 2);
                 }
             }
-        }.runTaskLater(plugin, 30 * 20);
+        }.runTaskLater(Bbb.getInstance(), 30 * 20);
         return true;
     }
 }

@@ -41,7 +41,7 @@ public class AntiPacketElytraFly implements Listener {
             return;
         }
 
-        if (Bbb.getTPSofLastSecond() <= plugin.config.getInt("take-anti-lag-measures-if-tps")) {
+        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
             event.setCancelled(true);
             Utils.elytraflag(player, 1, 1, 0, null);
             return;

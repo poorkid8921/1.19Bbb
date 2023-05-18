@@ -3,8 +3,9 @@ package bab.bbb.Commands;
 import bab.bbb.Bbb;
 import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
+import io.papermc.lib.PaperLib;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,11 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static bab.bbb.utils.Utils.combattag;
+import static bab.bbb.utils.Utils.errormsgs;
 
 @RequiredArgsConstructor
 public class HomeCommand implements TabExecutor {
-    private final Bbb plugin = Bbb.getInstance();
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof Player player) {
@@ -42,6 +42,8 @@ public class HomeCommand implements TabExecutor {
             if (args.length > 0)
                 homestr = args[0];
 
+            Location prev = player.getLocation();
+
             try {
                 for (Home home : homes) {
                     if (home.getName().equalsIgnoreCase(homestr)) {
@@ -50,11 +52,21 @@ public class HomeCommand implements TabExecutor {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
+                                double x = player.getLocation().getX() - prev.getX();
+                                double y = player.getLocation().getY() - prev.getY();
+                                if (!prev.equals(player.getLocation()) && (x > 4.0D || y > 4.0D)) {
+                                    Utils.errormsgs(player, 29, "");
+                                    return;
+                                }
                                 player.getWorld().strikeLightningEffect(player.getLocation());
-                                player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                                player.teleport(home.getLocation());
-                                player.getWorld().strikeLightningEffect(player.getLocation());
-                                player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                                PaperLib.teleportAsync(player, home.getLocation()).thenAccept(result -> {
+                                    if (result) {
+                                        player.getWorld().strikeLightningEffect(player.getLocation());
+                                        player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
+                                    }
+                                    else
+                                        errormsgs(player, 30, null);
+                                });
                             }
                         }.runTaskLater(Bbb.getInstance(), 100);
                         return true;

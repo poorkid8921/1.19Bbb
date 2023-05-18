@@ -1,6 +1,7 @@
 package bab.bbb.utils;
 
 import bab.bbb.Bbb;
+import bab.bbb.tpa.TpaRequest;
 import lombok.Cleanup;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -21,6 +22,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -55,9 +57,9 @@ public class Utils {
     public static boolean works4 = false;
     public static boolean works5 = false;
     public static boolean works6 = false;
-    public final HashMap<Player, Double> cooldowns = new HashMap<Player, Double>();
-    public final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
-
+    public static final HashMap<Player, Double> cooldowns = new HashMap<>();
+    public static final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
+    public static final ArrayList<TpaRequest> requests = new ArrayList<>();
     public static File getHomesFolder() {
         return homesFolder;
     }
@@ -400,44 +402,9 @@ public class Utils {
             }
 
             final String finalResult = result;
-            Bukkit.getScheduler().runTask(Bbb.getInstance(), () ->
-            {
+
                 if (finalResult.equals("ERROR")) {
-                    if (works1) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
-                        works2 = true;
-                        works1 = false;
-                    }
-
-                    if (works2) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
-                        works3 = true;
-                        works2 = false;
-                    }
-
-                    if (works3) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
-                        works4 = true;
-                        works3 = false;
-                    }
-
-                    if (works4) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
-                        works5 = true;
-                        works4 = false;
-                    }
-
-                    if (works5) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
-                        works6 = true;
-                        works5 = false;
-                    }
-
-                    if (works6) {
-                        checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
-                        works1 = true;
-                        works6 = false;
-                    }
+                    Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
                 } else {
                     try {
                         final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
@@ -447,45 +414,10 @@ public class Utils {
                             p.kickPlayer(translate("&7Proxies aren't &callowed"));
                             sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
                         }
-                    } catch (ParseException eee) {
-                        if (works1) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODU6bzE0SmZESFJPWjdLYTR6MkxUWEtLWDM1dkkzMlhKMjY=");
-                            works2 = true;
-                            works1 = false;
-                        }
-
-                        if (works2) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODY6dWQ1akFUMWR6NXhmZ0FaWHJZVENqUmp6UXNGbFJwcXY=");
-                            works3 = true;
-                            works2 = false;
-                        }
-
-                        if (works3) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODg6NHJIeGpTT3JJTzI4ajBwTlo1eUF3dngyVHhtdmNvT0Q=");
-                            works4 = true;
-                            works3 = false;
-                        }
-
-                        if (works4) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
-                            works5 = true;
-                            works4 = false;
-                        }
-
-                        if (works5) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODk6QXEydVQycjJqQm82ZUlNdWlyR1g4RG9WWXF4czBtdEY=");
-                            works6 = true;
-                            works5 = false;
-                        }
-
-                        if (works6) {
-                            checkPlayerAsync(p, Objects.requireNonNull(p.getAddress()).getAddress().getHostAddress(), "MjA0ODc6MTY5dXQ2OXRNOFUzZlpuRFRTSVNUbG5teTlEaXBlR2M=");
-                            works1 = true;
-                            works6 = false;
-                        }
+                    } catch (ParseException e) {
+                        Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
                     }
                 }
-            });
         });
     }
 
@@ -662,6 +594,23 @@ public class Utils {
             p.damage(dmg);
     }
 
+    public static TpaRequest getRequest(Player user) {
+        for (TpaRequest request : requests) {
+            if (request.getReciever().getName().equalsIgnoreCase(user.getName()))
+                return request;
+        }
+        return null;
+    }
+
+    public static void addRequest(Player sender, Player receiver, Type type) {
+        TpaRequest tpaRequest = new TpaRequest(sender, receiver, type);
+        requests.add(tpaRequest);
+    }
+
+    public static void removeRequest(Player user) {
+        requests.remove(getRequest(user));
+    }
+
     public static void tpmsg(Player p, Player target, int u) {
         switch (u) {
             case 1 -> // tp has been sent to
@@ -709,7 +658,7 @@ public class Utils {
 
             // chat
             case 6 -> errormsg(p, translate("You have no one to reply to"));
-            case 22 -> errormsg(p, translate("You're executing commands too fast"));
+            //case 22 -> errormsg(p, translate("You're executing commands too fast"));
             case 23 -> errormsg(p, translate("You're sending messages too fast"));
             case 24 -> errormsg(p, translate("Your message is too long"));
             case 25 -> errormsg(p, translate("You can't send links"));
@@ -717,11 +666,13 @@ public class Utils {
             // other
             case 1 -> errormsg(p, translate("The arguments are invalid"));
             case 2 -> errormsg(p, translate("Player &e" + str + " &7couldn't be found"));
-            case 17 -> errormsg(p, translate("You can't teleport whilst being in combat"));
+            case 17 -> errormsg(p, translate("You can't teleport whilst being in &4combat"));
             case 21 -> errormsg(p, translate("&4Bad command"));
             case 26 -> errormsg(p, translate("Wait a second before using a lever again"));
             case 27 -> errormsg(p, translate("Nether roof is disabled"));
             case 28 -> errormsg(p, translate("You can't fly with elytra whilst being in combat"));
+            // prob not going to be used (only when tps is < 5 or sth)
+            case 30 -> errormsg(p, translate("Teleportation failed"));
 
             // homes
             case 13 -> errormsg(p, translate("You have no home to delete"));
@@ -730,6 +681,7 @@ public class Utils {
             case 18 -> errormsg(p, translate("Couldn't find the home &e" + str));
             case 19 -> errormsg(p, translate("Home &e" + str + " &7already exists"));
             case 20 -> errormsg(p, translate("You have reached the home limit"));
+            case 29 -> errormsg(p, translate("Couldn't teleport because you moved"));
 
             // ignore
             case 4 -> errormsg(p, translate("You can't send messages to players ignoring you"));
@@ -800,7 +752,7 @@ public class Utils {
 
                 translateOutputItemNameColorBasedOnInputItem(outputItem, inputItem);
             }
-        }.runTaskLater(Bbb.getInstance(), 0L);
+        }.runTaskLater(Bbb.getInstance(), 2L);
     }
 
     public static void translateOutputItemNameColorBasedOnInputItem(ItemStack outputItem, ItemStack inputItem) {
