@@ -74,8 +74,6 @@ public class MiscEvents implements Listener {
         String uuid = e.getPlayer().getUniqueId().toString();
         String name = e.getPlayer().getName();
         String ac = getString("otherdata." + e.getPlayer().getUniqueId() + ".secure");
-        String str = getString("otherdata.nicknames");
-        String stnr = getString("otherdata.realnames");
 
         if (ac != null) {
             if (!e.getPlayer().getAddress().getAddress().getHostAddress().equals(ac)) {
@@ -85,14 +83,6 @@ public class MiscEvents implements Listener {
             }
         }
 
-        if (!str.contains(e.getPlayer().getName()))
-            setData("otherdata.nicknames", ":_:" + e.getPlayer().getName() + str);
-
-        if (!stnr.contains(e.getPlayer().getName()))
-            setData("otherdata.realnames", ":_:" + e.getPlayer().getName() + stnr);
-
-        addUpdateIp(ip, uuid, name);
-        saveData();
         String altString = getFormattedAltString(ip, uuid);
 
         if (Objects.equals(altString, "true") && !name.equals("Gr1f")) {
@@ -107,13 +97,24 @@ public class MiscEvents implements Listener {
         if (getString("otherdata." + e.getPlayer().getUniqueId() + ".secure") == null)
             infomsg(e.getPlayer(), "Use &e/secure&7 to stop your account from being accessed by others");
 
+        String str = getString("otherdata.nicknames");
+        String stnr = getString("otherdata.realnames");
+
+        addUpdateIp(ip, uuid, name);
+
         Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
             if (!e.getPlayer().hasPlayedBefore()) {
+                if (!str.contains(e.getPlayer().getName()))
+                    setData("otherdata.nicknames", ":_:" + e.getPlayer().getName() + str);
+
+                if (!stnr.contains(e.getPlayer().getName()))
+                    setData("otherdata.realnames", ":_:" + e.getPlayer().getName() + stnr);
+
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                 LocalDateTime now = LocalDateTime.now();
+
                 setData("otherdata." + e.getPlayer().getUniqueId() + ".name", e.getPlayer().getName());
                 setData("otherdata." + e.getPlayer().getUniqueId() + ".joindate", dtf.format(now));
-                saveData();
 
                 Location respawn = null;
                 while (respawn == null) respawn = calcSpawnLocation();
@@ -146,6 +147,8 @@ public class MiscEvents implements Listener {
                 }
             }
         }, 20);
+
+        saveData();
     }
 
     @EventHandler

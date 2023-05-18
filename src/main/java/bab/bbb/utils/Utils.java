@@ -181,6 +181,7 @@ public class Utils {
             if (homes.containsKey(player.getUniqueId())) {
                 homes.replace(player.getUniqueId(), homeList);
             } else homes.put(player.getUniqueId(), homeList);
+            Bukkit.getLogger().info("Loaded homes for " + player.getDisplayName());
             break;
         }
     }
@@ -298,7 +299,6 @@ public class Utils {
         Date date = new Date();
         Utils.setData("ip." + ip.replace('.', '_') + "." + uuid, date.getTime() + "," + name);
         playerList.add(name.toLowerCase());
-        saveData();
     }
 
     public static synchronized List<String> getAltNames(String ip, String excludeUuid) {
@@ -666,7 +666,7 @@ public class Utils {
             // other
             case 1 -> errormsg(p, translate("The arguments are invalid"));
             case 2 -> errormsg(p, translate("Player &e" + str + " &7couldn't be found"));
-            case 17 -> errormsg(p, translate("You can't teleport whilst being in &4combat"));
+            case 17 -> errormsg(p, translate("You can't teleport whilst being in combat"));
             case 21 -> errormsg(p, translate("&4Bad command"));
             case 26 -> errormsg(p, translate("Wait a second before using a lever again"));
             case 27 -> errormsg(p, translate("Nether roof is disabled"));

@@ -20,13 +20,6 @@ public class MoveEvents implements Listener {
         if (p.isOp())
             return;
 
-        // anti god
-        /*if (p.isInsideVehicle() && !p.getVehicle().isValid())
-            p.getVehicle().eject();
-
-        if (!p.isValid() && !p.isDead())
-            Methods.maskedkick(p);*/
-
         if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
             if (p.getLocation().getY() > 128) {
                 if (Bbb.getInstance().getConfig().getBoolean("anti-netherroof")) {
