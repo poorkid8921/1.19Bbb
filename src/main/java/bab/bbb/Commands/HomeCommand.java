@@ -32,7 +32,7 @@ public class HomeCommand implements TabExecutor {
                 return true;
             }
 
-            if (combattag.contains(player.getName())) {
+            if (combattag.containsKey(player.getUniqueId())) {
                 Utils.errormsgs(player, 17, "");
                 return true;
             }
@@ -54,7 +54,7 @@ public class HomeCommand implements TabExecutor {
                             public void run() {
                                 double x = player.getLocation().getX() - prev.getX();
                                 double y = player.getLocation().getY() - prev.getY();
-                                if (!prev.equals(player.getLocation()) && (x > 4.0D || y > 4.0D)) {
+                                if (!prev.equals(player.getLocation()) && (y > -4.0D || x > -4.0D)) {
                                     Utils.errormsgs(player, 29, "");
                                     return;
                                 }

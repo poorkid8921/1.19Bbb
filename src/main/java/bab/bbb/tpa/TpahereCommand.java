@@ -50,7 +50,7 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (combattag.contains(user.getName())) {
+        if (combattag.containsKey(user.getUniqueId())) {
             tpmsg(user, recipient, 11);
             return true;
         }

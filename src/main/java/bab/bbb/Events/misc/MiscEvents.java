@@ -1,9 +1,11 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
+import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -159,7 +161,14 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     private void onInteract(PlayerInteractEvent event) {
-        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+            return;
+
+        if (Objects.requireNonNull(event.getClickedBlock()).getType().equals(Material.RESPAWN_ANCHOR)) {
+            event.setCancelled(true);
+            return;
+        }
+
         Player player = event.getPlayer();
         UUID playerUniqueID = player.getUniqueId();
 
@@ -173,6 +182,7 @@ public class MiscEvents implements Listener {
                     event.getPlayer().sendActionBar(translate("&7Wait a second before using a lever again"));
 
                 if (hardran()) {
+                    playersUsingLevers.remove(playerUniqueID);
                     maskedkick(player);
                     sendOpMessage("&7[&4ALERT&7] stopped &e" + player.getDisplayName() + " &7from spamming levers");
                 }
@@ -186,13 +196,6 @@ public class MiscEvents implements Listener {
                 event.setCancelled(true);
             else
                 playersClickingBeds.put(playerUniqueID, System.currentTimeMillis() + 250);
-        } else {
-            if (!event.getClickedBlock().getType().equals(Material.RESPAWN_ANCHOR)) return;
-
-            if (playersClickingAnchors.containsKey(playerUniqueID) && playersClickingAnchors.get(playerUniqueID) > System.currentTimeMillis())
-                event.setCancelled(true);
-            else
-                playersClickingAnchors.put(playerUniqueID, System.currentTimeMillis() + 250);
         }
     }
 
@@ -203,15 +206,9 @@ public class MiscEvents implements Listener {
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
         playersClickingBeds.remove(e.getPlayer().getUniqueId());
         playersClickingAnchors.remove(e.getPlayer().getUniqueId());
-        combattag.remove(e.getPlayer().getName());
-
+        combattag.remove(e.getPlayer().getUniqueId());
         getHomes().remove(e.getPlayer().getUniqueId());
 
-        /*Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.X", e.getPlayer().getLocation().getX());
-        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Y", e.getPlayer().getLocation().getY());
-        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.Z", e.getPlayer().getLocation().getZ());
-        Bbb.getInstance().getCustomConfig().set("otherdata." + e.getPlayer().getUniqueId() + ".leavelocation.WORLD", e.getPlayer().getLocation().getWorld().getName());
-*/
         if (Bbb.getInstance().config.getBoolean("no-join-messages"))
             return;
 
@@ -269,33 +266,34 @@ public class MiscEvents implements Listener {
             Player damager = ((Player) e.getDamager()).getPlayer();
             Player damaged = ((Player) e.getEntity()).getPlayer();
 
-            if ((!combattag.contains(e.getEntity().getName())) && (!combattag.contains(e.getDamager().getName()))) {
-                combattag.add(e.getEntity().getName());
-                combattag.add(e.getDamager().getName());
-                infomsg(damager, "You are now in combat with &e" + damaged.getDisplayName());
-                infomsg(damaged, "You are now in combat with &e" + damager.getDisplayName());
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
-                    if (combattag.contains(e.getEntity().getName()) && combattag.contains(e.getDamager().getName())) {
-                        combattag.remove(e.getEntity().getName());
-                        combattag.remove(e.getDamager().getName());
+            if ((!combattag.containsKey(e.getEntity().getUniqueId())) && (!combattag.containsKey(e.getDamager().getUniqueId()))) {
+                combattag.put(e.getEntity().getUniqueId(), System.currentTimeMillis() + 10000);
+                combattag.put(e.getDamager().getUniqueId(), System.currentTimeMillis() + 10000);
+                infomsg(damager, "You are now in combat with &e" + damaged.getDisplayName() + "&7!");
+                infomsg(damaged, "You are now in combat with &e" + damager.getDisplayName() + "&7!");
+                if (damaged.isGliding()) {
+                    damaged.playSound(damaged.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                    int y = damaged.getWorld().getHighestBlockYAt((int) damaged.getLocation().getX(), (int) damaged.getLocation().getZ()) + 2;
+                    damaged.teleport(new Location(damaged.getWorld(), damaged.getLocation().getX(), y, damaged.getLocation().getX()));
+                    Utils.errormsgs(damaged, 28, "");
+                }
 
-                        infomsg(damager, "You are no longer in combat");
-                        infomsg(damaged, "You are no longer in combat");
-                    }
+                if (damager.isGliding()) {
+                    damager.playSound(damager.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                    int y = damager.getWorld().getHighestBlockYAt((int) damager.getLocation().getX(), (int) damager.getLocation().getZ()) + 2;
+                    damager.teleport(new Location(damager.getWorld(), damager.getLocation().getX(), y, damager.getLocation().getX()));
+                    Utils.errormsgs(damager, 28, "");
+                }
+
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
+                    infomsg(damager, "You are no longer in combat");
+                    infomsg(damaged, "You are no longer in combat");
                 }, 200L);
             }
         } else if (e.getEntity() instanceof EnderCrystal) {
             if (e.getEntity().getTicksLived() < 4)
                 e.setCancelled(true);
         }
-
-        /*if (e.getDamage() >= 30.0D) {
-            e.setCancelled(true);
-            if (e.getDamager() instanceof Player)
-                ((Player) e.getDamager()).damage(e.getDamage());
-        }*/
-
-        //e.setDamage((e.getDamage() * 1.25));
     }
 
     @EventHandler
@@ -438,9 +436,9 @@ public class MiscEvents implements Listener {
                 if (b < 2)
                     Bukkit.getWorld(e.getPlayer().getWorld().getName()).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), getHead(e.getPlayer()));
             }, 1);
-            if (combattag.contains(e.getPlayer().getName()) && combattag.contains(e.getPlayer().getKiller().getName())) {
-                combattag.remove(e.getPlayer().getName());
-                combattag.remove(e.getPlayer().getKiller().getName());
+            if (combattag.containsKey(e.getPlayer().getUniqueId()) && combattag.containsKey(e.getPlayer().getKiller().getUniqueId())) {
+                combattag.remove(e.getPlayer().getUniqueId());
+                combattag.remove(e.getPlayer().getUniqueId());
                 infomsg(e.getPlayer().getKiller(), "You are no longer in combat");
             }
         }
