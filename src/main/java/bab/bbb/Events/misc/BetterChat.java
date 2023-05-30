@@ -63,14 +63,14 @@ public class BetterChat implements Listener {
         else {
             if (Utils.hardran())
             {
-                e.getPlayer().kickPlayer(translate("&7Keep the spam to the &eminimum"));
+                e.getPlayer().kickPlayer(translate("&7Keep the spam to a &eminimum"));
                 return;
             }
             Utils.errormsgs(e.getPlayer(),23, "");
             return;
         }
 
-        String translatedmsg = Utils.translate(e.getPlayer(), e.getMessage());
+        String translatedmsg = Utils.translate(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + e.getMessage());
 
         if (Utils.removeColorCodes(translatedmsg).length() > 255) {
             Utils.errormsgs(e.getPlayer(),24, "");

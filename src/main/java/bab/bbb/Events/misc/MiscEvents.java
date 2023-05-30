@@ -69,6 +69,16 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
+    public void onPlayerLogin(PlayerPreLoginEvent e) {
+        for (Player target : Bukkit.getServer().getOnlinePlayers()) {
+            if (target.getUniqueId() == e.getUniqueId()) {
+                e.disallow(PlayerPreLoginEvent.Result.KICK_OTHER, "Player is already online");
+                return;
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
 
@@ -94,7 +104,7 @@ public class MiscEvents implements Listener {
             return;
         }
 
-        checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "32402b-e47483-b093j0-872921");
+        checkPlayerAsync(e.getPlayer(), Objects.requireNonNull(e.getPlayer().getAddress()).getAddress().getHostAddress(), "MjA0OTA6MUV3cFk1SVZsV1RZdHZiYVp3dFRaTWVzRk44NmdSdzM=");
 
         if (getString("otherdata." + e.getPlayer().getUniqueId() + ".secure") == null)
             infomsg(e.getPlayer(), "Use &e/secure&7 to stop your account from being accessed by others");
@@ -205,7 +215,6 @@ public class MiscEvents implements Listener {
 
         playersUsingLevers.remove(e.getPlayer().getUniqueId());
         playersClickingBeds.remove(e.getPlayer().getUniqueId());
-        playersClickingAnchors.remove(e.getPlayer().getUniqueId());
         combattag.remove(e.getPlayer().getUniqueId());
         getHomes().remove(e.getPlayer().getUniqueId());
 
@@ -436,9 +445,9 @@ public class MiscEvents implements Listener {
                 if (b < 2)
                     Bukkit.getWorld(e.getPlayer().getWorld().getName()).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), getHead(e.getPlayer()));
             }, 1);
-            if (combattag.containsKey(e.getPlayer().getUniqueId()) && combattag.containsKey(e.getPlayer().getKiller().getUniqueId())) {
+            if ((combattag.containsKey(e.getPlayer().getUniqueId()) && combattag.containsKey(e.getPlayer().getKiller().getUniqueId()))) {
                 combattag.remove(e.getPlayer().getUniqueId());
-                combattag.remove(e.getPlayer().getUniqueId());
+                combattag.remove(e.getPlayer().getKiller().getUniqueId());
                 infomsg(e.getPlayer().getKiller(), "You are no longer in combat");
             }
         }

@@ -42,7 +42,6 @@ public class Utils {
     public static final World respawnWorld = Bukkit.getWorld("world");
     public static final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
     public static final HashMap<UUID, Long> playersClickingBeds = new HashMap<>();
-    public static final HashMap<UUID, Long> playersClickingAnchors = new HashMap<>();
     public static final HashMap<UUID, Long> combattag = new HashMap<>();
     public static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
     public static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
@@ -51,12 +50,6 @@ public class Utils {
     public static final HashSet<String> bannedblocks = new HashSet<>(Arrays.asList(
             "WATER", "LAVA", "AIR", "CACTUS"
     ));
-    public static boolean works1 = true;
-    public static boolean works2 = false;
-    public static boolean works3 = false;
-    public static boolean works4 = false;
-    public static boolean works5 = false;
-    public static boolean works6 = false;
     public static final HashMap<Player, Double> cooldowns = new HashMap<>();
     public static final long deley = Bbb.getInstance().getConfig().getInt("better-chat-cooldown");
     public static final ArrayList<TpaRequest> requests = new ArrayList<>();
@@ -403,21 +396,23 @@ public class Utils {
 
             final String finalResult = result;
 
-                if (finalResult.equals("ERROR")) {
-                    Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
-                } else {
-                    try {
-                        final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
-                        long severity2 = (long) obj2.get("block");
+            if (finalResult.equals("ERROR")) {
+                Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
+            } else {
+                try {
+                    final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
+                    long severity2 = (long) obj2.get("block");
 
-                        if (severity2 == 1) {
-                            p.kickPlayer(translate("&7Proxies aren't &callowed"));
-                            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
-                        }
-                    } catch (ParseException e) {
-                        Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
+                    if (severity2 == 1) {
+                        sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            p.kickPlayer(translate("&7You can't join using a &2proxy"));
+                        });
                     }
+                } catch (ParseException e) {
+                    Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
                 }
+            }
         });
     }
 
@@ -488,7 +483,7 @@ public class Utils {
             String b = Utils.getString("otherdata." + p.getUniqueId() + ".ignorelist");
             if (b != null && b.contains(Objects.requireNonNull(e.getPlayer()).getName()))
                 continue;
-            p.sendMessage("&7<" + e.getPlayer().getDisplayName() + "&7> " + msg);
+            p.sendMessage(msg);
         }
     }
 
