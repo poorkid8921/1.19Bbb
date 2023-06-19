@@ -62,7 +62,7 @@ public class MiscEvents implements Listener {
     }
 
     @EventHandler
-    private void onTeleport(PlayerTeleportEvent event) {
+    private void onTeleportEvt(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         vanish(player);
         Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> unVanish(player), 10);
@@ -275,9 +275,9 @@ public class MiscEvents implements Listener {
             Player damager = ((Player) e.getDamager()).getPlayer();
             Player damaged = ((Player) e.getEntity()).getPlayer();
 
-            if ((!combattag.containsKey(e.getEntity().getUniqueId())) && (!combattag.containsKey(e.getDamager().getUniqueId()))) {
-                combattag.put(e.getEntity().getUniqueId(), System.currentTimeMillis() + 10000);
-                combattag.put(e.getDamager().getUniqueId(), System.currentTimeMillis() + 10000);
+            if ((!combattag.contains(e.getEntity().getUniqueId())) && (!combattag.contains(e.getDamager().getUniqueId()))) {
+                combattag.add(e.getEntity().getUniqueId());
+                combattag.add(e.getDamager().getUniqueId());
                 infomsg(damager, "You are now in combat with &e" + damaged.getDisplayName() + "&7!");
                 infomsg(damaged, "You are now in combat with &e" + damager.getDisplayName() + "&7!");
                 if (damaged.isGliding()) {
@@ -285,6 +285,7 @@ public class MiscEvents implements Listener {
                     int y = damaged.getWorld().getHighestBlockYAt((int) damaged.getLocation().getX(), (int) damaged.getLocation().getZ()) + 2;
                     damaged.teleport(new Location(damaged.getWorld(), damaged.getLocation().getX(), y, damaged.getLocation().getX()));
                     Utils.errormsgs(damaged, 28, "");
+                    damaged.setGliding(false);
                 }
 
                 if (damager.isGliding()) {
@@ -292,6 +293,7 @@ public class MiscEvents implements Listener {
                     int y = damager.getWorld().getHighestBlockYAt((int) damager.getLocation().getX(), (int) damager.getLocation().getZ()) + 2;
                     damager.teleport(new Location(damager.getWorld(), damager.getLocation().getX(), y, damager.getLocation().getX()));
                     Utils.errormsgs(damager, 28, "");
+                    damager.setGliding(false);
                 }
 
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
@@ -445,7 +447,7 @@ public class MiscEvents implements Listener {
                 if (b < 2)
                     Bukkit.getWorld(e.getPlayer().getWorld().getName()).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), getHead(e.getPlayer()));
             }, 1);
-            if ((combattag.containsKey(e.getPlayer().getUniqueId()) && combattag.containsKey(e.getPlayer().getKiller().getUniqueId()))) {
+            if ((combattag.contains(e.getPlayer().getUniqueId()) && combattag.contains(e.getPlayer().getKiller().getUniqueId()))) {
                 combattag.remove(e.getPlayer().getUniqueId());
                 combattag.remove(e.getPlayer().getKiller().getUniqueId());
                 infomsg(e.getPlayer().getKiller(), "You are no longer in combat");

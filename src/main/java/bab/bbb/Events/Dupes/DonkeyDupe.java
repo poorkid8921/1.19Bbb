@@ -42,10 +42,9 @@ public class DonkeyDupe implements Listener {
     }
 
     private void dupeInventory(final Entity riding) {
-        if (!(riding instanceof AbstractHorse))
+        if (!(riding instanceof final AbstractHorse donkey))
             return;
 
-        final AbstractHorse donkey = (AbstractHorse) riding;
         final Inventory cloned = clone(donkey);
         final List<HumanEntity> viewers = donkey.getInventory().getViewers();
 

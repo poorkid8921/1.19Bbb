@@ -50,7 +50,7 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (combattag.containsKey(user.getUniqueId()) && combattag.get(user.getUniqueId()) > System.currentTimeMillis()) {
+        if (combattag.contains(user.getUniqueId())) {
             tpmsg(user, recipient, 11);
             return true;
         }

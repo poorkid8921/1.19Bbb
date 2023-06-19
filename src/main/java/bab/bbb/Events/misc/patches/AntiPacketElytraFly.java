@@ -31,7 +31,7 @@ public class AntiPacketElytraFly implements Listener {
             return;
         Location from = player.getLocation();
 
-        if (combattag.containsKey(player.getUniqueId()))
+        if (combattag.contains(player.getUniqueId()))
         {
             player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
             int y = player.getWorld().getHighestBlockYAt((int) player.getLocation().getX(), (int) player.getLocation().getZ()) + 2;

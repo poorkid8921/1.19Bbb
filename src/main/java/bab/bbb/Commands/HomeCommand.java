@@ -32,7 +32,7 @@ public class HomeCommand implements TabExecutor {
                 return true;
             }
 
-            if (combattag.containsKey(player.getUniqueId()) && combattag.get(player.getUniqueId()) > System.currentTimeMillis()) {
+            if (combattag.contains(player.getUniqueId())) {
                 Utils.errormsgs(player, 17, "");
                 return true;
             }

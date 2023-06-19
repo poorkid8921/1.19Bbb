@@ -42,7 +42,7 @@ public class Utils {
     public static final World respawnWorld = Bukkit.getWorld("world");
     public static final HashMap<UUID, Long> playersUsingLevers = new HashMap<>();
     public static final HashMap<UUID, Long> playersClickingBeds = new HashMap<>();
-    public static final HashMap<UUID, Long> combattag = new HashMap<>();
+    public static final ArrayList<UUID> combattag = new ArrayList<>();
     public static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
     public static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
     public static final Set<String> playerList = new HashSet<>();

@@ -378,12 +378,12 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
     }
 
-    public void reloadCustomConfig() {
-        if (customConfigFile == null)
-            customConfigFile = new File(getDataFolder(), "data.yml");
+        public void reloadCustomConfig() {
+            if (customConfigFile == null)
+                customConfigFile = new File(getDataFolder(), "data.yml");
 
-        customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    }
+            customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
+        }
 
     public FileConfiguration getCustomConfig() {
         if (customConfigConfig == null) {
@@ -443,6 +443,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         int fixesIllegals = 0;
         int fixesBooks = 0;
 
+        if (!getInstance().getConfig().getBoolean("anti-illegals"))
+            return;
+
         for (final ItemStack itemStack : inventory.getContents()) {
             switch (checkItemStack(itemStack, location, checkRecursive)) {
                 case illegal -> {
@@ -482,9 +485,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
         if (itemStack == null)
             return ItemState.empty;
-
-        if (!getInstance().getConfig().getBoolean("anti-illegals"))
-            return ItemState.clean;
 
         if (Utils.isBook(itemStack)) {
             BookMeta bookMeta = (BookMeta) itemStack.getItemMeta();

@@ -37,7 +37,7 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
         }
 
-        if (combattag.containsKey(user.getUniqueId())) {
+        if (combattag.contains(user.getUniqueId())) {
             tpmsg(user, recipient, 16);
             return true;
         }
