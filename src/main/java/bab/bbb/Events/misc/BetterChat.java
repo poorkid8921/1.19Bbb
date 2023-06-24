@@ -34,14 +34,6 @@ public class BetterChat implements Listener {
         if (e.getPlayer().isOp())
             return;
 
-        /*if (cm.checkCooldown(e.getPlayer()))
-            cm.setCooldown(e.getPlayer());
-        else {
-            e.setCancelled(true);
-            Utils.errormsgs(e.getPlayer(),22, "");
-            return;
-        }*/
-
         String message = e.getMessage();
         String commandLabel = Utils.getCommandLabel(message).toLowerCase();
         String fullCommand = message.substring(commandLabel.length()+1);
@@ -61,63 +53,18 @@ public class BetterChat implements Listener {
         if (cm.checkCooldown(e.getPlayer()))
             cm.setCooldown(e.getPlayer());
         else {
-            if (Utils.hardran())
-            {
-                e.getPlayer().kickPlayer(translate("&7Keep the spam to a &eminimum"));
-                return;
-            }
             Utils.errormsgs(e.getPlayer(),23, "");
             return;
         }
 
-        String translatedmsg = Utils.translate(e.getPlayer(), "&7<" + e.getPlayer().getDisplayName() + "&7> " + e.getMessage());
+        String translatedmsg = Utils.translate("#d6a7eb" +  e.getPlayer().getName() + " » &r") + e.getMessage();
 
-        if (Utils.removeColorCodes(translatedmsg).length() > 255) {
+        if (Utils.removeColorCodes(translatedmsg).length() > 200) {
             Utils.errormsgs(e.getPlayer(),24, "");
             return;
         }
 
-        for (String word : e.getMessage().split(" ")) {
-            for (String regex : linkRegexes) {
-                if (word.matches(regex)) {
-                    Utils.errormsgs(e.getPlayer(), 25, "");
-                    return;
-                }
-            }
-        }
-
-        if (e.getMessage().contains("[rainbow]"))
-            translatedmsg = new RainbowText(translatedmsg).getText();
-
-        if (e.getMessage().contains("[unicode]"))
-            translatedmsg = Utils.unicode(translatedmsg);
-
-        //if (e.getMessage().contains("[base64]"))
-        //    msg = Base64.getEncoder().encodeToString(msg.replace("[base64]", "").getBytes());
-
-        if (e.getMessage().startsWith(">"))
-            translatedmsg = "&2" + translatedmsg.replace(">", "");
-
-        if (e.getMessage().startsWith("<"))
-            translatedmsg = "&4" + translatedmsg.replace("<", "");
-
-        if (e.getMessage().startsWith("||") && e.getMessage().endsWith("||")) {
-            TextComponent spoiler = new TextComponent("&7<" + e.getPlayer().getDisplayName() + "&7> " + "█".repeat(Math.max(1, translatedmsg.length() / 3 - 2)));
-            Text HoverText = new Text(translate(e.getPlayer(), translatedmsg.replace("||", "")));
-
-            spoiler.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, HoverText));
-
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                String b = Utils.getString("otherdata." + p.getUniqueId() + ".ignorelist");
-                if (b != null && b.contains(e.getPlayer().getName()))
-                    continue;
-                p.sendMessage(new BaseComponent[]{spoiler});
-            }
-            Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + translatedmsg);
-            return;
-        }
-
         Utils.message(e.getPlayer(), translatedmsg);
-        Bukkit.getLogger().info(e.getPlayer().getDisplayName() + " > " + translatedmsg);
+        Bukkit.getLogger().info(e.getPlayer().getName() + " > " + translatedmsg);
     }
 }

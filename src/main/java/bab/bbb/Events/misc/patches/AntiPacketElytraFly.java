@@ -30,23 +30,6 @@ public class AntiPacketElytraFly implements Listener {
         if (player == null)
             return;
         Location from = player.getLocation();
-
-        if (combattag.contains(player.getUniqueId()))
-        {
-            player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
-            int y = player.getWorld().getHighestBlockYAt((int) player.getLocation().getX(), (int) player.getLocation().getZ()) + 2;
-            player.teleport(new Location(player.getWorld(), player.getLocation().getX(), y, player.getLocation().getX()));
-            Utils.errormsgs(player, 28, "");
-            event.setCancelled(true);
-            return;
-        }
-
-        if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
-            event.setCancelled(true);
-            Utils.elytraflag(player, 1, 1, 0, null);
-            return;
-        }
-
         UUID playerUniqueID = player.getUniqueId();
 
         Integer level = levels.get(playerUniqueID);

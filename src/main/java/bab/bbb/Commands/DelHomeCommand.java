@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static bab.bbb.utils.Utils.translate;
+
 @RequiredArgsConstructor
 public class DelHomeCommand implements TabExecutor {
     @Override
@@ -33,7 +35,7 @@ public class DelHomeCommand implements TabExecutor {
                 return true;
             }
             if (Utils.deleteHome(home))
-                Utils.infomsg(player, "Successfully deleted home &e" + home.getName());
+                player.sendMessage(translate(player, "#bc5ae8Successfully deleted home #d6a7eb" + home.getName()));
             else
                 Utils.errormsgs(player, 15, home.getName());
         }

@@ -41,45 +41,25 @@ public class TpaCommand implements CommandExecutor {
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            tpmsg(user, recipient, 14);
+            tpmsg(user, recipient.getName(), 14);
             return true;
         }
 
         if (Utils.getRequest(recipient) != null) {
-            tpmsg(user, recipient, 13);
+            tpmsg(user, recipient.getName(), 13);
             return true;
         }
-
-        if (combattag.contains(user.getUniqueId())) {
-            tpmsg(user, recipient, 11);
-            return true;
-        }
-
         if (Utils.getRequest(user) != null)
             Utils.removeRequest(user);
 
         Utils.addRequest(user, recipient, Type.TPA);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        tpmsg(recipient, user, 3);
-        TextComponent accept = new TextComponent(translate("&7[&2✔&7] &2ACCEPT"));
-        Text acceptHoverText = new Text("Click to accept the teleport request");
-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
-        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(translate("&7[&c✖&7] &cDENY"));
-        Text denyHoverText = new Text("Click to deny the teleport request");
-        deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
-        deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
-
-        TextComponent bemptyspace = new TextComponent("       ");
-        recipient.sendMessage(bemptyspace, accept, bemptyspace, deny);
-        tpmsg(user, recipient, 1);
+        tpmsg(recipient, user.getName(), 3);
+        tpmsg(user, recipient.getName(), 1);
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (Utils.getRequest(recipient) != null) {
                     Utils.removeRequest(recipient);
-                    tpmsg(user, recipient, 2);
-                }
             }
         }.runTaskLater(Bbb.getInstance(), 30 * 20);
         return true;

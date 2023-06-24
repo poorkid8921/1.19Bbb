@@ -18,8 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static bab.bbb.utils.Utils.combattag;
-import static bab.bbb.utils.Utils.errormsgs;
+import static bab.bbb.utils.Utils.*;
 
 @RequiredArgsConstructor
 public class HomeCommand implements TabExecutor {
@@ -47,7 +46,7 @@ public class HomeCommand implements TabExecutor {
             try {
                 for (Home home : homes) {
                     if (home.getName().equalsIgnoreCase(homestr)) {
-                        Utils.infomsg(player, "&7Teleporting to home &e" + home.getName() + "&7...");
+                        player.sendMessage(translate(player, "#bc5ae8Teleporting to home #d6a7eb" + home.getName() + "#bc5ae8..."));
 
                         new BukkitRunnable() {
                             @Override

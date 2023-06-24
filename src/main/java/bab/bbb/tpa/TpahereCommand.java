@@ -41,17 +41,12 @@ public class TpahereCommand implements CommandExecutor {
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            tpmsg(user, recipient, 14);
+            tpmsg(user, recipient.getName(), 14);
             return true;
         }
 
         if (Utils.getRequest(recipient) != null) {
-            tpmsg(user, recipient, 14);
-            return true;
-        }
-
-        if (combattag.contains(user.getUniqueId())) {
-            tpmsg(user, recipient, 11);
+            tpmsg(user, recipient.getName(), 14);
             return true;
         }
 
@@ -60,26 +55,12 @@ public class TpahereCommand implements CommandExecutor {
 
         Utils.addRequest(user, recipient, Type.TPAHERE);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        Utils.tpmsg(recipient, user, 4);
-        TextComponent accept = new TextComponent(Utils.translate("&7[&2✔&7] &2ACCEPT"));
-        Text acceptHoverText = new Text("Click to accept the teleport request");
-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
-        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(Utils.translate("&7[&c✖&7] &cDENY"));
-        Text denyHoverText = new Text("Click to deny the teleport request");
-        deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
-        deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
-
-        TextComponent bemptyspace = new TextComponent("       ");
-        recipient.sendMessage(bemptyspace, accept, bemptyspace, deny);
-        Utils.tpmsg(user, recipient, 1);
+        Utils.tpmsg(recipient, user.getName(), 4);
+        Utils.tpmsg(user, recipient.getName(), 1);
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (Utils.getRequest(recipient) != null) {
                     Utils.removeRequest(recipient);
-                    Utils.tpmsg(user, recipient, 2);
-                }
             }
         }.runTaskLater(Bbb.getInstance(), 30 * 20);
         return true;

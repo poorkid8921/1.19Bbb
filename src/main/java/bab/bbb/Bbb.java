@@ -1,50 +1,44 @@
 package bab.bbb;
 
-import bab.bbb.Commands.*;
+import bab.bbb.Commands.DelHomeCommand;
+import bab.bbb.Commands.Discord;
+import bab.bbb.Commands.HomeCommand;
+import bab.bbb.Commands.SetHomeCommand;
 import bab.bbb.Events.DupeEvent;
-import bab.bbb.Events.Dupes.DonkeyDupe;
 import bab.bbb.Events.Dupes.FrameDupe;
 import bab.bbb.Events.misc.*;
 import bab.bbb.Events.misc.patches.AntiBurrow;
-import bab.bbb.Events.misc.patches.AntiIllegalsListener;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
 import bab.bbb.Events.misc.patches.ChestLimit;
-import bab.bbb.tpa.*;
-import bab.bbb.utils.Utils;
+import bab.bbb.tpa.TpaCommand;
+import bab.bbb.tpa.TpacceptCommand;
+import bab.bbb.tpa.TpahereCommand;
+import bab.bbb.tpa.TpdenyCommand;
 import bab.bbb.utils.Tablist;
-import com.destroystokyo.paper.profile.PlayerProfile;
+import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
-import org.bukkit.*;
-import org.bukkit.block.ShulkerBox;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
+
+import static bab.bbb.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
@@ -53,58 +47,31 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
-    public int frameduperng = this.getConfig().getInt("item-frame-dupe-rng");
-    public List<String> list = this.getConfig().getStringList("motd");
-    public int tps = this.getConfig().getInt("take-anti-lag-measures-if-tps");
 
-    public void register()
-    {
+    public void register() {
         Bukkit.getPluginManager().registerEvents(new MiscEvents(), this);
         Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
         Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
         Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
-        Bukkit.getPluginManager().registerEvents(new DonkeyDupe(), this);
 
-        if (this.getConfig().getBoolean("randommotdenabled"))
-            Bukkit.getPluginManager().registerEvents(new RandomMotd(), this);
-        if (this.getConfig().getBoolean("better-chat"))
-            Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
-        if (this.getConfig().getBoolean("anti-illegals"))
-            Bukkit.getPluginManager().registerEvents(new AntiIllegalsListener(), this);
-        if (this.getConfig().getBoolean("item-frame-dupe") && this.getConfig().getInt("item-frame-dupe-rng") > 0)
-            Bukkit.getPluginManager().registerEvents(new FrameDupe(), this);
-        if (this.getConfig().getBoolean("disable-the-use-of-packet-elytra-fly"))
-            Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
-        if (this.getConfig().getBoolean("anti-burrow"))
-            Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
+        Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
+        Bukkit.getPluginManager().registerEvents(new FrameDupe(), this);
+        Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
+        Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
 
         Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
 
-        if (config.getBoolean("tpa")) {
-            Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
-            Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
-            Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
-            Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand());
-        }
-        if (config.getBoolean("home")) {
-            Objects.requireNonNull(this.getCommand("delhome")).setExecutor(new DelHomeCommand());
-            Objects.requireNonNull(this.getCommand("home")).setExecutor(new HomeCommand());
-            Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHomeCommand());
-        }
+        Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
+        Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
+        Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
+        Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand());
+
+        Objects.requireNonNull(this.getCommand("delhome")).setExecutor(new DelHomeCommand());
+        Objects.requireNonNull(this.getCommand("home")).setExecutor(new HomeCommand());
+        Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHomeCommand());
 
         Bukkit.getScheduler().runTaskTimer(this, new Tablist(), 0, 100);
-
-        if (this.getConfig().getBoolean("auto-restart")) {
-            ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-            service.schedule(() -> {
-                Bukkit.getScheduler().runTask(Bbb.getInstance(), () -> {
-                    for (Player player : Bukkit.getOnlinePlayers())
-                        player.kickPlayer(Utils.translate("&7Server Restarting"));
-                    Bukkit.getServer().shutdown();
-                });
-            }, config.getInt("auto-restart-minutes"), TimeUnit.MINUTES);
-        }
 
         PaperLib.suggestPaper(Bbb.getInstance());
     }
@@ -112,17 +79,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
     @Override
     public void onEnable() {
         instance = this;
-
-        this.saveDefaultConfig();
-        if (!customConfigFile.exists()) {
-            this.saveCustomConfig();
-            if (Utils.getString("otherdata.realnames") == null && Utils.getString("otherdata.nicknames") == null) {
-                Utils.setData("otherdata.nicknames", "");
-                Utils.setData("otherdata.realnames", "");
-                Utils.saveData();
-            }
-        }
-        Utils.generatePlayerList();
 
         File homesFolder = new File(getDataFolder(), "homedata");
         if (!homesFolder.exists())
@@ -139,27 +95,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         if (!(sender instanceof Player player))
             return true;
 
-        if (cmd.getName().equals("nick")) {
-            if (args.length == 0) {
-                removeNick(player);
-                Utils.infomsg(player, "Your nickname has been removed");
-            } else {
-                if (player.isOp()) {
-                    StringBuilder builder = new StringBuilder();
-                    int a = args.length;
-                    for (String s : args) {
-                        a--;
-                        builder.append(s);
-                        if (a > 0)
-                            builder.append(' ');
-                    }
-                    String nick = builder.toString();
-                    changeNick(player, nick);
-                } else
-                    changeNick(player, args[0]);
-            }
-            return true;
-        } else if (cmd.getName().equals("msg")) {
+        if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
                 Utils.errormsgs(player, 1, "");
                 return true;
@@ -193,9 +129,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(Utils.translate(player, "&7you whisper to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.translate(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
-            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] %msg%" + msgargs));
+            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] %msg%" + msgargs));            lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("reply")) {
@@ -230,29 +165,17 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(Utils.translate(player, "&7you reply to " + target.getDisplayName() + "&7: " + msgargs));
-            target.sendMessage(Utils.translate(target, "&7" + player.getDisplayName() + " &7whispers to you: " + msgargs));
+            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] %msg%" + msgargs));
+            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] %msg%" + msgargs));            lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 
-            return true;
-        } else if (cmd.getName().equals("secure")) {
-            if (Utils.getString("otherdata." + player.getUniqueId() + ".secure") != null) {
-                Utils.setData("otherdata." + player.getUniqueId() + ".secure", null);
-                Utils.saveData();
-                Utils.infomsg(player, "Your account has been unsecured");
-                return true;
-            }
-
-            Utils.setData("otherdata." + player.getUniqueId() + ".secure", Objects.requireNonNull(player.getAddress()).getAddress().getHostAddress());
-            Utils.saveData();
-            Utils.infomsg(player, "You have successfully secured your account");
             return true;
         } else if (cmd.getName().equals("ignore")) {
             String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (ignoreclient != null) {
-                    Utils.infomsg(player, "Your ignored players are: " + ignoreclient.replace(", ", "&e, &7"));
+                    player.sendMessage(translate(player, "#bc5ae8Your ignored players are: " + ignoreclient.replace(", ", "#bc5ae8, #d6a7eb")));
                     return true;
                 }
                 Utils.errormsgs(player, 1, "");
@@ -276,14 +199,14 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             if (ignoreclient != null && ignoreclient.contains(target.getName())) {
                 Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", ignoreclient.replace(target.getName() + ", ", ""));
                 Utils.saveData();
-                Utils.infomsg(player, "Successfully un ignored &e" + target.getDisplayName());
+                player.sendMessage(translate(player, "#bc5ae8Successfully un ignored &d6a7eb" + target.getName()));
                 return true;
             }
 
             breplace += ignoreclient;
             Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
             Utils.saveData();
-            Utils.infomsg(player, "Successfully ignored &e" + target.getDisplayName());
+            player.sendMessage(translate(player, "#bc5ae8Successfully ignored #d6a7eb" + target.getName()));
             return true;
         } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
@@ -291,91 +214,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         }
 
         return false;
-    }
-
-    public void setnickonjoin(Player p) {
-        String s = Utils.getString("otherdata." + p.getUniqueId() + ".nickname");
-        if (s != null) {
-            String str = s;
-            //realname(p, ColorUtils.removeColorCodes(s));
-
-            p.setPlayerListName(Utils.translate(str + ChatColor.GRAY));
-            p.setDisplayName(Utils.translate(str + ChatColor.GRAY));
-        }
-    }
-
-    public void changeNick(Player p, String nick) {
-        String nickcolor = Utils.translate(nick);
-        String nickuncolor = Utils.removeColorCodes(nickcolor);
-
-        if (p.isOp()) {
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
-
-            Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
-            Utils.saveData();
-
-            //realname(p, nickuncolor);
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p, "&e[&4OP&e]&7 Your nickname has been set to &e" + nickcolor);
-            return;
-        }
-
-        String strr = Utils.getString("otherdata.nicknames");
-        if (strr == null)
-            return;
-
-        String strrr = Utils.getString("otherdata.realnames");
-        if (strrr == null)
-            return;
-
-        boolean inuse = Utils.isduplicatednick(strr, nickuncolor) || Utils.isduplicatednick(strrr, p.getName());
-
-        if (nickuncolor.length() < 3)
-            Utils.errormsgs(p, 9, "");
-        else if (nickuncolor.length() > 16)
-            Utils.errormsgs(p, 10, "");
-        else if (nickuncolor.contains("[") || nickuncolor.contains("]") || nickuncolor.contains("!") || nickuncolor.contains("@") || nickuncolor.contains("#") || nickuncolor.contains("$") || nickuncolor.contains("%") || nickuncolor.contains("*"))
-            Utils.errormsgs(p, 11, "");
-        else if (inuse && !(strr.equalsIgnoreCase(p.getDisplayName())))
-            Utils.errormsgs(p, 12, "");
-        else {
-            String prevnick = Utils.removeColorCodes(p.getDisplayName());
-            String str = strr.replace(":_:" + prevnick, ":_:" + nickuncolor);
-
-            Utils.setData("otherdata." + p.getUniqueId() + ".nickname", nick);
-            Utils.setData("otherdata.nicknames", str);
-            Utils.saveData();
-
-            //realname(p, nickuncolor);
-            p.setDisplayName(nickcolor + ChatColor.GRAY);
-            p.setPlayerListName(nickcolor + ChatColor.GRAY);
-            Utils.infomsg(p, "Your nickname has been set to &e" + nickcolor);
-        }
-    }
-
-    public void removeNick(Player p) {
-        if (p.getName().equals(p.getDisplayName()))
-            return;
-        String strr = Objects.requireNonNull(Utils.getString("otherdata.nicknames")).replace(":_:" + Utils.removeColorCodes(Objects.requireNonNull(p.getPlayer()).getDisplayName()), ":_:" + p.getPlayer().getName());
-        //realname(p, nickuncolor);
-
-        p.setDisplayName(p.getName());
-        p.setPlayerListName(p.getName());
-        Utils.setData("otherdata.nicknames", strr);
-        Utils.saveData();
-    }
-
-    public void realname(Player p, String name) {
-        PlayerProfile profile = p.getPlayerProfile();
-        profile.setName(Utils.removeColorCodes(p.getName()));
-        p.setPlayerProfile(profile);
-
-        for (Player players : Bukkit.getOnlinePlayers()) {
-            players.hidePlayer(p);
-            players.showPlayer(p);
-        }
     }
 
         public void reloadCustomConfig() {
@@ -431,228 +269,4 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         saveCustomConfig();
         reloadConfig();
     }
-
-    public static void checkInventory(final Inventory inventory, final Location location, final boolean checkRecursive) {
-        checkInventory(inventory, location, checkRecursive, false);
-    }
-
-    public static void checkInventory(final Inventory inventory, final Location location, final boolean checkRecursive, final boolean isInsideShulker) {
-        final List<ItemStack> removeItemStacks = new ArrayList<>();
-
-        boolean wasFixed = false;
-        int fixesIllegals = 0;
-        int fixesBooks = 0;
-
-        if (!getInstance().getConfig().getBoolean("anti-illegals"))
-            return;
-
-        for (final ItemStack itemStack : inventory.getContents()) {
-            switch (checkItemStack(itemStack, location, checkRecursive)) {
-                case illegal -> {
-                    removeItemStacks.add(itemStack);
-                    Bukkit.getServer().getLogger().info("removed illegal");
-                }
-                case wasFixed -> wasFixed = true;
-            }
-        }
-
-        for (final ItemStack itemStack2 : removeItemStacks) {
-            itemStack2.setAmount(0);
-            inventory.remove(itemStack2);
-            ++fixesIllegals;
-        }
-    }
-
-    public static void checkArmorContents(final PlayerInventory playerInventory, final Location location, final boolean checkRecursive) {
-        for (final ItemStack itemStack : playerInventory.getArmorContents()) {
-            checkItemStack(itemStack, location, checkRecursive);
-        }
-    }
-
-    public boolean hasIllegalNBT(ItemStack item) {
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            return meta.hasItemFlag(ItemFlag.HIDE_ATTRIBUTES) || meta.hasItemFlag(ItemFlag.HIDE_DESTROYS)
-                    || meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS) || meta.hasItemFlag(ItemFlag.HIDE_PLACED_ON)
-                    || meta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS) || meta.hasItemFlag(ItemFlag.HIDE_UNBREAKABLE)
-                    || meta.hasAttributeModifiers() || meta.hasItemFlag(ItemFlag.HIDE_DYE);
-        }
-        return false;
-    }
-
-    public static ItemState checkItemStack(ItemStack itemStack, final Location location, final boolean checkRecursive) {
-        boolean wasFixed = false;
-
-        if (itemStack == null)
-            return ItemState.empty;
-
-        if (Utils.isBook(itemStack)) {
-            BookMeta bookMeta = (BookMeta) itemStack.getItemMeta();
-            List<String> pages = new ArrayList<>();
-
-            for (String page : bookMeta.getPages()) {
-                if (page.getBytes(StandardCharsets.UTF_8).length <= 255)
-                    pages.add(page);
-            }
-
-            bookMeta.setPages(pages);
-            itemStack.setItemMeta(bookMeta);
-        }
-
-        if (getInstance().getConfig().getBoolean("illegal-items")) {
-            if (itemStack.getType() == Material.BEDROCK) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.END_PORTAL_FRAME) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.BARRIER) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.LIGHT) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.PLAYER_HEAD) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.COMMAND_BLOCK) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.CHAIN_COMMAND_BLOCK) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.REPEATING_COMMAND_BLOCK) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (Utils.isSpawnEgg(itemStack)) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getType() == Material.SPAWNER) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (getInstance().hasIllegalNBT(itemStack)) {
-                itemStack.setAmount(0);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getItemMeta().hasLore()) {
-                itemStack.getItemMeta().setLore(null);
-                return ItemState.illegal;
-            }
-
-            if (itemStack.getItemMeta().isUnbreakable() || itemStack.getDurability() < 0 || itemStack.getDurability() > 2031) {
-                itemStack.setDurability(itemStack.getType().getMaxDurability());
-                return ItemState.illegal;
-            }
-        }
-
-        if (getInstance().getConfig().getBoolean("overstacked-items")) {
-            if (itemStack.getAmount() > itemStack.getMaxStackSize()) {
-                itemStack.setAmount(itemStack.getMaxStackSize());
-                wasFixed = true;
-            }
-        }
-
-        if (getInstance().getConfig().getBoolean("illegal-enchants")) {
-            final List<Enchantment> keys = new ArrayList<>(itemStack.getEnchantments().keySet());
-            Collections.shuffle(keys);
-
-            for (int kI1 = 0; kI1 < keys.size(); ++kI1) {
-                for (int kI2 = kI1 + 1; kI2 < keys.size(); ++kI2) {
-                    final Enchantment e1 = keys.get(kI1);
-
-                    if (e1.conflictsWith(keys.get(kI2))) {
-                        itemStack.removeEnchantment(e1);
-                        keys.remove(e1);
-
-                        if (kI1 > 0) {
-                            --kI1;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (itemStack.getType() == Material.POTION || itemStack.getType() == Material.SPLASH_POTION || itemStack.getType() == Material.LINGERING_POTION) {
-                PotionMeta meta = (PotionMeta) itemStack.getItemMeta();
-
-                if (meta.hasCustomEffects()) {
-                    meta.clearCustomEffects();
-                    itemStack.setItemMeta(meta);
-                    wasFixed = true;
-                }
-            }
-
-            for (final Enchantment enchantment : itemStack.getEnchantments().keySet()) {
-                if (itemStack.getType() == Material.TOTEM_OF_UNDYING)
-                    itemStack.removeEnchantment(enchantment);
-
-                if (enchantment.canEnchantItem(itemStack)) {
-                    if (itemStack.getEnchantmentLevel(enchantment) > enchantment.getMaxLevel()) {
-                        wasFixed = true;
-                        itemStack.removeEnchantment(enchantment);
-                        itemStack.addUnsafeEnchantment(enchantment, enchantment.getMaxLevel());
-                    } else if (itemStack.getEnchantmentLevel(enchantment) < 1) {
-                        wasFixed = true;
-                        itemStack.removeEnchantment(enchantment);
-                        itemStack.addUnsafeEnchantment(enchantment, 1);
-                    }
-                } else {
-                    wasFixed = true;
-                    itemStack.removeEnchantment(enchantment);
-                }
-            }
-        }
-
-        if (getInstance().getConfig().getBoolean("check-in-shulker-box")) {
-            if (itemStack.getType().toString().contains("SHULKER_BOX") && checkRecursive && itemStack.getItemMeta() instanceof final BlockStateMeta blockMeta) {
-                if (blockMeta.getBlockState() instanceof final ShulkerBox shulker) {
-                    final Inventory inventoryShulker = shulker.getInventory();
-
-                    for (int i = 0; i < inventoryShulker.getSize(); i++)
-                    {
-                        ItemStack a = inventoryShulker.getItem(i);
-                        if (a == null)
-                            continue;
-
-                        if (a.getType().toString().contains("SHULKER_BOX"))
-                            a.setAmount(0);
-                    }
-
-                    checkInventory(inventoryShulker, location, true, true);
-                    shulker.getInventory().setContents(inventoryShulker.getContents());
-                    blockMeta.setBlockState(shulker);
-
-                    try {
-                        itemStack.setItemMeta(blockMeta);
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
-        }
-
-        return wasFixed ? ItemState.wasFixed : ItemState.clean;
-    }
-
-    public enum ItemState {empty, clean, wasFixed, illegal}
 }

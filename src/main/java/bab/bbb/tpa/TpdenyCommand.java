@@ -29,10 +29,12 @@ public class TpdenyCommand implements CommandExecutor {
             return true;
         }
 
-        Player recipient = Bukkit.getPlayer(request.getSender().getName());
-        Utils.tpmsg(player, recipient, 6);
-        Utils.tpmsg(recipient, player, 5);
+        String recipientstr = request.getSender().getName();
+        Player recipient = Bukkit.getPlayer(recipientstr);
+        Utils.tpmsg(player, recipientstr, 6);
+        Utils.tpmsg(recipient, player.getName(), 5);
         Utils.removeRequest(player);
+        Utils.removeRequest(recipient);
 
         return true;
     }

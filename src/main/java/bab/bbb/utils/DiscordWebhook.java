@@ -15,12 +15,12 @@ import java.util.Set;
 
 /*
 
-                    String avturl = "https://mc-heads.net/avatar/" + e.getPlayer().getDisplayName() + "/100";
+                    String avturl = "https://mc-heads.net/avatar/" + e.getPlayer().getName() + "/100";
                     DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1094020283041595412/6XkNblrc6MKpZzSc9QnKfOv3lWAwxTtoKLHkX5LP7mnUAhBbSEljulmKklpCbo7joaz4");
                     webhook.setAvatarUrl(avturl);
                     webhook.setUsername("hausemaster");
                     webhook.addEmbed(new DiscordWebhook.EmbedObject()
-                            .setTitle(e.getPlayer().getDisplayName() + " has joined the server")
+                            .setTitle(e.getPlayer().getName() + " has joined the server")
                                     .setImage(avturl)
                             .setColor(java.awt.Color.ORANGE));
                     try {
@@ -370,7 +370,7 @@ public class DiscordWebhook {
                 } else if (val instanceof Boolean) {
                     builder.append(val);
                 } else if (val instanceof JSONObject) {
-                    builder.append(val.toString());
+                    builder.append(val);
                 } else if (val.getClass().isArray()) {
                     builder.append("[");
                     int len = Array.getLength(val);

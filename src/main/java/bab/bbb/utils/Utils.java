@@ -174,7 +174,7 @@ public class Utils {
             if (homes.containsKey(player.getUniqueId())) {
                 homes.replace(player.getUniqueId(), homeList);
             } else homes.put(player.getUniqueId(), homeList);
-            Bukkit.getLogger().info("Loaded homes for " + player.getDisplayName());
+            Bukkit.getLogger().info("Loaded homes for " + player.getName());
             break;
         }
     }
@@ -281,46 +281,12 @@ public class Utils {
     public static Location calcSpawnLocation() {
         int x = new Random().nextInt(maxX - minX + 1) + minX;
         int z = new Random().nextInt(maxZ - minZ + 1) + minZ;
+        assert respawnWorld != null;
         int y = respawnWorld.getHighestBlockYAt(x, z);
         Block blockAt = respawnWorld.getBlockAt(x, y, z);
         if (bannedblocks.toString().toLowerCase().contains(blockAt.getType().name().toLowerCase()))
             return null;
         return new Location(respawnWorld, x, y, z).add(new Vector(0,3,0));
-    }
-
-    public static synchronized void addUpdateIp(String ip, String uuid, String name) {
-        Date date = new Date();
-        Utils.setData("ip." + ip.replace('.', '_') + "." + uuid, date.getTime() + "," + name);
-        playerList.add(name.toLowerCase());
-    }
-
-    public static synchronized List<String> getAltNames(String ip, String excludeUuid) {
-        List<String> altList = new ArrayList<>();
-
-        Date oldestDate = new Date(System.currentTimeMillis() - 8640000);
-
-        ConfigurationSection ipIpConfSect = plugin.getCustomConfig().getConfigurationSection("ip." + ip.replace('.', '_'));
-        if (ipIpConfSect != null) {
-            for (String uuid : ipIpConfSect.getKeys(false)) {
-                String uuidData = getString("ip." + ip.replace('.', '_') + "." + uuid);
-                String[] arg = uuidData.split(",");
-                Date date = new Date(Long.parseLong(arg[0]));
-
-                if (!uuid.equals(excludeUuid) && date.after(oldestDate))
-                    altList.add(arg[1]);
-            }
-        }
-
-        altList.sort(String.CASE_INSENSITIVE_ORDER);
-        return altList;
-    }
-
-    public static String getFormattedAltString(String ip, String uuid) {
-        List<String> altList = getAltNames(ip, uuid);
-
-        if (!altList.isEmpty())
-            return "true";
-        return null;
     }
 
     public static double blocksPerTick(Location from, Location to) {
@@ -337,93 +303,16 @@ public class Utils {
     public static ItemStack getHead(Player player) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
         SkullMeta skull = (SkullMeta) item.getItemMeta();
-        skull.setDisplayName(player.getDisplayName());
+        skull.setDisplayName(player.getName());
         skull.setOwner(player.getName());
         item.setItemMeta(skull);
         return item;
-    }
-
-    public static boolean isBook(ItemStack item) {
-        if (item == null) return false;
-        return switch (item.getType()) {
-            case WRITABLE_BOOK, WRITTEN_BOOK -> true;
-            default -> false;
-        };
-    }
-
-    public static boolean isShulkerBox(Material material) {
-        return switch (material) {
-            case SHULKER_BOX, BLACK_SHULKER_BOX, BLUE_SHULKER_BOX, BROWN_SHULKER_BOX, CYAN_SHULKER_BOX, GRAY_SHULKER_BOX, GREEN_SHULKER_BOX, LIGHT_BLUE_SHULKER_BOX, LIGHT_GRAY_SHULKER_BOX, LIME_SHULKER_BOX, MAGENTA_SHULKER_BOX, ORANGE_SHULKER_BOX, PINK_SHULKER_BOX, PURPLE_SHULKER_BOX, RED_SHULKER_BOX, WHITE_SHULKER_BOX, YELLOW_SHULKER_BOX ->
-                    true;
-            default -> false;
-        };
-    }
-
-    public static boolean isSpawnEgg(ItemStack item) {
-        if (item == null) return false;
-        String materialAsString = item.getType().name();
-        return materialAsString.contains("SPAWN_EGG") || materialAsString.contains("MONSTER_EGG");
-    }
-
-    public static void checkPlayerAsync(Player p, String ip, String apikey) {
-        Bukkit.getScheduler().runTaskAsynchronously(Bbb.getInstance(), () ->
-        {
-            String result = "ERROR";
-            try {
-                URL myURL = new URL("http://v2.api.iphub.info/ip/" + ip);
-                HttpURLConnection connection = (HttpURLConnection) myURL.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("X-Key", apikey);
-                connection.setDoOutput(true);
-                connection.setDoInput(true);
-                connection.connect();
-
-                BufferedReader br;
-                if (200 <= connection.getResponseCode() && connection.getResponseCode() <= 299)
-                    br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                else
-                    br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-
-                StringBuilder sb = new StringBuilder();
-                String output;
-                while ((output = br.readLine()) != null) {
-                    sb.append(output);
-                }
-                result = sb.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            final String finalResult = result;
-
-            if (finalResult.equals("ERROR")) {
-                Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
-            } else {
-                try {
-                    final JSONObject obj2 = (JSONObject) new JSONParser().parse(finalResult);
-                    long severity2 = (long) obj2.get("block");
-
-                    if (severity2 == 1) {
-                        sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &etried to join via a proxy");
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            p.kickPlayer(translate("&7You can't join using a &2proxy"));
-                        });
-                    }
-                } catch (ParseException e) {
-                    Bukkit.getLogger().log(Level.SEVERE, "Couldn't initialize anti proxy check for " + p.getName());
-                }
-            }
-        });
     }
 
     public static void setName(ItemStack item, String name, boolean overrideDefaultFormat) {
         ItemMeta itemStackMeta = item.getItemMeta();
         itemStackMeta.setDisplayName(formatString(name, overrideDefaultFormat));
         item.setItemMeta(itemStackMeta);
-    }
-
-    public static void errormsg(Player p, String s) {
-        p.sendMessage(translate("&7[&4-&7] " + s));
     }
 
     public static String translatestring(String message) {
@@ -494,77 +383,13 @@ public class Utils {
         }
     }
 
-    public static Player getNearbyPlayer(int i, Location loc) {
-        Player plrs = null;
-        for (Player nearby : loc.getNearbyPlayers(i))
-            plrs = nearby;
-
-        return plrs;
-    }
-
-    public static String unicode(String msg) {
-        return translate(msg
-                .replace("A", "ᴀ")
-                .replace("B", "ʙ")
-                .replace("C", "ᴄ")
-                .replace("D", "ᴅ")
-                .replace("E", "ᴇ")
-                .replace("F", "ꜰ")
-                .replace("G", "ɢ")
-                .replace("H", "ʜ")
-                .replace("J", "ᴊ")
-                .replace("K", "ᴋ")
-                .replace("L", "ʟ")
-                .replace("M", "ᴍ")
-                .replace("N", "ɴ")
-                .replace("P", "ᴘ")
-                .replace("Q", "ꞯ")
-                .replace("R", "ʀ")
-                .replace("S", "ꜱ")
-                .replace("T", "ᴛ")
-                .replace("U", "ᴜ")
-                .replace("V", "ᴠ")
-                .replace("W", "ᴡ")
-                .replace("Y", "ʏ")
-                .replace("Z", "ᴢ")
-                .replace("a", "ᴀ")
-                .replace("b", "ʙ")
-                .replace("c", "ᴄ")
-                .replace("d", "ᴅ")
-                .replace("e", "ᴇ")
-                .replace("f", "ꜰ")
-                .replace("g", "ɢ")
-                .replace("h", "ʜ")
-                .replace("j", "ᴊ")
-                .replace("k", "ᴋ")
-                .replace("l", "ʟ")
-                .replace("m", "ᴍ")
-                .replace("n", "ɴ")
-                .replace("p", "ᴘ")
-                .replace("q", "ꞯ")
-                .replace("r", "ʀ")
-                .replace("s", "ꜱ")
-                .replace("t", "ᴛ")
-                .replace("u", "ᴜ")
-                .replace("v", "ᴠ")
-                .replace("w", "ᴡ")
-                .replace("y", "ʏ")
-                .replace("z", "ᴢ"));
-    }
-
-    public static void infomsg(Player p, String s) {
-        p.sendMessage(translate(p, "&7[&e+&7] " + s));
-    }
-
     public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
         if (msg == 1)
             p.sendActionBar(translate("&7Elytras are currently disabled due to &clag"));
-        else if (msg == 0) {
-            p.sendActionBar(translate("&7You're moving &ctoo fast"));
-            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7moved too fast");
-        } else {
+        else if (msg == 0)
+            p.sendActionBar(translate("&7You're moving too fast. Please slow down"));
+        else {
             maskedkick(p);
-            sendOpMessage("&7[&4ALERT&7]&e " + p.getDisplayName() + " &7tried to packet elytra fly");
             //p.sendActionBar(Methods.translate("&7Packet elytra fly isn't &callowed"));
             return;
         }
@@ -606,82 +431,73 @@ public class Utils {
         requests.remove(getRequest(user));
     }
 
-    public static void tpmsg(Player p, Player target, int u) {
+    public static void tpmsg(Player p, String argsp, int u) {
         switch (u) {
-            case 1 -> // tp has been sent to
-                    infomsg(p, "The teleport request has been sent to &e" + target.getDisplayName());
+            case 1 -> {// tp has been sent to
+                p.sendMessage(translate("#bc5ae8Request sent to #d6a7eb" + argsp + "#bc5ae8."));
+                p.sendMessage(translate("#bc5ae8To cancel this request, type #d6a7eb/tpdeny#bc5ae8."));
+            }
             case 2 -> // timed out msg
-                    infomsg(p, "Your teleport request to &e" + target.getDisplayName() + " &7has timed out");
-            case 3 -> // tpa wants to teleport to you
-                    infomsg(p, "&e" + target.getDisplayName() + " &7wants to teleport to you");
-            case 4 -> // tpahere wants to teleport to you
-                    infomsg(p, "&e" + target.getDisplayName() + " &7wants you to teleport to them");
+                    p.sendMessage(translate("#bc5ae8Your teleport request to #d6a7eb" + argsp + " #bc5ae8timed out."));
+            case 3 -> {// tpa wants to teleport to you
+                p.sendMessage(translate("#d6a7eb" + argsp + " #bc5ae8has requested to teleport to you."));
+                p.sendMessage(translate("#bc5ae8To teleport, type #d6a7eb/tpaccept#bc5ae8."));
+                p.sendMessage(translate("#bc5ae8To deny this request, type #d6a7eb/tpdeny#bc5ae8."));
+                p.sendMessage(translate("#bc5ae8This request will expire in #d6a7eb120 seconds#bc5ae8."));
+            }
+            case 4 -> {// tpahere wants to teleport to you
+                p.sendMessage(translate("#d6a7eb" + argsp + " #bc5ae8has requested that you teleport to them."));
+                p.sendMessage(translate("#bc5ae8To teleport, type #d6a7eb/tpaccept#bc5ae8."));
+                p.sendMessage(translate("#bc5ae8To deny this request, type #d6a7eb/tpdeny#bc5ae8."));
+                p.sendMessage(translate("#bc5ae8This request will expire in #d6a7eb120 seconds#bc5ae8."));
+            }
             case 5 -> // has been denied
-                    infomsg(p, "Your request to &e" + target.getDisplayName() + " &7was denied");
+                    p.sendMessage(translate("#d6a7eb" + argsp + "#bc5ae8denied your teleport request!"));
             case 6 -> // you have denied
-                    infomsg(p, "You have denied &e" + target.getDisplayName() + "&7's request");
-            case 7 -> // teleporting...
-                    infomsg(p, "Teleporting...");
-            case 8 -> // teleporting to player...
-                    infomsg(p, "Teleporting to &e" + target.getDisplayName() + " &7...");
-            case 9 -> // isn't online anymore
-                    infomsg(p, "&e" + target.getDisplayName() + " &7isn't online anymore");
-            case 10 -> // teleporting player...
-                    infomsg(p, "Teleporting &e" + target.getDisplayName() + "&7...");
-            case 11 -> // combat
-                    errormsg(p, "You can't send tpa requests whilst being in combat");
-            case 12 -> // home combat
-                    errormsg(p, "You can't teleport to home whilst being in combat");
+                    p.sendMessage(translate("#bc5ae8You have denied #d6a7eb" + argsp + "teleport request."));
+            case 8 -> {// teleporting to player... (recipient)
+                p.sendMessage(translate("#d6a7eb" + argsp + " #bc5ae8accepted your teleport request."));
+                p.sendMessage(translate("#bc5ae8Teleporting..."));
+            }
+            case 9 -> // teleporting to player... (user)
+                p.sendMessage(translate("#bc5ae8Teleporting..."));
             case 13 -> // active request
-                    errormsg(p, "Player &e" + target.getDisplayName() + " &7already has an active request");
+                    p.sendMessage(translate("#d6a7eb" + argsp + " #bc5ae8already has an active request."));
             case 14 -> // target=player
-                    errormsg(p, "You can't teleport to yourself");
+                    p.sendMessage(translate("#bc5ae8You can't teleport to yourself!"));
             case 15 -> // null tp req
-                    errormsg(p, "You have no active teleport request");
-            case 16 -> // tp combat
-                    errormsg(p, "You can't accept teleport requests whilst being in combat");
+                    p.sendMessage(translate("#bc5ae8You have no active teleport request."));
         }
     }
 
     public static void errormsgs(Player p, int u, String str) {
         switch (u) {
-            // nickname
-            case 9 -> errormsg(p, translate("The nickname you entered is too short"));
-            case 10 -> errormsg(p, translate("The nickname you entered is too long"));
-            case 11 -> errormsg(p, translate("The nickname you entered is invalid"));
-            case 12 -> errormsg(p, translate("The nickname you entered is already taken"));
-
             // chat
-            case 6 -> errormsg(p, translate("You have no one to reply to"));
-            //case 22 -> errormsg(p, translate("You're executing commands too fast"));
-            case 23 -> errormsg(p, translate("You're sending messages too fast"));
-            case 24 -> errormsg(p, translate("Your message is too long"));
-            case 25 -> errormsg(p, translate("You can't send links"));
+            case 6 -> p.sendMessage(translate("#bc5ae8You got no one to reply to."));
+            case 23 -> p.sendMessage(translate("#bc5ae8You're sending messages too fast!"));
+            case 24 -> p.sendMessage(translate("#bc5ae8Your message is too long."));
 
             // other
-            case 1 -> errormsg(p, translate("The arguments are invalid"));
-            case 2 -> errormsg(p, translate("Player &e" + str + " &7couldn't be found"));
-            case 17 -> errormsg(p, translate("You can't teleport whilst being in combat"));
-            case 21 -> errormsg(p, translate("&4Bad command"));
-            case 26 -> errormsg(p, translate("Wait a second before using a lever again"));
-            case 27 -> errormsg(p, translate("Nether roof is disabled"));
-            case 28 -> errormsg(p, translate("You can't fly with elytra whilst being in combat"));
-            // prob not going to be used (only when tps is < 5 or sth)
-            case 30 -> errormsg(p, translate("Teleportation failed"));
+            case 1 -> p.sendMessage(translate("#bc5ae8Invalid arguments."));
+            case 2 -> p.sendMessage(translate("#bc5ae8Couldn't find the specified player."));
+            case 21 -> p.sendMessage(translate("#d6a7ebThis command is disabled!"));
+            case 26 -> p.sendMessage(translate("Wait a second before using a lever again"));
+            case 27 -> p.sendMessage(translate("Nether roof is disabled"));
+            case 30 -> p.sendMessage(translate("&7Teleportation failed"));
 
             // homes
-            case 13 -> errormsg(p, translate("You have no home to delete"));
-            case 15 -> errormsg(p, translate("Home deletion for home &e" + str + " &7has failed"));
-            case 16 -> errormsg(p, translate("You have no home to teleport to"));
-            case 18 -> errormsg(p, translate("Couldn't find the home &e" + str));
-            case 19 -> errormsg(p, translate("Home &e" + str + " &7already exists"));
-            case 20 -> errormsg(p, translate("You have reached the home limit"));
-            case 29 -> errormsg(p, translate("Couldn't teleport because you moved"));
+            case 13 -> p.sendMessage(translate("#bc5ae8You got no home to delete."));
+            case 15 -> p.sendMessage(translate("Home deletion for home &e" + str + " &7has failed"));
+            case 16 -> p.sendMessage(translate("#bc5ae8You didn't set any home!"));
+            case 18 -> p.sendMessage(translate("#bc5ae8Couldn't find the home #d6a7eb" + str + "#bc5ae8."));
+            case 19 -> p.sendMessage(translate("#bc5ae8Home &d6a7eb" + str + " &bc5ae8already exists."));
+            case 20 -> p.sendMessage(translate("#bc5ae8You have reached the home limit of 5!"));
+            case 29 -> p.sendMessage(translate("#bc5ae8Teleportation failed. #d6a7ebYou moved!"));
 
             // ignore
-            case 4 -> errormsg(p, translate("You can't send messages to players ignoring you"));
-            case 5 -> errormsg(p, translate("You can't send messages to players you are ignoring"));
-            case 8 -> errormsg(p, translate("You can't ignore yourself"));
+            case 4 -> p.sendMessage(translate("#bc5ae8You can't send messages to players ignoring you."));
+            case 5 -> p.sendMessage(translate("#bc5ae8You can't send messages to players you are ignoring."));
+            case 8 -> p.sendMessage(translate("#bc5ae8You can't ignore yourself!"));
         }
     }
 
@@ -797,88 +613,11 @@ public class Utils {
         plugin.getCustomConfig().set(from, to);
     }
 
-    public static Boolean isLong(String from) {
-        return plugin.getCustomConfig().isLong(from);
-    }
-
-    public static Boolean isBoolean(String from) {
-        return plugin.getCustomConfig().isBoolean(from);
-    }
-
-    public static Boolean isColor(String from) {
-        return plugin.getCustomConfig().isColor(from);
-    }
-
-    public static Boolean isInt(String from) {
-        return plugin.getCustomConfig().isInt(from);
-    }
-
-    public static Boolean isDouble(String from) {
-        return plugin.getCustomConfig().isDouble(from);
-    }
-
-    public static Boolean isConfigurationSection(String from) {
-        return plugin.getCustomConfig().isConfigurationSection(from);
-    }
-
     public static ConfigurationSection getConfigurationSection(String from) {
         return plugin.getCustomConfig().getConfigurationSection(from);
     }
-
-    public static Boolean isItemStack(String from) {
-        return plugin.getCustomConfig().isItemStack(from);
-    }
-
-    public static Boolean isOfflinePlayer(String from) {
-        return plugin.getCustomConfig().isOfflinePlayer(from);
-    }
-
-    public static Boolean isLocation(String from) {
-        return plugin.getCustomConfig().isLocation(from);
-    }
-
-    public static Boolean isList(String from) {
-        return plugin.getCustomConfig().isList(from);
-    }
-
-    public static Boolean isString(String from) {
-        return plugin.getCustomConfig().isString(from);
-    }
-
-    public static Boolean isVector(String from) {
-        return plugin.getCustomConfig().isVector(from);
-    }
-
-    public static Boolean isSet(String from) {
-        return plugin.getCustomConfig().isSet(from);
-    }
-
-    public static Object getObject(String from) {
-        return plugin.getCustomConfig().get(from);
-    }
-
     public static String getString(String from) {
         return plugin.getCustomConfig().getString(from);
-    }
-
-    public static Boolean getBoolean(String from) {
-        return plugin.getCustomConfig().getBoolean(from);
-    }
-
-    public static List<String> getStringList(String from) {
-        return getStringList(from);
-    }
-
-    public static Integer getInt(String from) {
-        return plugin.getCustomConfig().getInt(from);
-    }
-
-    public static List<Integer> getIntList(String from) {
-        return plugin.getCustomConfig().getIntegerList(from);
-    }
-
-    public static Double getDouble(String from) {
-        return plugin.getCustomConfig().getDouble(from);
     }
 
     public static void saveData() {
@@ -886,11 +625,15 @@ public class Utils {
     }
 
     public void setCooldown(Player player) {
-        double delay = System.currentTimeMillis() + (deley * 1000L);
+        double delay = System.currentTimeMillis() + (deley * 500L);
         cooldowns.put(player, delay);
     }
 
     public Boolean checkCooldown(Player player) {
         return !cooldowns.containsKey(player) || cooldowns.get(player) <= System.currentTimeMillis();
+    }
+
+    public static boolean isShulkerBox(Material material) {
+        return material.name().contains("SHULKER");
     }
 }

@@ -22,7 +22,7 @@ public class MoveEvents implements Listener {
 
         if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
             if (p.getLocation().getY() > 128) {
-                if (Bbb.getInstance().getConfig().getBoolean("anti-netherroof")) {
+                //if (Bbb.getInstance().getConfig().getBoolean("anti-netherroof")) {
                     p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() - 5, p.getLocation().getZ()));
                     if (p.isGliding()) {
@@ -32,24 +32,18 @@ public class MoveEvents implements Listener {
                     else
                         p.sendActionBar(Utils.translate("&7Nether roof is &cdisabled"));
 
-                    Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getDisplayName() + " &7tried to get above nether roof");
-                }
+                    //Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getName() + " &7tried to get above nether roof");
+                //}
             }
         }
 
         if (p.isGliding()) {
-            if (Bbb.getTPSofLastSecond() <= Bbb.getInstance().tps) {
-                Utils.elytraflag(p, 1, 1, 1, e.getFrom());
-                e.setCancelled(true);
-                return;
-            }
-
             double speed = Utils.blocksPerTick(e.getFrom(), e.getTo());
 
             if (speed > 2.05)
                 Utils.elytraflag(p, 2, 0, 0, null);
             else
-                p.sendActionBar(Utils.translate("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
+                p.sendActionBar(Utils.translate("&7%speed% / 2.0").replace("%speed%", Utils.speed(speed)));
         }
     }
 }

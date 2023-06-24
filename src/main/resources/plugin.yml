@@ -1,7 +1,7 @@
 name: Anarchy
-version: 1.4.2
+version: 2.0.0
 main: bab.bbb.Bbb
-api-version: 1.19
+api-version: 1.18
 
 commands:
   discord:
@@ -23,18 +23,14 @@ commands:
     description: Deny a teleport request.
     usage: /<command>
     aliases: [tpno, tpn]
-  nick:
-    description: Set a nickname.
+  tpcancel:
+    description: Cancel a teleport request you've sent.
     usage: /<command>
-    aliases: [nickname]
+    aliases: [ tpc ]
   msg:
-    description: Send message to a player.
+    description: Send a message to a player.
     usage: /<command>
-    aliases: [ whisper, tell ]
-  secure:
-    description: Secure your account from being accessed by others.
-    usage: /<command>
-    aliases: [ reg ]
+    aliases: [ whisper, tell, w ]
   delhome:
     description: Delete the specified home.
     usage: /<command>
