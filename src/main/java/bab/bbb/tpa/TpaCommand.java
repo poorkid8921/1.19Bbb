@@ -2,11 +2,6 @@ package bab.bbb.tpa;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Type;
-import bab.bbb.utils.Utils;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -45,21 +40,21 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        if (Utils.getRequest(recipient) != null) {
+        if (getRequest(recipient) != null) {
             tpmsg(user, recipient.getName(), 13);
             return true;
         }
-        if (Utils.getRequest(user) != null)
-            Utils.removeRequest(user);
+        if (getRequest(user) != null)
+            removeRequest(user);
 
-        Utils.addRequest(user, recipient, Type.TPA);
+        addRequest(user, recipient, Type.TPA);
         recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         tpmsg(recipient, user.getName(), 3);
         tpmsg(user, recipient.getName(), 1);
         new BukkitRunnable() {
             @Override
             public void run() {
-                    Utils.removeRequest(recipient);
+                    removeRequest(recipient);
             }
         }.runTaskLater(Bbb.getInstance(), 30 * 20);
         return true;

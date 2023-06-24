@@ -57,7 +57,7 @@ public class BetterChat implements Listener {
             return;
         }
 
-        String translatedmsg = Utils.translate("#d6a7eb" +  e.getPlayer().getName() + " » &r") + e.getMessage();
+        String translatedmsg = Utils.translate("#d6a7eb" + e.getPlayer().getName() + " » &r") + e.getMessage();
 
         if (Utils.removeColorCodes(translatedmsg).length() > 200) {
             Utils.errormsgs(e.getPlayer(),24, "");

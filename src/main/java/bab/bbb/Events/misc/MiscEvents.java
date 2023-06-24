@@ -2,6 +2,7 @@ package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Utils;
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -16,22 +17,53 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class MiscEvents implements Listener {
+    ArrayList<String> disabledFishes = new ArrayList<>();
     public MiscEvents() {
+        disabledFishes.add("COD");
+        disabledFishes.add("SALMON");
+        disabledFishes.add("TROPICAL_FISH");
+        disabledFishes.add("PUFFERFISH");
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    private void onCreatureSpawn(CreatureSpawnEvent event) {
+        if (disabledFishes.contains(event.getEntity().getType())) {
+            event.setCancelled(true);
+        }
+    }
+
+    private static boolean isSuspectedScanPacket(String buffer) {
+        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/");
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
+        if (!(event.getSender() instanceof Player)) return;
+        if (isSuspectedScanPacket(event.getBuffer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    private void onCommandTabComplete(TabCompleteEvent event) {
+        if (!(event.getSender() instanceof Player)) return;
+        if (isSuspectedScanPacket(event.getBuffer())) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler

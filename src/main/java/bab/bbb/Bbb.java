@@ -129,8 +129,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] %msg%" + msgargs));
-            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] %msg%" + msgargs));            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] " + msgargs));
+            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] " + msgargs));
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("reply")) {
@@ -165,8 +165,8 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] %msg%" + msgargs));
-            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] %msg%" + msgargs));            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] " + msgargs));
+            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] " + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
 

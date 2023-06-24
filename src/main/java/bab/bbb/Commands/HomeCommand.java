@@ -46,7 +46,7 @@ public class HomeCommand implements TabExecutor {
             try {
                 for (Home home : homes) {
                     if (home.getName().equalsIgnoreCase(homestr)) {
-                        player.sendMessage(translate(player, "#bc5ae8Teleporting to home #d6a7eb" + home.getName() + "#bc5ae8..."));
+                        player.sendMessage(translate(player, "#bc5ae8Teleporting to #d6a7eb" + home.getName() + "#bc5ae8..."));
 
                         new BukkitRunnable() {
                             @Override
@@ -75,7 +75,7 @@ public class HomeCommand implements TabExecutor {
                 e.printStackTrace();
             }
 
-            Utils.errormsgs(player, 18, args[0]);
+            Utils.errormsgs(player, 18, homestr);
         }
         return true;
     }

@@ -31,35 +31,31 @@ public class TpacceptCommand implements CommandExecutor {
 
         String targetName = request.getSender().getName();
         Player recipient = Bukkit.getPlayer(targetName);
-
         Player tempuser;
         Player temprecipient;
 
-        if (request.getType() == Type.TPAHERE) {
-            temprecipient = user;
+        if (request.getType() == Type.TPA) {
             tempuser = recipient;
+            temprecipient = user;
         } else {
             tempuser = user;
             temprecipient = recipient;
         }
 
-        assert temprecipient != null;
-        World recipientWorld = temprecipient.getWorld();
         assert tempuser != null;
-        World userWorld = tempuser.getWorld();
+        tempuser.getWorld().strikeLightningEffect(tempuser.getLocation());
+        assert temprecipient != null;
+        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(result -> {
+            if (result) {
+                temprecipient.getWorld().strikeLightningEffect(tempuser.getLocation());
+            } else
+                temprecipient.sendMessage("&7Something went wrong.");
+        });
 
         tpmsg(temprecipient, tempuser.getName(), 8);
         tpmsg(tempuser, temprecipient.getName(), 9);
-        userWorld.strikeLightningEffect(tempuser.getLocation());
-        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(result -> {
-            if (result) {
-                recipientWorld.strikeLightningEffect(tempuser.getLocation());
-            } else
-                errormsgs(tempuser, 30, targetName);
-        });
 
-        removeRequest(tempuser);
-        removeRequest(temprecipient);
+        removeRequest(user);
         return true;
     }
 }
