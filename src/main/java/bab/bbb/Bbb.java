@@ -4,8 +4,8 @@ import bab.bbb.Commands.DelHomeCommand;
 import bab.bbb.Commands.Discord;
 import bab.bbb.Commands.HomeCommand;
 import bab.bbb.Commands.SetHomeCommand;
-import bab.bbb.Events.DupeEvent;
 import bab.bbb.Events.Dupes.FrameDupe;
+import bab.bbb.Events.Dupes.ikeaDupe;
 import bab.bbb.Events.misc.*;
 import bab.bbb.Events.misc.patches.AntiBurrow;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
@@ -14,7 +14,6 @@ import bab.bbb.tpa.TpaCommand;
 import bab.bbb.tpa.TpacceptCommand;
 import bab.bbb.tpa.TpahereCommand;
 import bab.bbb.tpa.TpdenyCommand;
-import bab.bbb.utils.Tablist;
 import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -33,9 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 import static bab.bbb.utils.Utils.translate;
@@ -43,16 +40,15 @@ import static bab.bbb.utils.Utils.translate;
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
     public FileConfiguration config = this.getConfig();
-    private File customConfigFile = new File(getDataFolder(), "data.yml");
-    private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
+    public File customConfigFile = new File(getDataFolder(), "data.yml");
+    public FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static Bbb instance;
 
     public void register() {
         Bukkit.getPluginManager().registerEvents(new MiscEvents(), this);
-        Bukkit.getPluginManager().registerEvents(new DupeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new MoveEvents(), this);
-        Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
+        //Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
         Bukkit.getPluginManager().registerEvents(new ChestLimit(), this);
 
         Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
@@ -60,8 +56,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
         Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
 
-        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
+        Bukkit.getPluginManager().registerEvents(new ikeaDupe(), this);
 
+        //Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
         Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
         Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
         Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
@@ -70,8 +67,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         Objects.requireNonNull(this.getCommand("delhome")).setExecutor(new DelHomeCommand());
         Objects.requireNonNull(this.getCommand("home")).setExecutor(new HomeCommand());
         Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHomeCommand());
-
-        Bukkit.getScheduler().runTaskTimer(this, new Tablist(), 0, 100);
 
         PaperLib.suggestPaper(Bbb.getInstance());
     }
@@ -117,20 +112,20 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            String b = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
-            if (b != null && b.contains(player.getName())) {
-                Utils.errormsgs(player, 4, "");
-                return true;
-            }
-
-            String be = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
-            if (b != null && be.contains(target.getName())) {
+            List<String> ignoreclient = customConfigConfig.getStringList("data." + player.getUniqueId() + ".ignorelist");
+            if (ignoreclient != null && ignoreclient.contains(target.getName())) {
                 Utils.errormsgs(player, 5, "");
                 return true;
             }
 
-            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] " + msgargs));
-            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] " + msgargs));
+            List<String> ignoretarget = customConfigConfig.getStringList("data." + target.getUniqueId() + ".ignorelist");
+            if (ignoretarget != null && ignoretarget.contains(player.getName())) {
+                Utils.errormsgs(player, 4, "");
+                return true;
+            }
+
+            player.sendMessage(translate("&6[&cMe &6-> &c" + target.getName() + "&6] &r" + msgargs));
+            target.sendMessage(translate("&6[&c" + player.getName() + " &6-> &cMe&6] &r" + msgargs));
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("reply")) {
@@ -153,29 +148,30 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            List<String> ignoreclient = customConfigConfig.getStringList("data." + player.getUniqueId() + ".ignorelist");
             if (ignoreclient != null && ignoreclient.contains(target.getName())) {
                 Utils.errormsgs(player, 5, "");
                 return true;
             }
 
-            String ignoretarget = Utils.getString("otherdata." + target.getUniqueId() + ".ignorelist");
+            List<String> ignoretarget = customConfigConfig.getStringList("data." + target.getUniqueId() + ".ignorelist");
             if (ignoretarget != null && ignoretarget.contains(player.getName())) {
                 Utils.errormsgs(player, 4, "");
                 return true;
             }
 
-            player.sendMessage(translate(player, "#d6a7eb[#bc5ae8You #d6a7eb-> #bc5ae8" + target.getName() + "#d6a7eb] " + msgargs));
-            target.sendMessage(translate(player, "#d6a7eb[#bc5ae8" + player.getName() + " #d6a7eb-> #bc5ae8You#d6a7eb] " + msgargs));
+            player.sendMessage(translate("&6[&cMe &6-> &c" + target.getName() + "&6] &r" + msgargs));
+            target.sendMessage(translate("&6[&c" + player.getName() + " &6-> &cMe&6] &r" + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
-
             return true;
         } else if (cmd.getName().equals("ignore")) {
-            String ignoreclient = Utils.getString("otherdata." + player.getUniqueId() + ".ignorelist");
+            List<String> ignoreclient = customConfigConfig.getStringList("data." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (ignoreclient != null) {
-                    player.sendMessage(translate(player, "#bc5ae8Your ignored players are: " + ignoreclient.replace(", ", "#bc5ae8, #d6a7eb")));
+                    ignoreclient.replaceAll(s -> "&c" + s + "&7, ");
+                    String str = ignoreclient.toString().replace("[", "").replace("]", "");;
+                    player.sendMessage(translate("&7Your ignored players are: &c" + str));
                     return true;
                 }
                 Utils.errormsgs(player, 1, "");
@@ -194,19 +190,18 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            String breplace = target.getName() + ", ";
-
             if (ignoreclient != null && ignoreclient.contains(target.getName())) {
-                Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", ignoreclient.replace(target.getName() + ", ", ""));
+                ignoreclient.remove(target.getName());
+                customConfigConfig.set("data." + player.getUniqueId() + ".ignorelist", ignoreclient);
                 Utils.saveData();
-                player.sendMessage(translate(player, "#bc5ae8Successfully un ignored &d6a7eb" + target.getName()));
+                player.sendMessage(translate("&7Successfully un ignored &c" + target.getName()));
                 return true;
             }
 
-            breplace += ignoreclient;
-            Utils.setData("otherdata." + player.getUniqueId() + ".ignorelist", breplace);
+            ignoreclient.add(target.getName());
+            customConfigConfig.set("data." + player.getUniqueId() + ".ignorelist", ignoreclient);
             Utils.saveData();
-            player.sendMessage(translate(player, "#bc5ae8Successfully ignored #d6a7eb" + target.getName()));
+            player.sendMessage(translate("&7Successfully ignored &c" + target.getName()));
             return true;
         } else if (cmd.getName().equals("kill")) {
             player.setHealth(0);
@@ -243,25 +238,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
 
     public static double getTPSofLastSecond() {
         return Bukkit.getServer().getTPS()[0];
-    }
-
-    public static int countMinecartInChunk(Chunk chunk) {
-        int count = 0;
-
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public static void removeMinecartInChunk(Chunk chunk) {
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                entity.remove();
-            }
-        }
     }
 
     @Override

@@ -1,40 +1,30 @@
 package bab.bbb.tpa;
 
-import bab.bbb.Bbb;
-import bab.bbb.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import static bab.bbb.utils.Utils.tpmsg;
+import static bab.bbb.utils.Utils.*;
 
 public class TpdenyCommand implements CommandExecutor {
-    public TpdenyCommand() {
-    }
-
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player))
+        if (!(sender instanceof Player player))
             return true;
 
-        Player player = ((Player) sender).getPlayer();
-        if (player == null)
-            return true;
-
-        TpaRequest request = Utils.getRequest(player);
+        TpaRequest request = getRequest(player);
         if (request == null) {
-            tpmsg(player, null, 15);
+            player.sendMessage(translate("&7You got no active teleport request."));
             return true;
         }
 
-        String recipientstr = request.getSender().getName();
-        Player recipient = Bukkit.getPlayer(recipientstr);
-        Utils.tpmsg(player, recipientstr, 6);
-        Utils.tpmsg(recipient, player.getName(), 5);
-        Utils.removeRequest(player);
-        Utils.removeRequest(recipient);
+        Player recipient = Bukkit.getPlayer(request.getSender().getName());
+        assert recipient != null;
+        player.sendMessage(translate("&7You denied &c" + recipient.getDisplayName() + "'s &7request."));
+        recipient.sendMessage(translate("&c" + player.getDisplayName() + " &7denied your teleport request"));
+        removeRequest(player);
+        removeRequest(recipient);
 
         return true;
     }

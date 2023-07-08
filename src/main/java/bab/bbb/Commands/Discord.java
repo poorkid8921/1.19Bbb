@@ -37,7 +37,7 @@ public class Discord implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("discord")) {
             Player player = (Player) sender;
             if (!player.getName().equals("Catto69429")) {
-                player.sendMessage(translate(player, "#bc5ae8Our discord server link is #d6a7eb.gg/aestheticnetwork"));
+                player.sendMessage(translate("&7Our discord server link is &c.gg/aestheticnetwork"));
                 return true;
             }
 

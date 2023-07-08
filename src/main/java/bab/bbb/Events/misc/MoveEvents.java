@@ -17,7 +17,7 @@ public class MoveEvents implements Listener {
     public void onPlayerMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
 
-        if (p.isOp())
+        /*if (p.isOp())
             return;
 
         if (p.getWorld().getEnvironment() == World.Environment.NETHER) {
@@ -35,15 +35,15 @@ public class MoveEvents implements Listener {
                     //Utils.sendOpMessage("&7[&4INFO&7]&e " + p.getName() + " &7tried to get above nether roof");
                 //}
             }
-        }
+        }*/
 
         if (p.isGliding()) {
             double speed = Utils.blocksPerTick(e.getFrom(), e.getTo());
 
-            if (speed > 2.05)
+            if (speed > 2.00)
                 Utils.elytraflag(p, 2, 0, 0, null);
             else
-                p.sendActionBar(Utils.translate("&7%speed% / 2.0").replace("%speed%", Utils.speed(speed)));
+                p.sendActionBar(Utils.translate("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
         }
     }
 }

@@ -1,17 +1,13 @@
 name: Anarchy
-version: 2.0.1
+version: 2.0.2
 main: bab.bbb.Bbb
-api-version: 1.18
+api-version: 1.19
 
 commands:
-  discord:
-    description: Show the discord link
-    usage: /<command>
-    aliases: d
   tpa:
     description: Send a teleport request to a player.
     usage: /<command>
-    aliases: [tpask ]
+    aliases: [ tpask ]
   tpahere:
     description: Send a teleport here request to a player.
     usage: /<command>
@@ -22,15 +18,11 @@ commands:
   tpdeny:
     description: Deny a teleport request.
     usage: /<command>
-    aliases: [tpno, tpn]
-  tpcancel:
-    description: Cancel a teleport request you've sent.
-    usage: /<command>
-    aliases: [ tpc ]
+    aliases: [tpno, tpn, tpd]
   msg:
     description: Send a message to a player.
     usage: /<command>
-    aliases: [ whisper, tell, w ]
+    aliases: [ whisper, tell, w, t ]
   delhome:
     description: Delete the specified home.
     usage: /<command>

@@ -2,6 +2,7 @@ package bab.bbb.tpa;
 
 import bab.bbb.utils.Type;
 import org.bukkit.entity.Player;
+
 public class TpaRequest {
     private final Player sender;
     private final Player reciever;

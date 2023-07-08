@@ -18,11 +18,15 @@ public class AntiBurrow implements Listener {
         Block burrowBlock = playerLocation.getBlock();
         Material burrowBlockMaterial = burrowBlock.getType();
 
-        if (burrowBlockMaterial.equals(Material.AIR) || burrowBlockMaterial.equals(Material.SAND) || burrowBlockMaterial.equals(Material.GRAVEL) || Utils.isShulkerBox(burrowBlockMaterial) || burrowBlockMaterial.equals(Material.FARMLAND))
+        if (burrowBlockMaterial.equals(Material.AIR)
+                || burrowBlockMaterial.equals(Material.DIRT)
+                || burrowBlockMaterial.equals(Material.SAND)
+                || burrowBlockMaterial.equals(Material.GRAVEL)
+                || Utils.isShulkerBox(burrowBlockMaterial))
             return;
 
         Block blockAboveBurrowBlock = burrowBlock.getRelative(BlockFace.UP);
-        if (blockAboveBurrowBlock.getType().equals(Material.AIR)) {
+        if (burrowBlock.getRelative(BlockFace.UP).getType().equals(Material.AIR)) {
             if (burrowBlockMaterial.isOccluding() && !Utils.isSinkInBlock(burrowBlockMaterial)) {
                 if (!Utils.isSlab(burrowBlockMaterial)) {
                     player.damage(1.0);

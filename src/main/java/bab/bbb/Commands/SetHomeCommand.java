@@ -36,7 +36,7 @@ public class SetHomeCommand implements CommandExecutor {
                 Utils.errormsgs(player, 19, home.getName());
                 return true;
             }
-            if (homes.size() >= 5 && !player.isOp()) {
+            if (homes.size() >= 3 && !player.isOp()) {
                 Utils.errormsgs(player, 20, home.getName());
                 return true;
             }
@@ -44,7 +44,7 @@ public class SetHomeCommand implements CommandExecutor {
             if (!playerFolder.exists())
                 playerFolder.mkdir();
             Utils.save(playerFolder, home.getName() + ".map", home);
-            player.sendMessage(translate(player, "#bc5ae8Successfully set home #d6a7eb" + homestr));
+            player.sendMessage(translate("&7Successfully set home &c" + homestr));
         }
         return true;
     }

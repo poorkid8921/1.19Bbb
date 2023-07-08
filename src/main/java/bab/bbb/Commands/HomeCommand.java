@@ -5,7 +5,9 @@ import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -46,25 +48,20 @@ public class HomeCommand implements TabExecutor {
             try {
                 for (Home home : homes) {
                     if (home.getName().equalsIgnoreCase(homestr)) {
-                        player.sendMessage(translate(player, "#bc5ae8Teleporting to #d6a7eb" + home.getName() + "#bc5ae8..."));
+                        player.sendMessage(translate("&7Teleporting to &c" + home.getName() + "&7..."));
 
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                double x = player.getLocation().getX() - prev.getX();
-                                double y = player.getLocation().getY() - prev.getY();
-                                if (!prev.equals(player.getLocation()) && (y > -4.0D || x > -4.0D)) {
+                                if (prev.distance(player.getLocation()) > 3) {
                                     Utils.errormsgs(player, 29, "");
                                     return;
                                 }
-                                player.getWorld().strikeLightningEffect(player.getLocation());
-                                PaperLib.teleportAsync(player, home.getLocation()).thenAccept(result -> {
-                                    if (result) {
-                                        player.getWorld().strikeLightningEffect(player.getLocation());
-                                        player.playSound(player.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.f, 1.f);
-                                    }
-                                    else
-                                        errormsgs(player, 30, null);
+                                vanish(player);
+
+                                PaperLib.teleportAsync(player, home.getLocation()).thenAccept((result) -> {
+                                    unVanish(player);
+                                    player.getWorld().spawnParticle(Particle.TOTEM, player.getLocation(), 50);
                                 });
                             }
                         }.runTaskLater(Bbb.getInstance(), 100);

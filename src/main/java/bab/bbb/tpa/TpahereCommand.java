@@ -1,68 +1,48 @@
 package bab.bbb.tpa;
 
-import bab.bbb.Bbb;
-import bab.bbb.utils.Utils;
 import bab.bbb.utils.Type;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-
 import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class TpahereCommand implements CommandExecutor {
-    public TpahereCommand() {
-    }
-
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
             return true;
 
         if (args.length < 1) {
-            Utils.errormsgs(user, 1, "");
+            user.sendMessage(translate("&7You must specify to who you want to teleport."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            Utils.errormsgs(user, 2, args[0]);
+            user.sendMessage(translate("&7You can't send teleport requests to offline people!"));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            tpmsg(user, recipient.getName(), 14);
+            user.sendMessage(translate("&7You can't teleport to yourself!"));
             return true;
         }
 
-        if (Utils.getRequest(recipient) != null) {
-            tpmsg(user, recipient.getName(), 14);
+        if (getRequest(recipient) != null) {
+            //Utils.removeRequest(recipient);
+            user.sendMessage(translate("&c" + recipient.getName() + " &7already has an active request."));
             return true;
         }
 
-        if (Utils.getRequest(user) != null)
-            Utils.removeRequest(user);
+        if (getRequest(user) != null)
+            removeRequest(user);
 
-        Utils.addRequest(user, recipient, Type.TPAHERE);
-        recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        Utils.tpmsg(recipient, user.getName(), 4);
-        Utils.tpmsg(user, recipient.getName(), 1);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                    Utils.removeRequest(recipient);
-            }
-        }.runTaskLater(Bbb.getInstance(), 30 * 20);
+        addRequest(user, recipient, Type.TPAHERE);
         return true;
     }
 }

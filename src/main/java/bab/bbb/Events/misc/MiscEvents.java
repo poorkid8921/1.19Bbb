@@ -1,9 +1,11 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
+import bab.bbb.utils.DiscordWebhook;
 import bab.bbb.utils.Utils;
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import io.papermc.lib.PaperLib;
+import org.apache.commons.math3.util.FastMath;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,29 +23,25 @@ import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class MiscEvents implements Listener {
-    ArrayList<String> disabledFishes = new ArrayList<>();
-    public MiscEvents() {
-        disabledFishes.add("COD");
-        disabledFishes.add("SALMON");
-        disabledFishes.add("TROPICAL_FISH");
-        disabledFishes.add("PUFFERFISH");
-    }
+    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (disabledFishes.contains(event.getEntity().getType())) {
+        if (event.getEntity() instanceof Fish)
             event.setCancelled(true);
-        }
     }
 
     private static boolean isSuspectedScanPacket(String buffer) {
@@ -53,68 +51,44 @@ public class MiscEvents implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
         if (!(event.getSender() instanceof Player)) return;
-        if (isSuspectedScanPacket(event.getBuffer())) {
+        if (isSuspectedScanPacket(event.getBuffer()))
             event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    private void onInteract(PlayerInteractEvent event) {
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+        if (!Objects.requireNonNull(event.getClickedBlock()).getType().equals(Material.LEVER)) return;
+
+        UUID playerUniqueId = event.getPlayer().getUniqueId();
+        if (
+                cooldowns.containsKey(playerUniqueId)
+                        && cooldowns.get(playerUniqueId) > System.currentTimeMillis()
+        ) {
+            event.setCancelled(true);
+        } else {
+            cooldowns.put(playerUniqueId, System.currentTimeMillis() + 500);
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    /*@EventHandler(priority = EventPriority.NORMAL)
     private void onCommandTabComplete(TabCompleteEvent event) {
         if (!(event.getSender() instanceof Player)) return;
-        if (isSuspectedScanPacket(event.getBuffer())) {
+        if (isSuspectedScanPacket(event.getBuffer()))
             event.setCancelled(true);
-        }
-    }
+    }*/
 
     @EventHandler
-    private void onplayerquit(PlayerQuitEvent e)
-    {
+    private void onplayerquit(PlayerQuitEvent e) {
         removeRequest(e.getPlayer());
-    }
-
-    @EventHandler
-    private void onPortalUse(EntityPortalEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    private void onPortal(PlayerPortalEvent event) {
-        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
-            Player player = event.getPlayer();
-            if (player.getLocation().getBlock().getType().equals(Material.NETHER_PORTAL)) {
-                player.teleport(event.getFrom());
-                player.playSound(player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, 1.0F, 1.0F);
-            }
-        }, 200);
-    }
-
-    @EventHandler
-    private void onTeleport(EntityTeleportEvent event) {
-        if (!(event.getEntity() instanceof Player) && !(event.getEntity() instanceof Enderman))
-            event.setCancelled(true);
-    }
-
-    @EventHandler
-    private void onTeleportEvt(PlayerTeleportEvent event) {
-        Player player = event.getPlayer();
-        vanish(player);
-        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> unVanish(player), 10);
+        cooldowns.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         e.joinMessage(null);
-
-        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
             if (!e.getPlayer().hasPlayedBefore()) {
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                LocalDateTime now = LocalDateTime.now();
-
-                setData("otherdata." + e.getPlayer().getUniqueId() + ".name", e.getPlayer().getName());
-                setData("otherdata." + e.getPlayer().getUniqueId() + ".joindate", dtf.format(now));
-
                 Location respawn = null;
                 while (respawn == null) respawn = calcSpawnLocation();
                 PaperLib.teleportAsync(e.getPlayer(), respawn);
@@ -127,22 +101,48 @@ public class MiscEvents implements Listener {
                         p.sendMessage(translate("&7" + e.getPlayer().getName() + " joined the server"));
                 }
             }
-        }, 20);
+        });
 
-        saveData();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            String avturl = "https://mc-heads.net/avatar/hausemaster/100";
+            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1127000458519658516/oJdlS8_drTx5reJDseTJ17Sk0lzJ-ElKgiEo10-Qy5tm9Jp0iufOE5BEc8Ds-DnLlzCC");
+            webhook.setAvatarUrl(avturl);
+            webhook.setUsername("mc.aesthetic.red");
+            webhook.addEmbed(new DiscordWebhook.EmbedObject()
+                    .setTitle(e.getPlayer().getName() + " joined the server")
+                    .setColor(java.awt.Color.ORANGE));
+            try {
+                webhook.execute();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     @EventHandler
     public void onPlayerLeave(final PlayerQuitEvent e) {
         e.quitMessage(null);
-
         getHomes().remove(e.getPlayer().getUniqueId());
-
-        if (Bbb.getInstance().config.getBoolean("no-join-messages"))
-            return;
+        cooldowns.remove(e.getPlayer().getUniqueId());
+        Bbb.lastReceived.remove(e.getPlayer().getUniqueId());
 
         for (Player p : Bukkit.getOnlinePlayers())
             p.sendMessage(translate("&7" + e.getPlayer().getName() + " left the server"));
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            String avturl = "https://mc-heads.net/avatar/hausemaster/100";
+            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1127000458519658516/oJdlS8_drTx5reJDseTJ17Sk0lzJ-ElKgiEo10-Qy5tm9Jp0iufOE5BEc8Ds-DnLlzCC");
+            webhook.setAvatarUrl(avturl);
+            webhook.setUsername("mc.aesthetic.red");
+            webhook.addEmbed(new DiscordWebhook.EmbedObject()
+                    .setTitle(e.getPlayer().getName() + " left the server")
+                    .setColor(java.awt.Color.ORANGE));
+            try {
+                webhook.execute();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     @EventHandler
@@ -153,9 +153,6 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
-        vanish(e.getPlayer());
-        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> unVanish(e.getPlayer()), 10);
-
         if (e.isBedSpawn())
             return;
 
@@ -166,56 +163,47 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        if (Bbb.countMinecartInChunk(event.getVehicle().getChunk()) >= 32) {
-            Bbb.removeMinecartInChunk(event.getVehicle().getChunk());
-            sendOpMessage("&7[&4ALERT&7] prevented too many minecarts at &e" + event.getVehicle().getChunk().getX() + "&7,&e " + event.getVehicle().getChunk().getZ());
+        if (countMinecartInChunk(event.getVehicle().getChunk()) >= 32) {
+            removeMinecartInChunk(event.getVehicle().getChunk());
             event.setCancelled(true);
         }
-    }
-
-    @EventHandler
-    public void onPistonExtend(BlockPistonExtendEvent event) {
-        process(event);
-    }
-
-    @EventHandler
-    public void onPistonRetract(BlockPistonRetractEvent event) {
-        process(event);
     }
 
     @EventHandler
     public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
-        process(event);
+        if (Bbb.getTPSofLastSecond() <= 17)
+            event.setNewCurrent(0);
     }
 
-    private void process(BlockEvent event) {
-        if (Bbb.getTPSofLastSecond() <= 14)
-            cancelEvent(event);
-    }
-
-    private void cancelEvent(BlockEvent event) {
-        if (event instanceof BlockRedstoneEvent) {
-            ((BlockRedstoneEvent) event).setNewCurrent(0);
-        } else ((Cancellable) event).setCancelled(true);
-    }
-
-    @EventHandler
+    /*@EventHandler
     private void onDispense(BlockDispenseEvent event) {
         Block dispensedBlock = event.getBlock();
         World world = dispensedBlock.getWorld();
-        if (dispensedBlock.getY() <= 1 || dispensedBlock.getY() >= (world.getMaxHeight() - 1)) {
+        if (dispensedBlock.getY() <= 1 || dispensedBlock.getY() >= (world.getMaxHeight() - 1))
             event.setCancelled(true);
-            sendOpMessage("&7[&4ALERT&7] prevented crash at &e" + dispensedBlock.getX() + " " + dispensedBlock.getY() + " " + dispensedBlock.getZ());
-        }
-    }
+    }*/
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onKill(PlayerDeathEvent e) {
-        Bbb.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(Bbb.getInstance(), () -> {
-            Random ran = new Random();
-            int b = ran.nextInt(100);
-            if (b < 2)
-                Objects.requireNonNull(Bukkit.getWorld(e.getPlayer().getWorld().getName())).dropItemNaturally(new Location(e.getPlayer().getLocation().getWorld(), e.getEntity().getLocation().getX(), e.getEntity().getLocation().getY(), e.getPlayer().getLocation().getZ()), getHead(e.getPlayer()));
-        }, 1);
+        Location p = e.getPlayer().getLocation();
+        String reason = e.getDeathMessage();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            double random = FastMath.random();
+            if (random <= 0.3)
+                Bukkit.getScheduler().runTask(plugin, () -> p.getWorld().dropItemNaturally(p, getHead(e.getPlayer())));
+
+            String avturl = "https://mc-heads.net/avatar/hausemaster/100";
+            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1127000458519658516/oJdlS8_drTx5reJDseTJ17Sk0lzJ-ElKgiEo10-Qy5tm9Jp0iufOE5BEc8Ds-DnLlzCC");
+            webhook.setAvatarUrl(avturl);
+            webhook.setUsername("mc.aesthetic.red");
+            webhook.addEmbed(new DiscordWebhook.EmbedObject()
+                    .setTitle(reason)
+                    .setColor(java.awt.Color.RED));
+            try {
+                webhook.execute();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 }
