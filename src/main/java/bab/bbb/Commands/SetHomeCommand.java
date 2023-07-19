@@ -3,6 +3,9 @@ package bab.bbb.Commands;
 import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,6 +18,8 @@ import java.util.List;
 
 import static bab.bbb.utils.Utils.translate;
 
+@EqualsAndHashCode
+@Data
 @AllArgsConstructor
 public class SetHomeCommand implements CommandExecutor {
     @Override
@@ -33,18 +38,24 @@ public class SetHomeCommand implements CommandExecutor {
                 homes = new ArrayList<>();
             String finalHomestr = homestr;
             if (homes.stream().anyMatch(h -> h.getName().equals(finalHomestr))) {
-                Utils.errormsgs(player, 19, home.getName());
-                return true;
+                if (!homestr.equals("home")) {
+                    player.sendMessage(translate("[&dHomes&r] You already have a home named &d" + homestr + "&r."));
+                    return true;
+                }
+                else
+                    Utils.deleteHome(home);
             }
+
             if (homes.size() >= 3 && !player.isOp()) {
                 Utils.errormsgs(player, 20, home.getName());
                 return true;
             }
+
             File playerFolder = new File(Utils.getHomesFolder(), player.getUniqueId().toString());
             if (!playerFolder.exists())
                 playerFolder.mkdir();
             Utils.save(playerFolder, home.getName() + ".map", home);
-            player.sendMessage(translate("&7Successfully set home &c" + homestr));
+            player.sendMessage(translate("[&dHomes&r] Successfully set home &d" + homestr + "&r."));
         }
         return true;
     }

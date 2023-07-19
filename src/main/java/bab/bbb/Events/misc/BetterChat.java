@@ -24,10 +24,7 @@ import static bab.bbb.utils.Utils.*;
 @SuppressWarnings("deprecation")
 public class BetterChat implements Listener {
     Utils cm = new Utils();
-    public final HashSet<String> linkRegexes = new HashSet<>(Arrays.asList(
-            "(https?://(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?://(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})",
-            "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z()]{1,6}\\b([-a-zA-Z()@:%_+.~#?&/=]*)"
-    ));
+
     public final HashSet<String> whitelistedcomms = new HashSet<>(Arrays.asList(
             "anarchy", "help", "d", "discord", "home", "sethome", "delhome", "reply", "r", "msg", "tell", "whisper", "tpa", "tpahere", "tpaccept", "tpno", "tpn", "tpy", "tpdeny", "tpyes", "nick", "nickname", "reg", "secure", "suicide", "kill", "ignore"
     ));
@@ -59,20 +56,19 @@ public class BetterChat implements Listener {
         String msg = e.getMessage();
 
         if (msg.startsWith(">"))
-            msg = translate("&a" + msg);
+            msg = translate("&a") + msg;
         else if (msg.startsWith("<"))
-            msg = translate("&c" + msg);
+            msg = translate("&c") + msg;
+        else if (msg.startsWith("$"))
+            msg = translate("&b") + msg;
+        else if (msg.startsWith("~"))
+            msg = translate("&d") + msg;
 
-        String translatedmsg = Utils.translate("&7" + e.getPlayer().getName() + " » &r") + msg;
+        String translatedmsg = Utils.translate("&7" + e.getPlayer().getName() + " &r» ") + msg;
 
         String removed = Utils.removeColorCodes(translatedmsg);
         if (removed.length() > 256)
             return;
-
-        for (String word : e.getMessage().split(" "))
-            for (String regex : linkRegexes)
-                if (word.matches(regex) && e.getPlayer().getLocation().distance(e.getPlayer().getWorld().getSpawnLocation()) < 500)
-                    return;
 
         Utils.message(e.getPlayer(), translatedmsg);
         Bukkit.getLogger().info(removed);

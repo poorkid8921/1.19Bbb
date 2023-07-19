@@ -1,6 +1,7 @@
 package bab.bbb.Events.misc;
 
 import bab.bbb.Bbb;
+import bab.bbb.Events.Dupes.PlayerDupeEvent;
 import bab.bbb.utils.DiscordWebhook;
 import bab.bbb.utils.Utils;
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
@@ -36,6 +37,18 @@ import static bab.bbb.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class MiscEvents implements Listener {
+    private final HashMap<Location, Long> cooldowns2 = new HashMap<>();
+    private final HashMap<Location, Integer> trapdoorActivationByRedstoneCounts = new HashMap<>();
+
+    public MiscEvents()
+    {
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            trapdoorActivationByRedstoneCounts.clear();
+            cooldowns2.clear();
+            cooldowns.clear();
+            requests.clear();
+        }, 6000L, 6000L);
+    }
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -44,8 +57,15 @@ public class MiscEvents implements Listener {
             event.setCancelled(true);
     }
 
+    @EventHandler
+    private void onProjectile(ProjectileLaunchEvent e)
+    {
+        if (e.getEntity() instanceof Snowball || e.getEntity() instanceof WitherSkull)
+            e.setCancelled(true);
+    }
+
     private static boolean isSuspectedScanPacket(String buffer) {
-        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/");
+        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -53,6 +73,22 @@ public class MiscEvents implements Listener {
         if (!(event.getSender() instanceof Player)) return;
         if (isSuspectedScanPacket(event.getBuffer()))
             event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onDupe(PlayerDupeEvent event) {
+        ArrayList<Entity> items = new ArrayList<>();
+        for (Entity entity : event.getPlayer().getLocation().getNearbyEntities(16, 16, 16)) {
+            if (entity.getType() == EntityType.DROPPED_ITEM)
+                items.add(entity);
+        }
+
+        if (items.size() > 500) {
+            event.setCancelled(true);
+            items.clear();
+            //items.get(items.size() - 1).remove();
+            //items.remove(items.size() -1);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -82,6 +118,8 @@ public class MiscEvents implements Listener {
     private void onplayerquit(PlayerQuitEvent e) {
         removeRequest(e.getPlayer());
         cooldowns.remove(e.getPlayer().getUniqueId());
+        Bbb.kills.remove(e.getPlayer().getUniqueId());
+        Bbb.lastReceived.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
@@ -98,7 +136,7 @@ public class MiscEvents implements Listener {
             if (!Bbb.getInstance().config.getBoolean("no-join-messages")) {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!e.getPlayer().getName().equalsIgnoreCase(p.getName()))
-                        p.sendMessage(translate("&7" + e.getPlayer().getName() + " joined the server"));
+                        p.sendMessage(translate("&7" + e.getPlayer().getName() + " joined the game"));
                 }
             }
         });
@@ -127,7 +165,7 @@ public class MiscEvents implements Listener {
         Bbb.lastReceived.remove(e.getPlayer().getUniqueId());
 
         for (Player p : Bukkit.getOnlinePlayers())
-            p.sendMessage(translate("&7" + e.getPlayer().getName() + " left the server"));
+            p.sendMessage(translate("&7" + e.getPlayer().getName() + " left the game"));
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             String avturl = "https://mc-heads.net/avatar/hausemaster/100";
@@ -147,8 +185,12 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onKick(final PlayerKickEvent e) {
-        if (e.getReason().contains("spam") || e.getReason().contains("nbt"))
+        if (e.getReason().contains("spam") || e.getReason().contains("nbt")) {
             e.setCancelled(true);
+            return;
+        }
+
+        e.setReason(translate("&7Disconnected"));
     }
 
     @EventHandler
@@ -173,6 +215,34 @@ public class MiscEvents implements Listener {
     public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
         if (Bbb.getTPSofLastSecond() <= 17)
             event.setNewCurrent(0);
+
+        Block trapdoor = event.getBlock();
+        if (!trapdoor.getType().name().contains("TRAPDOOR")) return;
+
+        final Location trapdoorLoc = trapdoor.getLocation();
+        final long currentTime = System.currentTimeMillis();
+
+        if (!trapdoorActivationByRedstoneCounts.containsKey(trapdoorLoc) || !cooldowns2.containsKey(trapdoorLoc)) {
+            trapdoorActivationByRedstoneCounts.put(trapdoorLoc, 1);
+            cooldowns2.put(trapdoorLoc, currentTime);
+            return;
+        }
+
+        int trapdoorOpenByRedstoneCount = trapdoorActivationByRedstoneCounts.get(trapdoorLoc);
+
+        if (trapdoorOpenByRedstoneCount >= 20) {
+            if (currentTime - cooldowns2.get(trapdoorLoc) < 3000) {
+                trapdoor.breakNaturally();
+                return;
+            }
+
+            trapdoorOpenByRedstoneCount = 1;
+        }
+
+        trapdoorOpenByRedstoneCount++;
+
+        trapdoorActivationByRedstoneCounts.put(trapdoorLoc, trapdoorOpenByRedstoneCount);
+        cooldowns2.put(trapdoorLoc, currentTime);
     }
 
     /*@EventHandler

@@ -8,11 +8,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.UUID;
 
 import static bab.bbb.utils.Utils.combattag;
 
 @SuppressWarnings("deprecation")
 public class MoveEvents implements Listener {
+    ArrayList<UUID> playersinnewchunks = new ArrayList<>();
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
@@ -40,10 +46,37 @@ public class MoveEvents implements Listener {
         if (p.isGliding()) {
             double speed = Utils.blocksPerTick(e.getFrom(), e.getTo());
 
-            if (speed > 2.00)
-                Utils.elytraflag(p, 2, 0, 0, null);
-            else
-                p.sendActionBar(Utils.translate("&7%speed% / 2.00").replace("%speed%", Utils.speed(speed)));
+            if (playersinnewchunks.contains(e.getPlayer().getUniqueId())) {
+                if (speed > 2.01) {
+                    Utils.elytraflag(p);
+                    e.setCancelled(true);
+                } else
+                    p.sendActionBar(Utils.translate("&cNEW &7chunks  %speed% / 2.0").replace("%speed%", Utils.speed(speed)));
+            } else
+            {
+                if (speed > 5.01) {
+                    Utils.elytraflag(p);
+                    e.setCancelled(true);
+                } else
+                    p.sendActionBar(Utils.translate("&aOLD &7chunks  %speed% / 5.0").replace("%speed%", Utils.speed(speed)));
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    private void onChunkLoad(ChunkLoadEvent event) {
+        Chunk chunk = event.getChunk();
+        Point chunkLoc = new Point(chunk.getX() * 16, chunk.getZ() * 16);
+        if (event.isNewChunk()) {
+            for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
+                if (chunkLoc.distance(new Point(onlinePlayer.getLocation().getBlockX(), onlinePlayer.getLocation().getBlockZ())) < 250)
+                    playersinnewchunks.add(onlinePlayer.getUniqueId());
+            }
+        } else {
+            for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
+                if (chunkLoc.distance(new Point(onlinePlayer.getLocation().getBlockX(), onlinePlayer.getLocation().getBlockZ())) < 250)
+                    playersinnewchunks.remove(onlinePlayer.getUniqueId());
+            }
         }
     }
 }

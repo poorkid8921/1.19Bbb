@@ -17,30 +17,21 @@ public class TpahereCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            user.sendMessage(translate("&7You must specify to who you want to teleport."));
+            user.sendMessage(translate("[&dTPA&r] You must specify to who you want to teleport."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translate("&7You can't send teleport requests to offline people!"));
+            user.sendMessage(translate("[&dTPA&r] You must specify to who you want to teleport."));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translate("&7You can't teleport to yourself!"));
+            user.sendMessage(translate("[&dTPA&r] You must specify to who you want to teleport."));
             return true;
         }
-
-        if (getRequest(recipient) != null) {
-            //Utils.removeRequest(recipient);
-            user.sendMessage(translate("&c" + recipient.getName() + " &7already has an active request."));
-            return true;
-        }
-
-        if (getRequest(user) != null)
-            removeRequest(user);
 
         addRequest(user, recipient, Type.TPAHERE);
         return true;

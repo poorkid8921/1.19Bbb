@@ -6,7 +6,9 @@ import bab.bbb.Commands.HomeCommand;
 import bab.bbb.Commands.SetHomeCommand;
 import bab.bbb.Events.Dupes.FrameDupe;
 import bab.bbb.Events.Dupes.ikeaDupe;
-import bab.bbb.Events.misc.*;
+import bab.bbb.Events.misc.BetterChat;
+import bab.bbb.Events.misc.MiscEvents;
+import bab.bbb.Events.misc.MoveEvents;
 import bab.bbb.Events.misc.patches.AntiBurrow;
 import bab.bbb.Events.misc.patches.AntiPacketElytraFly;
 import bab.bbb.Events.misc.patches.ChestLimit;
@@ -17,33 +19,43 @@ import bab.bbb.tpa.TpdenyCommand;
 import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import static bab.bbb.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecutor {
+    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
+    public static HashMap<UUID, Long> kills = new HashMap<>();
+    private static Bbb instance;
     public FileConfiguration config = this.getConfig();
     public File customConfigFile = new File(getDataFolder(), "data.yml");
     public FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
-    private static Bbb instance;
+
+    public static Bbb getInstance() {
+        return instance;
+    }
+
+    public static double getTPSofLastSecond() {
+        return Bukkit.getServer().getTPS()[0];
+    }
 
     public void register() {
         Bukkit.getPluginManager().registerEvents(new MiscEvents(), this);
@@ -54,11 +66,11 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         Bukkit.getPluginManager().registerEvents(new BetterChat(), this);
         Bukkit.getPluginManager().registerEvents(new FrameDupe(), this);
         Bukkit.getPluginManager().registerEvents(new AntiPacketElytraFly(), this);
-        Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
+        //Bukkit.getPluginManager().registerEvents(new AntiBurrow(), this);
 
         Bukkit.getPluginManager().registerEvents(new ikeaDupe(), this);
 
-        //Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
+        Objects.requireNonNull(this.getCommand("d")).setExecutor(new Discord());
         Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
         Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
         Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
@@ -82,10 +94,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         register();
     }
 
-    public static Bbb getInstance() {
-        return instance;
-    }
-
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player))
             return true;
@@ -107,7 +115,7 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             for (int i = 1; i < args.length; i++)
                 msgargs.append(args[i]).append(" ");
 
-            if (msgargs.toString().equals("")) {
+            if (msgargs.toString().equals(" ")) {
                 Utils.errormsgs(player, 1, "");
                 return true;
             }
@@ -124,8 +132,9 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(translate("&6[&cMe &6-> &c" + target.getName() + "&6] &r" + msgargs));
-            target.sendMessage(translate("&6[&c" + player.getName() + " &6-> &cMe&6] &r" + msgargs));
+            player.sendMessage(translate("&dYou whisper to " + target.getName() + ": " + msgargs));
+            target.sendMessage(translate("&d" + player.getName() + " whispers: " + msgargs));
+            lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("reply")) {
@@ -133,17 +142,21 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 Utils.errormsgs(player, 1, "");
                 return true;
             }
-            Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
-            if (target == null || !lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
+
+            if (!lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
                 Utils.errormsgs(player, 6, "");
                 return true;
             }
 
+            Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
+            if (target == null) {
+                Utils.errormsgs(player, 6, "");
+                return true;
+            }
             StringBuilder msgargs = new StringBuilder();
-
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            if (msgargs.toString().equals("")) {
+            if (msgargs.toString().equals(" ")) {
                 Utils.errormsgs(player, 1, "");
                 return true;
             }
@@ -160,17 +173,16 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
                 return true;
             }
 
-            player.sendMessage(translate("&6[&cMe &6-> &c" + target.getName() + "&6] &r" + msgargs));
-            target.sendMessage(translate("&6[&c" + player.getName() + " &6-> &cMe&6] &r" + msgargs));
-            lastReceived.put(player.getUniqueId(), target.getUniqueId());
+            player.sendMessage(translate("&dYou whisper to " + target.getName() + ": " + msgargs));
+            target.sendMessage(translate("&d" + player.getName() + " whispers: " + msgargs));
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("ignore")) {
             List<String> ignoreclient = customConfigConfig.getStringList("data." + player.getUniqueId() + ".ignorelist");
             if (args.length < 1) {
                 if (ignoreclient != null) {
-                    ignoreclient.replaceAll(s -> "&c" + s + "&7, ");
-                    String str = ignoreclient.toString().replace("[", "").replace("]", "");;
+                    ignoreclient.replaceAll(s -> "&c" + s + "&7");
+                    String str = ignoreclient.toString().replace("[", "").replace("]", "");
                     player.sendMessage(translate("&7Your ignored players are: &c" + str));
                     return true;
                 }
@@ -204,6 +216,19 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
             player.sendMessage(translate("&7Successfully ignored &c" + target.getName()));
             return true;
         } else if (cmd.getName().equals("kill")) {
+            UUID playerUniqueId = Objects.requireNonNull(((Player) sender).getPlayer()).getUniqueId();
+            if (
+                    kills.containsKey(playerUniqueId)
+                            && kills.get(playerUniqueId) > System.currentTimeMillis()
+            ) {
+                sender.sendMessage(translate("&7You can't use this command right now. Try again later"));
+                return true;
+            } else
+                kills.put(playerUniqueId, System.currentTimeMillis() + 2000);
+
+            EntityDamageEvent event = new EntityDamageEvent(player, EntityDamageEvent.DamageCause.SUICIDE, player.getHealth());
+            player.setLastDamageCause(event);
+            Bukkit.getServer().getPluginManager().callEvent(event);
             player.setHealth(0);
             return true;
         }
@@ -211,12 +236,12 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         return false;
     }
 
-        public void reloadCustomConfig() {
-            if (customConfigFile == null)
-                customConfigFile = new File(getDataFolder(), "data.yml");
+    public void reloadCustomConfig() {
+        if (customConfigFile == null)
+            customConfigFile = new File(getDataFolder(), "data.yml");
 
-            customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-        }
+        customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
+    }
 
     public FileConfiguration getCustomConfig() {
         if (customConfigConfig == null) {
@@ -234,10 +259,6 @@ public final class Bbb extends JavaPlugin implements CommandExecutor, TabExecuto
         } catch (IOException ex) {
             this.getLogger().log(Level.SEVERE, "Could not save config to " + customConfigFile, ex);
         }
-    }
-
-    public static double getTPSofLastSecond() {
-        return Bukkit.getServer().getTPS()[0];
     }
 
     @Override

@@ -23,12 +23,9 @@ public class AntiPacketElytraFly implements Listener {
 
     @EventHandler
     private void onElytraOpen(EntityToggleGlideEvent event) {
-        if (!(event.getEntity() instanceof Player))
+        if (!(event.getEntity() instanceof Player player))
             return;
 
-        Player player = ((Player) event.getEntity()).getPlayer();
-        if (player == null)
-            return;
         Location from = player.getLocation();
         UUID playerUniqueID = player.getUniqueId();
 
@@ -36,7 +33,8 @@ public class AntiPacketElytraFly implements Listener {
         if (level != null) {
             if (level > 25) {
                 event.setCancelled(true);
-                Utils.elytraflag(player, 2, 2, 1, from);
+                player.teleport(from);
+                player.kickPlayer("&7Disconnected");
             } else {
                 levels.merge(playerUniqueID, 1, Integer::sum);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> levels.put(playerUniqueID, levels.get(playerUniqueID) - 1), 200L);

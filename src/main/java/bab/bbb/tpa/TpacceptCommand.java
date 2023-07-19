@@ -23,7 +23,7 @@ public class TpacceptCommand implements CommandExecutor {
         TpaRequest request = getRequest(user);
 
         if (request == null) {
-            user.sendMessage(translate("&7You got no active teleport request."));
+            user.sendMessage(translate("[&dTPA&r] Couldn't find any ongoing teleport requests."));
             return true;
         }
 
@@ -45,13 +45,13 @@ public class TpacceptCommand implements CommandExecutor {
         tempuser.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 1));
         tempuser.getWorld().spawnParticle(Particle.TOTEM, tempuser.getLocation(), 50);
 
-        temprecipient.sendMessage(translate("&7You have accepted &c" + tempuser.getName() + " &7teleport request."));
-        temprecipient.sendMessage(translate("&7Teleporting..."));
-        tempuser.sendMessage(translate("&7Teleporting..."));
+        temprecipient.sendMessage(translate("[&dTPA&r] Accepted &d" + tempuser.getName() + "'s &rteleport request."));
+        temprecipient.sendMessage(translate("[&dTPA&r] Teleporting..."));
+        tempuser.sendMessage(translate("[&dTPA&r] Teleporting..."));
 
         vanish(tempuser);
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept((result) -> {
-            unVanish(tempuser);
+            Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> unVanish(tempuser), 5L);
             tempuser.getWorld().spawnParticle(Particle.TOTEM, tempuser.getLocation(), 50);
         });
 

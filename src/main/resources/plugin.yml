@@ -43,3 +43,5 @@ commands:
     description: Suicide.
     usage: /<command>
     aliases: [ suicide ]
+  d:
+    usage: /<command>

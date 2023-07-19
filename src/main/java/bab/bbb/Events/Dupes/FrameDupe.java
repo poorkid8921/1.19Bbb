@@ -19,11 +19,17 @@ public class FrameDupe implements Listener {
     @EventHandler
     public void framedupe(EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof ItemFrame) {
-            if (FastMath.random() < 0.3) {
+            if (Math.round(Math.random() * 100) < 40) {
+                PlayerDupeEvent playerDupeEvent = new PlayerDupeEvent(e.getEntity());
+                Bukkit.getServer().getPluginManager().callEvent(playerDupeEvent);
+                if (playerDupeEvent.isCancelled())
+                    return;
+
                 Random ran = new Random();
                 int b = ran.nextInt(3);
                 for (int i = 0; i < b; i++)
-                    Bukkit.getScheduler().runTask(plugin, () -> e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), ((ItemFrame) e.getEntity()).getItem()));
+                    e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), ((ItemFrame) e.getEntity()).getItem());
+                //Bukkit.getScheduler().runTask(plugin, () -> e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), ((ItemFrame) e.getEntity()).getItem()));
             }
         }
     }

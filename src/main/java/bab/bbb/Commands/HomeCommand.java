@@ -4,7 +4,10 @@ import bab.bbb.Bbb;
 import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
 import io.papermc.lib.PaperLib;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -22,6 +25,9 @@ import java.util.stream.Collectors;
 
 import static bab.bbb.utils.Utils.*;
 
+@ToString
+@EqualsAndHashCode
+@Data
 @RequiredArgsConstructor
 public class HomeCommand implements TabExecutor {
     @Override
@@ -29,12 +35,7 @@ public class HomeCommand implements TabExecutor {
         if (sender instanceof Player player) {
             List<Home> homes = Utils.getHomes().getOrDefault(player.getUniqueId(), null);
             if (homes == null) {
-                Utils.errormsgs(player, 16, "");
-                return true;
-            }
-
-            if (combattag.contains(player.getUniqueId())) {
-                Utils.errormsgs(player, 17, "");
+                player.sendMessage(translate("[&dHomes&r] You got no home to teleport to. Use &d/sethome &rto set a home."));
                 return true;
             }
 
@@ -48,12 +49,12 @@ public class HomeCommand implements TabExecutor {
             try {
                 for (Home home : homes) {
                     if (home.getName().equalsIgnoreCase(homestr)) {
-                        player.sendMessage(translate("&7Teleporting to &c" + home.getName() + "&7..."));
+                        player.sendMessage(translate("[&dHomes&r] Teleporting in &d3 &rseconds. Stay still."));
 
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (prev.distance(player.getLocation()) > 3) {
+                                if (prev.distance(player.getLocation()) > 2) {
                                     Utils.errormsgs(player, 29, "");
                                     return;
                                 }
@@ -61,10 +62,11 @@ public class HomeCommand implements TabExecutor {
 
                                 PaperLib.teleportAsync(player, home.getLocation()).thenAccept((result) -> {
                                     unVanish(player);
+                                    player.sendMessage(translate("[&dHomes&r] Teleported to home &d" + home.getName() + "&r. (in &d" + home.getLocation().getWorld().getName() + "&r)"));
                                     player.getWorld().spawnParticle(Particle.TOTEM, player.getLocation(), 50);
                                 });
                             }
-                        }.runTaskLater(Bbb.getInstance(), 100);
+                        }.runTaskLater(Bbb.getInstance(), 50);
                         return true;
                     }
                 }

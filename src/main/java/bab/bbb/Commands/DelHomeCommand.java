@@ -2,7 +2,10 @@ package bab.bbb.Commands;
 
 import bab.bbb.utils.Home;
 import bab.bbb.utils.Utils;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -15,6 +18,8 @@ import java.util.stream.Collectors;
 
 import static bab.bbb.utils.Utils.translate;
 
+@EqualsAndHashCode
+@Data
 @RequiredArgsConstructor
 public class DelHomeCommand implements TabExecutor {
     @Override
@@ -25,17 +30,21 @@ public class DelHomeCommand implements TabExecutor {
                 Utils.errormsgs(player, 13, "");
                 return true;
             }
-            if (args.length < 1) {
-                Utils.errormsgs(player, 1, "");
-                return true;
-            }
-            Home home = homes.stream().filter(h -> h.getName().equals(args[0])).findFirst().orElse(null);
+
+            String homed;
+
+            if (args.length > 0)
+                homed = args[0];
+            else
+                homed = "home";
+
+            Home home = homes.stream().filter(h -> h.getName().equals(homed)).findFirst().orElse(null);
             if (home == null) {
-                Utils.errormsgs(player, 18, args[0]);
+                Utils.errormsgs(player, 18, homed);
                 return true;
             }
             if (Utils.deleteHome(home))
-                player.sendMessage(translate("&7Successfully deleted home &c" + home.getName()));
+                player.sendMessage(translate("[&dHomes&r] Successfully deleted home &d" + home.getName() + "&r."));
             else
                 Utils.errormsgs(player, 15, home.getName());
         }

@@ -32,13 +32,15 @@ public class ikeaDupe implements Listener {
         cloned.setContents(ent.getInventory().getContents());
 
         if (ent.getInventory().getViewers().size() > 0) {
+            PlayerDupeEvent playerDupeEvent = new PlayerDupeEvent(ent);
+            Bukkit.getServer().getPluginManager().callEvent(playerDupeEvent);
+            if (playerDupeEvent.isCancelled())
+                return;
+
             for (HumanEntity i : ent.getInventory().getViewers()) {
                 i.closeInventory();
                 i.openInventory(cloned);
             }
-
-            PlayerDupeEvent playerDupeEvent = new PlayerDupeEvent(ent);
-            Bukkit.getServer().getPluginManager().callEvent(playerDupeEvent);
         }
     }
 }

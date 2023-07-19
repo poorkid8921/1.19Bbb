@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import org.apache.commons.math3.util.FastMath;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -46,8 +47,8 @@ public class Utils {
     public static final String ALL_CODE_REGEX = "[§&][0-9a-f-A-Fk-rK-R]";
     public static final String HEX_CODE_REGEX = "#[a-fA-F0-9]{6}";
     public static final Bbb plugin = Bbb.getInstance();
-    public static final HashSet<Material> bannedblocks = new HashSet<>(Arrays.asList(
-            Material.LAVA, Material.WATER, Material.AIR, Material.CACTUS
+    public static final ArrayList<Material> bannedblocks = new ArrayList<>(Arrays.asList(
+            Material.LAVA, Material.WATER, Material.AIR, Material.CACTUS, Material.ENDER_CHEST
     ));
     public static final HashMap<Player, Double> cooldowns = new HashMap<>();
     public static final ArrayList<TpaRequest> requests = new ArrayList<>();
@@ -237,7 +238,7 @@ public class Utils {
     }
 
     public static double blocksPerTick(Location from, Location to) {
-        return hypot(
+        return FastMath.hypot(
                 to.getX() - from.getX(),
                 to.getZ() - from.getZ()
         );
@@ -281,10 +282,6 @@ public class Utils {
         return translateAlternateColorCodes('&', message);
     }
 
-    public static void maskedkick(Player p) {
-        p.kickPlayer(translate("&7Disconnected"));
-    }
-
     public static void message(Player e, String msg) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             ArrayList<String> b = (ArrayList<String>) plugin.customConfigConfig.getStringList("data." + p.getUniqueId() + ".ignorelist");
@@ -294,31 +291,19 @@ public class Utils {
         }
     }
 
-    public static void elytraflag(Player p, int dmg, int msg, int from, Location fromloc) {
-        if (msg == 1)
-            p.sendActionBar(translate("&7Elytras are currently disabled due to &clag"));
-        else if (msg == 0)
-            p.sendActionBar(translate("&7You're moving too fast"));
-        else {
-            maskedkick(p);
-            //p.sendActionBar(Methods.translate("&7Packet elytra fly isn't &callowed"));
-            return;
-        }
-
+    public static void elytraflag(Player p) {
+        p.sendActionBar(translate("&7You're moving too fast"));
         p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
         int y = p.getWorld().getHighestBlockYAt((int) p.getLocation().getX(), (int) p.getLocation().getZ());
-        p.teleport(from == 1 ? fromloc.add(new Vector(0, 1, 0)) : new Location(p.getWorld(), p.getLocation().getX(), y, p.getLocation().getZ()));
+        //p.teleport(from == 1 ? fromloc.add(new Vector(0, 1, 0)) : new Location(p.getWorld(), p.getLocation().getX(), y, p.getLocation().getZ()));
         p.setGliding(false);
         p.setFlying(false);
-        PlayerInventory playerInv = p.getInventory();
+        /*PlayerInventory playerInv = p.getInventory();
         if (playerInv.getChestplate() != null) {
             ItemStack a = playerInv.getChestplate();
             playerInv.setChestplate(null);
             p.getWorld().dropItemNaturally(p.getLocation(), a);
-        }
-
-        if (dmg != 0)
-            p.damage(dmg);
+        }*/
     }
 
     public static TpaRequest getRequest(Player user) {
@@ -330,10 +315,12 @@ public class Utils {
     }
 
     public static void addRequest(Player sender, Player receiver, Type type) {
+        removeRequest(sender);
+        removeRequest(receiver);
         TpaRequest tpaRequest = new TpaRequest(sender, receiver, type);
         requests.add(tpaRequest);
 
-        TextComponent tc = new TextComponent(translate("&c" + sender.getDisplayName() + " &7has requested to teleport to you. "));
+        TextComponent tc = new TextComponent(translate("[&dTPA&r] &d" + sender.getDisplayName() + " &rwants to teleport to you. "));
         TextComponent accept = new TextComponent(translate("&7[&a✔&7]"));
         Text acceptHoverText = new Text("Click to accept the teleportation request");
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
@@ -344,10 +331,10 @@ public class Utils {
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to &c" + receiver.getDisplayName() + "&7."));
+        sender.sendMessage(translate("[&dTPA&r] Sent request to &d" + receiver.getDisplayName() + "&r."));
 
         if (type == Type.TPAHERE)
-            tc.setText(translate("&c" + sender.getDisplayName() + " &7has requested that you teleport to them. "));
+            tc.setText(translate("[&dTPA&r] &d" + sender.getDisplayName() + " &rwants you to teleport to them. "));
 
         new BukkitRunnable() {
             @Override
@@ -363,45 +350,6 @@ public class Utils {
 
     public static void removeRequest(Player user) {
         requests.remove(getRequest(user));
-    }
-
-    public static void tpmsg(Player p, String argsp, int u) {
-        switch (u) {
-            case 1 -> {// tp has been sent to
-                p.sendMessage(translate("&7Request sent to &c" + argsp + "&7."));
-                p.sendMessage(translate("&7To cancel this request, type &c/tpdeny&7."));
-            }
-            case 2 -> // timed out msg
-                    p.sendMessage(translate("&7Your teleport request to &c" + argsp + " &7timed out."));
-            case 3 -> {// tpa wants to teleport to you
-                p.sendMessage(translate("&c" + argsp + " &7has requested to teleport to you."));
-                p.sendMessage(translate("&7To teleport, type &c/tpaccept&7."));
-                p.sendMessage(translate("&7To deny this request, type &c/tpdeny&7."));
-                p.sendMessage(translate("&7This request will expire in &c120 seconds&7."));
-            }
-            case 4 -> {// tpahere wants to teleport to you
-                p.sendMessage(translate("&c" + argsp + " &7has requested that you teleport to them."));
-                p.sendMessage(translate("&7To teleport, type &c/tpaccept&7."));
-                p.sendMessage(translate("&7To deny this request, type &c/tpdeny&7."));
-                p.sendMessage(translate("&7This request will expire in &c120 seconds&7."));
-            }
-            case 5 -> // has been denied
-                    p.sendMessage(translate("&c" + argsp + "&7denied your teleport request!"));
-            case 6 -> // you have denied
-                    p.sendMessage(translate("&7You have denied &c" + argsp + "teleport request."));
-            case 8 -> {// teleporting to player... (recipient)
-                p.sendMessage(translate("&c" + argsp + " &7accepted your teleport request."));
-                p.sendMessage(translate("&7Teleporting..."));
-            }
-            case 9 -> // teleporting to player... (user)
-                p.sendMessage(translate("&7Teleporting..."));
-            case 13 -> // active request
-                    p.sendMessage(translate("&c" + argsp + " &7already has an active request."));
-            case 14 -> // target=player
-                    p.sendMessage(translate("&7You can't teleport to yourself!"));
-            case 15 -> // null tp req
-                    p.sendMessage(translate("&7You have no active teleport request."));
-        }
     }
 
     public static void errormsgs(Player p, int u, String str) {
@@ -420,13 +368,11 @@ public class Utils {
             case 30 -> p.sendMessage(translate("&7Teleportation failed"));
 
             // homes
-            case 13 -> p.sendMessage(translate("&7You got no home to delete."));
+            case 13 -> p.sendMessage(translate("[&dHomes&r] Couldn't find any home."));
             case 15 -> p.sendMessage(translate("Home deletion for home &e" + str + " &7has failed"));
-            case 16 -> p.sendMessage(translate("&7You didn't set any home!"));
-            case 18 -> p.sendMessage(translate("&7Couldn't find the home &c" + str + "&7."));
-            case 19 -> p.sendMessage(translate("&7Home &d6a7eb" + str + " &bc5ae8already exists."));
-            case 20 -> p.sendMessage(translate("&7You have reached the home limit of 5!"));
-            case 29 -> p.sendMessage(translate("&7Teleportation failed. &cYou moved!"));
+            case 18 -> p.sendMessage(translate("[&dHomes&r] Couldn't find any home named &d" + str + "&r."));
+            case 20 -> p.sendMessage(translate("[&dHomes&r] You can't have more than &d3&r homes."));
+            case 29 -> p.sendMessage(translate("[&dHomes&r] Teleportation cancelled. &dYou moved&r."));
 
             // ignore
             case 4 -> p.sendMessage(translate("&7You can't send messages to players ignoring you."));
