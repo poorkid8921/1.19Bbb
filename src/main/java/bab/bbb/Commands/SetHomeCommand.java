@@ -46,7 +46,9 @@ public class SetHomeCommand implements CommandExecutor {
                     Utils.deleteHome(home);
             }
 
-            if (homes.size() >= 3 && !player.isOp()) {
+            int i = player.hasPermission("homes.premium") ? 5 : 3;
+
+            if (homes.size() >= i && !player.isOp()) {
                 Utils.errormsgs(player, 20, home.getName());
                 return true;
             }

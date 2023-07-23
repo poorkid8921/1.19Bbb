@@ -45,3 +45,6 @@ commands:
     aliases: [ suicide ]
   d:
     usage: /<command>
+permissions:
+  homes.premium:
+    description: 5 homes

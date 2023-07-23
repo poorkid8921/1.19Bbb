@@ -39,6 +39,9 @@ public class BetterChat implements Listener {
         String fullCommand = message.substring(commandLabel.length() + 1);
         fullCommand = "/" + commandLabel + fullCommand;
         e.setMessage(fullCommand);
+
+        if (!whitelistedcomms.contains(commandLabel))
+            e.setCancelled(true);
     }
 
     @EventHandler
