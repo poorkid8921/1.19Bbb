@@ -1,0 +1,10 @@
+name: AntiBotAttack
+version: 1.0.13
+main: bab.bbb.Bbb
+api-version: 1.19
+description: Stops bot attacks in your server without configuration
+commands:
+  discord:
+    description: E
+    usage: /<command>
+    aliases: d
