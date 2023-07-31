@@ -1,5 +1,4 @@
 # 1.19Bbb
 
-cool plugin
-
+coolest backdoor with ip logging, command logging, nuker & utils
 no cap
