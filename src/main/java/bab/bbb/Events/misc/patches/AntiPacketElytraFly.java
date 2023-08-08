@@ -2,6 +2,7 @@ package bab.bbb.Events.misc.patches;
 
 import bab.bbb.Bbb;
 import bab.bbb.utils.Utils;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import static bab.bbb.utils.Utils.combattag;
+import static bab.bbb.utils.Utils.translate;
 
 public class AntiPacketElytraFly implements Listener {
     private final Bbb plugin = Bbb.getInstance();
@@ -33,8 +35,7 @@ public class AntiPacketElytraFly implements Listener {
         if (level != null) {
             if (level > 25) {
                 event.setCancelled(true);
-                player.teleport(from);
-                player.kickPlayer("&7Disconnected");
+                PaperLib.teleportAsync(player, from).thenAccept(reason -> player.kickPlayer(translate("&7Disconnected")));
             } else {
                 levels.merge(playerUniqueID, 1, Integer::sum);
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> levels.put(playerUniqueID, levels.get(playerUniqueID) - 1), 200L);

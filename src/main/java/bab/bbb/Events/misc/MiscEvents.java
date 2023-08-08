@@ -47,21 +47,18 @@ public class MiscEvents implements Listener {
             cooldowns2.clear();
             cooldowns.clear();
             requests.clear();
-        }, 6000L, 6000L);
+        }, 0, 12000L);
     }
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (event.getEntity() instanceof Fish)
-            event.setCancelled(true);
+        event.setCancelled(event.getEntity() instanceof Fish);
     }
 
     @EventHandler
-    private void onProjectile(ProjectileLaunchEvent e)
-    {
-        if (e.getEntity() instanceof Snowball || e.getEntity() instanceof WitherSkull)
-            e.setCancelled(true);
+    private void onProjectile(ProjectileLaunchEvent e) {
+        e.setCancelled(e.getEntity() instanceof Snowball || e.getEntity() instanceof WitherSkull);
     }
 
     private static boolean isSuspectedScanPacket(String buffer) {
@@ -71,8 +68,7 @@ public class MiscEvents implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
         if (!(event.getSender() instanceof Player)) return;
-        if (isSuspectedScanPacket(event.getBuffer()))
-            event.setCancelled(true);
+        event.setCancelled(isSuspectedScanPacket(event.getBuffer()));
     }
 
     @EventHandler
@@ -83,12 +79,7 @@ public class MiscEvents implements Listener {
                 items.add(entity);
         }
 
-        if (items.size() > 500) {
-            event.setCancelled(true);
-            items.clear();
-            //items.get(items.size() - 1).remove();
-            //items.remove(items.size() -1);
-        }
+        event.setCancelled(items.size() > 500);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -213,8 +204,10 @@ public class MiscEvents implements Listener {
 
     @EventHandler
     public void onBlockRedstoneEvent(BlockRedstoneEvent event) {
-        if (Bbb.getTPSofLastSecond() <= 17)
+        if (Bbb.getTPSofLastSecond() <= 17) {
             event.setNewCurrent(0);
+            return;
+        }
 
         Block trapdoor = event.getBlock();
         if (!trapdoor.getType().name().contains("TRAPDOOR")) return;
