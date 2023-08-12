@@ -1,0 +1,52 @@
+name: AestheticNetwork
+version: '${project.version}'
+main: org.yuri.aestheticnetwork.AestheticNetwork
+api-version: 1.19
+depend: [Vault, LuckPerms]
+
+commands:
+  spawn:
+    description: Teleports you to spawn
+    usage: /<command>
+  discord:
+    description: Displays the discord link
+    usage: /<command>
+  tpa:
+    usage: /<command>
+    aliases: [ tpr ]
+  tpahere:
+    usage: /<command>
+  tpdeny:
+    usage: /<command>
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
+  msg:
+    usage: /<command>
+    aliases: [ tell, whisper, w ]
+  reply:
+    usage: /<command>
+    aliases: [ r ]
+  tpaall:
+    usage: /<command>
+  report:
+    usage: /<command>
+  chatlock:
+    usage: /<command>
+  msglock:
+    usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  serviceban:
+    usage: /<command>
+    aliases: [ sban ]
+  ebaltop:
+    usage: /<command>
+permissions:
+  has.staff:
+    description: Use chatlock & Bypass it
+  coloranvils.use:
+    description: Use colored anvils
