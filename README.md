@@ -1,4 +1,4 @@
-# 1.19Bbb
+# 1.19Bbb - revamped
 
 cool plugin
 
