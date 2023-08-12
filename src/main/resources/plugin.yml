@@ -1,0 +1,73 @@
+name: AestheticNetwork
+version: '${project.version}'
+main: org.yuri.aestheticnetwork.AestheticNetwork
+api-version: 1.18
+
+commands:
+  spawn:
+    description: Teleports you to spawn
+    usage: /<command>
+  discord:
+    description: Displays the discord link
+    usage: /<command>
+  ffa:
+    description: Teleports you to the FFA arena
+    usage: /<command>
+    aliases: [ hole, field ]
+  flat:
+    description: Teleports you to the flat arena
+    usage: /<command>
+  underwater:
+    aliases: [ uw ]
+    description: Teleports you to the underwater FFA arena
+    usage: /<command>
+  tpa:
+    usage: /<command>
+    aliases: [ tpr ]
+  tpahere:
+    usage: /<command>
+  tpdeny:
+    usage: /<command>
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
+  msg:
+    usage: /<command>
+    aliases: [ tell, whisper, w ]
+  reply:
+    usage: /<command>
+    aliases: [ r ]
+  report:
+    usage: /<command>
+  shop:
+    usage: /<command>
+  msglock:
+    usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  duel:
+    usage: /<command>
+    aliases: [ 1v1 ]
+  duelaccept:
+    usage: /<command>
+  dueldeny:
+    usage: /<command>
+  event:
+    usage: /<command>
+  nethpot:
+    usage: /<command>
+    aliases: [ neth, npot, np ]
+  flatlegacy:
+    usage: /<command>
+    aliases: [ lflat, legacyflat, oldflat ]
+  rank:
+    usage: /<command>
+    aliases: [ tier ]
+permissions:
+  has.staff:
+    description: Use chatlock & Bypass it
+  tester.y:
+    description: Is a tester
