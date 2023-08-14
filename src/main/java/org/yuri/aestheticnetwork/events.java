@@ -29,6 +29,8 @@ import org.yuri.aestheticnetwork.commands.Report;
 import org.yuri.aestheticnetwork.commands.Shop;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.commands.duel.Event;
+import org.yuri.aestheticnetwork.commands.parties.Party;
+import org.yuri.aestheticnetwork.utils.RequestManager;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.util.*;
@@ -38,38 +40,10 @@ import static org.yuri.aestheticnetwork.utils.Utils.*;
 
 public class events implements Listener {
     public static final HashMap<UUID, Integer> teams = new HashMap<>();
-    static ArrayList<Color> color = new ArrayList<>(List.of(Color.LIME,
-            Color.ORANGE,
-            Color.RED,
-            Color.BLUE,
-            Color.OLIVE,
-            Color.PURPLE,
-            Color.WHITE,
-            Color.AQUA,
-            Color.BLACK,
-            Color.FUCHSIA,
-            Color.GRAY,
-            Color.GREEN,
-            Color.MAROON,
-            Color.NAVY,
-            Color.SILVER,
-            Color.TEAL,
-            Color.YELLOW));
+    static ArrayList<Color> color = new ArrayList<>(List.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW));
     private final HashMap<UUID, Long> playerstoteming = new HashMap<>();
     private final HashMap<UUID, Long> chatdelay = new HashMap<>();
-    private final ArrayList<EntityType> entities = new ArrayList<>(List.of(EntityType.THROWN_EXP_BOTTLE,
-            EntityType.PLAYER,
-            EntityType.SPLASH_POTION,
-            EntityType.LIGHTNING,
-            EntityType.ARROW,
-            EntityType.DROPPED_ITEM,
-            EntityType.ENDER_CRYSTAL,
-            EntityType.FALLING_BLOCK,
-            EntityType.EXPERIENCE_ORB,
-            EntityType.ARMOR_STAND,
-            EntityType.ENDER_PEARL,
-            EntityType.FIREWORK,
-            EntityType.FISHING_HOOK));
+    private final ArrayList<EntityType> entities = new ArrayList<>(List.of(EntityType.THROWN_EXP_BOTTLE, EntityType.PLAYER, EntityType.SPLASH_POTION, EntityType.LIGHTNING, EntityType.ARROW, EntityType.DROPPED_ITEM, EntityType.ENDER_CRYSTAL, EntityType.FALLING_BLOCK, EntityType.EXPERIENCE_ORB, EntityType.ARMOR_STAND, EntityType.ENDER_PEARL, EntityType.FIREWORK, EntityType.FISHING_HOOK));
     AestheticNetwork plugin = AestheticNetwork.getInstance();
     LuckPerms lp;
     Economy econ;
@@ -109,9 +83,7 @@ public class events implements Listener {
     }
 
     private static boolean isSuspectedScanPacket(String buffer) {
-        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) ||
-                !buffer.startsWith("/") ||
-                buffer.startsWith("/about");
+        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
 
     public static void spawnFireworks(Location loc) {
@@ -124,6 +96,16 @@ public class events implements Listener {
         fw.setFireworkMeta(fwm);
     }
 
+    public static void duel_spawnFireworks(Location loc) {
+        loc.add(new Vector(0, 1, 0));
+        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        FireworkMeta fwm = fw.getFireworkMeta();
+        fwm.setPower(2);
+        fwm.addEffect(FireworkEffect.builder().withColor(Color.WHITE).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fw.setFireworkMeta(fwm);
+        fw.detonate();
+    }
+
     @EventHandler
     private void antiAuto(PlayerSwapHandItemsEvent e) {
         Player ent = e.getPlayer();
@@ -131,8 +113,7 @@ public class events implements Listener {
         UUID playerUniqueId = ent.getUniqueId();
         if (playerstoteming.containsKey(playerUniqueId) && playerstoteming.get(playerUniqueId) > System.currentTimeMillis()) {
             for (Player i : Bukkit.getOnlinePlayers()) {
-                if (!i.hasPermission("has.staff"))
-                    continue;
+                if (!i.hasPermission("has.staff")) continue;
 
                 long ms = playerstoteming.get(playerUniqueId) - System.currentTimeMillis();
                 i.sendMessage(translate("&6" + ent.getName() + " totemed in less than " + ms + "ms! &7" + ent.getPing() + "ms"));
@@ -150,14 +131,12 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
-        if (!(event.getSender() instanceof Player)) return;
         event.setCancelled(isSuspectedScanPacket(event.getBuffer()));
     }
 
     @EventHandler
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent e) {
-        if (e.getChannel().equals("hcscr:haram"))
-            e.getPlayer().sendPluginMessage(plugin, "hcscr:haram", new byte[]{1});
+        if (e.getChannel().equals("hcscr:haram")) e.getPlayer().sendPluginMessage(plugin, "hcscr:haram", new byte[]{1});
     }
 
     @EventHandler
@@ -175,38 +154,39 @@ public class events implements Listener {
         UUID playerUniqueId = e.getPlayer().getUniqueId();
         if (chatdelay.containsKey(playerUniqueId) && chatdelay.get(playerUniqueId) > System.currentTimeMillis())
             e.setCancelled(true);
-        else
-            chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
+        else chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
     }
 
     @EventHandler
     private void onTeleport(final PlayerTeleportEvent e) {
-        if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN)
-            return;
+        if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
 
-        if (e.getPlayer().hasMetadata("1.19.2"))
-            e.getPlayer().removeMetadata("1.19.2", plugin);
+        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
         AestheticNetwork.ffaconst.remove(e.getPlayer());
     }
 
     @EventHandler
     private void onPlayerLeave(final PlayerQuitEvent e) {
         UUID playerUniqueId = e.getPlayer().getUniqueId();
-        DuelRequest tpr = getDUELrequest(e.getPlayer());
-        AestheticNetwork.ffaconst.remove(e.getPlayer());
+        String playerName = e.getPlayer().getName();
+
+        // duel related
         Event.valid.remove(playerUniqueId);
-        if (tpr != null && teams.containsKey(playerUniqueId)) {
+        if (teams.containsKey(playerUniqueId)) {
+            DuelRequest tpr = getDUELrequest(e.getPlayer());
             ArrayList<Player> plist = new ArrayList<>(e.getPlayer().getWorld().getNearbyPlayers(e.getPlayer().getLocation(), 100));
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
             int t1 = teams.get(pw.getUniqueId());
 
-            if (t1 == 1)
-                red += 1;
-            else
-                blue += 1;
-            pw.sendTitle(translate("&aYou won!"), translate("&c" + red + " &7- &9" + blue), 1, 20, 1);
+            if (t1 == 1) red += 1;
+            else blue += 1;
+            pw.sendTitle(translate(t1 == 1 ? "&aYou won!" : "&cYou lost"),
+                    "",
+                    1,
+                    20,
+                    1);
             Utils.displayduelresume(pw,
                     e.getPlayer(),
                     false,
@@ -219,20 +199,32 @@ public class events implements Listener {
             teams.remove(pw.getUniqueId());
             teams.remove(e.getPlayer().getUniqueId());
             duel.remove(tpr);
-            spawn(pw);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> spawn(pw), 100L);
             plist.clear();
         }
 
-        removeDUELrequest(e.getPlayer());
-        removeTPArequest(e.getPlayer());
+        Party party = RequestManager.getParty(playerUniqueId);
+        // requests
+        removeDUELrequest(getDUELrequest(e.getPlayer()));
+        removeTPArequest(getTPArequest(e.getPlayer()));
+        // misc
         Report.cooldown.remove(playerUniqueId);
         chatdelay.remove(playerUniqueId);
         playerstoteming.remove(playerUniqueId);
-        teams.remove(playerUniqueId);
+        //teams.remove(playerUniqueId);
         AestheticNetwork.lastReceived.remove(playerUniqueId);
-        AestheticNetwork.msg.remove(p.getName());
-        AestheticNetwork.tpa.remove(p.getName());
-        AestheticNetwork.testers.remove(p);
+        AestheticNetwork.msg.remove(playerName);
+        AestheticNetwork.tpa.remove(playerName);
+        AestheticNetwork.ffaconst.remove(e.getPlayer());
+
+        if (party == null)
+            return;
+
+        if (RequestManager.getParty(playerUniqueId).getOwner() != playerUniqueId)
+            party.kickMember(playerUniqueId,
+                    playerName);
+        else
+            parties.remove(party);
     }
 
     /*@EventHandler(priority = EventPriority.NORMAL)
@@ -269,12 +261,10 @@ public class events implements Listener {
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e) {
         final ItemStack clickedItem = e.getCurrentItem();
-        if (clickedItem == null)
-            return;
+        if (clickedItem == null) return;
 
         ItemMeta meta = clickedItem.getItemMeta();
-        if (meta == null)
-            return;
+        if (meta == null) return;
 
         NamespacedKey key = new NamespacedKey(p, "reported");
         final Player p = (Player) e.getWhoClicked();
@@ -292,8 +282,7 @@ public class events implements Listener {
             }
         }
 
-        if (!e.getInventory().equals(Shop.inv))
-            return;
+        if (!e.getInventory().equals(Shop.inv)) return;
 
         e.setCancelled(true);
 
@@ -309,37 +298,35 @@ public class events implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryDragEvent e) {
-        if (e.getCursor() == null)
-            return;
-
-        ItemMeta meta = e.getCursor().getItemMeta();
-        e.setCancelled(meta.hasLore());
+        e.setCancelled(e.getCursor() != null && e.getCursor().getItemMeta().hasLore());
     }
 
     @EventHandler
     private void onPlayerKill(final PlayerDeathEvent e) {
-        e.getDrops().clear();
+        if (!AestheticNetwork.ffaconst.contains(e.getPlayer())) e.getDrops().clear();
 
         Player p = e.getPlayer();
         AestheticNetwork.ffaconst.remove(p);
         Player killer = e.getPlayer().getKiller();
-        DuelRequest tpr = getDUELrequest(p);
-        if (tpr != null && teams.containsKey(p.getUniqueId())) {
+        if (teams.containsKey(p.getUniqueId())) {
             e.setCancelled(true);
+            DuelRequest tpr = getDUELrequest(p);
             p.setHealth(20.0F);
+            p.setFoodLevel(20);
             p.setNoDamageTicks(100);
+            p.getInventory().clear();
             ArrayList<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player kp = plist.get(1);
 
-            if (killer != null &&
-                    killer != e.getPlayer())
-                kp = killer;
+            if (killer != null && killer != e.getPlayer()) kp = killer;
 
+            kp.setHealth(20.0F);
+            kp.setFoodLevel(20);
             kp.setNoDamageTicks(100);
             kp.getInventory().clear();
 
-            spawnFireworks(p.getLocation());
-            spawnFireworks(kp.getLocation());
+            duel_spawnFireworks(p.getLocation());
+            //spawnFireworks(kp.getLocation());
 
             int newrounds = tpr.getRounds() + 1;
             int red = tpr.getRed();
@@ -368,10 +355,8 @@ public class events implements Listener {
                             System.currentTimeMillis(),
                             "n",
                             true);
-                    redp.sendTitle(translate("&aYou won!"), translate("&c" + red + " &7- &9" +
-                            blue), 1, 60, 1);
-                    bluep.sendTitle(translate("&cYou lost"), translate("&c" + red + " &7- &9" +
-                            blue), 1, 60, 1);
+                    redp.sendTitle(translate("&aYou won!"), "", 1, 60, 1);
+                    bluep.sendTitle(translate("&cYou lost"),"", 1, 60, 1);
                 } else if (blue > red) {
                     Utils.displayduelresume(bluep,
                             redp,
@@ -380,12 +365,9 @@ public class events implements Listener {
                             blue,
                             tpr.getStart(),
                             System.currentTimeMillis(),
-                            "n",
-                            false);
-                    redp.sendTitle(translate("&cYou lost"), translate("&c" + red + " &7- &9" +
-                            blue), 1, 60, 1);
-                    bluep.sendTitle(translate("&aYou won!"), translate("&c" + red + " &7- &9" +
-                            blue), 1, 60, 1);
+                            "n", false);
+                    redp.sendTitle(translate("&cYou lost"), "", 1, 60, 1);
+                    bluep.sendTitle(translate("&aYou won!"), "", 1, 60, 1);
                 } else {
                     Utils.displayduelresume(redp,
                             bluep,
@@ -396,8 +378,8 @@ public class events implements Listener {
                             System.currentTimeMillis(),
                             "y",
                             false);
-                    redp.sendTitle(translate("&eDraw"), translate("&aNobody won"), 1, 60, 1);
-                    bluep.sendTitle(translate("&eDraw"), translate("&aNobody won"), 1, 60, 1);
+                    redp.sendTitle(translate("&eDraw"), "", 1, 60, 1);
+                    bluep.sendTitle(translate("&eDraw"), "", 1, 60, 1);
                 }
 
                 teams.remove(kp.getUniqueId());
@@ -407,8 +389,7 @@ public class events implements Listener {
                 Bukkit.getScheduler().runTaskLater(AestheticNetwork.getInstance(), () -> {
                     spawn(finalKp);
                     spawn(p);
-                    if (Objects.equals(tpr.getType(), "field"))
-                        AestheticNetwork.getInstance().field -= 1;
+                    if (Objects.equals(tpr.getType(), "field")) AestheticNetwork.getInstance().field -= 1;
 
                     plist.clear();
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
@@ -416,29 +397,20 @@ public class events implements Listener {
                 return;
             }
 
-            kp.sendTitle(translate("&c" + red + " &7- &9"
-                    + blue), "", 1, 60, 1);
-            p.sendTitle(translate("&c" + red + " &7- &9" +
-                    blue), "", 1, 60, 1);
+            kp.sendTitle(translate("&c" + red + " &7- &9" + blue), "", 1, 60, 1);
+            p.sendTitle(translate("&c" + red + " &7- &9" + blue), "", 1, 60, 1);
 
             String type = tpr.getType();
             tpr.setRounds(newrounds);
             tpr.setRed(red);
             tpr.setBlue(blue);
-            Utils.startduel(kp,
-                    p,
-                    type,
-                    newrounds,
-                    tpr.getMaxrounds(),
-                    tpr.getArena(),
-                    false);
+            Utils.startduel(kp, p, type, newrounds, tpr.getMaxrounds(), tpr.getArena(), false);
             plist.clear();
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
             return;
         }
 
-        if (killer == null)
-            return;
+        if (killer == null) return;
 
         /*User user = kp.getPlayerAdapter(Player.class).getUser(e.getEntity().getKiller());
         if (!user.getPrimaryGroup().equals("default")) {
@@ -458,8 +430,7 @@ public class events implements Listener {
         } else
             e.getEntity().getWorld().strikeLightningEffect(e.getEntity().getLocation());*/
 
-        if (e.getPlayer().hasMetadata("1.19.2"))
-            e.getPlayer().removeMetadata("1.19.2", plugin);
+        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
         try {
             econ.depositPlayer(killer, 5);
         } catch (RuntimeException en) {
@@ -468,12 +439,9 @@ public class events implements Listener {
 
         String peffect = plugin.getCustomConfig().getString("r." + killer + ".killeffect");
 
-        if (Objects.equals(peffect, "totem_explosion"))
-            createHelix(p);
-        else if (Objects.equals(peffect, "firework"))
-            spawnFireworks(p.getLocation());
-        else if (Objects.equals(peffect, "lightning"))
-            p.getWorld().strikeLightningEffect(p.getLocation());
+        if (Objects.equals(peffect, "totem_explosion")) createHelix(p);
+        else if (Objects.equals(peffect, "firework")) spawnFireworks(p.getLocation());
+        else if (Objects.equals(peffect, "lightning")) p.getWorld().strikeLightningEffect(p.getLocation());
     }
 
     public void createHelix(Player player) {
@@ -519,9 +487,6 @@ public class events implements Listener {
 
         if (Utils.manager1().get("r." + e.getPlayer().getUniqueId() + ".m") == null)
             AestheticNetwork.msg.add(e.getPlayer().getName());
-
-        if (e.getPlayer().hasPermission("tester.y"))
-            AestheticNetwork.testers.add(e.getPlayer());
         spawn(e.getPlayer());
     }
 

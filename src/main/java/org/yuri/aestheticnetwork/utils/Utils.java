@@ -27,24 +27,6 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 public class Utils {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
-    public static void tank(Player e) {
-        ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS, 1);
-        ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS, 1);
-        ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1);
-        ItemStack helmet = new ItemStack(Material.DIAMOND_HELMET, 1);
-
-        boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-        leggings.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-        chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-        helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
-
-        e.getInventory().setBoots(boots);
-        e.getInventory().setLeggings(leggings);
-        e.getInventory().setChestplate(chestplate);
-        e.getInventory().setHelmet(helmet);
-        e.getInventory().setItemInMainHand(new ItemStack(Material.DIAMOND_SWORD, 1));
-    }
-
     public static Location duelloc(String type, boolean red, Player p, int i, boolean first) {
         Location loc = red ? new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -279.5, 149, -303.5);
         p.getInventory().clear();
@@ -100,11 +82,18 @@ public class Utils {
             p.sendMessage(hi);
         }
 
-        Utils.manager().set("r." + pl.getUniqueId() + ".wins", Utils.manager().getInt("r." + pl.getUniqueId() + ".wins") + 1);
-
-        Utils.manager().set("r." + p.getUniqueId() + ".losses", Utils.manager().getInt("r." + p.getUniqueId() + ".losses") + 1);
+        Utils.manager().set("r." + pl.getUniqueId() + ".wins",
+                Utils.manager().getInt("r." + pl.getUniqueId() + ".wins") +
+                        1);
+        Utils.manager().set("r." + p.getUniqueId() + ".losses",
+                Utils.manager().getInt("r." + p.getUniqueId() + ".losses") +
+                        1);
 
         AestheticNetwork.getInstance().saveCustomConfig();
+        if (p.hasMetadata("1.19.2")) {
+            p.removeMetadata("1.19.2", plugin);
+            pl.removeMetadata("1.19.2", plugin);
+        }
     }
 
     public static void startduel(Player user, Player recipient, String type, int round, int maxi, int arena, boolean first) {
@@ -125,10 +114,10 @@ public class Utils {
 
             @Override
             public void run() {
-                if (i == 1) {
-                    user.sendTitle(translate("&a" + i), "", 1, 20, 1);
-                    recipient.sendTitle(translate("&a" + i), "", 1, 20, 1);
+                user.playSound(user.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+                recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
 
+                if (i == 1) {
                     user.setHealth(20.0F);
                     user.setWalkSpeed(0.2F);
                     user.sendMessage(translate("&7" + (maxi > 1 ? "Round " + round : "Duel") + " started! &cFight!"));
@@ -143,6 +132,9 @@ public class Utils {
                     this.cancel();
                     return;
                 }
+
+                user.sendTitle(translate("&a" + i), "", 1, 20, 1);
+                recipient.sendTitle(translate("&a" + i), "", 1, 20, 1);
 
                 i--;
                 String sec = i == 1 ? "&ca second" : "&c" + i + " seconds";

@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.yuri.aestheticnetwork.AestheticNetwork;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,31 +106,9 @@ public class KitManager {
     }
 
     public static void nethpot(Player p) {
+        if (!p.hasPermission("has.staff"))
+            return;
         // initializers
-        ItemStack strength = new ItemStack(Material.SPLASH_POTION);
-        PotionMeta potmetastrength = (PotionMeta) strength.getItemMeta();
-        potmetastrength.addCustomEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE,
-                1800,
-                2),
-                true);
-        strength.setItemMeta(potmetastrength);
-
-        ItemStack regen = new ItemStack(Material.SPLASH_POTION);
-        PotionMeta regenmeta = (PotionMeta) regen.getItemMeta();
-        regenmeta.addCustomEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                440,
-                2),
-                true);
-        regen.setItemMeta(regenmeta);
-
-        ItemStack speed = new ItemStack(Material.SPLASH_POTION);
-        PotionMeta speedmeta = (PotionMeta) regen.getItemMeta();
-        speedmeta.addCustomEffect(new PotionEffect(PotionEffectType.SPEED,
-                1800,
-                2),
-                true);
-        speed.setItemMeta(speedmeta);
-
         ItemStack helmet = new ItemStack(Material.NETHERITE_HELMET);
         helmet.addEnchantment(Enchantment.MENDING, 1);
         helmet.addEnchantment(Enchantment.DURABILITY, 3);
@@ -157,6 +136,31 @@ public class KitManager {
         sword.addEnchantment(Enchantment.KNOCKBACK, 1);
         sword.addEnchantment(Enchantment.FIRE_ASPECT, 2);
 
+        // initializers
+        ItemStack strength = new ItemStack(Material.SPLASH_POTION);
+        PotionMeta potmetastrength = (PotionMeta) strength.getItemMeta();
+        potmetastrength.addCustomEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE,
+                        1800,
+                        2),
+                true);
+        strength.setItemMeta(potmetastrength);
+
+        ItemStack regen = new ItemStack(Material.SPLASH_POTION);
+        PotionMeta regenmeta = (PotionMeta) regen.getItemMeta();
+        regenmeta.addCustomEffect(new PotionEffect(PotionEffectType.REGENERATION,
+                        440,
+                        2),
+                true);
+        regen.setItemMeta(regenmeta);
+
+        ItemStack speed = new ItemStack(Material.SPLASH_POTION);
+        PotionMeta speedmeta = (PotionMeta) regen.getItemMeta();
+        speedmeta.addCustomEffect(new PotionEffect(PotionEffectType.SPEED,
+                        1800,
+                        2),
+                true);
+        speed.setItemMeta(speedmeta);
+
         ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
 
         // regen
@@ -175,14 +179,7 @@ public class KitManager {
             p.getInventory().setItem(i, strength);
         }
         p.getInventory().setItem(1, strength);
-
-        p.getInventory().setHelmet(helmet);
-        p.getInventory().setChestplate(chestplate);
-        p.getInventory().setLeggings(leggings);
-        p.getInventory().setBoots(boots);
         p.getInventory().setItem(0, sword);
-
-        p.getInventory().setItemInOffHand(new ItemStack(Material.GOLDEN_APPLE, 64));
 
         // exp bottles
         for (int i = 9; i <= 10; i++) {
@@ -194,5 +191,29 @@ public class KitManager {
             p.getInventory().setItem(i, totem);
         }
         p.getInventory().setItem(8, totem);
+        p.getInventory().setHelmet(helmet);
+        p.getInventory().setChestplate(chestplate);
+        p.getInventory().setLeggings(leggings);
+        p.getInventory().setBoots(boots);
+        p.getInventory().setItemInOffHand(new ItemStack(Material.GOLDEN_APPLE, 64));
+    }
+
+    public static void tank(Player e) {
+        e.getInventory().clear();
+        ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS, 1);
+        ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS, 1);
+        ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1);
+        ItemStack helmet = new ItemStack(Material.DIAMOND_HELMET, 1);
+
+        boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+        leggings.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+        chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+        helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 1);
+
+        e.getInventory().setBoots(boots);
+        e.getInventory().setLeggings(leggings);
+        e.getInventory().setChestplate(chestplate);
+        e.getInventory().setHelmet(helmet);
+        e.getInventory().setItemInMainHand(new ItemStack(Material.DIAMOND_SWORD, 1));
     }
 }

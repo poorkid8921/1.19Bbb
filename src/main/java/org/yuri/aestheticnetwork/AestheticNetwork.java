@@ -13,9 +13,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.commands.*;
@@ -24,6 +31,7 @@ import org.yuri.aestheticnetwork.commands.duel.DuelAccept;
 import org.yuri.aestheticnetwork.commands.duel.DuelDeny;
 import org.yuri.aestheticnetwork.commands.duel.Event;
 import org.yuri.aestheticnetwork.commands.duel.placeholders;
+import org.yuri.aestheticnetwork.commands.parties.BaseCommand;
 import org.yuri.aestheticnetwork.commands.tpa.*;
 import org.yuri.aestheticnetwork.utils.Utils;
 
@@ -47,12 +55,10 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     private FileConfiguration customConfigConfig2 = YamlConfiguration.loadConfiguration(customConfigFile2);
     FileConfiguration config = getConfig();
     static ArrayList<Player> ffaconst = new ArrayList<>();
-    public static ArrayList<Player> testers = new ArrayList<>();
     public int field = 0;
     public Location ffa;
     public Location flat;
     public Location lflat;
-    public Location underwater;
     public Location nethpot;
     public Location spawn;
 
@@ -168,7 +174,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     boolean hasReset = false;
     public static ArrayList<String> tpa = new ArrayList<>();
     public static ArrayList<String> msg = new ArrayList<>();
-    int ffastr = 1, flatstr = 1;
+    int ffastr = 1, flatstr = 1, nethstr = 1;
 
     @Override
     public void onEnable() {
@@ -191,7 +197,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         if (provider != null) {
             LuckPerms api = provider.getProvider();
             Bukkit.getPluginManager().registerEvents(new events(this, api, econ), this);
-            Objects.requireNonNull(this.getCommand("rank")).setExecutor(new rank(api));
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
@@ -213,7 +218,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("ffa")).setExecutor(new ffa());
         Objects.requireNonNull(this.getCommand("flat")).setExecutor(new flat());
         Objects.requireNonNull(this.getCommand("flatlegacy")).setExecutor(new flatlegacy());
-        Objects.requireNonNull(this.getCommand("underwater")).setExecutor(new Underwater());
         Objects.requireNonNull(this.getCommand("nethpot")).setExecutor(new Nethpot());
 
         Objects.requireNonNull(this.getCommand("msglock")).setExecutor(new MsgLock());
@@ -224,6 +228,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
 
         Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
+        Objects.requireNonNull(this.getCommand("party")).setExecutor(new BaseCommand());
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
@@ -231,19 +236,24 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
             if (ffastr == 3)
                 ffastr = 1;
-            if (flatstr == 14)
-                flatstr = 1;
 
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset ffa" + ffastr + " veryfast -silent");
 
-            if (!hasReset)
-            {
+            if (!hasReset) {
+                if (flatstr == 14)
+                    flatstr = 1;
+                if (nethstr == 5)
+                    nethstr = 1;
+
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset flat" + flatstr + " veryfast -silent");
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset nethpot_" + nethstr + " veryfast -silent");
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset flatl" + flatstr + " veryfast -silent");
+                flatstr++;
+                nethstr++;
             }
 
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset flat veryfast -silent");
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset underwater veryfast -silent");
+            //Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset underwater veryfast -silent");
             hasReset = !hasReset;
 
             for (int i = 1; i <= 4; i++) {
@@ -252,7 +262,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             }
 
             ffastr++;
-            flatstr++;
 
             if (ffaconst.isEmpty())
                 return;
@@ -296,10 +305,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
                     getConfig().getDouble("legacyflat.X"),
                     getConfig().getDouble("legacyflat.Y"),
                     getConfig().getDouble("legacyflat.Z"));
-            underwater = new Location(Bukkit.getWorld("world"),
-                    getConfig().getDouble("underwater.X"),
-                    getConfig().getDouble("underwater.Y"),
-                    getConfig().getDouble("underwater.Z"));
             nethpot = new Location(Bukkit.getWorld("world"),
                     getConfig().getDouble("nethpot.X"),
                     getConfig().getDouble("nethpot.Y"),

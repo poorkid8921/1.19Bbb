@@ -17,10 +17,6 @@ commands:
   flat:
     description: Teleports you to the flat arena
     usage: /<command>
-  underwater:
-    aliases: [ uw ]
-    description: Teleports you to the underwater FFA arena
-    usage: /<command>
   tpa:
     usage: /<command>
     aliases: [ tpr ]
@@ -63,11 +59,9 @@ commands:
   flatlegacy:
     usage: /<command>
     aliases: [ lflat, legacyflat, oldflat ]
-  rank:
+  party:
     usage: /<command>
-    aliases: [ tier ]
+    aliases: [ p, team ]
 permissions:
   has.staff:
     description: Use chatlock & Bypass it
-  tester.y:
-    description: Is a tester

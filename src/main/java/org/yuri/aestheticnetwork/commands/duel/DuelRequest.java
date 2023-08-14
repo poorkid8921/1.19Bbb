@@ -6,14 +6,24 @@ public class DuelRequest {
     private final Player sender;
     private final Player reciever;
     private final String type;
-    private int rounds;
-    private int red;
-    private int blue;
     private final int maxrounds;
     private final long starttime;
     private final int arena;
+    private final boolean legacy;
+    private int rounds;
+    private int red;
+    private int blue;
 
-    public DuelRequest(Player sender, Player reciever, String type, int maxrounds, int rounds, int sr, int sb, long starttime, int arena) {
+    public DuelRequest(Player sender,
+                       Player reciever,
+                       String type,
+                       int maxrounds,
+                       int rounds,
+                       int sr,
+                       int sb,
+                       long starttime,
+                       int arena,
+                       boolean legacy) {
         this.sender = sender;
         this.reciever = reciever;
         this.type = type;
@@ -23,6 +33,7 @@ public class DuelRequest {
         this.maxrounds = maxrounds;
         this.starttime = starttime;
         this.arena = arena;
+        this.legacy = legacy;
     }
 
     public Player getSender() {
@@ -41,12 +52,24 @@ public class DuelRequest {
         return rounds;
     }
 
+    public void setRounds(int i) {
+        this.rounds = i;
+    }
+
     public int getRed() {
         return red;
     }
 
+    public void setRed(int i) {
+        this.red = i;
+    }
+
     public int getBlue() {
         return blue;
+    }
+
+    public void setBlue(int i) {
+        this.blue = i;
     }
 
     public int getMaxrounds() {
@@ -56,19 +79,12 @@ public class DuelRequest {
     public long getStart() {
         return starttime;
     }
+
     public int getArena() {
         return arena;
     }
 
-    public void setRounds(int i) {
-        this.rounds = i;
-    }
-
-    public void setRed(int i) {
-        this.red = i;
-    }
-
-    public void setBlue(int i) {
-        this.blue = i;
+    public boolean IsLegacy() {
+        return legacy;
     }
 }

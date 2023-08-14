@@ -39,7 +39,7 @@ public class DuelAccept implements CommandExecutor {
 
         int check =  getAvailable(request.getType());
         if (check >= 6) {
-            removeDUELrequest(user);
+            removeDUELrequest(getDUELrequest(user));
             user.sendMessage(translate("&7There are no open arenas yet."));
             return true;
         }
