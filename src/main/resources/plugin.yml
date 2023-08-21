@@ -1,0 +1,50 @@
+name: Anarchy
+version: 2.0.2
+main: bab.bbb.Bbb
+api-version: 1.19
+
+commands:
+  tpa:
+    description: Send a teleport request to a player.
+    usage: /<command>
+    aliases: [ tpask ]
+  tpahere:
+    description: Send a teleport here request to a player.
+    usage: /<command>
+  tpaccept:
+    description: Accept a teleport request.
+    usage: /<command>
+    aliases: [tpyes, tpy]
+  tpdeny:
+    description: Deny a teleport request.
+    usage: /<command>
+    aliases: [tpno, tpn, tpd]
+  msg:
+    description: Send a message to a player.
+    usage: /<command>
+    aliases: [ whisper, tell, w, t ]
+  delhome:
+    description: Delete the specified home.
+    usage: /<command>
+  home:
+    description: Teleport to your home(s).
+    usage: /<command>
+  sethome:
+    description: Set your home location.
+    usage: /<command>
+  reply:
+    description: Reply to a player.
+    usage: /<command>
+    aliases: [ r ]
+  ignore:
+    description: Ignore a player.
+    usage: /<command>
+  kill:
+    description: Suicide.
+    usage: /<command>
+    aliases: [ suicide ]
+  d:
+    usage: /<command>
+permissions:
+  homes.premium:
+    description: 5 homes
