@@ -74,8 +74,6 @@ public class ReportInventory extends InventoryInstanceReport {
     @Override
     public void whenClicked(ItemStack item, InventoryAction action, int slot, String arg) {
         ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return;
 
         if (!meta.hasLore())
             return;

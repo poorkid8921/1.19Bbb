@@ -32,10 +32,7 @@ import org.yuri.aestheticnetwork.utils.InventoryInstance;
 import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
 import org.yuri.aestheticnetwork.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.spawn;
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
@@ -46,8 +43,6 @@ import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class events implements Listener {
-    static AestheticNetwork plugin = AestheticNetwork.getInstance();
-
     @EventHandler
     private void antiAuto(PlayerSwapHandItemsEvent e) {
         Player ent = e.getPlayer();
@@ -79,7 +74,9 @@ public class events implements Listener {
 
     @EventHandler
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent e) {
-        if (e.getChannel().equals("hcscr:haram")) e.getPlayer().sendPluginMessage(plugin, "hcscr:haram", new byte[]{1});
+        if (e.getChannel().equals("hcscr:haram")) e.getPlayer().sendPluginMessage(p,
+                "hcscr:haram",
+                new byte[]{1});
     }
 
     @EventHandler
@@ -105,7 +102,7 @@ public class events implements Listener {
     private void onTeleport(final PlayerTeleportEvent e) {
         if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
 
-        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
+        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", p);
         ffaconst.remove(e.getPlayer());
     }
 
@@ -132,7 +129,7 @@ public class events implements Listener {
         if (teams.containsKey(playerUniqueId)) {
             valid.remove(playerUniqueId);
             DuelRequest tpr = getDUELrequest(e.getPlayer());
-            ArrayList<Player> plist = new ArrayList<>(e.getPlayer()
+            List<Player> plist = new ArrayList<>(e.getPlayer()
                     .getWorld()
                     .getNearbyPlayers(e.getPlayer()
                                     .getLocation(),
@@ -157,7 +154,7 @@ public class events implements Listener {
                     t1 == 1 ? "&aYou won!" : "&cYou lost",
                     t1 == 0 ? "&aYou won!" : "&cYou lost");
             plist.clear();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(p, () -> {
                 teams.remove(pw.getUniqueId());
                 teams.remove(e.getPlayer().getUniqueId());
                 duel.remove(tpr);
@@ -181,17 +178,16 @@ public class events implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e) {
-        if (e.getInventory().getHolder() instanceof InventoryInstance) {
+        if (e.getInventory().getHolder() instanceof InventoryInstance holder) {
             e.setCancelled(true);
-            if (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getInventory()))
-                ((InventoryInstance) e.getInventory().getHolder()).whenClicked(e.getCurrentItem(),
+                holder.whenClicked(e.getCurrentItem(),
                         e.getAction(),
                         e.getSlot());
         } else if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
             e.setCancelled(true);
             final ItemStack clickedItem = e.getCurrentItem();
             ItemMeta meta = clickedItem.getItemMeta();
-            if (meta == null)
+            if (!meta.hasLore())
                 return;
 
             holder.whenClicked(e.getCurrentItem(),
@@ -219,14 +215,13 @@ public class events implements Listener {
     private void onPlayerKill(final PlayerDeathEvent e) {
         Player p = e.getPlayer();
         ffaconst.remove(p);
-        boolean a = teams.containsKey(p.getUniqueId());
-        if (!ffaconst.contains(e.getPlayer()) || a) e.getDrops().clear();
+        if (!ffaconst.contains(e.getPlayer())) e.getDrops().clear();
 
         Player killer = e.getPlayer().getKiller();
-        if (a) {
+        if (teams.containsKey(p.getUniqueId())) {
             e.setCancelled(true);
             DuelRequest tpr = getDUELrequest(p);
-            ArrayList<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
+            List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player kp = (killer == p || killer != e.getPlayer()) ? killer : plist.get(1);
 
             duel_spawnFireworks(p.getLocation());
@@ -297,14 +292,17 @@ public class events implements Listener {
                 kp.setNoDamageTicks(100);
                 kp.setFoodLevel(20);
                 kp.setHealth(20);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                     teams.remove(kp.getUniqueId());
                     teams.remove(p.getUniqueId());
                     duel.remove(tpr);
                     spawn(kp);
                     spawn(p);
                     plist.clear();
-                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
+                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" +
+                            tpr.getType() +
+                            tpr.getArena() +
+                            " veryfast");
                     User up = lp.getUserManager().getUser(p.getUniqueId());
                     up.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
                     lp.getUserManager().saveUser(up);
@@ -356,14 +354,14 @@ public class events implements Listener {
         } else
             e.getEntity().getWorld().strikeLightningEffect(e.getEntity().getLocation());*/
 
-        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
+        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", Initializer.p);
         try {
             econ.depositPlayer(killer, 5);
         } catch (RuntimeException en) {
             en.printStackTrace();
         }
 
-        String peffect = plugin.getCustomConfig().getString("r." + killer + ".killeffect");
+        String peffect = Initializer.p.getCustomConfig().getString("r." + killer + ".killeffect");
 
         if (Objects.equals(peffect, "totem_explosion")) createHelix(p);
         else if (Objects.equals(peffect, "firework")) spawnFireworks(p.getLocation());
@@ -394,7 +392,7 @@ public class events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         if (e.getPlayer().getHealth() == 0.0) {
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(p, () -> {
                 e.getPlayer().setHealth(20);
                 e.getPlayer().kickPlayer("Disconnected");
             }, 2L);

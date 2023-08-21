@@ -17,25 +17,21 @@ import org.yuri.aestheticnetwork.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class rank implements CommandExecutor, TabCompleter {
-    LuckPerms lp;
-ArrayList<String> tiers = new ArrayList<>(List.of("HT1",
-        "HT2",
-        "HT3",
-        "HT4",
-        "HT5",
-        "LT1",
-        "LT2",
-        "LT3",
-        "LT4",
-        "LT5"));
-
-    public rank(LuckPerms lped) {
-        lp = lped;
-    }
+    List<String> tiers = new ArrayList<>(List.of("HT1",
+            "HT2",
+            "HT3",
+            "HT4",
+            "HT5",
+            "LT1",
+            "LT2",
+            "LT3",
+            "LT4",
+            "LT5"));
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

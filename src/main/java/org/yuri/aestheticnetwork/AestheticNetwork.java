@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,6 +33,7 @@ import org.yuri.aestheticnetwork.utils.Utils;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -177,8 +179,40 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
 
         Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
+
+        // populating tinylist's
+        color.addAll(List.of(org.bukkit.Color.LIME,
+                org.bukkit.Color.ORANGE,
+                org.bukkit.Color.RED,
+                org.bukkit.Color.BLUE,
+                org.bukkit.Color.OLIVE,
+                org.bukkit.Color.PURPLE,
+                org.bukkit.Color.WHITE,
+                org.bukkit.Color.AQUA,
+                org.bukkit.Color.BLACK,
+                org.bukkit.Color.FUCHSIA,
+                org.bukkit.Color.GRAY,
+                org.bukkit.Color.GREEN,
+                org.bukkit.Color.MAROON,
+                org.bukkit.Color.NAVY,
+                org.bukkit.Color.SILVER,
+                org.bukkit.Color.TEAL,
+                org.bukkit.Color.YELLOW));
+        entities.addAll(List.of(EntityType.THROWN_EXP_BOTTLE,
+                EntityType.PLAYER,
+                EntityType.SPLASH_POTION,
+                EntityType.LIGHTNING,
+                EntityType.ARROW,
+                EntityType.DROPPED_ITEM,
+                EntityType.ENDER_CRYSTAL,
+                EntityType.FALLING_BLOCK,
+                EntityType.EXPERIENCE_ORB,
+                EntityType.ARMOR_STAND,
+                EntityType.ENDER_PEARL,
+                EntityType.FIREWORK,
+                EntityType.FISHING_HOOK));
+
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             Bukkit.getServer().getLogger().info("Current players in ffa: " + ffaconst.size());
 

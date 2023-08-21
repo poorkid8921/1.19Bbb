@@ -11,12 +11,13 @@ import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class RequestManager {
-    public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
+    public static final List<TpaRequest> tpa = new ArrayList<>();
 
     public static TpaRequest getTPArequest(Player user) {
         return tpa.stream().filter(req -> req.getReciever().getName().equalsIgnoreCase(user.getName()) ||
