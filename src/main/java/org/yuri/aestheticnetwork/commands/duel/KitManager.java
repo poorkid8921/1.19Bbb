@@ -7,55 +7,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.yuri.aestheticnetwork.AestheticNetwork;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class KitManager {
     public static void field(Player p) {
-        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD, 1);
-        sword.addEnchantment(Enchantment.MENDING, 1);
-        sword.addEnchantment(Enchantment.DURABILITY, 3);
-        sword.addEnchantment(Enchantment.DAMAGE_ALL, 5);
-        sword.addEnchantment(Enchantment.KNOCKBACK, 1);
-        p.getInventory().setItem(0, sword);
+        p.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
 
-        ItemStack pick = new ItemStack(Material.NETHERITE_PICKAXE, 1);
-        pick.addEnchantment(Enchantment.MENDING, 1);
-        pick.addEnchantment(Enchantment.DURABILITY, 3);
-        pick.addEnchantment(Enchantment.DIG_SPEED, 5);
-        p.getInventory().setItem(1, pick);
-
-        p.getInventory().setItem(2, new ItemStack(Material.GOLDEN_APPLE,
-                64));
-        p.getInventory().setItem(3, new ItemStack(Material.ENDER_PEARL,
-                16));
-        p.getInventory().setItem(4, new ItemStack(Material.OBSIDIAN,
-                64));
-        p.getInventory().setItem(5, new ItemStack(Material.END_CRYSTAL,
-                64));
-        p.getInventory().setItem(6, new ItemStack(Material.GLOWSTONE,
-                64));
-        p.getInventory().setItem(7, new ItemStack(Material.RESPAWN_ANCHOR,
-                64));
-        p.getInventory().setItem(8, new ItemStack(Material.TOTEM_OF_UNDYING,
-                1));
-
-        for (int i = 10; i <= p.getInventory().getSize(); i++) {
+        for (int i = 10; i <= 27; i++) {
             p.getInventory().setItem(i, new ItemStack(Material.TOTEM_OF_UNDYING,
                     1));
         }
-
-        for (int i = 0; i <= 3; i++) {
-            p.getInventory().setItem(5 + (9 * i), new ItemStack(Material.END_CRYSTAL,
-                    64));
-        }
-
-        // xp bottles
-        p.getInventory().setItem(17, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
-        p.getInventory().setItem(26, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
-        p.getInventory().setItem(35, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
 
         // utils
         ItemStack shield = new ItemStack(Material.SHIELD, 1);
@@ -102,12 +62,51 @@ public class KitManager {
         boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
         p.getInventory().setBoots(boots);
 
-        p.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD, 1);
+        sword.addEnchantment(Enchantment.MENDING, 1);
+        sword.addEnchantment(Enchantment.DURABILITY, 3);
+        sword.addEnchantment(Enchantment.DAMAGE_ALL, 5);
+        sword.addEnchantment(Enchantment.KNOCKBACK, 1);
+        p.getInventory().setItem(0, sword);
+
+        ItemStack pick = new ItemStack(Material.NETHERITE_PICKAXE, 1);
+        pick.addEnchantment(Enchantment.MENDING, 1);
+        pick.addEnchantment(Enchantment.DURABILITY, 3);
+        pick.addEnchantment(Enchantment.DIG_SPEED, 5);
+        p.getInventory().setItem(1, pick);
+
+        p.getInventory().setItem(2, new ItemStack(Material.GOLDEN_APPLE,
+                64));
+        p.getInventory().setItem(3, new ItemStack(Material.ENDER_PEARL,
+                16));
+        p.getInventory().setItem(4, new ItemStack(Material.OBSIDIAN,
+                64));
+        p.getInventory().setItem(8, new ItemStack(Material.TOTEM_OF_UNDYING,
+                1));
+
+        for (int i = 0; i <= 3; i++) {
+            p.getInventory().setItem(5 + (9 * i), new ItemStack(Material.END_CRYSTAL,
+                    64));
+        }
+
+        for (int i = 0; i <= 2; i++) {
+            int a = 9 * i;
+            p.getInventory().setItem(6 + a, new ItemStack(Material.GLOWSTONE,
+                    64));
+            p.getInventory().setItem(7 + a, new ItemStack(Material.RESPAWN_ANCHOR,
+                    64));
+        }
+
+        // xp bottles
+        p.getInventory().setItem(17, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
+        p.getInventory().setItem(26, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
+        p.getInventory().setItem(35, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
     }
 
     public static void nethpot(Player p) {
         if (!p.hasPermission("has.staff"))
             return;
+
         // initializers
         ItemStack helmet = new ItemStack(Material.NETHERITE_HELMET);
         helmet.addEnchantment(Enchantment.MENDING, 1);
@@ -199,7 +198,6 @@ public class KitManager {
     }
 
     public static void tank(Player e) {
-        e.getInventory().clear();
         ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS, 1);
         ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS, 1);
         ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1);

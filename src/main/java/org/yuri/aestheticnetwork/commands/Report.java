@@ -16,8 +16,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuri.aestheticnetwork.AestheticNetwork;
+import org.yuri.aestheticnetwork.utils.Initializer;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,8 +25,6 @@ import static org.yuri.aestheticnetwork.utils.Utils.report;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public class Report implements CommandExecutor, TabExecutor {
-    public static HashMap<UUID, Long> cooldown = new HashMap<>();
-
     static AestheticNetwork p;
 
     public Report(AestheticNetwork pp) {
@@ -57,8 +55,8 @@ public class Report implements CommandExecutor, TabExecutor {
 
         UUID uuid = ((Player) sender).getUniqueId();
         if (
-                cooldown.containsKey(uuid)
-                        && cooldown.get(uuid) > System.currentTimeMillis()
+                Initializer.cooldown.containsKey(uuid)
+                        && Initializer.cooldown.get(uuid) > System.currentTimeMillis()
         ) {
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7You are on a cooldown right now. Try again later"));
             return true;

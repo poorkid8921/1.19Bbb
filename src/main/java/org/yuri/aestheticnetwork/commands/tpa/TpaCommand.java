@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.utils.Type;
 import org.yuri.aestheticnetwork.utils.Utils;
 
+import static org.yuri.aestheticnetwork.utils.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.RequestManager.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
@@ -38,8 +39,7 @@ public class TpaCommand implements CommandExecutor {
 
         TpaRequest tpr = getTPArequest(recipient);
 
-        if (tpr != null && tpr.getSender().equals(sender))
-        {
+        if (tpr != null && tpr.getSender().equals(sender)) {
             user.sendMessage(translate("&7You already have an ongoing request to this player."));
             return true;
         }
@@ -47,6 +47,11 @@ public class TpaCommand implements CommandExecutor {
         if (Utils.manager1().get(
                 "r." + recipient.getUniqueId() + ".t") != null) {
             user.sendMessage(translate("&7You can't request this player since they locked their tpa requests!"));
+            return true;
+        }
+
+        if (teams.containsKey(recipient.getUniqueId())) {
+            user.sendMessage(translate("&7You can't request this player since they're in a duel."));
             return true;
         }
 

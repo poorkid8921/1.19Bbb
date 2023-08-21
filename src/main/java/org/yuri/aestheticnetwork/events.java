@@ -2,6 +2,8 @@ package org.yuri.aestheticnetwork;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
@@ -12,38 +14,37 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
-import org.yuri.aestheticnetwork.commands.Report;
 import org.yuri.aestheticnetwork.commands.Shop;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
-import org.yuri.aestheticnetwork.commands.duel.Event;
-import org.yuri.aestheticnetwork.commands.parties.Party;
-import org.yuri.aestheticnetwork.utils.RequestManager;
+import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.Utils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Random;
+import java.util.UUID;
 
-import static org.yuri.aestheticnetwork.utils.RequestManager.*;
+import static org.yuri.aestheticnetwork.utils.Initializer.spawn;
+import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
+import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
+import static org.yuri.aestheticnetwork.utils.Utils.spawn;
 import static org.yuri.aestheticnetwork.utils.Utils.*;
+import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class events implements Listener {
-    public static final HashMap<UUID, Integer> teams = new HashMap<>();
-    static ArrayList<Color> color = new ArrayList<>(List.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW));
-    private final HashMap<UUID, Long> playerstoteming = new HashMap<>();
-    private final HashMap<UUID, Long> chatdelay = new HashMap<>();
-    private final ArrayList<EntityType> entities = new ArrayList<>(List.of(EntityType.THROWN_EXP_BOTTLE, EntityType.PLAYER, EntityType.SPLASH_POTION, EntityType.LIGHTNING, EntityType.ARROW, EntityType.DROPPED_ITEM, EntityType.ENDER_CRYSTAL, EntityType.FALLING_BLOCK, EntityType.EXPERIENCE_ORB, EntityType.ARMOR_STAND, EntityType.ENDER_PEARL, EntityType.FIREWORK, EntityType.FISHING_HOOK));
     AestheticNetwork plugin = AestheticNetwork.getInstance();
     LuckPerms lp;
     Economy econ;
@@ -125,6 +126,7 @@ public class events implements Listener {
 
     @EventHandler
     public void antiAuto2(EntityResurrectEvent e) {
+        ((Player) e.getEntity()).updateInventory();
         if (!playerstoteming.containsKey(e.getEntity().getUniqueId()))
             playerstoteming.put(e.getEntity().getUniqueId(), System.currentTimeMillis() + 500);
     }
@@ -152,7 +154,8 @@ public class events implements Listener {
         }
 
         UUID playerUniqueId = e.getPlayer().getUniqueId();
-        if (chatdelay.containsKey(playerUniqueId) && chatdelay.get(playerUniqueId) > System.currentTimeMillis())
+        if (chatdelay.containsKey(playerUniqueId) &&
+                chatdelay.get(playerUniqueId) > System.currentTimeMillis())
             e.setCancelled(true);
         else chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
     }
@@ -162,7 +165,7 @@ public class events implements Listener {
         if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
 
         if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
-        AestheticNetwork.ffaconst.remove(e.getPlayer());
+        ffaconst.remove(e.getPlayer());
     }
 
     @EventHandler
@@ -171,10 +174,14 @@ public class events implements Listener {
         String playerName = e.getPlayer().getName();
 
         // duel related
-        Event.valid.remove(playerUniqueId);
         if (teams.containsKey(playerUniqueId)) {
+            valid.remove(playerUniqueId);
             DuelRequest tpr = getDUELrequest(e.getPlayer());
-            ArrayList<Player> plist = new ArrayList<>(e.getPlayer().getWorld().getNearbyPlayers(e.getPlayer().getLocation(), 100));
+            ArrayList<Player> plist = new ArrayList<>(e.getPlayer()
+                    .getWorld()
+                    .getNearbyPlayers(e.getPlayer()
+                                    .getLocation(),
+                            100));
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
@@ -182,49 +189,39 @@ public class events implements Listener {
 
             if (t1 == 1) red += 1;
             else blue += 1;
-            pw.sendTitle(translate(t1 == 1 ? "&aYou won!" : "&cYou lost"),
-                    "",
-                    1,
-                    20,
-                    1);
-            Utils.displayduelresume(pw,
+            displayduelresume(pw,
                     e.getPlayer(),
                     false,
                     red,
                     blue,
                     tpr.getStart(),
                     System.currentTimeMillis(),
-                    "n",
-                    t1 == 1);
-            teams.remove(pw.getUniqueId());
-            teams.remove(e.getPlayer().getUniqueId());
-            duel.remove(tpr);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> spawn(pw), 100L);
+                    " n ",
+                    t1 == 1,
+                    tpr.IsLegacy(),
+                    t1 == 1 ? "&aYou won!" : "&cYou lost",
+                    t1 == 0 ? "&aYou won!" : "&cYou lost");
             plist.clear();
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                teams.remove(pw.getUniqueId());
+                teams.remove(e.getPlayer().getUniqueId());
+                duel.remove(tpr);
+                spawn(pw);
+            }, 60L);
         }
 
-        Party party = RequestManager.getParty(playerUniqueId);
         // requests
         removeDUELrequest(getDUELrequest(e.getPlayer()));
         removeTPArequest(getTPArequest(e.getPlayer()));
         // misc
-        Report.cooldown.remove(playerUniqueId);
+        cooldown.remove(playerUniqueId);
         chatdelay.remove(playerUniqueId);
         playerstoteming.remove(playerUniqueId);
         //teams.remove(playerUniqueId);
-        AestheticNetwork.lastReceived.remove(playerUniqueId);
-        AestheticNetwork.msg.remove(playerName);
-        AestheticNetwork.tpa.remove(playerName);
-        AestheticNetwork.ffaconst.remove(e.getPlayer());
-
-        if (party == null)
-            return;
-
-        if (RequestManager.getParty(playerUniqueId).getOwner() != playerUniqueId)
-            party.kickMember(playerUniqueId,
-                    playerName);
-        else
-            parties.remove(party);
+        lastReceived.remove(playerUniqueId);
+        msg.remove(playerName);
+        Initializer.tpa.remove(playerName);
+        ffaconst.remove(e.getPlayer());
     }
 
     /*@EventHandler(priority = EventPriority.NORMAL)
@@ -283,7 +280,6 @@ public class events implements Listener {
         }
 
         if (!e.getInventory().equals(Shop.inv)) return;
-
         e.setCancelled(true);
 
         if (e.getRawSlot() == 10) {
@@ -297,33 +293,23 @@ public class events implements Listener {
     }
 
     @EventHandler
-    public void onInventoryClick(final InventoryDragEvent e) {
-        e.setCancelled(e.getCursor() != null && e.getCursor().getItemMeta().hasLore());
+    private void onPhysics(final BlockPhysicsEvent e) {
+        e.setCancelled(true);
     }
 
     @EventHandler
     private void onPlayerKill(final PlayerDeathEvent e) {
-        if (!AestheticNetwork.ffaconst.contains(e.getPlayer())) e.getDrops().clear();
-
         Player p = e.getPlayer();
-        AestheticNetwork.ffaconst.remove(p);
+        ffaconst.remove(p);
+        boolean a = teams.containsKey(p.getUniqueId());
+        if (!ffaconst.contains(e.getPlayer()) || a) e.getDrops().clear();
+
         Player killer = e.getPlayer().getKiller();
-        if (teams.containsKey(p.getUniqueId())) {
+        if (a) {
             e.setCancelled(true);
             DuelRequest tpr = getDUELrequest(p);
-            p.setHealth(20.0F);
-            p.setFoodLevel(20);
-            p.setNoDamageTicks(100);
-            p.getInventory().clear();
             ArrayList<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
-            Player kp = plist.get(1);
-
-            if (killer != null && killer != e.getPlayer()) kp = killer;
-
-            kp.setHealth(20.0F);
-            kp.setFoodLevel(20);
-            kp.setNoDamageTicks(100);
-            kp.getInventory().clear();
+            Player kp = (killer == p || killer != e.getPlayer()) ? killer : plist.get(1);
 
             duel_spawnFireworks(p.getLocation());
             //spawnFireworks(kp.getLocation());
@@ -346,67 +332,89 @@ public class events implements Listener {
 
             if (newrounds == tpr.getMaxrounds()) {
                 if (red > blue) {
-                    Utils.displayduelresume(redp,
+                    displayduelresume(redp,
                             bluep,
                             true,
                             red,
                             blue,
                             tpr.getStart(),
                             System.currentTimeMillis(),
-                            "n",
-                            true);
-                    redp.sendTitle(translate("&aYou won!"), "", 1, 60, 1);
-                    bluep.sendTitle(translate("&cYou lost"),"", 1, 60, 1);
+                            " n ",
+                            true,
+                            tpr.IsLegacy(),
+                            translate("&aYou won!"),
+                            translate("&cYou lost"));
                 } else if (blue > red) {
-                    Utils.displayduelresume(bluep,
+                    displayduelresume(bluep,
                             redp,
                             true,
                             red,
                             blue,
                             tpr.getStart(),
                             System.currentTimeMillis(),
-                            "n", false);
-                    redp.sendTitle(translate("&cYou lost"), "", 1, 60, 1);
-                    bluep.sendTitle(translate("&aYou won!"), "", 1, 60, 1);
+                            " n ",
+                            false,
+                            tpr.IsLegacy(),
+                            translate("&cYou lost"),
+                            translate("&aYou won!"));
                 } else {
-                    Utils.displayduelresume(redp,
+                    displayduelresume(redp,
                             bluep,
                             true,
                             red,
                             blue,
                             tpr.getStart(),
                             System.currentTimeMillis(),
-                            "y",
-                            false);
-                    redp.sendTitle(translate("&eDraw"), "", 1, 60, 1);
-                    bluep.sendTitle(translate("&eDraw"), "", 1, 60, 1);
+                            " y ",
+                            false,
+                            tpr.IsLegacy(),
+                            translate("&eDraw"),
+                            translate("&eDraw"));
                 }
 
-                teams.remove(kp.getUniqueId());
-                teams.remove(p.getUniqueId());
-                duel.remove(tpr);
-                Player finalKp = kp;
-                Bukkit.getScheduler().runTaskLater(AestheticNetwork.getInstance(), () -> {
-                    spawn(finalKp);
-                    spawn(p);
-                    if (Objects.equals(tpr.getType(), "field")) AestheticNetwork.getInstance().field -= 1;
+                p.setNoDamageTicks(100);
+                p.setFoodLevel(20);
+                p.setHealth(20);
 
+                kp.setNoDamageTicks(100);
+                kp.setFoodLevel(20);
+                kp.setHealth(20);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    teams.remove(kp.getUniqueId());
+                    teams.remove(p.getUniqueId());
+                    duel.remove(tpr);
+                    spawn(kp);
+                    spawn(p);
                     plist.clear();
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
+                    User up = api.getUserManager().getUser(p.getUniqueId());
+                    up.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
+                    api.getUserManager().saveUser(up);
+
+                    User ukp = api.getUserManager().getUser(kp.getUniqueId());
+                    ukp.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
+                    api.getUserManager().saveUser(ukp);
                 }, 60L);
                 return;
             }
 
-            kp.sendTitle(translate("&c" + red + " &7- &9" + blue), "", 1, 60, 1);
-            p.sendTitle(translate("&c" + red + " &7- &9" + blue), "", 1, 60, 1);
-
             String type = tpr.getType();
+            int arena = tpr.getArena();
             tpr.setRounds(newrounds);
             tpr.setRed(red);
             tpr.setBlue(blue);
-            Utils.startduel(kp, p, type, newrounds, tpr.getMaxrounds(), tpr.getArena(), false);
+            startduel(kp,
+                    p,
+                    type,
+                    newrounds,
+                    tpr.getMaxrounds(),
+                    arena);
             plist.clear();
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+                    "arena reset duel_" +
+                            type +
+                            arena +
+                            (type.equalsIgnoreCase("field") ? " veryfast" : " slow"));
             return;
         }
 
@@ -461,19 +469,12 @@ public class events implements Listener {
     }
 
     @EventHandler
-    public void onPlace(BlockPlaceEvent e) {
-        if (e.getBlockPlaced().getType() == Material.SPONGE)
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> e.getBlockPlaced().getLocation().getBlock().setType(Material.AIR), 5L);
-    }
-
-    @EventHandler
     public void onSpawn(EntitySpawnEvent e) {
         e.setCancelled(!entities.contains(e.getEntity().getType()));
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        // fixes the "0 health no respawn" bug
         if (e.getPlayer().getHealth() == 0.0) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 e.getPlayer().setHealth(20);
@@ -483,15 +484,15 @@ public class events implements Listener {
         }
 
         if (Utils.manager1().get("r." + e.getPlayer().getUniqueId() + ".t") == null)
-            AestheticNetwork.tpa.add(e.getPlayer().getName());
+            Initializer.tpa.add(e.getPlayer().getName());
 
         if (Utils.manager1().get("r." + e.getPlayer().getUniqueId() + ".m") == null)
-            AestheticNetwork.msg.add(e.getPlayer().getName());
+            msg.add(e.getPlayer().getName());
         spawn(e.getPlayer());
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
-        e.setRespawnLocation(plugin.spawn);
+        e.setRespawnLocation(spawn);
     }
 }

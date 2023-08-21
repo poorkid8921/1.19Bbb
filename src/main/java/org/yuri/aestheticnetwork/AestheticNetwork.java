@@ -13,54 +13,38 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.commands.*;
-import org.yuri.aestheticnetwork.commands.duel.Duel;
-import org.yuri.aestheticnetwork.commands.duel.DuelAccept;
-import org.yuri.aestheticnetwork.commands.duel.DuelDeny;
 import org.yuri.aestheticnetwork.commands.duel.Event;
-import org.yuri.aestheticnetwork.commands.duel.placeholders;
-import org.yuri.aestheticnetwork.commands.parties.BaseCommand;
-import org.yuri.aestheticnetwork.commands.tpa.*;
+import org.yuri.aestheticnetwork.commands.ffa;
+import org.yuri.aestheticnetwork.commands.flat;
+import org.yuri.aestheticnetwork.commands.duel.*;
+import org.yuri.aestheticnetwork.commands.tpa.TpaCommand;
+import org.yuri.aestheticnetwork.commands.tpa.TpacceptCommand;
+import org.yuri.aestheticnetwork.commands.tpa.TpahereCommand;
+import org.yuri.aestheticnetwork.commands.tpa.TpdenyCommand;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
 import java.util.logging.Level;
 
+import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
-    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
     private static AestheticNetwork instance;
-    private static Economy econ;
+    public FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private File customConfigFile1 = new File(getDataFolder(), "other.yml");
-    private File customConfigFile2 = new File(getDataFolder(), "tiers.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     private FileConfiguration customConfigConfig1 = YamlConfiguration.loadConfiguration(customConfigFile1);
-    private FileConfiguration customConfigConfig2 = YamlConfiguration.loadConfiguration(customConfigFile2);
-    FileConfiguration config = getConfig();
-    static ArrayList<Player> ffaconst = new ArrayList<>();
-    public int field = 0;
-    public Location ffa;
-    public Location flat;
-    public Location lflat;
-    public Location nethpot;
-    public Location spawn;
 
     private static double[] linear(double from, double to, int max) {
         final double[] res = new double[max];
@@ -71,16 +55,11 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     }
 
     public static String rgbGradient(String str, Color from, Color to) {
-
-        // interpolate each component separately
         final double[] red = linear(from.getRed(), to.getRed(), str.length());
         final double[] green = linear(from.getGreen(), to.getGreen(), str.length());
         final double[] blue = linear(from.getBlue(), to.getBlue(), str.length());
-
         final StringBuilder builder = new StringBuilder();
 
-        // create a string that matches the input-string but has
-        // the different color applied to each char
         for (int i = 0; i < str.length(); i++) {
             builder.append(ChatColor.of(new Color(
                             (int) Math.round(red[i]),
@@ -146,36 +125,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         }
     }
 
-    public void reloadCustomConfig2() {
-        if (customConfigFile2 == null)
-            customConfigFile2 = new File(getDataFolder(), "tiers.yml");
-
-        customConfigConfig2 = YamlConfiguration.loadConfiguration(customConfigFile2);
-    }
-
-    public FileConfiguration getCustomConfig2() {
-        if (customConfigConfig2 == null)
-            this.reloadCustomConfig2();
-
-        return customConfigConfig2;
-    }
-
-    public void saveCustomConfig2() {
-        if (customConfigConfig2 == null || customConfigFile2 == null) {
-            return;
-        }
-        try {
-            getCustomConfig1().save(customConfigFile2);
-        } catch (IOException ex) {
-            this.getLogger().log(Level.SEVERE, "Could not save config to " + customConfigFile2, ex);
-        }
-    }
-
-    boolean hasReset = false;
-    public static ArrayList<String> tpa = new ArrayList<>();
-    public static ArrayList<String> msg = new ArrayList<>();
-    int ffastr = 1, flatstr = 1, nethstr = 1;
-
     @Override
     public void onEnable() {
         if (!setupEconomy()) {
@@ -195,7 +144,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
-            LuckPerms api = provider.getProvider();
+            api = provider.getProvider();
             Bukkit.getPluginManager().registerEvents(new events(this, api, econ), this);
         }
 
@@ -228,7 +177,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
 
         Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-        Objects.requireNonNull(this.getCommand("party")).setExecutor(new BaseCommand());
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
@@ -256,10 +204,12 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             //Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset underwater veryfast -silent");
             hasReset = !hasReset;
 
-            for (int i = 1; i <= 4; i++) {
+            /*for (int i = 1; i <= 4; i++) {
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
                         "arena reset ffa_reg" + i + " extreme -silent");
-            }
+            }*/
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+                    "arena reset ffa_arena veryfast -silent");
 
             ffastr++;
 
@@ -352,8 +302,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
             if (Utils.manager1().get(
                     "r." + target.getUniqueId() + ".m") != null &&
-            !sender.hasPermission("has.staff"))
-            {
+                    !sender.hasPermission("has.staff")) {
                 player.sendMessage(translate("&7You can't send messages to this player since he locked his messages."));
                 return true;
             }

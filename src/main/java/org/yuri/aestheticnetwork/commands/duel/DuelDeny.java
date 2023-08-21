@@ -7,8 +7,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import static org.yuri.aestheticnetwork.utils.RequestManager.*;
+import static org.yuri.aestheticnetwork.utils.Initializer.duel;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.duels.DuelManager.getDUELrequest;
 
 public class DuelDeny implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {

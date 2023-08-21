@@ -19,7 +19,7 @@ commands:
     usage: /<command>
   tpa:
     usage: /<command>
-    aliases: [ tpr ]
+    aliases: tpr
   tpahere:
     usage: /<command>
   tpdeny:
@@ -33,7 +33,7 @@ commands:
     aliases: [ tell, whisper, w ]
   reply:
     usage: /<command>
-    aliases: [ r ]
+    aliases: r
   report:
     usage: /<command>
   shop:
@@ -46,7 +46,7 @@ commands:
     aliases: [ tpatoggle, toggletpa ]
   duel:
     usage: /<command>
-    aliases: [ 1v1 ]
+    aliases: 1v1
   duelaccept:
     usage: /<command>
   dueldeny:
@@ -59,9 +59,6 @@ commands:
   flatlegacy:
     usage: /<command>
     aliases: [ lflat, legacyflat, oldflat ]
-  party:
-    usage: /<command>
-    aliases: [ p, team ]
 permissions:
   has.staff:
-    description: Use chatlock & Bypass it
+    description: Is a staff member

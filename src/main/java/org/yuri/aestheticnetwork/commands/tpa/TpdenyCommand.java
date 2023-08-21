@@ -7,7 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import static org.yuri.aestheticnetwork.utils.RequestManager.*;
+import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
+import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public class TpdenyCommand implements CommandExecutor {

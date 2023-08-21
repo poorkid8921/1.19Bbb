@@ -49,7 +49,7 @@ public class TpacceptCommand implements CommandExecutor {
         }
 
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason ->
-                removeTPArequest(getTPArequest(tempuser)));
+                removeTPArequest(request));
         return true;
     }
 }

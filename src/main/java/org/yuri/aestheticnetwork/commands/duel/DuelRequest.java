@@ -14,16 +14,7 @@ public class DuelRequest {
     private int red;
     private int blue;
 
-    public DuelRequest(Player sender,
-                       Player reciever,
-                       String type,
-                       int maxrounds,
-                       int rounds,
-                       int sr,
-                       int sb,
-                       long starttime,
-                       int arena,
-                       boolean legacy) {
+    public DuelRequest(Player sender, Player reciever, String type, int maxrounds, int rounds, int sr, int sb, long starttime, int arena, boolean legacy) {
         this.sender = sender;
         this.reciever = reciever;
         this.type = type;

@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.AestheticNetwork;
+import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 public class MsgLock implements CommandExecutor {
@@ -16,12 +17,12 @@ public class MsgLock implements CommandExecutor {
             p.sendMessage(Utils.translate("&7You can receive messages from players again."));
             Utils.manager1().set("r." + p.getUniqueId() + (Utils.manager1().get("r." + p.getUniqueId() + ".t") == null ? "" : ".m"), null);
             AestheticNetwork.getInstance().saveCustomConfig1();
-            AestheticNetwork.msg.add(p.getName());
+            Initializer.msg.add(p.getName());
         } else {
             p.sendMessage(Utils.translate("&7You will no longer receive messages from players."));
             Utils.manager1().set("r." + p.getUniqueId() + ".m", "");
             AestheticNetwork.getInstance().saveCustomConfig1();
-            AestheticNetwork.msg.remove(p.getName());
+            Initializer.msg.remove(p.getName());
         }
         return true;
     }

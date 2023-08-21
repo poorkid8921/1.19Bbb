@@ -6,25 +6,20 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yuri.aestheticnetwork.AestheticNetwork;
-import org.yuri.aestheticnetwork.utils.RequestManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.yuri.aestheticnetwork.events.teams;
-import static org.yuri.aestheticnetwork.utils.RequestManager.*;
+import static org.yuri.aestheticnetwork.utils.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class Duel implements CommandExecutor, TabExecutor {
-    List<String> lg = List.of("Field");
-    List<String> lgsel = List.of("field");
+    List<String> lg = List.of("Field", "Flat");
+    List<String> lgsel = List.of("field", "flat");
 
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -44,21 +39,21 @@ public class Duel implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        if (args.length == 2) {
-            gm = String.valueOf(args[1]);
+        if (args.length > 1) {
+            gm = String.valueOf(args[1]).toLowerCase();
 
             if (!lgsel.contains(gm.toLowerCase()))
                 gm = "field";
         }
 
-        if (args.length == 3) {
+        if (args.length > 2) {
             try {
                 i = Integer.parseInt(args[2]);
 
                 if (i < 1)
                     i = 1;
-                else if (i > 3)
-                    i = 3;
+                else if (i > 5)
+                    i = 5;
             } catch (Exception ignored) {
             }
         }
@@ -94,12 +89,8 @@ public class Duel implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        boolean legacy = false;
-        if (args.length == 4 & Objects.equals(args[3].toLowerCase(), "legacy")) {
-            user.setMetadata("1.19.2", new FixedMetadataValue(AestheticNetwork.getInstance(), 0));
-            recipient.setMetadata("1.19.2", new FixedMetadataValue(AestheticNetwork.getInstance(), 0));
-            legacy = true;
-        }
+        boolean legacy = args.length > 3 &&
+                Objects.equals(args[3].toLowerCase(), "legacy");
 
         addDUELrequest(user,
                 recipient,
@@ -114,20 +105,14 @@ public class Duel implements CommandExecutor, TabExecutor {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        ArrayList<String> str = Bukkit.getOnlinePlayers()
-                .stream()
-                .map(Player::getName)
-                .sorted(String::compareToIgnoreCase).collect(Collectors.toCollection(ArrayList::new));
-        str.addAll(parties_tabcomplete);
-        return args.length < 1 ? str :
-                args.length < 2 ? Bukkit.getOnlinePlayers()
+        return args.length < 2 ? Bukkit.getOnlinePlayers()
                         .stream()
                         .map(Player::getName)
                         .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
                         .sorted(String::compareToIgnoreCase)
                         .collect(Collectors.toList()) :
                         args.length < 3 ? lg :
-                                args.length < 4 ? List.of("1", "2", "3") :
+                                args.length < 4 ? List.of("1", "2", "3", "4", "5") :
                                         args.length < 5 ? List.of("Legacy") : null;
     }
 }
