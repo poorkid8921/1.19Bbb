@@ -4,9 +4,7 @@ import io.papermc.lib.PaperLib;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.*;
 import org.bukkit.command.Command;
@@ -19,7 +17,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.tpa.*;
+import org.yuri.aestheticnetwork.commands.*;
+import org.yuri.aestheticnetwork.commands.tpa.*;
+import org.yuri.aestheticnetwork.utils.Initializer;
+import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.awt.Color;
 import java.io.File;
@@ -27,21 +28,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import static org.yuri.aestheticnetwork.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public final class AestheticNetwork extends JavaPlugin implements CommandExecutor, TabExecutor {
-    private static AestheticNetwork instance;
     FileConfiguration config = getConfig();
-    public static LuckPerms lp;
-
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    public static HashMap<UUID, UUID> lastReceived = new HashMap<>();
-    public static boolean chatlock = false;
-    //public static HashMap<UUID, String> hm = new HashMap<>();
-    public static int ffastr = 0;
-    public static ArrayList<String> tpa = new ArrayList<>();
-    public static ArrayList<String> msg = new ArrayList<>();
 
     private static double[] linear(double from, double to, int max) {
         final double[] res = new double[max];
@@ -106,15 +99,9 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         return true;
     }
 
-    private boolean setupChat() {
-        RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
-        chat = rsp.getProvider();
-        return true;
-    }
-
     @Override
     public void onEnable() {
-        instance = this;
+        Initializer.p = this;
 
         config.addDefault("placeholders.discordlink", "https://discord.gg/aestheticnetwork");
         config.addDefault("discordmessage", "&7You can join our discord server using &7%discordlink%&7!");
@@ -136,13 +123,10 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null && setupPermissions()) {
             lp = provider.getProvider();
-            Bukkit.getPluginManager().registerEvents(new events(lp, perms), this);
-            Bukkit.getPluginManager().registerEvents(new AnvilListener(lp), this);
-            Objects.requireNonNull(this.getCommand("chatlock")).setExecutor(new ChatLock(lp, perms));
+            Bukkit.getPluginManager().registerEvents(new events(), this);
         }
-
-        if (!setupChat())
-            return;
+        Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
+        Objects.requireNonNull(this.getCommand("chatlock")).setExecutor(new ChatLock());
 
         //if (setupEconomy())
         //    Objects.requireNonNull(this.getCommand("pay")).setExecutor(new PayCommand(econ));
@@ -168,20 +152,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         if (config.getBoolean("Arena")) {
             Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "killall endercrystals world");
-                Random rand = new Random();
-                int ffa;
-                do {
-                    ffa = rand.nextInt(2);
-                } while (ffa == ffastr);
 
-                ffastr = ffa;
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset " + getConfig().getString("ArenaName") + ffa + " veryfast -silent");
-
-                for (int i = 1; i <= 8; i++) {
-                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset " + getConfig().getString("ArenaName") + "_reg" + i + " veryfast -silent");
-                }
-
-                Bukkit.getScheduler().scheduleSyncDelayedTask(this, () ->
                 Bukkit.getServer().getOnlinePlayers().stream().filter(s -> !s.isInsideVehicle() &&
                         !s.isGliding() &&
                         s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
@@ -189,9 +160,9 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
                     loctp.setPitch(player.getLocation().getPitch());
                     loctp.setYaw(player.getLocation().getYaw());
                     PaperLib.teleportAsync(player, loctp);
-                }), 5L);
+                });
                 Bukkit.broadcastMessage(rgbGradient("ᴛʜᴇ ᴀʀᴇɴᴀ ʜᴀꜱ ʙᴇᴇɴ ʀᴇꜱᴇᴛ", new Color(229, 45, 39), new Color(179, 18, 23)));
-            }, 0L, this.getConfig().getInt("ArenaResetTimeInTicks"));
+            }, 0L, 2405L);
             //Bukkit.broadcastMessage(rgbGradient("ᴛʜᴇ ᴀʀᴇɴᴀ ʜᴀꜱ ʙᴇᴇɴ ʀᴇꜱᴇᴛ", new Color(229, 45, 39), new Color(179, 18, 23)));
             //Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, events::spawnLootdrop, 0L, this.getConfig().getInt("ArenaResetTimeInTicks")/2);
         }
@@ -199,7 +170,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
     }
 
     public static AestheticNetwork getInstance() {
-        return instance;
+        return p;
     }
 
     @Override

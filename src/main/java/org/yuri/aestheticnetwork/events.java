@@ -1,73 +1,87 @@
 package org.yuri.aestheticnetwork;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import io.papermc.lib.PaperLib;
-import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.text.TextComponent;
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
-import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
-import org.bukkit.block.ShulkerBox;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Redstone;
 import org.bukkit.permissions.ServerOperator;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
+import org.yuri.aestheticnetwork.commands.Report;
+import org.yuri.aestheticnetwork.utils.InventoryInstance;
+import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
+import org.yuri.aestheticnetwork.utils.Utils;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.*;
-import static org.yuri.aestheticnetwork.Utils.*;
+
+import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.Utils.removeRequest;
+import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public class events implements Listener {
-    AestheticNetwork plugin = AestheticNetwork.getInstance();
+    private static boolean isSuspectedScanPacket(String buffer) {
+        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) ||
+                !buffer.startsWith("/") ||
+                buffer.startsWith("/about");
+    }
 
-    LuckPerms lp;
-    Permission perms;
-    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
-    private final HashMap<UUID, Long> playerstoteming = new HashMap<>();
+    public static void spawnFireworks(Location loc) {
+        loc.add(new Vector(0, 1, 0));
+        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        FireworkMeta fwm = fw.getFireworkMeta();
+        fwm.setPower(2);
+        Random random = new Random();
+        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random.nextInt(color.size()))).withColor(color.get(random.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fw.setFireworkMeta(fwm);
+    }
 
-    public events(LuckPerms lped, Permission perm) {
-        lp = lped;
-        perms = perm;
+    /*@EventHandler
+    private void onDispense(BlockDispenseEvent e) {
+        if (e.getItem().getType().equals(Material.BONE_MEAL)) {
+            Container container = (Container) e.getBlock().getState();
+            container.getInventory().addItem(e.getItem());
+        }
+    }*/
+
+    public static int countMinecartInChunk(Chunk chunk) {
+        int count = 0;
+
+        for (Entity entity : chunk.getEntities()) {
+            if (entity instanceof Minecart) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static boolean removeMinecartInChunk(Chunk chunk) {
+        for (Entity entity : chunk.getEntities()) {
+            if (entity instanceof Minecart) {
+                entity.remove();
+            }
+        }
+        return true;
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onPortal(PlayerPortalEvent event) {
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+        p.getServer().getScheduler().scheduleSyncDelayedTask(p, () -> {
             Player player = event.getPlayer();
             if (player.getLocation().getBlock().getType().equals(Material.NETHER_PORTAL)) {
                 PaperLib.teleportAsync(player, event.getFrom());
@@ -100,14 +114,6 @@ public class events implements Listener {
             playerstoteming.put(e.getEntity().getUniqueId(), System.currentTimeMillis() + 500);
     }
 
-    /*@EventHandler
-    private void onDispense(BlockDispenseEvent e) {
-        if (e.getItem().getType().equals(Material.BONE_MEAL)) {
-            Container container = (Container) e.getBlock().getState();
-            container.getInventory().addItem(e.getItem());
-        }
-    }*/
-
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onInteract(PlayerInteractEvent event) {
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
@@ -129,17 +135,11 @@ public class events implements Listener {
         UUID playerUniqueId = e.getPlayer().getUniqueId();
         cooldowns.remove(playerUniqueId);
         playerstoteming.remove(playerUniqueId);
-        AestheticNetwork.lastReceived.remove(playerUniqueId);
+        lastReceived.remove(playerUniqueId);
         //AestheticNetwork.hm.remove(playerUniqueId);
         Report.cooldown.remove(playerUniqueId);
-        AestheticNetwork.msg.remove(e.getPlayer().getName());
-        AestheticNetwork.tpa.remove(e.getPlayer().getName());
-    }
-
-    private static boolean isSuspectedScanPacket(String buffer) {
-        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) ||
-                !buffer.startsWith("/") ||
-                buffer.startsWith("/about");
+        msg.remove(e.getPlayer().getName());
+        tpa.remove(e.getPlayer().getName());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -151,7 +151,7 @@ public class events implements Listener {
     @EventHandler
     public void onPlayerRegisterChannel(PlayerRegisterChannelEvent e) {
         if (e.getChannel().equals("hcscr:haram"))
-            e.getPlayer().sendPluginMessage(plugin, "hcscr:haram", new byte[]{1});
+            e.getPlayer().sendPluginMessage(p, "hcscr:haram", new byte[]{1});
     }
 
     @EventHandler
@@ -159,32 +159,20 @@ public class events implements Listener {
         if (e.getInventory().getHolder() instanceof InventoryInstance) {
             e.setCancelled(true);
             if (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getInventory()))
-                ((InventoryInstance) e.getInventory().getHolder()).whenClicked(e.getCurrentItem(), e.getAction(), e.getSlot());
-            return;
-        }
+                ((InventoryInstance) e.getInventory().getHolder()).whenClicked(e.getCurrentItem(),
+                        e.getAction(),
+                        e.getSlot());
+        } else if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
+            e.setCancelled(true);
+            final ItemStack clickedItem = e.getCurrentItem();
+            ItemMeta meta = clickedItem.getItemMeta();
+            if (meta == null)
+                return;
 
-        final ItemStack clickedItem = e.getCurrentItem();
-        if (clickedItem == null)
-            return;
-
-        ItemMeta meta = clickedItem.getItemMeta();
-        if (meta == null)
-            return;
-
-        NamespacedKey key = new NamespacedKey(plugin, "reported");
-        final Player p = (Player) e.getWhoClicked();
-        String report = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
-        if (report != null) {
-            if (e.getRawSlot() == 10)
-                report(plugin, p, report, "Exploiting");
-            else if (e.getRawSlot() == 11)
-                report(plugin, p, report, "Doxxing");
-            else if (e.getRawSlot() == 12)
-                report(plugin, p, report, "Ban Evasion");
-            else if (e.getRawSlot() == 13)
-                report(plugin, p, report, "Spamming");
-            else if (e.getRawSlot() == 14)
-                report(plugin, p, report, "Advertising");
+            holder.whenClicked(e.getCurrentItem(),
+                    e.getAction(),
+                    e.getSlot(),
+                    holder.getArg());
         }
     }
 
@@ -193,110 +181,8 @@ public class events implements Listener {
         if (e.getCursor() == null)
             return;
 
-        ItemMeta meta = e.getCursor().getItemMeta();
-        e.setCancelled(meta.hasLore());
-    }
-
-    static ArrayList<Color> color = new ArrayList<>(List.of(Color.LIME,
-            Color.ORANGE,
-            Color.RED,
-            Color.BLUE,
-            Color.OLIVE,
-            Color.PURPLE,
-            Color.WHITE,
-            Color.AQUA,
-            Color.BLACK,
-            Color.FUCHSIA,
-            Color.GRAY,
-            Color.GREEN,
-            Color.MAROON,
-            Color.NAVY,
-            Color.SILVER,
-            Color.TEAL,
-            Color.YELLOW));
-
-    public static void spawnFireworks(Location loc) {
-        loc.add(new Vector(0, 1, 0));
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        Random random = new Random();
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random.nextInt(color.size()))).withColor(color.get(random.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-    }
-
-    static World respawnWorld = Bukkit.getWorld("world");
-    public static final ArrayList<Material> bannedblocks = new ArrayList<>(Arrays.asList(
-            Material.LAVA, Material.WATER, Material.CACTUS, Material.BARRIER
-    ));
-
-    public static Location calcSpawnLocation() {
-        int x = new Random().nextInt(25000);
-        int z = new Random().nextInt(25000);
-        assert respawnWorld != null;
-
-        if (x > 10000)
-            x = -x;
-
-        if (z > 7500)
-            z = -z;
-
-        int y = respawnWorld.getHighestBlockYAt(x, z);
-        Block blockAt = respawnWorld.getBlockAt(x, y, z);
-        if (bannedblocks.contains(blockAt.getType()))
-            return null;
-        return new Location(respawnWorld, x, y, z).add(new Vector(0, 1, 0));
-    }
-
-    static Random rand = new Random();
-
-    public static ItemStack gearEnch(ItemStack is, Enchantment em) {
-        ItemMeta ism = is.getItemMeta();
-        ism.setDisplayName(translate("&7ᴍᴄ.ᴀᴇꜱᴛʜᴇᴛɪᴄ.&cʀᴇᴅ"));
-        is.setItemMeta(ism);
-        is.addEnchantment(em, 4);
-        is.addEnchantment(Enchantment.MENDING, 1);
-        is.addEnchantment(Enchantment.DURABILITY, 3);
-        return is;
-    }
-
-    public static void spawnLootdrop() {
-        Location respawn = null;
-        while (respawn == null) respawn = calcSpawnLocation();
-        Bukkit.getServer().getWorld("world").loadChunk(respawn.getChunk());
-        respawn.getBlock().setType(Material.RED_SHULKER_BOX);
-        ShulkerBox c = (ShulkerBox) respawn.getBlock().getState();
-        Inventory i = c.getInventory();
-
-       /*Bukkit.getScheduler().runTaskAsynchronously(AestheticNetwork.getInstance(), () -> {
-            int i1 = rand.nextInt(27);
-            int i2 = rand.nextInt(27);
-            int i3 = rand.nextInt(27);
-            int i4 = rand.nextInt(27);
-            int i5 = rand.nextInt(27);
-            Bukkit.getScheduler().runTask(AestheticNetwork.getInstance(), () -> {
-                for (int ii = 0; ii <= rand.nextInt(2); ii++) {
-                    i.setItem(i1, gearEnch(new ItemStack(Material.NETHERITE_HELMET),
-                            Enchantment.PROTECTION_ENVIRONMENTAL));
-                    i.setItem(i2, gearEnch(new ItemStack(Material.NETHERITE_CHESTPLATE),
-                            Enchantment.PROTECTION_ENVIRONMENTAL));
-                    i.setItem(i3 + ii, gearEnch(new ItemStack(Material.NETHERITE_LEGGINGS),
-                            Enchantment.PROTECTION_EXPLOSIONS));
-                    i.setItem(i4 + ii, gearEnch(new ItemStack(Material.NETHERITE_BOOTS),
-                            Enchantment.PROTECTION_ENVIRONMENTAL));
-                }
-                i.setItem(i5, gearEnch(new ItemStack(Material.NETHERITE_PICKAXE), Enchantment.DIG_SPEED));
-                i.setItem(27 - i5, gearEnch(new ItemStack(Material.NETHERITE_SWORD), Enchantment.DAMAGE_ALL));
-
-                for (int iii = 0; iii < rand.nextInt(5); iii++) {
-                    i.setItem(iii*2, new ItemStack(Material.COBWEB, rand.nextInt(32)));
-                }
-            });
-        });*/
-        c.setLootTable(Bukkit.getServer().getLootTable(NamespacedKey.minecraft("chests/economyloot")));
-        Bukkit.getServer().broadcastMessage(translate("&7A lootbox has spawned at &c" + (int) respawn.getX() + " " +
-                (int) respawn.getY() + " " +
-                (int) respawn.getZ() + "&7!"));
+        e.setCancelled(e.getInventory().getHolder() instanceof InventoryInstance ||
+                e.getInventory().getHolder() instanceof InventoryInstanceReport);
     }
 
     @EventHandler
@@ -336,7 +222,7 @@ public class events implements Listener {
         } else
             e.getPlayer().getWorld().strikeLightningEffect(e.getPlayer().getLocation());
 
-        Bukkit.getServer().getScheduler().runTask(plugin, () -> {
+        Bukkit.getServer().getScheduler().runTask(p, () -> {
             Random ran = new Random();
             int b = ran.nextInt(100);
             if (b <= 5)
@@ -361,11 +247,12 @@ public class events implements Listener {
             return;
 
         if (e.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
-                && e.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                && e.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
             return;
-        }
+
         final Material type = ((Item) e.getEntity()).getItemStack().getType();
-        e.setCancelled(type.name().contains("DIAMOND") || type.name().contains("NETHERITE"));
+        e.setCancelled(type.name().contains("DIAMOND") ||
+                type.name().contains("NETHERITE"));
     }
 
     @EventHandler
@@ -375,7 +262,7 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
-        if (AestheticNetwork.chatlock && !e.getPlayer().hasPermission("has.staff")) {
+        if (chatlock && !e.getPlayer().hasPermission("has.staff")) {
             e.getPlayer().sendMessage(Utils.translate("&7Chat is currently locked. Try again later"));
             e.setCancelled(true);
             return;
@@ -390,26 +277,6 @@ public class events implements Listener {
             e.setCancelled(true);
         else
             cooldowns.put(playerUniqueId, System.currentTimeMillis() + 500);
-    }
-
-    public static int countMinecartInChunk(Chunk chunk) {
-        int count = 0;
-
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public static boolean removeMinecartInChunk(Chunk chunk) {
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                entity.remove();
-            }
-        }
-        return true;
     }
 
     @EventHandler
@@ -467,22 +334,25 @@ public class events implements Listener {
             e.getPlayer().getInventory().setChestplate(chestplate);
             e.getPlayer().getInventory().setLeggings(leggings);
             e.getPlayer().getInventory().setBoots(boots);
-            e.getPlayer().teleport(new Location(Bukkit.getWorld(plugin.getConfig().getString("Spawn.World")), plugin.getConfig().getDouble("Spawn.X"), plugin.getConfig().getDouble("Spawn.Y"), plugin.getConfig().getDouble("Spawn.Z")));
+            e.getPlayer().teleport(new Location(Bukkit.getWorld("world"),
+                    p.getConfig().getDouble("Spawn.X"),
+                    p.getConfig().getDouble("Spawn.Y"),
+                    p.getConfig().getDouble("Spawn.Z")));
         }
 
         // fixes the "0 health no respawn" bug
         if (e.getPlayer().getHealth() == 0.0) {
-            Bukkit.getServer().getScheduler().runTask(plugin, () -> {
+            Bukkit.getServer().getScheduler().runTask(p, () -> {
                 e.getPlayer().setHealth(20);
                 e.getPlayer().kickPlayer("Disconnected");
             });
         }
 
         if (Utils.manager().get("r." + e.getPlayer().getUniqueId() + ".t") == null)
-            AestheticNetwork.tpa.add(e.getPlayer().getName());
+            tpa.add(e.getPlayer().getName());
 
         if (Utils.manager().get("r." + e.getPlayer().getUniqueId() + ".m") == null)
-            AestheticNetwork.msg.add(e.getPlayer().getName());
+            msg.add(e.getPlayer().getName());
 
         /*final URI ENDPOINT = URI.create("https://api.uku3lig.net/tiers/vanilla");
         final HttpClient client = HttpClient.newHttpClient();
@@ -496,10 +366,10 @@ public class events implements Listener {
     public void onRespawn(PlayerRespawnEvent e) {
         //e.getPlayer().kickPlayer("You have lost the FFA event.");
         if (e.getPlayer().getBedSpawnLocation() == null)
-            e.setRespawnLocation(new Location(Bukkit.getWorld(plugin.getConfig().getString("Spawn.World")),
-                    plugin.getConfig().getDouble("Spawn.X"),
-                    plugin.getConfig().getDouble("Spawn.Y"),
-                    plugin.getConfig().getDouble("Spawn.Z")));
+            e.setRespawnLocation(new Location(Bukkit.getWorld("world"),
+                    p.getConfig().getDouble("Spawn.X"),
+                    p.getConfig().getDouble("Spawn.Y"),
+                    p.getConfig().getDouble("Spawn.Z")));
     }
 
     @EventHandler

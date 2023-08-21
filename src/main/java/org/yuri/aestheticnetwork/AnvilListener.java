@@ -13,17 +13,14 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.yuri.aestheticnetwork.AestheticNetwork;
+import org.yuri.aestheticnetwork.utils.Initializer;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class AnvilListener implements Listener {
-    LuckPerms lp;
-
-    public AnvilListener(LuckPerms lap) {
-        lp = lap;
-    }
-
     public static void updateColorTranslationForAnvilOutput(AnvilInventory anvilInventory) {
         new BukkitRunnable() {
             @Override
@@ -35,7 +32,7 @@ public class AnvilListener implements Listener {
 
                 translateOutputItemNameColorBasedOnInputItem(outputItem, inputItem);
             }
-        }.runTaskLater(AestheticNetwork.getInstance(), 1L);
+        }.runTaskLater(Initializer.p, 1L);
     }
 
     public static void translateOutputItemNameColorBasedOnInputItem(ItemStack outputItem, ItemStack inputItem) {
