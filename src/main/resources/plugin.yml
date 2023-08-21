@@ -1,50 +1,64 @@
-name: Anarchy
-version: 2.0.2
-main: bab.bbb.Bbb
-api-version: 1.19
+name: AestheticNetwork
+version: '${project.version}'
+main: org.yuri.aestheticnetwork.AestheticNetwork
+api-version: 1.18
 
 commands:
+  spawn:
+    description: Teleports you to spawn
+    usage: /<command>
+  discord:
+    description: Displays the discord link
+    usage: /<command>
+  ffa:
+    description: Teleports you to the FFA arena
+    usage: /<command>
+    aliases: [ hole, field ]
+  flat:
+    description: Teleports you to the flat arena
+    usage: /<command>
   tpa:
-    description: Send a teleport request to a player.
     usage: /<command>
-    aliases: [ tpask ]
+    aliases: tpr
   tpahere:
-    description: Send a teleport here request to a player.
     usage: /<command>
-  tpaccept:
-    description: Accept a teleport request.
-    usage: /<command>
-    aliases: [tpyes, tpy]
   tpdeny:
-    description: Deny a teleport request.
     usage: /<command>
-    aliases: [tpno, tpn, tpd]
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
   msg:
-    description: Send a message to a player.
     usage: /<command>
-    aliases: [ whisper, tell, w, t ]
-  delhome:
-    description: Delete the specified home.
-    usage: /<command>
-  home:
-    description: Teleport to your home(s).
-    usage: /<command>
-  sethome:
-    description: Set your home location.
-    usage: /<command>
+    aliases: [ tell, whisper, w ]
   reply:
-    description: Reply to a player.
     usage: /<command>
-    aliases: [ r ]
-  ignore:
-    description: Ignore a player.
+    aliases: r
+  report:
     usage: /<command>
-  kill:
-    description: Suicide.
+  shop:
     usage: /<command>
-    aliases: [ suicide ]
-  d:
+  msglock:
     usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  duel:
+    usage: /<command>
+    aliases: 1v1
+  duelaccept:
+    usage: /<command>
+  dueldeny:
+    usage: /<command>
+  event:
+    usage: /<command>
+  nethpot:
+    usage: /<command>
+    aliases: [ neth, npot, np ]
+  flatlegacy:
+    usage: /<command>
+    aliases: [ lflat, legacyflat, oldflat ]
 permissions:
-  homes.premium:
-    description: 5 homes
+  has.staff:
+    description: Is a staff member
