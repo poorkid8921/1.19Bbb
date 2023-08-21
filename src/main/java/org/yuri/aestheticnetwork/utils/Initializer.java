@@ -6,6 +6,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 
 import java.util.*;
@@ -26,7 +27,6 @@ public class Initializer {
     public static Location spawn;
     public static boolean hasReset = false;
     public static int ffastr = 1, flatstr = 1, nethstr = 1;
-    public static LuckPerms api;
     public static List<Color> color = new ArrayList<>(List.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW));
     public static Map<UUID, Long> playerstoteming = new HashMap<>();
     public static Map<UUID, Long> chatdelay = new HashMap<>();
@@ -44,4 +44,6 @@ public class Initializer {
             EntityType.FIREWORK,
             EntityType.FISHING_HOOK));
     public static Economy econ;
+    public static LuckPerms lp;
+    public static AestheticNetwork p;
 }

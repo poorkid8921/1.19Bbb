@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class Duel implements CommandExecutor, TabExecutor {
@@ -27,7 +28,7 @@ public class Duel implements CommandExecutor, TabExecutor {
             return true;
 
         if (!user.hasPermission("has.staff")) {
-            user.sendMessage(translate("&7This feature has been disabled and will be reenabled soon."));
+            user.sendMessage(translateo("&7This feature has been disabled and will be reenabled soon."));
             return true;
         }
 
@@ -35,7 +36,7 @@ public class Duel implements CommandExecutor, TabExecutor {
         String gm = "field";
 
         if (args.length == 0) {
-            user.sendMessage(translate("&7You must specify who you want to duel."));
+            user.sendMessage(translateo("&7You must specify who you want to duel."));
             return true;
         }
 
@@ -61,31 +62,31 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = getAvailable(gm);
 
         if (check >= 6) {
-            user.sendMessage(translate("&7There are no open arenas yet."));
+            user.sendMessage(translateo("&7There are no open arenas yet."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translate("&7You can't send duel requests to offline people!"));
+            user.sendMessage(translateo("&7You can't send duel requests to offline people!"));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translate("&7You can't duel yourself!"));
+            user.sendMessage(translateo("&7You can't duel yourself!"));
             return true;
         }
 
         DuelRequest tpr = getDUELrequest(recipient);
 
         if (teams.containsKey(recipient.getUniqueId())) {
-            user.sendMessage(translate("&7This player is already in a duel."));
+            user.sendMessage(translateo("&7This player is already in a duel."));
             return true;
         }
 
         if (tpr != null) {
-            user.sendMessage(translate("&7This player already has an active request."));
+            user.sendMessage(translateo("&7This player already has an active request."));
             return true;
         }
 

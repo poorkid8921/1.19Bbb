@@ -17,6 +17,9 @@ import org.yuri.aestheticnetwork.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
+
 public class rank implements CommandExecutor, TabCompleter {
     LuckPerms lp;
 ArrayList<String> tiers = new ArrayList<>(List.of("HT1",
@@ -37,30 +40,30 @@ ArrayList<String> tiers = new ArrayList<>(List.of("HT1",
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission("tester.y")) {
-            sender.sendMessage(Utils.translate("&7You must be a tester in order to use this command."));
+            sender.sendMessage(translateo("&7You must be a tester in order to use this command."));
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(Utils.translate("&7You must specify who you want to give a rank."));
+            sender.sendMessage(translateo("&7You must specify who you want to give a rank."));
             return true;
         } else if (args.length == 1) {
-            sender.sendMessage(Utils.translate("&7You must specify a rank to give."));
+            sender.sendMessage(translateo("&7You must specify a rank to give."));
             return true;
         }
 
         Player p = Bukkit.getPlayer(args[1]);
         if (p == null) {
-            sender.sendMessage(Utils.translate("&7You must specify an online player."));
+            sender.sendMessage(translateo("&7You must specify an online player."));
             return true;
         }
 
         if (!tiers.contains(args[0])) {
-            sender.sendMessage(Utils.translate("&7You can't give other ranks than the one in tab completion: " + tiers));
+            sender.sendMessage(translateo("&7You can't give other ranks than the one in tab completion: " + tiers));
             return true;
         }
 
-        sender.sendMessage(Utils.translate("&7Succesfully gave the rank &c" + args[0] + " &&to &c" + p.getDisplayName()));
+        sender.sendMessage(translate("&7Succesfully gave the rank &c" + args[0] + " &&to &c" + p.getDisplayName()));
 
         User user = lp.getUserManager().getUser(p.getUniqueId());
         if (p.hasPermission("group." + args[0])) {

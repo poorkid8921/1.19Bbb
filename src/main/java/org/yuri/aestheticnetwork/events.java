@@ -20,15 +20,16 @@ import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
-import org.yuri.aestheticnetwork.commands.Shop;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.utils.Initializer;
+import org.yuri.aestheticnetwork.utils.InventoryInstance;
+import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.util.ArrayList;
@@ -45,67 +46,7 @@ import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class events implements Listener {
-    AestheticNetwork plugin = AestheticNetwork.getInstance();
-    LuckPerms lp;
-    Economy econ;
-    AestheticNetwork p;
-
-    /*@EventHandler
-    private void antiCW(EntityDamageByEntityEvent e) {
-        if (!(e.getDamager() instanceof Player p) || !(e.getEntity() instanceof EnderCrystal))
-            return;
-
-        UUID playerUniqueId = p.getUniqueId();
-        if (playerscw.containsKey(playerUniqueId) && playerscw.get(playerUniqueId) > System.currentTimeMillis()
-        ) {
-            Bukkit.getLogger().log(Level.INFO, p.getName() + " - cw");
-
-            for (Player i : Bukkit.getOnlinePlayers()) {
-                if (!i.isOp())
-                    continue;
-
-                i.sendMessage(translate("&6" + e.getDamager().getName() + " is cwing! &7" + p.getPing() + "ms"));
-            }
-
-            e.setCancelled(true);
-        } else {
-            if (p.getPing() > 300)
-                return;
-
-            int ping = p.getPing() + (p.getPing() >= 75 ? 75 : 25);
-            playerscw.put(playerUniqueId, System.currentTimeMillis() + ping);
-        }
-    }*/
-
-    public events(AestheticNetwork pp, LuckPerms lped, Economy eco) {
-        lp = lped;
-        econ = eco;
-        p = pp;
-    }
-
-    private static boolean isSuspectedScanPacket(String buffer) {
-        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
-    }
-
-    public static void spawnFireworks(Location loc) {
-        loc.add(new Vector(0, 1, 0));
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        Random random = new Random();
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random.nextInt(color.size()))).withColor(color.get(random.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-    }
-
-    public static void duel_spawnFireworks(Location loc) {
-        loc.add(new Vector(0, 1, 0));
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Color.WHITE).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-        fw.detonate();
-    }
+    static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
     @EventHandler
     private void antiAuto(PlayerSwapHandItemsEvent e) {
@@ -117,7 +58,7 @@ public class events implements Listener {
                 if (!i.hasPermission("has.staff")) continue;
 
                 long ms = playerstoteming.get(playerUniqueId) - System.currentTimeMillis();
-                i.sendMessage(translate("&6" + ent.getName() + " totemed in less than " + ms + "ms! &7" + ent.getPing() + "ms"));
+                i.sendMessage(translateo("&6" + ent.getName() + " totemed in less than " + ms + "ms! &7" + ent.getPing() + "ms"));
             }
             //e.setCancelled(true);
             playerstoteming.remove(playerUniqueId);
@@ -167,6 +108,20 @@ public class events implements Listener {
         if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", plugin);
         ffaconst.remove(e.getPlayer());
     }
+
+    /*@EventHandler(priority = EventPriority.NORMAL)
+    public void PlayerDamageReceive(EntityDamageByEntityEvent e) {
+        if (e.getEntity() instanceof Player damaged) {
+            ItemStack i = damaged.getInventory().getItemInMainHand();
+            if ((damaged.getHealth() - e.getDamage()) <= 0 && i.getType().equals(Material.TOTEM_OF_UNDYING)) {
+                e.setCancelled(true);
+                damaged.setHealth(2);
+                damaged.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 100, 2));
+                damaged.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 800, 2));
+                i.setAmount(0);
+            }
+        }
+    }*/
 
     @EventHandler
     private void onPlayerLeave(final PlayerQuitEvent e) {
@@ -224,77 +179,40 @@ public class events implements Listener {
         ffaconst.remove(e.getPlayer());
     }
 
-    /*@EventHandler(priority = EventPriority.NORMAL)
-    public void PlayerDamageReceive(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player damaged) {
-            ItemStack i = damaged.getInventory().getItemInMainHand();
-            if ((damaged.getHealth() - e.getDamage()) <= 0 && i.getType().equals(Material.TOTEM_OF_UNDYING)) {
-                e.setCancelled(true);
-                damaged.setHealth(2);
-                damaged.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 100, 2));
-                damaged.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 800, 2));
-                i.setAmount(0);
-            }
-        }
-    }*/
+    @EventHandler
+    public void onInventoryClick(final InventoryClickEvent e) {
+        if (e.getInventory().getHolder() instanceof InventoryInstance) {
+            e.setCancelled(true);
+            if (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getInventory()))
+                ((InventoryInstance) e.getInventory().getHolder()).whenClicked(e.getCurrentItem(),
+                        e.getAction(),
+                        e.getSlot());
+        } else if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
+            e.setCancelled(true);
+            final ItemStack clickedItem = e.getCurrentItem();
+            ItemMeta meta = clickedItem.getItemMeta();
+            if (meta == null)
+                return;
 
-    public void killeffect(Player p, String toset, String fancy, int cost) {
-        p.closeInventory();
-        double bal = econ.getBalance(p);
-        if (bal < cost) {
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ » &cʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ."));
-            return;
-        }
-
-        EconomyResponse ar = econ.withdrawPlayer(p, cost);
-
-        if (ar.transactionSuccess()) {
-            plugin.getCustomConfig().set("r." + p.getUniqueId() + ".killeffect", toset);
-            plugin.saveCustomConfig();
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ » &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
+            holder.whenClicked(e.getCurrentItem(),
+                    e.getAction(),
+                    e.getSlot(),
+                    holder.getArg());
         }
     }
 
     @EventHandler
-    public void onInventoryClick(final InventoryClickEvent e) {
-        final ItemStack clickedItem = e.getCurrentItem();
-        if (clickedItem == null) return;
+    public void onInventoryClick(final InventoryDragEvent e) {
+        if (e.getCursor() == null)
+            return;
 
-        ItemMeta meta = clickedItem.getItemMeta();
-        if (meta == null) return;
-
-        NamespacedKey key = new NamespacedKey(p, "reported");
-        final Player p = (Player) e.getWhoClicked();
-        String report = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
-        if (report != null) {
-
-            switch (e.getRawSlot()) {
-                case 10 -> report(p, report, "Exploiting");
-                case 11 -> report(p, report, "Interrupting");
-                case 12 -> report(p, report, "Doxxing");
-                case 13 -> report(p, report, "Ban Evading");
-                case 14 -> report(p, report, "Spam");
-                case 15 -> report(p, report, "Advertise");
-                case 16 -> report(p, report, "Anchor Spam");
-            }
-        }
-
-        if (!e.getInventory().equals(Shop.inv)) return;
-        e.setCancelled(true);
-
-        if (e.getRawSlot() == 10) {
-            killeffect(p, "lightning", "ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 50);
-        } else if (e.getRawSlot() == 11) {
-            killeffect(p, "totem_explosion", "ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 125);
-        } else if (e.getRawSlot() == 12) {
-            killeffect(p, "firework", "ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 200);
-        } //else if (e.getRawSlot() == 13)
-        //killeffect(p, "explosion", "ᴇxᴩʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 300);
+        e.setCancelled(e.getInventory().getHolder() instanceof InventoryInstance ||
+                e.getInventory().getHolder() instanceof InventoryInstanceReport);
     }
 
     @EventHandler
     private void onPhysics(final BlockPhysicsEvent e) {
-        e.setCancelled(true);
+        e.setCancelled(e.getBlock().getType().equals(Material.SAND));
     }
 
     @EventHandler
@@ -342,8 +260,8 @@ public class events implements Listener {
                             " n ",
                             true,
                             tpr.IsLegacy(),
-                            translate("&aYou won!"),
-                            translate("&cYou lost"));
+                            translateo("&aYou won!"),
+                            translateo("&cYou lost"));
                 } else if (blue > red) {
                     displayduelresume(bluep,
                             redp,
@@ -355,8 +273,8 @@ public class events implements Listener {
                             " n ",
                             false,
                             tpr.IsLegacy(),
-                            translate("&cYou lost"),
-                            translate("&aYou won!"));
+                            translateo("&cYou lost"),
+                            translateo("&aYou won!"));
                 } else {
                     displayduelresume(redp,
                             bluep,
@@ -368,8 +286,8 @@ public class events implements Listener {
                             " y ",
                             false,
                             tpr.IsLegacy(),
-                            translate("&eDraw"),
-                            translate("&eDraw"));
+                            translateo("&eDraw"),
+                            translateo("&eDraw"));
                 }
 
                 p.setNoDamageTicks(100);
@@ -387,13 +305,13 @@ public class events implements Listener {
                     spawn(p);
                     plist.clear();
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + tpr.getType() + tpr.getArena() + " veryfast");
-                    User up = api.getUserManager().getUser(p.getUniqueId());
+                    User up = lp.getUserManager().getUser(p.getUniqueId());
                     up.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
-                    api.getUserManager().saveUser(up);
+                    lp.getUserManager().saveUser(up);
 
-                    User ukp = api.getUserManager().getUser(kp.getUniqueId());
+                    User ukp = lp.getUserManager().getUser(kp.getUniqueId());
                     ukp.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
-                    api.getUserManager().saveUser(ukp);
+                    lp.getUserManager().saveUser(ukp);
                 }, 60L);
                 return;
             }

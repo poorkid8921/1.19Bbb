@@ -71,17 +71,17 @@ public class DuelManager {
                 (islegacy ? "" +
                         "&cin legacy " :
                         "");
-        TextComponent tc = new TextComponent(translate("&c" +
+        TextComponent tc = new TextComponent(translateo("&c" +
                 sender.getDisplayName() +
                 " &7has requested that you duel them in &c" +
                 type2));
 
-        TextComponent accept = new TextComponent(translate("&7[&a✔&7]"));
-        Text acceptHoverText = new Text(translate("&7Click to accept the duel request"));
+        TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
+        Text acceptHoverText = new Text(translateo("&7Click to accept the duel request"));
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/duelaccept"));
-        TextComponent deny = new TextComponent(translate("&7[&cX&7]"));
-        Text denyHoverText = new Text(translate("Click to deny the duel request"));
+        TextComponent deny = new TextComponent(translateo("&7[&cX&7]"));
+        Text denyHoverText = new Text(translateo("Click to deny the duel request"));
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny"));
 

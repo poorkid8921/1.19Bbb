@@ -37,9 +37,9 @@ import java.util.logging.Level;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
-    private static AestheticNetwork instance;
     public FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private File customConfigFile1 = new File(getDataFolder(), "other.yml");
@@ -72,7 +72,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     }
 
     public static AestheticNetwork getInstance() {
-        return instance;
+        return p;
     }
 
     public void reloadCustomConfig() {
@@ -131,7 +131,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             this.setEnabled(false);
         }
 
-        instance = this;
+        p = this;
 
         config.options().copyDefaults(true);
         saveConfig();
@@ -144,8 +144,8 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
-            api = provider.getProvider();
-            Bukkit.getPluginManager().registerEvents(new events(this, api, econ), this);
+            lp = provider.getProvider();
+            Bukkit.getPluginManager().registerEvents(new events(), this);
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
@@ -286,24 +286,24 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
         if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                player.sendMessage(translate("&7You must specify who you want to message."));
+                player.sendMessage(translateo("&7You must specify who you want to message."));
                 return true;
             } else if (args.length == 1) {
-                player.sendMessage(translate("&7You must specify a message to send to the player"));
+                player.sendMessage(translateo("&7You must specify a message to send to the player"));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                player.sendMessage(translate("&7You can't send messages to offline players!"));
+                player.sendMessage(translateo("&7You can't send messages to offline players!"));
                 return true;
             }
 
             if (Utils.manager1().get(
                     "r." + target.getUniqueId() + ".m") != null &&
                     !sender.hasPermission("has.staff")) {
-                player.sendMessage(translate("&7You can't send messages to this player since he locked his messages."));
+                player.sendMessage(translateo("&7You can't send messages to this player since he locked his messages."));
                 return true;
             }
 
@@ -318,18 +318,18 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
-                player.sendMessage(translate("&7You must specify a message to send to the player"));
+                player.sendMessage(translateo("&7You must specify a message to send to the player"));
                 return true;
             }
 
             if (!lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
-                player.sendMessage(translate("&7You have no one to reply to!"));
+                player.sendMessage(translateo("&7You have no one to reply to!"));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
             if (target == null) {
-                player.sendMessage(translate("&7You have no one to reply to!"));
+                player.sendMessage(translateo("&7You have no one to reply to!"));
                 return true;
             }
             StringBuilder msgargs = new StringBuilder();

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.duel;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.getDUELrequest;
 
 public class DuelDeny implements CommandExecutor {
@@ -18,7 +19,7 @@ public class DuelDeny implements CommandExecutor {
 
         DuelRequest request = getDUELrequest(player);
         if (request == null) {
-            player.sendMessage(translate("&7You got no duel request."));
+            player.sendMessage(translateo("&7You got no duel request."));
             return true;
         }
 

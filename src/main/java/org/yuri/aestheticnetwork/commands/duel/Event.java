@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.utils.Initializer;
 
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class Event implements CommandExecutor {
     @Override
@@ -24,12 +25,12 @@ public class Event implements CommandExecutor {
 
         String arg = args[4];
 
-        TextComponent hi = new TextComponent(translate(
+        TextComponent hi = new TextComponent(translateo(
                 "&7ᴡɪɴɴᴇʀ: &e" +
                 (arg.equals("y") ?
                         "ɴᴏʙᴏᴅʏ" :
                         args[5])));
-        Text hit = new Text(translate("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ: &e" + Integer.parseInt(args[6]) +
+        Text hit = new Text(translateo("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ: &e" + Integer.parseInt(args[6]) +
                 "\n&7ᴋɪʟʟs: &e" + Integer.parseInt(args[7]) +
                 "\n&7ᴅᴇᴀᴛʜs: &e" + Integer.parseInt(args[8]) +
                 "\n&7ᴡɪɴs: &e" + Integer.parseInt(args[10]) +
@@ -37,18 +38,18 @@ public class Event implements CommandExecutor {
         if (arg.equals("n"))
             hi.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hit));
 
-        sender.sendMessage(translate("&7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs"));
-        sender.sendMessage(translate("&7------------------------"));
+        sender.sendMessage(translateo("&7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs"));
+        sender.sendMessage(translateo("&7------------------------"));
         sender.sendMessage(hi);
-        /*sender.sendMessage(translate("&7Your team: " + (Boolean.parseBoolean(args[0]) ?
+        /*sender.sendMessage(translateo("&7Your team: " + (Boolean.parseBoolean(args[0]) ?
                 "&9Blue" :
                 "&cRed")));*/
-        sender.sendMessage(translate("&7sᴄᴏʀᴇ: &c" + Integer.parseInt(args[1]) + " &7- &9" +
+        sender.sendMessage(translateo("&7sᴄᴏʀᴇ: &c" + Integer.parseInt(args[1]) + " &7- &9" +
                 Integer.parseInt(args[2])));
         if (args[9].equals("0"))
-            sender.sendMessage(translate("&7ʟᴇɢᴀᴄʏ: ʏᴇs: &eYes"));
-        sender.sendMessage(translate("&7ᴅᴜʀᴀᴛɪᴏɴ: &e" + args[3]));
-        sender.sendMessage(translate("&7------------------------"));
+            sender.sendMessage(translateo("&7ʟᴇɢᴀᴄʏ: ʏᴇs: &eYes"));
+        sender.sendMessage(translateo("&7ᴅᴜʀᴀᴛɪᴏɴ: &e" + args[3]));
+        sender.sendMessage(translateo("&7------------------------"));
         Initializer.valid.remove(p.getUniqueId());
         return true;
     }

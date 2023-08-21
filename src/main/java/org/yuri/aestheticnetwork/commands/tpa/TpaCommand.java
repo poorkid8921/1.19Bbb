@@ -12,6 +12,7 @@ import org.yuri.aestheticnetwork.utils.Utils;
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.RequestManager.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class TpaCommand implements CommandExecutor {
@@ -21,37 +22,37 @@ public class TpaCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            user.sendMessage(translate("&7You must specify who you want to teleport to."));
+            user.sendMessage(translateo("&7You must specify who you want to teleport to."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translate("&7You can't send teleport requests to offline people!"));
+            user.sendMessage(translateo("&7You can't send teleport requests to offline people!"));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translate("&7You can't teleport to yourself!"));
+            user.sendMessage(translateo("&7You can't teleport to yourself!"));
             return true;
         }
 
         TpaRequest tpr = getTPArequest(recipient);
 
         if (tpr != null && tpr.getSender().equals(sender)) {
-            user.sendMessage(translate("&7You already have an ongoing request to this player."));
+            user.sendMessage(translateo("&7You already have an ongoing request to this player."));
             return true;
         }
 
         if (Utils.manager1().get(
                 "r." + recipient.getUniqueId() + ".t") != null) {
-            user.sendMessage(translate("&7You can't request this player since they locked their tpa requests!"));
+            user.sendMessage(translateo("&7You can't request this player since they locked their tpa requests!"));
             return true;
         }
 
         if (teams.containsKey(recipient.getUniqueId())) {
-            user.sendMessage(translate("&7You can't request this player since they're in a duel."));
+            user.sendMessage(translateo("&7You can't request this player since they're in a duel."));
             return true;
         }
 

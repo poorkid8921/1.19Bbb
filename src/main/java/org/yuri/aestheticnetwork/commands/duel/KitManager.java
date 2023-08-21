@@ -12,7 +12,7 @@ public class KitManager {
     public static void field(Player p) {
         p.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
 
-        for (int i = 10; i <= 27; i++) {
+        for (int i = 10; i <= p.getInventory().getSize(); i++) {
             p.getInventory().setItem(i, new ItemStack(Material.TOTEM_OF_UNDYING,
                     1));
         }

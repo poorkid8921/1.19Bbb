@@ -14,9 +14,9 @@ import org.yuri.aestheticnetwork.AestheticNetwork;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.api;
+import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class DuelAccept implements CommandExecutor {
@@ -26,14 +26,14 @@ public class DuelAccept implements CommandExecutor {
 
         /*if (!user.hasPermission("has.staff"))
         {
-            user.sendMessage(translate("&7You might not use this feature right now."));
+            user.sendMessage(translateo("&7You might not use this feature right now."));
             return true;
         }*/
 
         DuelRequest request = getDUELrequest(user);
 
         if (request == null) {
-            user.sendMessage(translate("&7You got no active duel request."));
+            user.sendMessage(translateo("&7You got no active duel request."));
             return true;
         }
 
@@ -45,7 +45,7 @@ public class DuelAccept implements CommandExecutor {
         int check = getAvailable(request.getType());
         if (check >= 6) {
             removeDUELrequest(request);
-            user.sendMessage(translate("&7There are no open arenas yet."));
+            user.sendMessage(translateo("&7There are no open arenas yet."));
             return true;
         }
 
@@ -64,13 +64,13 @@ public class DuelAccept implements CommandExecutor {
                 1,
                 request.getMaxrounds(),
                 check + 1);
-        User up = api.getUserManager().getUser(recipient.getUniqueId());
+        User up = lp.getUserManager().getUser(recipient.getUniqueId());
         up.data().add(Node.builder("permission:tab.scoreboard.duels").build());
-        api.getUserManager().saveUser(up);
+        lp.getUserManager().saveUser(up);
 
-        User u = api.getUserManager().getUser(user.getUniqueId());
+        User u = lp.getUserManager().getUser(user.getUniqueId());
         u.data().add(Node.builder("permission:tab.scoreboard.duels").build());
-        api.getUserManager().saveUser(u);
+        lp.getUserManager().saveUser(u);
         return true;
     }
 }

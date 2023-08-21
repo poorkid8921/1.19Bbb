@@ -13,6 +13,7 @@ import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 import java.util.ArrayList;
 
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class RequestManager {
     public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
@@ -35,12 +36,12 @@ public class RequestManager {
         tpa.add(tpaRequest);
 
         TextComponent tc = new TextComponent();
-        TextComponent accept = new TextComponent(translate("&7[&a✔&7]"));
-        Text acceptHoverText = new Text(translate("&7Click to accept the teleportation request"));
+        TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
+        Text acceptHoverText = new Text(translateo("&7Click to accept the teleportation request"));
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(translate("&7[&cX&7]"));
-        Text denyHoverText = new Text(translate("&7Click to deny the teleportation request"));
+        TextComponent deny = new TextComponent(translateo("&7[&cX&7]"));
+        Text denyHoverText = new Text(translateo("&7Click to deny the teleportation request"));
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
 

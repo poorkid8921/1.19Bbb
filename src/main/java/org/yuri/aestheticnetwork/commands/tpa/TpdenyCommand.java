@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
 import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class TpdenyCommand implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -18,7 +19,7 @@ public class TpdenyCommand implements CommandExecutor {
 
         TpaRequest request = getTPArequest(player);
         if (request == null) {
-            player.sendMessage(translate("&7You got no active teleport request."));
+            player.sendMessage(translateo("&7You got no active teleport request."));
             return true;
         }
 
