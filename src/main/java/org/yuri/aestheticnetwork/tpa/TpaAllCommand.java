@@ -12,6 +12,10 @@ import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.Type;
 import org.yuri.aestheticnetwork.Utils;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import static org.yuri.aestheticnetwork.Utils.*;
 
 @SuppressWarnings("deprecation")
@@ -23,6 +27,11 @@ public class TpaAllCommand implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
             return true;
+
+                if (cooldownPlayers.contains(user.getUniqueId())) {
+            user.sendMessage(translate("&cYou are still on cooldown for teleporting everyone."));
+            return true;
+        }
 
         user.sendMessage(translate("&7Requested everyone to teleport to you."));
 
@@ -39,6 +48,20 @@ public class TpaAllCommand implements CommandExecutor {
             requests.remove(tpr);
             Utils.addRequest(user, i, Type.TPAHERE, false);
         }
+
+        cooldownPlayers.add(user.getUniqueId());
+        startCooldownTimer(user);
+
         return true;
+    }
+
+    private void startCooldownTimer(Player player) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                cooldownPlayers.remove(player.getUniqueId());
+                player.sendMessage(translate("&aTeleport-all cooldown has ended."));
+            }
+        }.runTaskLater(AestheticNetwork.getInstance(), 20 * 60); 
     }
 }
