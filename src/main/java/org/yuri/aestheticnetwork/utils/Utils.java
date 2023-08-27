@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
-import static org.yuri.aestheticnetwork.utils.Initializer.color;
 
 public class Utils {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
@@ -82,7 +81,7 @@ public class Utils {
         p.closeInventory();
         double bal = econ.getBalance(p);
         if (bal < cost) {
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ » &cʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ."));
+            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &#fc282fʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ"));
             return;
         }
 
@@ -91,7 +90,7 @@ public class Utils {
         if (ar.transactionSuccess()) {
             plugin.getCustomConfig().set("r." + p.getUniqueId() + ".killeffect", toset);
             plugin.saveCustomConfig();
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ » &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
+            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
         }
     }
 
@@ -125,7 +124,7 @@ public class Utils {
                 throw new RuntimeException(ex);
             }
         });
-        e.sendMessage(translateo("&7Successfully submitted the report."));
+        e.sendMessage(translateo("&7Successfully submitted the report"));
         cooldown.put(e.getUniqueId(), System.currentTimeMillis() + 300000);
     }
 

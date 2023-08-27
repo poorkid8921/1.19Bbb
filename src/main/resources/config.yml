@@ -1,9 +1,3 @@
-ShouldAllowEndPortal: true
-placeholders:
-  discordlink: https://discord.gg/aestheticnetwork
-
-discordmessage: ʏᴏᴜ ᴄᴀɴ ᴊᴏɪɴ ᴏᴜʀ ᴅɪꜱᴄᴏʀᴅ ꜱᴇʀᴠᴇʀ ᴜꜱɪɴɢ
-
 Spawn:
   X: 4631.5
   Y: 154.0
@@ -34,8 +28,3 @@ underwater:
   Z: -9.5
   yaw: 0.0
   World: world
-Arena: true
-ArenaResetTimeInTicks: 12000
-ArenaName: ffa
-ArenaName1: flat
-ArenaName2: underwater

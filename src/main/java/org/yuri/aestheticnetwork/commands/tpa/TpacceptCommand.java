@@ -25,7 +25,7 @@ public class TpacceptCommand implements CommandExecutor {
         TpaRequest request = getTPArequest(user);
 
         if (request == null) {
-            user.sendMessage(translateo("&7You got no active teleport request."));
+            user.sendMessage(translateo("&7You got no active teleport request"));
             return true;
         }
 
@@ -37,15 +37,15 @@ public class TpacceptCommand implements CommandExecutor {
         if (request.getType() == Type.TPA) {
             tempuser = recipient;
             temprecipient = user;
-            temprecipient.sendMessage(translate("&7You have accepted &c" + tempuser.getDisplayName() + "&7's teleport request."));
+            temprecipient.sendMessage(translate("&7You have accepted &#fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
             temprecipient.sendMessage(translateo("&7Teleporting..."));
-            tempuser.sendMessage(translate("&c" + tempuser.getDisplayName() + " &7has accepted your teleport request."));
+            tempuser.sendMessage(translate("&#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         } else {
             tempuser = user;
             temprecipient = recipient;
-            tempuser.sendMessage(translate("&7You have accepted &c" + temprecipient.getDisplayName() + "&7's teleport request."));
+            tempuser.sendMessage(translate("&7You have accepted &#fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
             tempuser.sendMessage(translateo("&7Teleporting..."));
-            temprecipient.sendMessage(translate("&c" + tempuser.getDisplayName() + " &7has accepted your teleport request."));
+            temprecipient.sendMessage(translate("&#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         }
 
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason ->

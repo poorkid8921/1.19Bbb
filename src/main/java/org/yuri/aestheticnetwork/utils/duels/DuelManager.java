@@ -30,16 +30,21 @@ public class DuelManager {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
     public static DuelRequest getDUELrequest(Player user) {
-        return duel.stream().filter(req -> req.getReciever().getName().equalsIgnoreCase(user.getName()) ||
-                req.getSender().getName().equalsIgnoreCase(user.getName()))
-                .toList()
-                .get(0);
+        for (DuelRequest request : duel) {
+            if (request.getReciever().getName().equalsIgnoreCase(user.getName()) ||
+                    request.getSender().getName().equalsIgnoreCase(user.getName())) return request;
+        }
+
+        return null;
     }
 
     public static int getAvailable(String gm) {
-        return duel.stream().filter(req -> req.getType().equalsIgnoreCase(gm) && req.getRounds() > 0)
-                .toList()
-                .size();
+        int r = 0;
+        for (DuelRequest request : duel) {
+            if (request.getType().equalsIgnoreCase(gm) && request.getRounds() > 0) r++;
+        }
+
+        return r;
     }
 
     public static void addDUELrequest(Player sender,
@@ -65,15 +70,15 @@ public class DuelManager {
 
         String type2 = type +
                 (rounds == 1 ? " " :
-                        " &7with &c" +
+                        " &7with &#fc282f" +
                                 rounds +
                                 " rounds ") +
                 (islegacy ? "" +
-                        "&cin legacy " :
+                        "&#fc282fin legacy " :
                         "");
         TextComponent tc = new TextComponent(translateo("&c" +
                 sender.getDisplayName() +
-                " &7has requested that you duel them in &c" +
+                " &7has requested that you duel them in &#fc282f" +
                 type2));
 
         TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
@@ -86,7 +91,14 @@ public class DuelManager {
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny"));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to &c" + receiver.getDisplayName() + "&7."));
+        sender.sendMessage(translate("&7Request sent to &#fc282f" + receiver.getDisplayName()));
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (duel.contains(tpaRequest)) removeDUELrequest(tpaRequest);
+            }
+        }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
         receiver.sendMessage(tc, accept, space, deny);
@@ -112,9 +124,9 @@ public class DuelManager {
         sdfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
         String strDate = sdfDate.format(new Date(n - o));
 
-        String m = translateo("&e" + pl.getName() + " &fwon the duel!");
+        String m = translate("&#fc282f" + pl.getDisplayName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
 
-        TextComponent hi = new TextComponent(translateo("&7Click to show the duel results"));
+        TextComponent hi = new TextComponent(translateo("&7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ"));
         hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " +
                 rw + " " +
                 r + " " +
@@ -126,65 +138,10 @@ public class DuelManager {
                         /
                         2) + " " +
                 pl.getStatistic(Statistic.PLAYER_KILLS) + " " +
-                pl.getStatistic(Statistic.DEATHS) + " " + l));
-        valid.add(pl.getUniqueId());
-        pl.sendMessage(translateo("&7Teleporting back to spawn in &e35 seconds..."));
-        pl.sendMessage(hi);
-        pl.sendTitle(ff, m, 1, 100, 1);
-        pl.getInventory().clear();
-        if (i) {
-            valid.add(p.getUniqueId());
-            p.sendMessage(translateo("&7Teleporting back to spawn in &e3 seconds..."));
-            p.sendMessage(hi);
-            p.sendTitle(f, m, 1, 100, 1);
-            p.getInventory().clear();
-        }
-
-        Utils.manager().set("r." + pl.getUniqueId() + ".wins",
+                pl.getStatistic(Statistic.DEATHS) + " " +
+                l +
                 Utils.manager().getInt("r." + pl.getUniqueId() + ".wins") +
-                        1);
-        Utils.manager().set("r." + p.getUniqueId() + ".losses",
-                Utils.manager().getInt("r." + p.getUniqueId() + ".losses") +
-                        1);
-
-        AestheticNetwork.getInstance().saveCustomConfig();
-        if (p.hasMetadata("1.19.2")) {
-            p.removeMetadata("1.19.2", plugin);
-            pl.removeMetadata("1.19.2", plugin);
-        }
-    }
-
-    public static void displayduelresume(Player pl,
-                                         Player p,
-                                         boolean i,
-                                         int r,
-                                         int b,
-                                         long o,
-                                         long n,
-                                         boolean rw,
-                                         boolean l,
-                                         String f,
-                                         String ff) {
-        SimpleDateFormat sdfDate = new SimpleDateFormat("mm:ss");
-        sdfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String strDate = sdfDate.format(new Date(n - o));
-
-        String m = translateo("&e" + pl.getName() + " &fwon the duel!");
-
-        TextComponent hi = new TextComponent(translateo("&7Click to show the duel results"));
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " +
-                rw + " " +
-                r + " " +
-                b + " " +
-                strDate +
-                " y " +
-                pl.getName() + " " +
-                Math.round(pl.getHealth()
-                        /
-                        2) + " " +
-                pl.getStatistic(Statistic.PLAYER_KILLS) + " " +
-                pl.getStatistic(Statistic.DEATHS) + " " + l));
-
+                Utils.manager().getInt("r." + pl.getUniqueId() + ".losses")));
         valid.add(pl.getUniqueId());
         pl.sendMessage(translateo("&7Teleporting back to spawn in &e3 seconds..."));
         pl.sendMessage(hi);

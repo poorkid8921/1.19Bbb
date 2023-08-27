@@ -25,16 +25,16 @@ public class Event implements CommandExecutor {
 
         String arg = args[4];
 
-        TextComponent hi = new TextComponent(translateo(
-                "&7ᴡɪɴɴᴇʀ: &e" +
+        TextComponent hi = new TextComponent(translate(
+                "&7ᴡɪɴɴᴇʀ: &#fc282f" +
                 (arg.equals("y") ?
                         "ɴᴏʙᴏᴅʏ" :
                         args[5])));
-        Text hit = new Text(translateo("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ: &e" + Integer.parseInt(args[6]) +
-                "\n&7ᴋɪʟʟs: &e" + Integer.parseInt(args[7]) +
-                "\n&7ᴅᴇᴀᴛʜs: &e" + Integer.parseInt(args[8]) +
-                "\n&7ᴡɪɴs: &e" + Integer.parseInt(args[10]) +
-                "\n&7ʟᴏssᴇs: &e" + Integer.parseInt(args[11])));
+        Text hit = new Text(translate("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ: &#fc282f" + Integer.parseInt(args[6]) +
+                "\n&7ᴋɪʟʟs: &#fc282f" + Integer.parseInt(args[7]) +
+                "\n&7ᴅᴇᴀᴛʜs: &#fc282f" + Integer.parseInt(args[8]) +
+                "\n&7ᴡɪɴs: &#fc282f" + Integer.parseInt(args[10]) +
+                "\n&7ʟᴏssᴇs: &#fc282f" + Integer.parseInt(args[11])));
         if (arg.equals("n"))
             hi.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hit));
 
@@ -44,11 +44,11 @@ public class Event implements CommandExecutor {
         /*sender.sendMessage(translateo("&7Your team: " + (Boolean.parseBoolean(args[0]) ?
                 "&9Blue" :
                 "&cRed")));*/
-        sender.sendMessage(translateo("&7sᴄᴏʀᴇ: &c" + Integer.parseInt(args[1]) + " &7- &9" +
+        sender.sendMessage(translate("&7sᴄᴏʀᴇ: &#fc282f" + Integer.parseInt(args[1]) + " &7- &9" +
                 Integer.parseInt(args[2])));
         if (args[9].equals("0"))
-            sender.sendMessage(translateo("&7ʟᴇɢᴀᴄʏ: ʏᴇs: &eYes"));
-        sender.sendMessage(translateo("&7ᴅᴜʀᴀᴛɪᴏɴ: &e" + args[3]));
+            sender.sendMessage(translate("&7ʟᴇɢᴀᴄʏ: &#fc282fʏᴇs"));
+        sender.sendMessage(translate("&7ᴅᴜʀᴀᴛɪᴏɴ: &#fc282f" + args[3]));
         sender.sendMessage(translateo("&7------------------------"));
         Initializer.valid.remove(p.getUniqueId());
         return true;

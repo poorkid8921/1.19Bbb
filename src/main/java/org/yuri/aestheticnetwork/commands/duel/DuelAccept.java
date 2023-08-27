@@ -24,16 +24,10 @@ public class DuelAccept implements CommandExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        /*if (!user.hasPermission("has.staff"))
-        {
-            user.sendMessage(translateo("&7You might not use this feature right now."));
-            return true;
-        }*/
-
         DuelRequest request = getDUELrequest(user);
 
         if (request == null) {
-            user.sendMessage(translateo("&7You got no active duel request."));
+            user.sendMessage(translateo("&7You got no active duel request"));
             return true;
         }
 
@@ -45,7 +39,7 @@ public class DuelAccept implements CommandExecutor {
         int check = getAvailable(request.getType());
         if (check >= 6) {
             removeDUELrequest(request);
-            user.sendMessage(translateo("&7There are no open arenas yet."));
+            user.sendMessage(translateo("&7There are no open arenas yet"));
             return true;
         }
 

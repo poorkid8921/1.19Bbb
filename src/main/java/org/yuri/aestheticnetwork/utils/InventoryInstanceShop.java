@@ -5,25 +5,25 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-public abstract class InventoryInstanceReport implements InventoryHolder {
+public abstract class InventoryInstanceShop implements InventoryHolder {
     protected final Player player;
-    protected final String arg;
+    protected String method = "title";
+    protected String color = "&c";
+    protected int pressed = 0;
+    protected int t = -1;
 
-    public InventoryInstanceReport(Player player, String arg) {
+    public InventoryInstanceShop(Player player) {
         this.player = player;
-        this.arg = arg;
     }
 
     public Player getPlayer() {
         return player;
-    }
-    public String getArg() {
-        return arg;
     }
 
     public void open() {
         getPlayer().openInventory(getInventory());
     }
 
-    public abstract void whenClicked(ItemStack item, int slot, String target);
+    public abstract void whenClicked(ItemStack item,
+                                     int slot);
 }

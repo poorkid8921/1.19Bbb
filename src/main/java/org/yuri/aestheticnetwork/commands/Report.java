@@ -26,8 +26,6 @@ import static org.yuri.aestheticnetwork.utils.Utils.report;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 
 public class Report implements CommandExecutor, TabExecutor {
-    public static HashMap<UUID, Long> cooldown = new HashMap<>();
-
     AestheticNetwork p;
 
     public Report(AestheticNetwork pp) {
@@ -37,16 +35,7 @@ public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7You must specify who you want to report."));
-            return true;
-        }
-
-        UUID uuid = ((Player) sender).getUniqueId();
-        if (
-                cooldown.containsKey(uuid)
-                        && cooldown.get(uuid) > System.currentTimeMillis()
-        ) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7You are on a cooldown right now. Try again later"));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7You must specify who you want to report"));
             return true;
         }
 

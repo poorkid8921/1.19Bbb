@@ -17,13 +17,15 @@ import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public class RequestManager {
-    public static final List<TpaRequest> tpa = new ArrayList<>();
+    public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
 
     public static TpaRequest getTPArequest(Player user) {
-        return tpa.stream().filter(req -> req.getReciever().getName().equalsIgnoreCase(user.getName()) ||
-                        req.getSender().getName().equalsIgnoreCase(user.getName()))
-                .toList()
-                .get(0);
+        for (TpaRequest request : tpa) {
+            if (request.getReciever().getName().equalsIgnoreCase(user.getName()) ||
+                    request.getSender().getName().equalsIgnoreCase(user.getName())) return request;
+        }
+
+        return null;
     }
 
     public static void removeTPArequest(TpaRequest user) {
@@ -47,15 +49,14 @@ public class RequestManager {
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to &c" +
-                receiver.getDisplayName() +
-                "&7."));
+        sender.sendMessage(translate("&7Request sent to &#fc282f" +
+                receiver.getDisplayName()));
 
         if (type == Type.TPAHERE)
-            tc.setText(translate("&c" +
+            tc.setText(translate("&#fc282f" +
                     sender.getDisplayName() +
-                    " &7has requested that you teleport to them. "));
-        else tc.setText(translate("&c" +
+                    " &7has requested that you teleport to them "));
+        else tc.setText(translate("&#fc282f" +
                 sender.getDisplayName() +
                 " &7has requested to teleport to you "));
 
