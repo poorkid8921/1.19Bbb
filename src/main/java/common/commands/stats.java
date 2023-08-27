@@ -7,6 +7,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
+import static org.yuri.eco.utils.Utils.translate;
 import static org.yuri.eco.utils.Utils.translateo;
 
 public class stats implements CommandExecutor {
@@ -18,7 +21,7 @@ public class stats implements CommandExecutor {
             else {
                 Player p2 = (Player) Bukkit.getOfflinePlayer(args[0]);
                 if (!p2.isOnline()) {
-                    pp.sendMessage(translateo("&7You must specify a valid player."));
+                    pp.sendMessage(translateo("&7You must specify a valid player"));
                     return true;
                 }
 
@@ -32,18 +35,25 @@ public class stats implements CommandExecutor {
     }
 
     private void showstats(Player pp) {
-        pp.sendMessage(translateo("&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"));
-        pp.sendMessage(translateo("&7ᴋɪʟʟs: &c" + pp.getStatistic(Statistic.PLAYER_KILLS)));
-        pp.sendMessage(translateo("&7ᴅᴇᴀᴛʜs: &c" + pp.getStatistic(Statistic.DEATHS)));
-        pp.sendMessage(translateo("&7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ: &c" + pp.getStatistic(Statistic.DAMAGE_DEALT)));
-        pp.sendMessage(translateo("&7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ: &c" + pp.getStatistic(Statistic.DAMAGE_TAKEN)));
+        for (String msg : List.of(translateo("&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"),
+                translate("  &7ᴋɪʟʟs #fc282f→ " + pp.getStatistic(Statistic.PLAYER_KILLS)),
+                translate("  &7→ᴅᴇᴀᴛʜs #fc282f→ " + pp.getStatistic(Statistic.DEATHS)),
+                translate("  &7→ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f→ " + pp.getStatistic(Statistic.DAMAGE_DEALT)),
+                translate("  &7→ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f→ " + pp.getStatistic(Statistic.DAMAGE_TAKEN))))
+            pp.sendMessage(msg);
     }
 
     private void showstats(Player pp, Player t) {
-        pp.sendMessage(translateo("&c" + t.getDisplayName() + "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"));
-        pp.sendMessage(translateo("&7ᴋɪʟʟs: &c" + t.getStatistic(Statistic.PLAYER_KILLS)));
-        pp.sendMessage(translateo("&7ᴅᴇᴀᴛʜs: &c" + t.getStatistic(Statistic.DEATHS)));
-        pp.sendMessage(translateo("&7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ: &c" + t.getStatistic(Statistic.DAMAGE_DEALT)));
-        pp.sendMessage(translateo("&7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ: &c" + t.getStatistic(Statistic.DAMAGE_TAKEN)));
+        for (String msg : List.of(translate(t.isOnline() ?
+                        "&a" :
+                        "&c" +
+                                "◆ #fc282f" +
+                                t.getDisplayName() +
+                                "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"),
+                translate("  &7ᴋɪʟʟs #fc282f→ " + t.getStatistic(Statistic.PLAYER_KILLS)),
+                translate("  &7→ᴅᴇᴀᴛʜs #fc282f→ " + t.getStatistic(Statistic.DEATHS)),
+                translate("  &7→ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f→ " + t.getStatistic(Statistic.DAMAGE_DEALT)),
+                translate("  &7→ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f→ " + t.getStatistic(Statistic.DAMAGE_TAKEN))))
+            pp.sendMessage(msg);
     }
 }

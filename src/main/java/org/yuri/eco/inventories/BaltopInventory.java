@@ -68,7 +68,7 @@ public class BaltopInventory extends InventoryInstance {
 
             // Apply head texture async
             Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-                skull.setDisplayName(Utils.translate("&#46FF64#" + index + " &f" + name));
+                skull.setDisplayName(Utils.translate("#46FF64#" + index + " &f" + name));
                 skull.setLore(List.of(Utils.translateo("&fᴍᴏɴᴇʏ: &a$" + money)));
                 skull.setOwner(name);
                 inv.getItem(slots[index]).setItemMeta(skull);
@@ -85,7 +85,7 @@ public class BaltopInventory extends InventoryInstance {
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             SkullMeta skull = (SkullMeta) profile.getItemMeta();
             skull.setOwningPlayer(player);
-            skull.setDisplayName(Utils.translate("&#46FF64#" +
+            skull.setDisplayName(Utils.translate("#46FF64#" +
                     Integer.parseInt(PlaceholderAPI.setPlaceholders(null,
                             "%ajlb_position_vault_eco_balance_commas_alltime%")) + " &f" + player.getDisplayName()));
             skull.setLore(List.of(Utils.translateo("&fᴍᴏɴᴇʏ: &a$" +

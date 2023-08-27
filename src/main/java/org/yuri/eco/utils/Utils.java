@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.bukkit.ChatColor.COLOR_CHAR;
+
 @SuppressWarnings("deprecation")
 public class Utils {
     public enum Type {
@@ -28,14 +30,14 @@ public class Utils {
     }
 
     public static String translate(String text) {
-        final Pattern hexPattern = Pattern.compile("&(#\\\\w{6})\"");
-        Matcher matcher = hexPattern.matcher(ChatColor.translateAlternateColorCodes('&', text));
-        StringBuilder buffer = new StringBuilder();
-
-        while (matcher.find())
-            matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of(matcher.group(1)).toString());
-
-        return matcher.appendTail(buffer).toString();
+        final Pattern hexPattern = Pattern.compile("#([A-Fa-f0-9]{6})");
+        Matcher matcher = hexPattern.matcher(text);
+        StringBuilder buffer = new StringBuilder(text.length() + 4 * 8);
+        while (matcher.find()) {
+            String group = matcher.group(1);
+            matcher.appendReplacement(buffer, COLOR_CHAR + "x" + COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1) + COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3) + COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
+        }
+        return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
     }
 
     public static String translateo(String text) {
@@ -77,7 +79,7 @@ public class Utils {
                 throw new RuntimeException(ex);
             }
         });
-        e.sendMessage(translateo("&7Successfully submitted the report."));
+        e.sendMessage(translateo("&7Successfully submitted the report"));
     }
 
     public static TpaRequest getRequest(Player user) {
@@ -114,11 +116,11 @@ public class Utils {
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        if (showmsg) sender.sendMessage(translate("&7Request sent to &c" + receiver.getDisplayName() + "&7."));
+        if (showmsg) sender.sendMessage(translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
 
         if (type == Type.TPAHERE) {
             tpaRequest = new TpaRequest(sender, receiver, type, false);
-            tc.setText(translate("&c" + sender.getDisplayName() + " &7has requested that you teleport to them. "));
+            tc.setText(translate("#fc282f" + sender.getDisplayName() + " &7has requested that you teleport to them "));
         } else
             tpaRequest = new TpaRequest(sender, receiver, type, true);
 

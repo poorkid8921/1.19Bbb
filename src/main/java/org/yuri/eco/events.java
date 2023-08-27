@@ -147,9 +147,7 @@ public class events implements Listener {
 
     @EventHandler
     public void onCreatureSpawn(final CreatureSpawnEvent e) {
-        e.setCancelled(e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.DISPENSE_EGG ||
-                e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG ||
-                e.getEntity() instanceof Fish);
+        e.setCancelled(e.getEntity() instanceof Fish);
     }
 
     @EventHandler
@@ -221,7 +219,7 @@ public class events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
         if (Initializer.chatlock && !e.getPlayer().hasPermission("has.staff")) {
-            e.getPlayer().sendMessage(Utils.translateo("&7Chat is currently locked. Try again later"));
+            e.getPlayer().sendMessage(Utils.translateo("&7Chat is currently locked, Try again later"));
             e.setCancelled(true);
             return;
         }
@@ -244,9 +242,9 @@ public class events implements Listener {
             Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp).
                     forEach(s ->
                             s.sendMessage(Utils.translateo("&f*** minecraft lag machine at &6" +
-                                    event.getVehicle().getChunk().getX() + " " +
-                                    event.getVehicle().getChunk().getZ() + " " +
-                                    event.getVehicle().getChunk().getWorld())));
+                                    event.getVehicle().getLocation().getX() + " " +
+                                    event.getVehicle().getLocation().getZ() + " " +
+                                    event.getVehicle().getLocation().getWorld().getName())));
         }
     }
 
@@ -311,49 +309,19 @@ public class events implements Listener {
 
         if (Utils.manager().get("r." + e.getPlayer().getUniqueId() + ".m") == null)
             Initializer.msg.add(e.getPlayer().getName());
-
-        /*final URI ENDPOINT = URI.create("https://api.uku3lig.net/tiers/vanilla");
-        final HttpClient client = HttpClient.newHttpClient();
-        final HttpRequest request = HttpRequest.newBuilder(ENDPOINT).GET().build();
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(s -> AestheticNetwork.hm.put(e.getPlayer().getUniqueId(), s));*/
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
-        //e.getPlayer().kickPlayer("You have lost the FFA event.");
-        if (e.getPlayer().getBedSpawnLocation() == null)
-            e.setRespawnLocation(new Location(Bukkit.getWorld("world"),
-                    Initializer.p.getConfig().getDouble("Spawn.X"),
-                    Initializer.p.getConfig().getDouble("Spawn.Y"),
-                    Initializer.p.getConfig().getDouble("Spawn.Z")));
+        //if (e.getPlayer().getBedSpawnLocation() == null)
+        e.setRespawnLocation(new Location(Bukkit.getWorld("world"),
+                Initializer.p.getConfig().getDouble("Spawn.X"),
+                Initializer.p.getConfig().getDouble("Spawn.Y"),
+                Initializer.p.getConfig().getDouble("Spawn.Z")));
     }
 
     @EventHandler
     public void onRedstone(BlockRedstoneEvent e) {
         e.setNewCurrent(AestheticNetwork.getTPSofLastSecond() > 18 ? e.getNewCurrent() : 0);
     }
-
-    /*public static int amountOfMaterialInChunk(Chunk chunk, Material material) {
-        final int minY = -64;
-        final int maxY = chunk.getWorld().getMaxHeight();
-        int count = 0;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = minY; y < maxY; y++) {
-                    if (chunk.getBlock(x, y, z).getType().equals(material))
-                        count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    @EventHandler
-    private void onBlockPlace(BlockPlaceEvent event) {
-        final Material blockPlayerWantsToPlace = event.getBlock().getType();
-        event.setCancelled(event.getBlock() instanceof Redstone &&
-                amountOfMaterialInChunk(event.getBlock().getChunk(), blockPlayerWantsToPlace) > 32);
-    }*/
 }

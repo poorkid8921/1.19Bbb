@@ -28,7 +28,7 @@ public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(translateo("&7You must specify who you want to report."));
+            sender.sendMessage(translateo("&7You must specify who you want to report"));
             return true;
         }
 

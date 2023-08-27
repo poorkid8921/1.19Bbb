@@ -23,7 +23,7 @@ public class TpaAllCommand implements CommandExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        user.sendMessage(translateo("&7Requested everyone to teleport to you."));
+        user.sendMessage(translateo("&7Requested everyone to teleport to you"));
 
         for (Player i : Bukkit.getOnlinePlayers()) {
             if (i.getUniqueId().equals(user.getUniqueId()))

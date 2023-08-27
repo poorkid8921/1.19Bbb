@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
+import static org.yuri.eco.utils.Utils.translateo;
+
 public final class AestheticNetwork extends JavaPlugin implements CommandExecutor, TabExecutor {
     FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
@@ -154,17 +156,17 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
 
         if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
-                player.sendMessage(Utils.translateo("&7You must specify who you want to message."));
+                player.sendMessage(translateo("&7You must specify who you want to message"));
                 return true;
             } else if (args.length == 1) {
-                player.sendMessage(Utils.translateo("&7You must specify a message to send to the player"));
+                player.sendMessage(translateo("&7You must specify a message to send to the player"));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if (target == null) {
-                player.sendMessage(Utils.translateo("&7You can't send messages to offline players!"));
+                player.sendMessage(translateo("&7You can't send messages to offline players"));
                 return true;
             }
 
@@ -172,7 +174,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
                     "r." + target.getUniqueId() + ".m") != null &&
             !sender.hasPermission("has.staff"))
             {
-                player.sendMessage(Utils.translateo("&7You can't send messages to this player since they locked his messages."));
+                player.sendMessage(translateo("&7You can't send messages to this player since they've locked their messages"));
                 return true;
             }
 
@@ -181,34 +183,34 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
             for (int i = 1; i < args.length; i++)
                 msgargs.append(args[i]).append(" ");
 
-            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
+            player.sendMessage(Utils.translate("&6[#fc282fme &6-> #fc282f" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(Utils.translate("&6[#fc282f" + player.getDisplayName() + " &6-> #fc282fme&6] &r" + msgargs));
             Initializer.lastReceived.put(player.getUniqueId(), target.getUniqueId());
             Initializer.lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
-                player.sendMessage(Utils.translateo("&7You must specify a message to send to the player"));
+                player.sendMessage(translateo("&7You must specify a message to send to the player"));
                 return true;
             }
 
             if (!Initializer.lastReceived.containsKey(player.getUniqueId()) || Initializer.lastReceived.get(player.getUniqueId()) == null)
             {
-                player.sendMessage(Utils.translateo("&7You have no one to reply to!"));
+                player.sendMessage(translateo("&7You have no one to reply to"));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(Initializer.lastReceived.get(player.getUniqueId()));
             if (target == null) {
-                player.sendMessage(Utils.translateo("&7You have no one to reply to!"));
+                player.sendMessage(translateo("&7You have no one to reply to"));
                 return true;
             }
 
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
+            player.sendMessage(Utils.translate("&6[#fc282fme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(Utils.translate("&6[#fc282f" + player.getDisplayName() + " &6-> #fc282fme&6] &r" + msgargs));
             Initializer.lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         }

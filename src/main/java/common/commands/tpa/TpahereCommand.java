@@ -21,19 +21,19 @@ public class TpahereCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            user.sendMessage(translateo("&7You must specify who you want to teleport to."));
+            user.sendMessage(translateo("&7You must specify who you want to teleport to"));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translateo("&7You can't send teleport requests to offline people!"));
+            user.sendMessage(translateo("&7You can't send teleport requests to offline people"));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translateo("&7You can't teleport to yourself!"));
+            user.sendMessage(translateo("&7You can't teleport to yourself"));
             return true;
         }
 
@@ -41,13 +41,13 @@ public class TpahereCommand implements CommandExecutor {
 
         if (tpr != null && tpr.getSender().equals(sender))
         {
-            user.sendMessage(translateo("&7You already have an ongoing request to this player."));
+            user.sendMessage(translateo("&7You already have an ongoing request to this player"));
             return true;
         }
 
         if (Utils.manager().get(
                 "r." + recipient.getUniqueId() + ".t") != null) {
-            user.sendMessage(translateo("&7You can't request this player since they locked their tpa requests!"));
+            user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests"));
             return true;
         }
 
