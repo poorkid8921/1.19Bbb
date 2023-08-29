@@ -30,12 +30,8 @@ public class DuelManager {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
     public static DuelRequest getDUELrequest(Player user) {
-        for (DuelRequest request : duel) {
-            if (request.getReciever().getName().equalsIgnoreCase(user.getName()) ||
-                    request.getSender().getName().equalsIgnoreCase(user.getName())) return request;
-        }
-
-        return null;
+        return duel.stream().filter(r -> r.getReciever().getName().equals(user.getName()) ||
+                r.getSender().getName().equals(user.getName())).toList().get(0);
     }
 
     public static int getAvailable(String gm) {
@@ -70,15 +66,15 @@ public class DuelManager {
 
         String type2 = type +
                 (rounds == 1 ? " " :
-                        " &7with &#fc282f" +
+                        " &7with #fc282f" +
                                 rounds +
                                 " rounds ") +
                 (islegacy ? "" +
-                        "&#fc282fin legacy " :
+                        "#fc282fin legacy " :
                         "");
         TextComponent tc = new TextComponent(translateo("&c" +
                 sender.getDisplayName() +
-                " &7has requested that you duel them in &#fc282f" +
+                " &7has requested that you duel them in #fc282f" +
                 type2));
 
         TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
@@ -91,7 +87,7 @@ public class DuelManager {
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny"));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to &#fc282f" + receiver.getDisplayName()));
+        sender.sendMessage(translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
 
         new BukkitRunnable() {
             @Override
@@ -124,7 +120,7 @@ public class DuelManager {
         sdfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
         String strDate = sdfDate.format(new Date(n - o));
 
-        String m = translate("&#fc282f" + pl.getDisplayName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
+        String m = translate("#fc282f" + pl.getDisplayName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
 
         TextComponent hi = new TextComponent(translateo("&7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ"));
         hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " +
@@ -274,6 +270,8 @@ public class DuelManager {
                     : i == 4 ? red ? new Location(Bukkit.getWorld("world"), -520.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -408.5, 149, -303.5)
                     : i == 5 ? red ? new Location(Bukkit.getWorld("world"), -649.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -537.5, 149, -303.5)
                     : red ? new Location(Bukkit.getWorld("world"), -649.5, 149, -432.5) : new Location(Bukkit.getWorld("world"), -637.5, 149.5, -432.5);
+        } else if (type.equals("tank")) {
+            KitManager.tank(p);
         }
         loc.setYaw(red ? -90.0F : 90.0F);
 

@@ -40,8 +40,6 @@ import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
-    // Kits
-    public static String formatted;
     public FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
     private File customConfigFile1 = new File(getDataFolder(), "other.yml");
@@ -158,14 +156,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
 
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            if (Bukkit.getServer().getOnlinePlayers().size() == 0)
-                return;
-
-            for (final String msg : List.of("§7---------------------------------------",
-                    "§7ᴛʏᴘᴇ §c/kit §7ᴏʀ §c/k §7ᴛᴏ ɢᴇᴛ ꜱᴛᴀʀᴛᴇᴅ",
-                    "§7---------------------------------------")) {
-                Bukkit.broadcastMessage(msg);
-            }
             if (ffaconst.isEmpty())
                 return;
 
@@ -258,8 +248,8 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
             for (int i = 1; i < args.length; i++)
                 msgargs.append(args[i]).append(" ");
-            player.sendMessage(translate("&6[&#fc282fme &6-> &#fc282f" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(translate("&6[&#fc282f" + player.getDisplayName() + " &6-> &#fc282fme&6] &r" + msgargs));
+            player.sendMessage(translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
             lastReceived.put(player.getUniqueId(), target.getUniqueId());
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
@@ -283,8 +273,8 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            player.sendMessage(translate("&6[&#fc282fme &6-> &#fc282f" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(translate("&6[&#fc282f" + player.getDisplayName() + " &6-> &#fc282fme&6] &r" + msgargs));
+            player.sendMessage(translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
             lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         }

@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuri.aestheticnetwork.utils.RequestManager;
 import org.yuri.aestheticnetwork.utils.Type;
 
 import java.util.UUID;
@@ -22,10 +23,18 @@ public class TpacceptCommand implements CommandExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        TpaRequest request = getTPArequest(user);
+        String msg = translateo("&7You got no active teleport request");
+        TpaRequest request;
+
+        if (args.length == 0) {
+            request = getTPArequest(user);
+        } else {
+            request = getTPArequest(user, args[0].toLowerCase());
+            msg = translate("&7You got no active teleport request from #fc282f" + args[0]);
+        }
 
         if (request == null) {
-            user.sendMessage(translateo("&7You got no active teleport request"));
+            user.sendMessage(msg);
             return true;
         }
 
@@ -37,19 +46,19 @@ public class TpacceptCommand implements CommandExecutor {
         if (request.getType() == Type.TPA) {
             tempuser = recipient;
             temprecipient = user;
-            temprecipient.sendMessage(translate("&7You have accepted &#fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
+            temprecipient.sendMessage(translate("&7You have accepted #fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
             temprecipient.sendMessage(translateo("&7Teleporting..."));
-            tempuser.sendMessage(translate("&#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+            tempuser.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         } else {
             tempuser = user;
             temprecipient = recipient;
-            tempuser.sendMessage(translate("&7You have accepted &#fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
+            tempuser.sendMessage(translate("&7You have accepted #fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
             tempuser.sendMessage(translateo("&7Teleporting..."));
-            temprecipient.sendMessage(translate("&#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+            temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         }
 
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason ->
-                removeTPArequest(request));
+                tpa.remove(request));
         return true;
     }
 }

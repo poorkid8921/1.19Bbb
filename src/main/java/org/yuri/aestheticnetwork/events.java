@@ -3,7 +3,10 @@ package org.yuri.aestheticnetwork;
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,20 +14,14 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.permissions.ServerOperator;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.utils.Initializer;
@@ -32,9 +29,10 @@ import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
 import org.yuri.aestheticnetwork.utils.InventoryInstanceShop;
 import org.yuri.aestheticnetwork.utils.Utils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-import static org.yuri.aestheticnetwork.AestheticNetwork.*;
 import static org.yuri.aestheticnetwork.utils.Initializer.spawn;
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
@@ -63,16 +61,17 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
-        if (e.getMessage().length() > 98) {
-            e.setCancelled(true);
-            return;
-        }
+        e.setCancelled(true);
 
         UUID playerUniqueId = e.getPlayer().getUniqueId();
-        if (chatdelay.containsKey(playerUniqueId) &&
-                chatdelay.get(playerUniqueId) > System.currentTimeMillis())
-            e.setCancelled(true);
-        else chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
+        if (e.getMessage().length() > 98 ||
+                (chatdelay.containsKey(playerUniqueId) &&
+                        chatdelay.get(playerUniqueId) > System.currentTimeMillis()))
+            return;
+
+        chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
+
+        Bukkit.broadcastMessage(translate(e.getPlayer().getDisplayName() + " #d6a7eb» &r") + e.getMessage());
     }
 
     @EventHandler
@@ -83,20 +82,6 @@ public class events implements Listener {
         ffaconst.remove(e.getPlayer());
     }
 
-    /*@EventHandler(priority = EventPriority.NORMAL)
-    public void PlayerDamageReceive(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player damaged) {
-            ItemStack i = damaged.getInventory().getItemInMainHand();
-            if ((damaged.getHealth() - e.getDamage()) <= 0 && i.getType().equals(Material.TOTEM_OF_UNDYING)) {
-                e.setCancelled(true);
-                damaged.setHealth(2);
-                damaged.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 100, 2));
-                damaged.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 800, 2));
-                i.setAmount(0);
-            }
-        }
-    }*/
-
     @EventHandler
     private void onPlayerLeave(final PlayerQuitEvent e) {
         Player p = e.getPlayer();
@@ -105,6 +90,7 @@ public class events implements Listener {
 
         // duel related
         if (teams.containsKey(playerUniqueId)) {
+            teams.remove(playerUniqueId);
             valid.remove(playerUniqueId);
             DuelRequest tpr = getDUELrequest(e.getPlayer());
             List<Player> plist = new ArrayList<>(e.getPlayer()
@@ -129,15 +115,15 @@ public class events implements Listener {
                     " n ",
                     t1 == 1,
                     tpr.IsLegacy(),
-                    translate(t1 == 1 ? "&#31ed1cʏᴏᴜ ᴡᴏɴ!" : "&#fc282fʏᴏᴜ ʟᴏsᴛ"),
-                    translate(t1 == 0 ? "&#31ed1cʏᴏᴜ ᴡᴏɴ!" : "&#fc282fʏᴏᴜ ʟᴏsᴛ"));
+                    translate(t1 == 1 ? "#31ed1cʏᴏᴜ ᴡᴏɴ!" : "#fc282fʏᴏᴜ ʟᴏsᴛ"),
+                    translate(t1 == 0 ? "#31ed1cʏᴏᴜ ᴡᴏɴ!" : "#fc282fʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
                 teams.remove(pw.getUniqueId());
-                teams.remove(e.getPlayer().getUniqueId());
                 duel.remove(tpr);
                 spawn(pw);
             }, 60L);
+            e.setQuitMessage(null);
         }
 
         // requests
@@ -151,24 +137,20 @@ public class events implements Listener {
         msg.remove(playerName);
         Initializer.tpa.remove(playerName);
         ffaconst.remove(p);
+        e.setQuitMessage(translate("#fc282f← ") + playerName);
     }
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e) {
-        final Player player = (Player) e.getWhoClicked();
-        final String key = player.getUniqueId().toString();
-        if (e.getClickedInventory() instanceof PlayerInventory) {
+        if (e.getClickedInventory() instanceof PlayerInventory)
             return;
-        }
 
         if (e.getInventory().getHolder() instanceof InventoryInstanceShop holder) {
             e.setCancelled(true);
             holder.whenClicked(e.getCurrentItem(), e.getSlot());
         } else if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
             e.setCancelled(true);
-            final ItemStack clickedItem = e.getCurrentItem();
-            ItemMeta meta = clickedItem.getItemMeta();
-            if (!meta.hasLore())
+            if (!e.getCurrentItem().getItemMeta().hasLore())
                 return;
 
             holder.whenClicked(e.getCurrentItem(),
@@ -226,8 +208,8 @@ public class events implements Listener {
                             " n ",
                             true,
                             tpr.IsLegacy(),
-                            translate("&#31ed1cʏᴏᴜ ᴡᴏɴ!"),
-                            translate("&#fc282fʏᴏᴜ ʟᴏsᴛ"));
+                            translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"),
+                            translate("#fc282fʏᴏᴜ ʟᴏsᴛ"));
                 } else if (blue > red) {
                     displayduelresume(bluep,
                             redp,
@@ -239,8 +221,8 @@ public class events implements Listener {
                             " n ",
                             false,
                             tpr.IsLegacy(),
-                            translate("&#fc282fʏᴏᴜ ʟᴏsᴛ"),
-                            translate("&#31ed1cʏᴏᴜ ᴡᴏɴ!"));
+                            translate("#fc282fʏᴏᴜ ʟᴏsᴛ"),
+                            translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"));
                 } else {
                     displayduelresume(redp,
                             bluep,
@@ -396,15 +378,20 @@ public class events implements Listener {
                 e.getPlayer().setHealth(20);
                 e.getPlayer().kickPlayer("Disconnected");
             }, 2L);
+            e.setJoinMessage(null);
             return;
         }
 
-        if (Utils.manager1().get("r." + e.getPlayer().getUniqueId() + ".t") == null)
-            Initializer.tpa.add(e.getPlayer().getName());
+        String name = e.getPlayer().getName();
+        UUID uid = e.getPlayer().getUniqueId();
 
-        if (Utils.manager1().get("r." + e.getPlayer().getUniqueId() + ".m") == null)
-            msg.add(e.getPlayer().getName());
+        if (Utils.manager1().get("r." + uid + ".t") == null)
+            Initializer.tpa.add(name);
+
+        if (Utils.manager1().get("r." + uid + ".m") == null)
+            msg.add(name);
         spawn(e.getPlayer());
+        e.setJoinMessage(translate("#31ed1c→ ") + name);
     }
 
     @EventHandler

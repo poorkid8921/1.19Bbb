@@ -66,7 +66,7 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie4 = new ItemStack(Material.BARRIER, 1);
         ItemMeta iem4 = ie4.getItemMeta();
-        iem4.setDisplayName(translateo("&#fc282fᴇxɪᴛ"));
+        iem4.setDisplayName(translateo("#fc282fᴇxɪᴛ"));
         ie4.setItemMeta(iem4);
         inv.setItem(26, ie4);
     }
@@ -228,7 +228,7 @@ public class ShopInventory extends InventoryInstanceShop {
 
                     ItemStack ie7 = new ItemStack(Material.BARRIER, 1);
                     ItemMeta iem7 = ie7.getItemMeta();
-                    iem7.setDisplayName(translateo("&#fc282fʙᴀᴄᴋ"));
+                    iem7.setDisplayName(translateo("#fc282fʙᴀᴄᴋ"));
                     ie7.setItemMeta(iem7);
                     inv.setItem(26, ie7);
 

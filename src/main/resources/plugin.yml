@@ -56,18 +56,6 @@ commands:
   flatlegacy:
     usage: /<command>
     aliases: [ lflat, legacyflat, oldflat ]
-  kit:
-    usage: /<command>
-    aliases: k
-  kit1:
-    usage: /<command>
-    aliases: k1
-  kit2:
-    usage: /<command>
-    aliases: k2
-  kit3:
-    usage: /<command>
-    aliases: k3
 permissions:
   has.staff:
     description: Is a staff member

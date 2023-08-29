@@ -81,7 +81,7 @@ public class Utils {
         p.closeInventory();
         double bal = econ.getBalance(p);
         if (bal < cost) {
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &#fc282fʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ"));
+            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» #fc282fʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ"));
             return;
         }
 
@@ -107,6 +107,7 @@ public class Utils {
                         .addField("Server", "Practice", true)
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Reason", report, true)
+                        .addField("@here", "", true)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             else
@@ -116,6 +117,7 @@ public class Utils {
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Target", report, true)
                         .addField("Reason", reason, true)
+                        .addField("@here", "", true)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             try {

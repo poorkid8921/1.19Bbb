@@ -1,6 +1,8 @@
 package org.yuri.aestheticnetwork.utils;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
@@ -11,7 +13,6 @@ import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
@@ -20,13 +21,17 @@ public class RequestManager {
     public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
 
     public static TpaRequest getTPArequest(Player user) {
-        for (TpaRequest request : tpa) {
-            if (request.getReciever().getName().equalsIgnoreCase(user.getName()) ||
-                    request.getSender().getName().equalsIgnoreCase(user.getName())) return request;
-        }
-
-        return null;
+        return tpa.stream().filter(r -> r.getReciever().getName().equals(user.getName()) ||
+                r.getSender().getName().equals(user.getName())).toList().get(0);
     }
+
+    public static TpaRequest getTPArequest(Player user, String lookup) {
+        return tpa.stream().filter(r -> (r.getReciever().getName().equals(user.getName()) ||
+                r.getSender().getName().equals(user.getName())) &&
+                (r.getReciever().getName().toLowerCase().startsWith(lookup) ||
+                        r.getSender().getName().toLowerCase().startsWith(lookup))).toList().get(0);
+    }
+
 
     public static void removeTPArequest(TpaRequest user) {
         tpa.remove(user);
@@ -38,7 +43,14 @@ public class RequestManager {
                 type);
         tpa.add(tpaRequest);
 
-        TextComponent tc = new TextComponent();
+        String name = sender.getDisplayName().replace("&", "");
+        boolean c = name.contains(" ");
+        TextComponent tc = new TextComponent(c ? translate(name.substring(0, name.indexOf(" ")) + "&r "
+                + name.substring(name.indexOf(" ") + 1)) :
+                translateo(name));
+        tc.setColor(ChatColor.valueOf(c ? name.substring(0, 7) : "#fc282f"));
+        TextComponent tc1 = new TextComponent(translateo(" &7has requested that you teleport to them "));
+
         TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
         Text acceptHoverText = new Text(translateo("&7Click to accept the teleportation request"));
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
@@ -47,27 +59,23 @@ public class RequestManager {
         Text denyHoverText = new Text(translateo("&7Click to deny the teleportation request"));
         deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
         deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
-
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to &#fc282f" +
+        sender.sendMessage(translate("&7Request sent to #fc282f" +
                 receiver.getDisplayName()));
 
-        if (type == Type.TPAHERE)
-            tc.setText(translate("&#fc282f" +
+        if (type == Type.TPA)
+            tc.setText(translate("#fc282f" +
                     sender.getDisplayName() +
-                    " &7has requested that you teleport to them "));
-        else tc.setText(translate("&#fc282f" +
-                sender.getDisplayName() +
-                " &7has requested to teleport to you "));
+                    " &7has requested to teleport to you "));
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (tpa.contains(tpaRequest)) removeTPArequest(tpaRequest);
+                tpa.remove(tpaRequest);
             }
         }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
-        receiver.sendMessage(tc, accept, space, deny);
+        receiver.sendMessage(tc1, tc, accept, space, deny);
     }
 }
