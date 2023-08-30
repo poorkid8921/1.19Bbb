@@ -13,13 +13,12 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.commands.*;
+import org.yuri.aestheticnetwork.commands.essentialsx.back;
 import org.yuri.aestheticnetwork.commands.ffa;
 import org.yuri.aestheticnetwork.commands.flat;
 import org.yuri.aestheticnetwork.commands.duel.*;
@@ -31,7 +30,6 @@ import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -152,8 +150,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
 
         Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
+        Objects.requireNonNull(this.getCommand("back")).setExecutor(new back());
 
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (ffaconst.isEmpty())

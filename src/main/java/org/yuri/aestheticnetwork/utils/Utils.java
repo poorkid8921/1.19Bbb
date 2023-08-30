@@ -1,6 +1,10 @@
 package org.yuri.aestheticnetwork.utils;
 
 import io.papermc.lib.PaperLib;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,6 +15,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 
@@ -96,6 +101,14 @@ public class Utils {
 
     public static void report(AestheticNetwork plugin, Player e, String report, String reason) {
         e.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use"))
+                .forEach(r -> r.sendMessage(translate(
+                        "#fc282f" +
+                                e.getDisplayName() +
+                                " &7has submitted a report against #fc282f" +
+                                report +
+                                " &7with the reason of #fc282f" +
+                                reason)));
         Bukkit.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             String avturl = "https://mc-heads.net/avatar/" + e.getName() + "/100";
             DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1125353498851168317/8CqqUqAHJn74K1X-9UCLUoHi6psT0Y1t051G5GtOQUPuFRnAAUCXxVL8_Z9jB0I7qm2y");
@@ -107,7 +120,7 @@ public class Utils {
                         .addField("Server", "Practice", true)
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Reason", report, true)
-                        .addField("@here", "", true)
+                        .addField("@here", "", false)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             else
@@ -117,7 +130,7 @@ public class Utils {
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Target", report, true)
                         .addField("Reason", reason, true)
-                        .addField("@here", "", true)
+                        .addField("@here", "", false)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             try {
@@ -127,7 +140,6 @@ public class Utils {
             }
         });
         e.sendMessage(translateo("&7Successfully submitted the report"));
-        cooldown.put(e.getUniqueId(), System.currentTimeMillis() + 300000);
     }
 
     public static ItemStack getHead(String player) {

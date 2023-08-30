@@ -19,9 +19,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.utils.Initializer;
@@ -48,30 +46,20 @@ public class events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerRegisterChannel(PlayerRegisterChannelEvent e) {
-        if (e.getChannel().equals("hcscr:haram")) e.getPlayer().sendPluginMessage(p,
-                "hcscr:haram",
-                new byte[]{1});
-    }
-
-    @EventHandler
     private void ItemConsume(PlayerItemConsumeEvent e) {
         e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
-        e.setCancelled(true);
-
         UUID playerUniqueId = e.getPlayer().getUniqueId();
         if (e.getMessage().length() > 98 ||
                 (chatdelay.containsKey(playerUniqueId) &&
-                        chatdelay.get(playerUniqueId) > System.currentTimeMillis()))
+                        chatdelay.get(playerUniqueId) > System.currentTimeMillis())) {
+            e.setCancelled(true);
             return;
-
+        }
         chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
-
-        Bukkit.broadcastMessage(translate(e.getPlayer().getDisplayName() + " #d6a7eb» &r") + e.getMessage());
     }
 
     @EventHandler
@@ -123,21 +111,18 @@ public class events implements Listener {
                 duel.remove(tpr);
                 spawn(pw);
             }, 60L);
-            e.setQuitMessage(null);
         }
 
         // requests
         removeDUELrequest(getDUELrequest(p));
         removeTPArequest(getTPArequest(p));
         // misc
-        cooldown.remove(playerUniqueId);
         chatdelay.remove(playerUniqueId);
         //teams.remove(playerUniqueId);
         lastReceived.remove(playerUniqueId);
         msg.remove(playerName);
         Initializer.tpa.remove(playerName);
         ffaconst.remove(p);
-        e.setQuitMessage(translate("#fc282f← ") + playerName);
     }
 
     @EventHandler
@@ -391,7 +376,6 @@ public class events implements Listener {
         if (Utils.manager1().get("r." + uid + ".m") == null)
             msg.add(name);
         spawn(e.getPlayer());
-        e.setJoinMessage(translate("#31ed1c→ ") + name);
     }
 
     @EventHandler

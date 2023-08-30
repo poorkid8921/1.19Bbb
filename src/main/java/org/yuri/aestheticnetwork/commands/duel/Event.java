@@ -30,13 +30,12 @@ public class Event implements CommandExecutor {
                 (arg.equals("y") ?
                         "ɴᴏʙᴏᴅʏ" :
                         args[5])));
-        Text hit = new Text(translate("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ #fc282f→ " + Integer.parseInt(args[6]) +
-                "\n&7ᴋɪʟʟs: #fc282f→ " + Integer.parseInt(args[7]) +
-                "\n&7ᴅᴇᴀᴛʜs #fc282f→ " + Integer.parseInt(args[8]) +
-                "\n&7ᴡɪɴs #fc282f→ " + Integer.parseInt(args[10]) +
-                "\n&7ʟᴏssᴇs #fc282f→ " + Integer.parseInt(args[11])));
         if (arg.equals("n"))
-            hi.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hit));
+            hi.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translate("&7ʜᴇᴀʀᴛs ʀᴇᴍᴀɪɴɪɴɢ #fc282f→ " + Integer.parseInt(args[6]) +
+                    "\n&7ᴋɪʟʟs #fc282f→ " + Integer.parseInt(args[7]) +
+                    "\n&7ᴅᴇᴀᴛʜs #fc282f→ " + Integer.parseInt(args[8]) +
+                    "\n&7ᴡɪɴs #fc282f→ " + Integer.parseInt(args[10]) +
+                    "\n&7ʟᴏssᴇs #fc282f→ " + Integer.parseInt(args[11])))));
 
         sender.sendMessage(translateo("&7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs"));
         sender.sendMessage(translateo("&7------------------------"));

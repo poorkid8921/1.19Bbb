@@ -49,16 +49,17 @@ public class RequestManager {
                 + name.substring(name.indexOf(" ") + 1)) :
                 translateo(name));
         tc.setColor(ChatColor.valueOf(c ? name.substring(0, 7) : "#fc282f"));
-        TextComponent tc1 = new TextComponent(translateo(" &7has requested that you teleport to them "));
+        TextComponent tc1 = new TextComponent(translateo(" &7has requested that you teleport to them. "));
 
-        TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
-        Text acceptHoverText = new Text(translateo("&7Click to accept the teleportation request"));
-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
-        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(translateo("&7[&cX&7]"));
-        Text denyHoverText = new Text(translateo("&7Click to deny the teleportation request"));
-        deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
-        deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
+        TextComponent a = new TextComponent(translateo("&7[&a✔&7]"));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
+                translateo("&7Click to accept the teleportation request"))));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
+
+        TextComponent b = new TextComponent(translate("&7[#fc282fx&7]"));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
+                translateo("&7Click to deny the teleportation request"))));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage(translate("&7Request sent to #fc282f" +
                 receiver.getDisplayName()));
@@ -76,6 +77,6 @@ public class RequestManager {
         }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
-        receiver.sendMessage(tc1, tc, accept, space, deny);
+        receiver.sendMessage(tc1, tc, a, space, b);
     }
 }

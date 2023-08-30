@@ -21,7 +21,6 @@ public class Initializer {
     public static LuckPerms lp;
     public static AestheticNetwork p;
 
-    public static final Map<UUID, Long> cooldown = new HashMap<>();
     public static final Map<UUID, Long> chatdelay = new HashMap<>();
     public static final Map<UUID, Integer> teams = new HashMap<>();
     public static final Map<UUID, UUID> lastReceived = new HashMap<>();

@@ -22,7 +22,7 @@ public class flatlegacy implements CommandExecutor {
                     Initializer.lflat.getY(),
                     Initializer.lflat.getZ(),
                     pp.getLocation().getYaw(),
-                    pp.getLocation().getPitch())).thenAccept(reason -> pp.setMetadata("1.19.2", new FixedMetadataValue(plugin, 0)));
+                    pp.getLocation().getPitch())).thenAccept(reason -> pp.setMetadata("1.19.2", new FixedMetadataValue(plugin, 1)));
 
         return true;
     }

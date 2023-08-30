@@ -7,10 +7,6 @@ import org.bukkit.inventory.ItemStack;
 
 public abstract class InventoryInstanceShop implements InventoryHolder {
     protected final Player player;
-    protected String method = "title";
-    protected String color = "&c";
-    protected int pressed = 0;
-    protected int t = -1;
 
     public InventoryInstanceShop(Player player) {
         this.player = player;
