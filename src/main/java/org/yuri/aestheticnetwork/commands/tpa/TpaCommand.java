@@ -38,7 +38,7 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        TpaRequest tpr = getTPArequest(recipient);
+        TpaRequest tpr = getTPArequest(recipient.getName());
 
         if (tpr != null && tpr.getSender().equals(sender)) {
             user.sendMessage(translateo("&7You already have an ongoing request to this player"));

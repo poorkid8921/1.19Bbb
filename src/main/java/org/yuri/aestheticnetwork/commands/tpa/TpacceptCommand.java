@@ -27,9 +27,10 @@ public class TpacceptCommand implements CommandExecutor {
         TpaRequest request;
 
         if (args.length == 0) {
-            request = getTPArequest(user);
+            request = getTPArequest(user.getName());
         } else {
-            request = getTPArequest(user, args[0].toLowerCase());
+            request = getTPArequest(user.getName(),
+                    args[0].toLowerCase());
             msg = translate("&7You got no active teleport request from #fc282f" + args[0]);
         }
 

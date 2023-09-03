@@ -17,16 +17,16 @@ public class TpdenyCommand implements CommandExecutor {
         if (!(sender instanceof Player player))
             return true;
 
-        TpaRequest request = getTPArequest(player);
+        TpaRequest request = getTPArequest(player.getName());
         if (request == null) {
-            player.sendMessage(translateo("&7You got no active teleport request"));
+            player.sendMessage(translate("#fc282fʏᴏᴜ ɢᴏᴛ ɴᴏ ᴀᴄᴛɪᴠᴇ ᴛᴇʟᴇᴘᴏʀᴛ ʀᴇǫᴜᴇsᴛ."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(request.getSender().getUniqueId());
         if (recipient != null) {
             recipient.sendMessage(translate("#fc282f" + player.getDisplayName() + " &7denied your teleportation request"));
-            removeTPArequest(getTPArequest(recipient));
+            removeTPArequest(getTPArequest(recipient.getName()));
             player.sendMessage(translate("&7You have successfully deny #fc282f" + recipient.getDisplayName() + "&7's &7request"));
         }
         removeTPArequest(request);

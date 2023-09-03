@@ -20,16 +20,26 @@ import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 public class RequestManager {
     public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
 
-    public static TpaRequest getTPArequest(Player user) {
-        return tpa.stream().filter(r -> r.getReciever().getName().equals(user.getName()) ||
-                r.getSender().getName().equals(user.getName())).toList().get(0);
+    public static TpaRequest getTPArequest(String user) {
+        for (TpaRequest r : tpa) {
+            if (r.getReciever().getName().equals(user) ||
+                    r.getSender().getName().equals(user))
+                return r;
+        }
+
+        return null;
     }
 
-    public static TpaRequest getTPArequest(Player user, String lookup) {
-        return tpa.stream().filter(r -> (r.getReciever().getName().equals(user.getName()) ||
-                r.getSender().getName().equals(user.getName())) &&
-                (r.getReciever().getName().toLowerCase().startsWith(lookup) ||
-                        r.getSender().getName().toLowerCase().startsWith(lookup))).toList().get(0);
+    public static TpaRequest getTPArequest(String user, String lookup) {
+        for (TpaRequest r : tpa) {
+            if ((r.getReciever().getName().equals(user) ||
+                    r.getSender().getName().equals(user)) &&
+                    (r.getReciever().getName().equals(lookup) ||
+                            r.getSender().getName().equals(lookup)))
+                return r;
+        }
+
+        return null;
     }
 
 

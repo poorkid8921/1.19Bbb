@@ -10,12 +10,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.AestheticNetwork;
+import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 
 import java.util.Map;
 import java.util.UUID;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
+import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
+import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
@@ -24,10 +27,19 @@ public class DuelAccept implements CommandExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        DuelRequest request = getDUELrequest(user);
+        String msg = translateo("&7You got no active duel request");
+        DuelRequest request;
+
+        if (args.length == 0) {
+            request = getDUELrequest(user.getName());
+        } else {
+            request = getDUELrequest(user.getName(),
+                    args[0].toLowerCase());
+            msg = translate("&7You got no active duel request from #fc282f" + args[0]);
+        }
 
         if (request == null) {
-            user.sendMessage(translateo("&7You got no active duel request"));
+            user.sendMessage(msg);
             return true;
         }
 

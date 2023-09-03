@@ -8,12 +8,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.data.type.Piston;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -38,6 +41,7 @@ import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.spawn;
 import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 
 public class events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -80,7 +84,7 @@ public class events implements Listener {
         if (teams.containsKey(playerUniqueId)) {
             teams.remove(playerUniqueId);
             valid.remove(playerUniqueId);
-            DuelRequest tpr = getDUELrequest(e.getPlayer());
+            DuelRequest tpr = getDUELrequest(playerName);
             List<Player> plist = new ArrayList<>(e.getPlayer()
                     .getWorld()
                     .getNearbyPlayers(e.getPlayer()
@@ -114,8 +118,8 @@ public class events implements Listener {
         }
 
         // requests
-        removeDUELrequest(getDUELrequest(p));
-        removeTPArequest(getTPArequest(p));
+        removeDUELrequest(getDUELrequest(playerName));
+        removeTPArequest(getTPArequest(playerName));
         // misc
         chatdelay.remove(playerUniqueId);
         //teams.remove(playerUniqueId);
@@ -144,9 +148,13 @@ public class events implements Listener {
         }
     }
 
-    @EventHandler
-    private void onPhysics(final BlockPhysicsEvent e) {
-        e.setCancelled(e.getBlock().getType().equals(Material.SAND));
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player &&
+                event.getEntity() instanceof EnderCrystal &&
+                player.getPing() > 150) {
+            ((CraftPlayer) player).getHandle().b.a(new PacketPlayOutEntityDestroy(event.getEntity().getEntityId()));
+        }
     }
 
     @EventHandler
@@ -158,117 +166,121 @@ public class events implements Listener {
         Player killer = e.getPlayer().getKiller();
         if (teams.containsKey(p.getUniqueId())) {
             e.setCancelled(true);
-            DuelRequest tpr = getDUELrequest(p);
+            DuelRequest tpr = getDUELrequest(p.getName());
             List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
-            Player kp = (killer == p || killer != e.getPlayer()) ? killer : plist.get(1);
+            Player kp = (killer == p ||
+                    killer == null) ? plist.get(1) : killer;
 
             duel_spawnFireworks(p.getLocation());
-            //spawnFireworks(kp.getLocation());
+            UUID kuid = killer.getUniqueId();
 
-            int newrounds = tpr.getRounds() + 1;
-            int red = tpr.getRed();
-            int blue = tpr.getBlue();
-            int t1 = teams.get(kp.getUniqueId());
-            Player redp, bluep;
-
-            if (t1 == 1) {
-                redp = kp;
-                bluep = p;
-                red += 1;
-            } else {
-                redp = p;
-                bluep = kp;
-                blue += 1;
-            }
-
-            if (newrounds == tpr.getMaxrounds()) {
-                if (red > blue) {
-                    displayduelresume(redp,
-                            bluep,
-                            true,
-                            red,
-                            blue,
-                            tpr.getStart(),
-                            System.currentTimeMillis(),
-                            " n ",
-                            true,
-                            tpr.IsLegacy(),
-                            translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"),
-                            translate("#fc282fʏᴏᴜ ʟᴏsᴛ"));
-                } else if (blue > red) {
-                    displayduelresume(bluep,
-                            redp,
-                            true,
-                            red,
-                            blue,
-                            tpr.getStart(),
-                            System.currentTimeMillis(),
-                            " n ",
-                            false,
-                            tpr.IsLegacy(),
-                            translate("#fc282fʏᴏᴜ ʟᴏsᴛ"),
-                            translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"));
-                } else {
-                    displayduelresume(redp,
-                            bluep,
-                            true,
-                            red,
-                            blue,
-                            tpr.getStart(),
-                            System.currentTimeMillis(),
-                            " y ",
-                            false,
-                            tpr.IsLegacy(),
-                            translateo("&eᴅʀᴀᴡ"),
-                            translateo("&eᴅʀᴀᴡ"));
+            Bukkit.getScheduler().scheduleSyncDelayedTask(AestheticNetwork.getInstance(), () -> {
+                if (Bukkit.getPlayer(e.getPlayer().getUniqueId()) == null ||
+                Bukkit.getPlayer(kuid) == null) {
+                    return;
                 }
 
-                p.setNoDamageTicks(100);
-                p.setFoodLevel(20);
-                p.setHealth(20);
+                int newrounds = tpr.getRounds() + 1;
+                int red = tpr.getRed();
+                int blue = tpr.getBlue();
+                int t1 = teams.get(kp.getUniqueId());
+                Player redp, bluep;
 
-                kp.setNoDamageTicks(100);
-                kp.setFoodLevel(20);
-                kp.setHealth(20);
-                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                    teams.remove(kp.getUniqueId());
-                    teams.remove(p.getUniqueId());
-                    duel.remove(tpr);
-                    spawn(kp);
-                    spawn(p);
-                    plist.clear();
-                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" +
-                            tpr.getType() +
-                            tpr.getArena() +
-                            " veryfast");
-                    User up = lp.getUserManager().getUser(p.getUniqueId());
-                    up.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
-                    lp.getUserManager().saveUser(up);
+                if (t1 == 1) {
+                    redp = kp;
+                    bluep = p;
+                    red += 1;
+                } else {
+                    redp = p;
+                    bluep = kp;
+                    blue += 1;
+                }
 
-                    User ukp = lp.getUserManager().getUser(kp.getUniqueId());
-                    ukp.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
-                    lp.getUserManager().saveUser(ukp);
-                }, 60L);
-                return;
-            }
+                if (newrounds == tpr.getMaxrounds()) {
+                    if (red > blue) {
+                        displayduelresume(redp,
+                                bluep,
+                                true,
+                                red,
+                                blue,
+                                tpr.getStart(),
+                                System.currentTimeMillis(),
+                                " n ",
+                                true,
+                                tpr.IsLegacy(),
+                                translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"),
+                                translate("#fc282fʏᴏᴜ ʟᴏsᴛ"));
+                    } else if (blue > red) {
+                        displayduelresume(bluep,
+                                redp,
+                                true,
+                                red,
+                                blue,
+                                tpr.getStart(),
+                                System.currentTimeMillis(),
+                                " n ",
+                                false,
+                                tpr.IsLegacy(),
+                                translate("#fc282fʏᴏᴜ ʟᴏsᴛ"),
+                                translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"));
+                    } else {
+                        displayduelresume(redp,
+                                bluep,
+                                true,
+                                red,
+                                blue,
+                                tpr.getStart(),
+                                System.currentTimeMillis(),
+                                " y ",
+                                false,
+                                tpr.IsLegacy(),
+                                translateo("&eᴅʀᴀᴡ"),
+                                translateo("&eᴅʀᴀᴡ"));
+                    }
 
-            String type = tpr.getType();
-            int arena = tpr.getArena();
-            tpr.setRounds(newrounds);
-            tpr.setRed(red);
-            tpr.setBlue(blue);
-            startduel(kp,
-                    p,
-                    type,
-                    newrounds,
-                    tpr.getMaxrounds(),
-                    arena);
-            plist.clear();
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-                    "arena reset duel_" +
-                            type +
-                            arena +
-                            (type.equalsIgnoreCase("field") ? " veryfast" : " slow"));
+                    p.setNoDamageTicks(100);
+                    p.setFoodLevel(20);
+                    p.setHealth(20);
+
+                    kp.setNoDamageTicks(100);
+                    kp.setFoodLevel(20);
+                    kp.setHealth(20);
+                    Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                        teams.remove(kp.getUniqueId());
+                        teams.remove(p.getUniqueId());
+                        duel.remove(tpr);
+                        spawn(kp);
+                        spawn(p);
+                        plist.clear();
+                        User up = lp.getUserManager().getUser(p.getUniqueId());
+                        up.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
+                        lp.getUserManager().saveUser(up);
+
+                        User ukp = lp.getUserManager().getUser(kp.getUniqueId());
+                        ukp.data().remove(Node.builder("permission:tab.scoreboard.duels").build());
+                        lp.getUserManager().saveUser(ukp);
+                    }, 60L);
+                    return;
+                }
+
+                String type = tpr.getType();
+                int arena = tpr.getArena();
+                tpr.setRounds(newrounds);
+                tpr.setRed(red);
+                tpr.setBlue(blue);
+                startduel(kp,
+                        p,
+                        type,
+                        newrounds,
+                        tpr.getMaxrounds(),
+                        arena);
+                plist.clear();
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+                        "arena reset duel_" +
+                                type +
+                                arena +
+                                (type.equalsIgnoreCase("field") ? " veryfast" : " slow"));
+            }, 60L);
             return;
         }
 
@@ -305,28 +317,9 @@ public class events implements Listener {
             return;
 
         switch (peffect) {
-            case "totem_explosion" -> {
-                createHelix(p);
-                return;
-            }
-            case "firework" -> {
-                spawnFireworks(p.getLocation());
-                return;
-            }
-            case "lightning" -> {
-                p.getWorld().strikeLightningEffect(p.getLocation());
-                return;
-            }
-        }
-
-        String color = String.valueOf(peffect.charAt(0) + peffect.charAt(1));
-        int m = peffect.indexOf("_");
-        String method = peffect.substring(m + 1);
-        switch (method) {
-            case "title" -> p.sendTitle(translateo(color + "L"), "", 1, 20, 1);
-            case "subtitle" -> p.sendTitle("", translateo(color + "L"), 1, 20, 1);
-            case "actionbar" -> p.sendActionBar(translateo(color + "L"));
-            default -> p.sendMessage(translate("&7ᴛᴀᴋᴇ ᴛʜᴇ " + color + "ʟ &7ꜰʀᴏᴍ &c" + killer.getDisplayName()));
+            case "totem_explosion" -> createHelix(p);
+            case "firework" -> spawnFireworks(p.getLocation());
+            case "lightning" -> p.getWorld().strikeLightningEffect(p.getLocation());
         }
     }
 
@@ -361,7 +354,7 @@ public class events implements Listener {
         if (e.getPlayer().getHealth() == 0.0) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(p, () -> {
                 e.getPlayer().setHealth(20);
-                e.getPlayer().kickPlayer("Disconnected");
+                e.getPlayer().kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");
             }, 2L);
             e.setJoinMessage(null);
             return;

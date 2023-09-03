@@ -28,15 +28,15 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie = new ItemStack(Material.BONE, 1);
         ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(translateo("&eLightning Bolt"));
-        iem.setLore(Arrays.asList(translateo("&a$100"),
+        iem.setDisplayName(translate("#fc282fLightning Bolt"));
+        iem.setLore(Arrays.asList(translate("&a$100"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie.setItemMeta(iem);
         inv.setItem(10, ie);
 
         ItemStack ie1 = new ItemStack(Material.TNT, 1);
         ItemMeta iem1 = ie1.getItemMeta();
-        iem1.setDisplayName(translateo("&eExplosion"));
+        iem1.setDisplayName(translate("#fc282fExplosion"));
         iem1.setLore(Arrays.asList(translateo("&a$200"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie1.setItemMeta(iem1);
@@ -44,25 +44,11 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie2 = new ItemStack(Material.FIREWORK_ROCKET, 1);
         ItemMeta iem2 = ie2.getItemMeta();
-        iem2.setDisplayName(translateo("&eFirework"));
+        iem2.setDisplayName(translate("#fc282fFirework"));
         iem2.setLore(Arrays.asList(translateo("&a$250"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie2.setItemMeta(iem2);
         inv.setItem(12, ie2);
-
-        ItemStack ie3 = new ItemStack(Material.END_CRYSTAL, 1);
-        ItemMeta iem3 = ie3.getItemMeta();
-        iem3.setDisplayName(translateo("&eL"));
-        iem3.setLore(Arrays.asList(translateo("&a$500"),
-                translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
-        ie3.setItemMeta(iem3);
-        inv.setItem(13, ie3);
-
-        ItemStack ie4 = new ItemStack(Material.BARRIER, 1);
-        ItemMeta iem4 = ie4.getItemMeta();
-        iem4.setDisplayName(translateo("#fc282fᴇxɪᴛ"));
-        ie4.setItemMeta(iem4);
-        inv.setItem(26, ie4);
     }
 
     @Override

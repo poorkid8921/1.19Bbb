@@ -49,7 +49,7 @@ public class placeholders extends PlaceholderExpansion {
 
         if (params.equals("wins")) return String.valueOf(Utils.manager().getInt("r." + player.getUniqueId() + ".wins"));
 
-        DuelRequest req = getDUELrequest((Player) player);
+        DuelRequest req = getDUELrequest(((Player) player).getName());
         if (params.equals("score_r")) return String.valueOf(req.getRed());
 
         if (params.equals("score_b")) return String.valueOf(req.getBlue());

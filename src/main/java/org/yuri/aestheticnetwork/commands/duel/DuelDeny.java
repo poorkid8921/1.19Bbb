@@ -17,18 +17,15 @@ public class DuelDeny implements CommandExecutor {
         if (!(sender instanceof Player player))
             return true;
 
-        DuelRequest request = getDUELrequest(player);
+        DuelRequest request = getDUELrequest(player.getName());
         if (request == null) {
             player.sendMessage(translateo("&7You got no duel request"));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(request.getSender().getUniqueId());
-        if (recipient != null) {
-            recipient.sendMessage(translate("#fc282f" + player.getDisplayName() + " &7denied your duel request"));
-            duel.remove(getDUELrequest(recipient));
-            player.sendMessage(translate("&7You have successfully deny #fc282f" + recipient.getDisplayName() + "&7's &7request"));
-        }
+        recipient.sendMessage(translate("#fc282f" + player.getDisplayName() + " &7denied your duel request"));
+        player.sendMessage(translate("&7You have successfully deny #fc282f" + recipient.getDisplayName() + "&7's &7request"));
         duel.remove(request);
 
         return true;

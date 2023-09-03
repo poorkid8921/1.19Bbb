@@ -40,7 +40,7 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        TpaRequest tpr = getTPArequest(recipient);
+        TpaRequest tpr = getTPArequest(recipient.getName());
 
         if (tpr != null && tpr.getSender().equals(sender))
         {

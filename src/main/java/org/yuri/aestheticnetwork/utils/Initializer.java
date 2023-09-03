@@ -25,7 +25,11 @@ public class Initializer {
     public static final Map<UUID, Integer> teams = new HashMap<>();
     public static final Map<UUID, UUID> lastReceived = new HashMap<>();
 
-    // TinyList wrapper
+    // Duels
+    public static final ArrayList<String> toUpdate = new ArrayList<>();
+    public static final HashMap<String, String> inMatchmaking = new HashMap<>();
+    //
+
     public static List<Color> color = List.of(org.bukkit.Color.LIME,
             org.bukkit.Color.ORANGE,
             org.bukkit.Color.RED,

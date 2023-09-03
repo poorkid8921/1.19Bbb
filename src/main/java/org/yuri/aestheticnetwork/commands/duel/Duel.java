@@ -8,6 +8,8 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yuri.aestheticnetwork.inventories.DuelInventory;
+import org.yuri.aestheticnetwork.inventories.ReportInventory;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +38,8 @@ public class Duel implements CommandExecutor, TabExecutor {
         String gm = "field";
 
         if (args.length == 0) {
-            user.sendMessage(translateo("&7You must specify who you want to duel"));
+            new DuelInventory(user).open();
+            //user.sendMessage(translateo("&7You must specify who you want to duel"));
             return true;
         }
 
@@ -78,7 +81,7 @@ public class Duel implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        DuelRequest tpr = getDUELrequest(recipient);
+        DuelRequest tpr = getDUELrequest(recipient.getName());
 
         if (teams.containsKey(recipient.getUniqueId())) {
             user.sendMessage(translateo("&7This player is already in a duel"));
