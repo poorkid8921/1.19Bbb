@@ -13,26 +13,22 @@ import org.yuri.eco.utils.Utils;
 import static org.yuri.eco.utils.Utils.getRequest;
 import static org.yuri.eco.utils.Utils.translateo;
 
-@SuppressWarnings("deprecation")
 public class TpaAllCommand implements CommandExecutor {
     public TpaAllCommand() {
     }
 
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player user))
-            return true;
+        if (!(sender instanceof Player user)) return true;
 
         user.sendMessage(translateo("&7Requested everyone to teleport to you"));
 
         for (Player i : Bukkit.getOnlinePlayers()) {
-            if (i.getUniqueId().equals(user.getUniqueId()))
-                continue;
+            if (i.getUniqueId().equals(user.getUniqueId())) continue;
 
-            TpaRequest tpr = getRequest(i);
+            TpaRequest tpr = getRequest(i.getName());
 
-            if ((tpr != null && tpr.getSender().equals(sender)) || Utils.manager().get(
-                    "r." + i.getUniqueId() + ".t") != null)
+            if ((tpr != null && tpr.getSender().equals(sender)) || Utils.manager().get("r." + i.getUniqueId() + ".t") != null)
                 continue;
 
             Initializer.requests.remove(tpr);

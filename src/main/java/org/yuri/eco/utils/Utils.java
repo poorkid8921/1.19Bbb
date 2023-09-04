@@ -1,5 +1,6 @@
 package org.yuri.eco.utils;
 
+import common.commands.tpa.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -15,9 +16,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.yuri.eco.AestheticNetwork;
-import common.commands.tpa.TpaRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,10 +26,6 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    public enum Type {
-        TPA, TPAHERE
-    }
-
     public static String translate(String text) {
         final Pattern hexPattern = Pattern.compile("#([A-Fa-f0-9]{6})");
         Matcher matcher = hexPattern.matcher(text);
@@ -41,8 +38,7 @@ public class Utils {
     }
 
     public static String translateo(String text) {
-        return ChatColor.translateAlternateColorCodes('&',
-                text);
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 
     public static FileConfiguration manager() {
@@ -50,6 +46,7 @@ public class Utils {
     }
 
     public static void report(AestheticNetwork plugin, Player e, String report, String reason) {
+        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(translate("#fc282f" + e.getDisplayName() + " &7has submitted a report against #fc282f" + report + " &7with the reason of #fc282f" + reason)));
         e.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             String avturl = "https://mc-heads.net/avatar/" + e.getName() + "/100";
@@ -57,22 +54,9 @@ public class Utils {
             webhook.setAvatarUrl(avturl);
             webhook.setUsername("Report");
             if (reason == null)
-                webhook.addEmbed(new DiscordWebhook.EmbedObject()
-                        .setTitle("Report")
-                        .addField("Server", "Economy", true)
-                        .addField("Sender", e.getPlayer().getName(), true)
-                        .addField("Reason", report, true)
-                        .setThumbnail(avturl)
-                        .setColor(java.awt.Color.ORANGE));
+                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Economy", true).addField("Sender", e.getPlayer().getName(), true).addField("Reason", report, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
             else
-                webhook.addEmbed(new DiscordWebhook.EmbedObject()
-                        .setTitle("Report")
-                        .addField("Server", "Economy", true)
-                        .addField("Sender", e.getPlayer().getName(), true)
-                        .addField("Target", report, true)
-                        .addField("Reason", reason, true)
-                        .setThumbnail(avturl)
-                        .setColor(java.awt.Color.ORANGE));
+                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Economy", true).addField("Sender", e.getPlayer().getName(), true).addField("Target", report, true).addField("Reason", reason, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
             try {
                 webhook.execute();
             } catch (IOException ex) {
@@ -82,71 +66,66 @@ public class Utils {
         e.sendMessage(translateo("&7Successfully submitted the report"));
     }
 
-    public static TpaRequest getRequest(Player user) {
-        for (TpaRequest request : Initializer.requests) {
-            if (request.getReciever().getName().equalsIgnoreCase(user.getName()) ||
-                    request.getSender().getName().equalsIgnoreCase(user.getName())) return request;
+    public static TpaRequest getRequest(String user) {
+        for (TpaRequest r : Initializer.requests) {
+            if (r.getReciever().getName().equals(user) || r.getSender().getName().equals(user)) return r;
         }
 
         return null;
     }
 
-    public static void addRequest(Player sender,
-                                  Player receiver,
-                                  Type type,
-                                  boolean showmsg) {
+    public static TpaRequest getRequest(String user, String lookup) {
+        for (TpaRequest r : Initializer.requests) {
+            if ((r.getReciever().getName().equals(user) || r.getSender().getName().equals(user)) && (r.getReciever().getName().equals(lookup) || r.getSender().getName().equals(lookup)))
+                return r;
+        }
+
+        return null;
+    }
+
+    public static void addRequest(Player sender, Player receiver, Type type, boolean showmsg) {
         TpaRequest tpaRequest;
 
-        TextComponent tc = new TextComponent(translate(
-                "&c" +
-                        sender.getDisplayName() +
-                        " &7has requested to teleport to you ")); /*new TextComponent(translateo(
-                "&c" +
-                        sender.getDisplayName() +
-                        " &7has requested to teleport to you "));
+        String name = sender.getDisplayName().replace("&", "");
+        boolean c = name.contains(" ");
+        TextComponent tc = new TextComponent(c ? translate(name.substring(0, name.indexOf(" ")) + "&r " + name.substring(name.indexOf(" ") + 1)) : translateo(name));
+        tc.setColor(net.md_5.bungee.api.ChatColor.valueOf(c ? name.substring(0, 7) : "#fc282f"));
+        TextComponent tc1 = new TextComponent(translateo(" &7has requested that you teleport to them. "));
 
-        tc.setText(TextComponent.toLegacyText(tc));*/
-        TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
-        Text acceptHoverText = new Text(translateo("&7Click to accept the teleportation request"));
-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
-        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
-        TextComponent deny = new TextComponent(translateo("&7[&cX&7]"));
-        Text denyHoverText = new Text(translateo("&7Click to deny the teleportation request"));
-        deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
-        deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
+        TextComponent a = new TextComponent(translateo("&7[&a✔&7]"));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to accept the teleportation request"))));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
 
+        TextComponent b = new TextComponent(translate("&7[#fc282fx&7]"));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to deny the teleportation request"))));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         if (showmsg) sender.sendMessage(translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
 
         if (type == Type.TPAHERE) {
             tpaRequest = new TpaRequest(sender, receiver, type, false);
-            tc.setText(translate("#fc282f" + sender.getDisplayName() + " &7has requested that you teleport to them "));
-        } else
-            tpaRequest = new TpaRequest(sender, receiver, type, true);
+            tc.setText(translate("#fc282f" + sender.getDisplayName() + " &7has requested that you teleport to them. "));
+        } else tpaRequest = new TpaRequest(sender, receiver, type, true);
 
         Initializer.requests.add(tpaRequest);
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (Utils.getRequest(receiver) != null)
-                    Utils.removeRequest(receiver);
+                Initializer.requests.remove(tpaRequest);
             }
         }.runTaskLater(Initializer.p, 120 * 20);
 
         TextComponent space = new TextComponent("  ");
-        receiver.sendMessage(tc, accept, space, deny);
+        receiver.sendMessage(tc, tc1, a, space, b);
     }
 
-    public static void removeRequest(Player user) {
-        Initializer.requests.remove(getRequest(user));
-    }
-
-    public static ItemStack getHead(Player player) {
+    public static ItemStack getHead(Player player, String killed) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
         SkullMeta skull = (SkullMeta) item.getItemMeta();
         skull.setDisplayName(player.getDisplayName());
         skull.setOwner(player.getName());
+        skull.setLore(List.of(translate("&7ᴋɪʟʟᴇʀ #fc282f» " + killed)));
         item.setItemMeta(skull);
         return item;
     }
@@ -158,5 +137,9 @@ public class Utils {
         skull.setOwner(player);
         item.setItemMeta(skull);
         return item;
+    }
+
+    public enum Type {
+        TPA, TPAHERE
     }
 }

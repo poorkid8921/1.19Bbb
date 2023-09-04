@@ -1,6 +1,5 @@
 package org.yuri.eco;
 
-import org.yuri.eco.utils.Initializer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
@@ -10,6 +9,7 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.yuri.eco.utils.Initializer;
 import org.yuri.eco.utils.Utils;
 
 @SuppressWarnings("deprecation")

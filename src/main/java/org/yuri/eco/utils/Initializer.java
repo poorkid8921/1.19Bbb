@@ -1,13 +1,14 @@
 package org.yuri.eco.utils;
 
+import common.commands.tpa.TpaRequest;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Color;
 import org.yuri.eco.AestheticNetwork;
-import common.commands.tpa.TpaRequest;
 
 import java.util.*;
 
 public class Initializer {
+    public static final Map<String, Long> playerstoteming = new HashMap<>();
     public static final ArrayList<TpaRequest> requests = new ArrayList<>();
     public static final List<Color> color = List.of(Color.LIME,
             Color.ORANGE,

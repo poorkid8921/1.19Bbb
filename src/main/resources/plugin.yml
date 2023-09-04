@@ -24,7 +24,7 @@ commands:
     aliases: [ tpy, tpyes ]
   msg:
     usage: /<command>
-    aliases: [ tell, whisper, w ]
+    aliases: [ tell, whisper, w, t ]
   reply:
     usage: /<command>
     aliases: r

@@ -17,7 +17,11 @@ import org.yuri.eco.inventories.ReportInventory;
 import org.yuri.eco.utils.Initializer;
 
 import java.util.List;
-import static org.yuri.eco.utils.Utils.*;
+
+import static org.yuri.eco.utils.Utils.report;
+import static org.yuri.eco.utils.Utils.translateo;
+
+@SuppressWarnings("deprecation")
 public class Report implements CommandExecutor, TabExecutor {
     AestheticNetwork p;
 
@@ -25,27 +29,7 @@ public class Report implements CommandExecutor, TabExecutor {
         p = pp;
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length < 1) {
-            sender.sendMessage(translateo("&7You must specify who you want to report"));
-            return true;
-        }
-
-        if (args.length < 2)
-            new ReportInventory(((Player) sender).getPlayer(), args[0]).open();
-        else
-        {
-            StringBuilder msgargs = new StringBuilder();
-            for (String arg : args) msgargs.append(arg).append(" ");
-
-            report(p, ((Player) sender), msgargs.toString(), "Other");
-        }
-        return true;
-    }
-
-    public static ItemStack createitemstack(Material mat, String display, List<String> lore, String str)
-    {
+    public static ItemStack createitemstack(Material mat, String display, List<String> lore, String str) {
         ItemStack ie = new ItemStack(mat, 1);
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
@@ -57,8 +41,7 @@ public class Report implements CommandExecutor, TabExecutor {
         return ie;
     }
 
-    public static ItemStack createitemstack(ItemStack ie, String display, List<String> lore, String str)
-    {
+    public static ItemStack createitemstack(ItemStack ie, String display, List<String> lore, String str) {
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
@@ -67,6 +50,23 @@ public class Report implements CommandExecutor, TabExecutor {
         ie.setItemMeta(iem);
 
         return ie;
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length < 1) {
+            sender.sendMessage(translateo("&7You must specify who you want to report"));
+            return true;
+        }
+
+        if (args.length < 2) new ReportInventory(((Player) sender).getPlayer(), args[0]).open();
+        else {
+            StringBuilder msgargs = new StringBuilder();
+            for (String arg : args) msgargs.append(arg).append(" ");
+
+            report(p, ((Player) sender), msgargs.toString(), "Other");
+        }
+        return true;
     }
 
     @Override

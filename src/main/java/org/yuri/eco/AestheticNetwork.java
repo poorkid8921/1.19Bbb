@@ -1,17 +1,16 @@
 package org.yuri.eco;
 
+import common.commands.*;
+import common.commands.tpa.TpaCommand;
+import common.commands.tpa.TpacceptCommand;
+import common.commands.tpa.TpahereCommand;
+import common.commands.tpa.TpdenyCommand;
 import io.papermc.lib.PaperLib;
-import me.clip.placeholderapi.PlaceholderAPI;
-import org.yuri.eco.commands.ChatLock;
-import org.yuri.eco.commands.tpa.TpaAllCommand;
-import org.yuri.eco.commands.baltop;
-import org.yuri.eco.utils.Initializer;
-import org.yuri.eco.utils.Utils;
 import net.luckperms.api.LuckPerms;
 import net.md_5.bungee.api.ChatColor;
-import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.permission.Permission;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,17 +21,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import common.commands.*;
-import common.commands.tpa.*;
+import org.yuri.eco.commands.ChatLock;
+import org.yuri.eco.commands.baltop;
+import org.yuri.eco.commands.tpa.TpaAllCommand;
+import org.yuri.eco.utils.Initializer;
+import org.yuri.eco.utils.Utils;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import static org.yuri.eco.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public final class AestheticNetwork extends JavaPlugin implements CommandExecutor, TabExecutor {
     FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
@@ -54,19 +57,18 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         final StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < str.length(); i++) {
-            builder.append(ChatColor.of(new Color(
-                            (int) Math.round(red[i]),
-                            (int) Math.round(green[i]),
-                            (int) Math.round(blue[i]))))
-                    .append(str.charAt(i));
+            builder.append(ChatColor.of(new Color((int) Math.round(red[i]), (int) Math.round(green[i]), (int) Math.round(blue[i])))).append(str.charAt(i));
         }
 
         return builder.toString();
     }
 
+    public static double getTPSofLastSecond() {
+        return Bukkit.getServer().getTPS()[0];
+    }
+
     public void reloadCustomConfig() {
-        if (customConfigFile == null)
-            customConfigFile = new File(getDataFolder(), "data.yml");
+        if (customConfigFile == null) customConfigFile = new File(getDataFolder(), "data.yml");
 
         customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     }
@@ -88,6 +90,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
             this.getLogger().log(Level.SEVERE, "Could not save config to " + customConfigFile, ex);
         }
     }
+
     @Override
     public void onEnable() {
         Initializer.p = this;
@@ -98,8 +101,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         config.options().copyDefaults(true);
         saveConfig();
 
-        if (!customConfigFile.exists())
-            this.saveCustomConfig();
+        if (!customConfigFile.exists()) this.saveCustomConfig();
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
@@ -134,9 +136,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
 
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "killall endercrystals world");
-            Bukkit.getServer().getOnlinePlayers().stream().filter(s -> !s.isInsideVehicle() &&
-                    !s.isGliding() &&
-                    s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
+            Bukkit.getServer().getOnlinePlayers().stream().filter(s -> !s.isInsideVehicle() && !s.isGliding() && s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
                 Location loctp = new Location(player.getWorld(), player.getLocation().getX(), 135, player.getLocation().getZ());
                 loctp.setPitch(player.getLocation().getPitch());
                 loctp.setYaw(player.getLocation().getYaw());
@@ -151,8 +151,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player))
-            return true;
+        if (!(sender instanceof Player player)) return true;
 
         if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
@@ -170,10 +169,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
                 return true;
             }
 
-            if (Utils.manager().get(
-                    "r." + target.getUniqueId() + ".m") != null &&
-            !sender.hasPermission("has.staff"))
-            {
+            if (Utils.manager().get("r." + target.getUniqueId() + ".m") != null && !sender.hasPermission("has.staff")) {
                 player.sendMessage(translateo("&7You can't send messages to this player since they've locked their messages"));
                 return true;
             }
@@ -183,8 +179,8 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
             for (int i = 1; i < args.length; i++)
                 msgargs.append(args[i]).append(" ");
 
-            player.sendMessage(Utils.translate("&6[#fc282fme &6-> #fc282f" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[#fc282f" + player.getDisplayName() + " &6-> #fc282fme&6] &r" + msgargs));
+            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
             Initializer.lastReceived.put(player.getUniqueId(), target.getUniqueId());
             Initializer.lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
@@ -194,8 +190,7 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
                 return true;
             }
 
-            if (!Initializer.lastReceived.containsKey(player.getUniqueId()) || Initializer.lastReceived.get(player.getUniqueId()) == null)
-            {
+            if (!Initializer.lastReceived.containsKey(player.getUniqueId()) || Initializer.lastReceived.get(player.getUniqueId()) == null) {
                 player.sendMessage(translateo("&7You have no one to reply to"));
                 return true;
             }
@@ -209,16 +204,12 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            player.sendMessage(Utils.translate("&6[#fc282fme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[#fc282f" + player.getDisplayName() + " &6-> #fc282fme&6] &r" + msgargs));
+            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
+            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
             Initializer.lastReceived.put(target.getUniqueId(), player.getUniqueId());
             return true;
         }
 
         return false;
-    }
-
-    public static double getTPSofLastSecond() {
-        return Bukkit.getServer().getTPS()[0];
     }
 }
