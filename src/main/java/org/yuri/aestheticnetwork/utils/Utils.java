@@ -1,10 +1,6 @@
 package org.yuri.aestheticnetwork.utils;
 
 import io.papermc.lib.PaperLib;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -15,7 +11,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 
@@ -27,6 +22,7 @@ import java.util.regex.Pattern;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
 
+@SuppressWarnings("deprecation")
 public class Utils {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
@@ -93,7 +89,7 @@ public class Utils {
         EconomyResponse ar = econ.withdrawPlayer(p, cost);
 
         if (ar.transactionSuccess()) {
-            plugin.getCustomConfig().set("r." + p.getUniqueId() + ".killeffect", toset);
+            plugin.getCustomConfig().set("r." + p.getName() + ".killeffect", toset);
             plugin.saveCustomConfig();
             p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
         }
@@ -120,7 +116,6 @@ public class Utils {
                         .addField("Server", "Practice", true)
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Reason", report, true)
-                        .addField("@here", "", false)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             else
@@ -130,7 +125,6 @@ public class Utils {
                         .addField("Sender", e.getPlayer().getName(), true)
                         .addField("Target", report, true)
                         .addField("Reason", reason, true)
-                        .addField("@here", "", false)
                         .setThumbnail(avturl)
                         .setColor(java.awt.Color.ORANGE));
             try {

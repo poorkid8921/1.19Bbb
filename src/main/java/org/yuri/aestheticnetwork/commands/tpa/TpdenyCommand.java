@@ -12,6 +12,7 @@ import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public class TpdenyCommand implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player))
@@ -19,7 +20,7 @@ public class TpdenyCommand implements CommandExecutor {
 
         TpaRequest request = getTPArequest(player.getName());
         if (request == null) {
-            player.sendMessage(translate("#fc282fʏᴏᴜ ɢᴏᴛ ɴᴏ ᴀᴄᴛɪᴠᴇ ᴛᴇʟᴇᴘᴏʀᴛ ʀᴇǫᴜᴇsᴛ."));
+            player.sendMessage(translateo("&7ʏᴏᴜ ɢᴏᴛ ɴᴏ ᴀᴄᴛɪᴠᴇ ᴛᴇʟᴇᴘᴏʀᴛ ʀᴇǫᴜᴇsᴛ."));
             return true;
         }
 

@@ -3,6 +3,7 @@ package org.yuri.aestheticnetwork.commands.duel;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.utils.Utils;
 
@@ -21,17 +22,17 @@ public class placeholders extends PlaceholderExpansion {
     }
 
     @Override
-    public String getAuthor() {
+    public @NotNull String getAuthor() {
         return "Catto69420";
     }
 
     @Override
-    public String getIdentifier() {
+    public @NotNull String getIdentifier() {
         return "duels";
     }
 
     @Override
-    public String getVersion() {
+    public @NotNull String getVersion() {
         return "1.0.0";
     }
 
@@ -41,13 +42,14 @@ public class placeholders extends PlaceholderExpansion {
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
+    public String onRequest(OfflinePlayer player, @NotNull String params) {
         if (player == null) return String.valueOf(0);
 
-        if (params.equals("losses"))
-            return String.valueOf(Utils.manager().getInt("r." + player.getUniqueId() + ".losses"));
+        String name = player.getName();
 
-        if (params.equals("wins")) return String.valueOf(Utils.manager().getInt("r." + player.getUniqueId() + ".wins"));
+        if (params.equals("losses")) return String.valueOf(Utils.manager().getInt("r." + name + ".losses"));
+
+        if (params.equals("wins")) return String.valueOf(Utils.manager().getInt("r." + name + ".wins"));
 
         DuelRequest req = getDUELrequest(((Player) player).getName());
         if (params.equals("score_r")) return String.valueOf(req.getRed());

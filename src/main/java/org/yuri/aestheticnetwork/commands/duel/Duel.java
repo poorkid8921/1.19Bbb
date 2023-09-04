@@ -9,14 +9,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuri.aestheticnetwork.inventories.DuelInventory;
-import org.yuri.aestheticnetwork.inventories.ReportInventory;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
@@ -83,7 +81,7 @@ public class Duel implements CommandExecutor, TabExecutor {
 
         DuelRequest tpr = getDUELrequest(recipient.getName());
 
-        if (teams.containsKey(recipient.getUniqueId())) {
+        if (teams.containsKey(recipient.getName())) {
             user.sendMessage(translateo("&7This player is already in a duel"));
             return true;
         }
@@ -110,13 +108,13 @@ public class Duel implements CommandExecutor, TabExecutor {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         return args.length < 2 ? Bukkit.getOnlinePlayers()
-                        .stream()
-                        .map(Player::getName)
-                        .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                        .sorted(String::compareToIgnoreCase)
-                        .collect(Collectors.toList()) :
-                        args.length < 3 ? lg :
-                                args.length < 4 ? List.of("1", "2", "3", "4", "5") :
-                                        args.length < 5 ? List.of("Legacy") : null;
+                .stream()
+                .map(Player::getName)
+                .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList()) :
+                args.length < 3 ? lg :
+                        args.length < 4 ? List.of("1", "2", "3", "4", "5") :
+                                args.length < 5 ? List.of("Legacy") : null;
     }
 }

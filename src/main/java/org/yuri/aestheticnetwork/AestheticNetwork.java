@@ -18,7 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.commands.*;
-import org.yuri.aestheticnetwork.commands.essentialsx.back;
 import org.yuri.aestheticnetwork.commands.ffa;
 import org.yuri.aestheticnetwork.commands.flat;
 import org.yuri.aestheticnetwork.commands.duel.*;
@@ -30,13 +29,14 @@ import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     public FileConfiguration config = getConfig();
     private File customConfigFile = new File(getDataFolder(), "data.yml");
@@ -44,21 +44,18 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     private FileConfiguration customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     private FileConfiguration customConfigConfig1 = YamlConfiguration.loadConfiguration(customConfigFile1);
 
-
     public static AestheticNetwork getInstance() {
         return p;
     }
 
     public void reloadCustomConfig() {
-        if (customConfigFile == null)
-            customConfigFile = new File(getDataFolder(), "data.yml");
+        if (customConfigFile == null) customConfigFile = new File(getDataFolder(), "data.yml");
 
         customConfigConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     }
 
     public FileConfiguration getCustomConfig() {
-        if (customConfigConfig == null)
-            this.reloadCustomConfig();
+        if (customConfigConfig == null) this.reloadCustomConfig();
 
         return customConfigConfig;
     }
@@ -75,15 +72,13 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     }
 
     public void reloadCustomConfig1() {
-        if (customConfigFile1 == null)
-            customConfigFile1 = new File(getDataFolder(), "other.yml");
+        if (customConfigFile1 == null) customConfigFile1 = new File(getDataFolder(), "other.yml");
 
         customConfigConfig1 = YamlConfiguration.loadConfiguration(customConfigFile1);
     }
 
     public FileConfiguration getCustomConfig1() {
-        if (customConfigConfig1 == null)
-            this.reloadCustomConfig1();
+        if (customConfigConfig1 == null) this.reloadCustomConfig1();
 
         return customConfigConfig1;
     }
@@ -110,11 +105,9 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         config.options().copyDefaults(true);
         saveConfig();
 
-        if (!customConfigFile.exists())
-            this.saveCustomConfig();
+        if (!customConfigFile.exists()) this.saveCustomConfig();
 
-        if (!customConfigFile1.exists())
-            this.saveCustomConfig1();
+        if (!customConfigFile1.exists()) this.saveCustomConfig1();
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
@@ -122,8 +115,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             Bukkit.getPluginManager().registerEvents(new events(), this);
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
-            new placeholders(this).register();
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) new placeholders(this).register();
 
         Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
         Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
@@ -150,53 +142,29 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
 
         Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-        Objects.requireNonNull(this.getCommand("back")).setExecutor(new back());
+        //Objects.requireNonNull(this.getCommand("back")).setExecutor(new back());
 
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            if (ffaconst.isEmpty())
-                return;
+            if (ffaconst.isEmpty()) return;
 
-            ffaconst.stream().filter(s -> !s.isInsideVehicle() &&
-                    !s.isGliding()).forEach(player -> {
-                Location location = new Location(
-                        player.getWorld(),
-                        player.getLocation().getX(),
-                        198,
-                        player.getLocation().getZ());
+            ffaconst.stream().filter(s -> !s.isInsideVehicle() && !s.isGliding()).forEach(player -> {
+                Location location = new Location(player.getWorld(), player.getLocation().getX(), 198, player.getLocation().getZ());
                 Block b = player.getWorld().getBlockAt(location);
                 Block b2 = player.getWorld().getBlockAt(location.add(new Vector(0, 1, 0)));
 
                 b2.setType(Material.AIR, false);
                 b.setType(Material.AIR, false);
-                PaperLib.teleportAsync(player, new Location(
-                        location.getWorld(),
-                        location.getX(),
-                        player.getWorld().getHighestBlockYAt(location) + 1,
-                        location.getZ(),
-                        player.getLocation().getYaw(),
-                        player.getLocation().getPitch())).thenAccept(reason -> {
+                PaperLib.teleportAsync(player, new Location(location.getWorld(), location.getX(), player.getWorld().getHighestBlockYAt(location) + 1, location.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch())).thenAccept(reason -> {
                     b.setType(Material.BARRIER, false);
                     b2.setType(Material.BARRIER, false);
                 });
             });
         }, 0L, 6005L);
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-            ffa = new Location(Bukkit.getWorld("world"),
-                    getConfig().getDouble("ffa.X"),
-                    getConfig().getDouble("ffa.Y"),
-                    getConfig().getDouble("ffa.Z"));
-            flat = new Location(Bukkit.getWorld("world"),
-                    getConfig().getDouble("flat.X"),
-                    getConfig().getDouble("flat.Y"),
-                    getConfig().getDouble("flat.Z"));
-            lflat = new Location(Bukkit.getWorld("world"),
-                    getConfig().getDouble("legacyflat.X"),
-                    getConfig().getDouble("legacyflat.Y"),
-                    getConfig().getDouble("legacyflat.Z"));
-            spawn = new Location(Bukkit.getWorld("world"),
-                    getConfig().getDouble("Spawn.X"),
-                    getConfig().getDouble("Spawn.Y"),
-                    getConfig().getDouble("Spawn.Z"));
+            ffa = new Location(Bukkit.getWorld("world"), getConfig().getDouble("ffa.X"), getConfig().getDouble("ffa.Y"), getConfig().getDouble("ffa.Z"));
+            flat = new Location(Bukkit.getWorld("world"), getConfig().getDouble("flat.X"), getConfig().getDouble("flat.Y"), getConfig().getDouble("flat.Z"));
+            lflat = new Location(Bukkit.getWorld("world"), getConfig().getDouble("legacyflat.X"), getConfig().getDouble("legacyflat.Y"), getConfig().getDouble("legacyflat.Z"));
+            spawn = new Location(Bukkit.getWorld("world"), getConfig().getDouble("Spawn.X"), getConfig().getDouble("Spawn.Y"), getConfig().getDouble("Spawn.Z"));
             spawn.setYaw(getConfig().getLong("Spawn.yaw"));
         }, 100);
     }
@@ -206,8 +174,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             return false;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null)
-            return false;
+        if (rsp == null) return false;
 
         econ = rsp.getProvider();
         return true;
@@ -215,8 +182,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player))
-            return true;
+        if (!(sender instanceof Player player)) return true;
 
         if (cmd.getName().equals("msg")) {
             if (args.length == 0) {
@@ -234,9 +200,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
                 return true;
             }
 
-            if (Utils.manager1().get(
-                    "r." + target.getUniqueId() + ".m") != null &&
-                    !sender.hasPermission("has.staff")) {
+            if (Utils.manager1().get("r." + target.getName() + ".m") != null && !sender.hasPermission("has.staff")) {
                 player.sendMessage(translateo("&7You can't send messages to this player since they've locked their messages"));
                 return true;
             }
@@ -247,8 +211,8 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
                 msgargs.append(args[i]).append(" ");
             player.sendMessage(translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
             target.sendMessage(translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
-            lastReceived.put(player.getUniqueId(), target.getUniqueId());
-            lastReceived.put(target.getUniqueId(), player.getUniqueId());
+            lastReceived.put(player.getName(), target.getName());
+            lastReceived.put(target.getName(), player.getName());
             return true;
         } else if (cmd.getName().equals("reply")) {
             if (args.length == 0) {
@@ -256,12 +220,12 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
                 return true;
             }
 
-            if (!lastReceived.containsKey(player.getUniqueId()) || lastReceived.get(player.getUniqueId()) == null) {
+            if (!lastReceived.containsKey(player.getName()) || lastReceived.get(player.getName()) == null) {
                 player.sendMessage(translateo("&7You have no one to reply to"));
                 return true;
             }
 
-            Player target = Bukkit.getPlayer(lastReceived.get(player.getUniqueId()));
+            Player target = Bukkit.getPlayer(lastReceived.get(player.getName()));
             if (target == null) {
                 player.sendMessage(translateo("&7You have no one to reply to"));
                 return true;
@@ -272,7 +236,7 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
             player.sendMessage(translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
             target.sendMessage(translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
-            lastReceived.put(target.getUniqueId(), player.getUniqueId());
+            lastReceived.put(target.getName(), player.getName());
             return true;
         }
 

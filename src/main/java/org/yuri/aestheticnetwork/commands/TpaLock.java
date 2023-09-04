@@ -14,16 +14,17 @@ public class TpaLock implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = ((Player) sender);
-        if (Utils.manager1().get("r." + p.getUniqueId() + ".t") != null) {
+        String name = p.getName();
+        if (Utils.manager1().get("r." + name + ".t") != null) {
             p.sendMessage(Utils.translateo("&7You can receive tp requests again"));
-            Utils.manager1().set("r." + p.getUniqueId() + (Utils.manager1().get("r." + p.getUniqueId() + ".m") == null ? "" : ".t"), null);
+            Utils.manager1().set("r." + name + (Utils.manager1().get("r." + name + ".m") == null ? "" : ".t"), null);
             AestheticNetwork.getInstance().saveCustomConfig1();
             tpa.add(p.getName());
         }
         else
         {
             p.sendMessage(Utils.translateo("&7You will no longer receive tp requests"));
-            Utils.manager1().set("r." + p.getUniqueId() + ".t", "");
+            Utils.manager1().set("r." + name + ".t", "");
             AestheticNetwork.getInstance().saveCustomConfig1();
             tpa.remove(p.getName());
         }

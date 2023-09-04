@@ -1,6 +1,5 @@
 package org.yuri.aestheticnetwork.utils;
 
-import com.google.common.collect.ImmutableMap;
 import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Color;
@@ -10,9 +9,18 @@ import org.bukkit.entity.Player;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Initializer {
+    public static final Map<String, Long> chatdelay = new HashMap<>();
+    public static final Map<String, Integer> teams = new HashMap<>();
+    public static final Map<String, String> lastReceived = new HashMap<>();
+    // Duels
+    public static final ArrayList<String> toUpdate = new ArrayList<>();
+    public static final HashMap<String, String> inMatchmaking = new HashMap<>();
     public static Location ffa;
     public static Location flat;
     public static Location lflat;
@@ -20,16 +28,7 @@ public class Initializer {
     public static Economy econ;
     public static LuckPerms lp;
     public static AestheticNetwork p;
-
-    public static final Map<UUID, Long> chatdelay = new HashMap<>();
-    public static final Map<UUID, Integer> teams = new HashMap<>();
-    public static final Map<UUID, UUID> lastReceived = new HashMap<>();
-
-    // Duels
-    public static final ArrayList<String> toUpdate = new ArrayList<>();
-    public static final HashMap<String, String> inMatchmaking = new HashMap<>();
     //
-
     public static List<Color> color = List.of(org.bukkit.Color.LIME,
             org.bukkit.Color.ORANGE,
             org.bukkit.Color.RED,
@@ -62,7 +61,7 @@ public class Initializer {
             EntityType.FISHING_HOOK);
     public static ArrayList<DuelRequest> duel = new ArrayList<>();
 
-    public static ArrayList<UUID> valid = new ArrayList<>();
+    public static ArrayList<String> valid = new ArrayList<>();
     public static ArrayList<String> tpa = new ArrayList<>();
     public static ArrayList<String> msg = new ArrayList<>();
     public static ArrayList<Player> ffaconst = new ArrayList<>();

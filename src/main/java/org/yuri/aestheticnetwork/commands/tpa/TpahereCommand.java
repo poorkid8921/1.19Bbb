@@ -10,14 +10,9 @@ import org.yuri.aestheticnetwork.utils.Type;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import static org.yuri.aestheticnetwork.utils.RequestManager.*;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
-@SuppressWarnings("deprecation")
 public class TpahereCommand implements CommandExecutor {
-    public TpahereCommand() {
-    }
-
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user))
@@ -42,14 +37,13 @@ public class TpahereCommand implements CommandExecutor {
 
         TpaRequest tpr = getTPArequest(recipient.getName());
 
-        if (tpr != null && tpr.getSender().equals(sender))
-        {
+        if (tpr != null && tpr.getSender().equals(sender)) {
             user.sendMessage(translateo("&7You already have an ongoing request to this player"));
             return true;
         }
 
         if (Utils.manager1().get(
-                "r." + recipient.getUniqueId() + ".t") != null) {
+                "r." + recipient.getName() + ".t") != null) {
             user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests"));
             return true;
         }

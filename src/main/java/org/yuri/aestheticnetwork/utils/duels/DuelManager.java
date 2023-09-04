@@ -27,6 +27,7 @@ import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public class DuelManager {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
 
@@ -146,34 +147,22 @@ public class DuelManager {
         String m = translate("#fc282f" + pl.getDisplayName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
 
         TextComponent hi = new TextComponent(translateo("&7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ"));
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " +
-                rw + " " +
-                r + " " +
-                b + " " +
-                strDate +
-                t +
-                pl.getName() + " " +
-                Math.round(pl.getHealth() / 2) + " " +
-                pl.getStatistic(Statistic.PLAYER_KILLS) + " " +
-                pl.getStatistic(Statistic.DEATHS) + " " +
-                l + " " +
-                Utils.manager().getInt("r." + pl.getUniqueId() + ".wins") + " " +
-                Utils.manager().getInt("r." + pl.getUniqueId() + ".losses")));
-        valid.add(pl.getUniqueId());
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + strDate + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + l + " " + Utils.manager().getInt("r." + pl.getName() + ".wins") + " " + Utils.manager().getInt("r." + pl.getName() + ".losses")));
+        valid.add(pl.getName());
         pl.sendMessage(translate("&7Teleporting back to spawn in #fc282f3 seconds..."));
         pl.sendMessage(hi);
         pl.sendTitle(ff, m, 1, 100, 1);
         pl.getInventory().clear();
         if (i) {
-            valid.add(p.getUniqueId());
+            valid.add(p.getName());
             p.sendMessage(translate("&7Teleporting back to spawn in #fc282f3 seconds..."));
             p.sendMessage(hi);
             p.sendTitle(f, m, 1, 100, 1);
             p.getInventory().clear();
         }
 
-        Utils.manager().set("r." + pl.getUniqueId() + ".wins", Utils.manager().getInt("r." + pl.getUniqueId() + ".wins") + 1);
-        Utils.manager().set("r." + p.getUniqueId() + ".losses", Utils.manager().getInt("r." + p.getUniqueId() + ".losses") + 1);
+        Utils.manager().set("r." + pl.getName() + ".wins", Utils.manager().getInt("r." + pl.getName() + ".wins") + 1);
+        Utils.manager().set("r." + p.getName() + ".losses", Utils.manager().getInt("r." + p.getName() + ".losses") + 1);
 
         AestheticNetwork.getInstance().saveCustomConfig();
         if (p.hasMetadata("1.19.2")) {
@@ -197,7 +186,7 @@ public class DuelManager {
             recipient.setHealth(20);
         });
 
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + type + arena + " veryfast");
+        //Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "arena reset duel_" + type + arena + " veryfast");
 
         new BukkitRunnable() {
             int i = 5;

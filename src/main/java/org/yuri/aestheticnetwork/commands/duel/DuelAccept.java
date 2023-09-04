@@ -10,14 +10,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.AestheticNetwork;
-import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 
 import java.util.Map;
-import java.util.UUID;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
-import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
@@ -43,10 +40,10 @@ public class DuelAccept implements CommandExecutor {
             return true;
         }
 
-        UUID targetUID = request.getSender().getUniqueId();
+        String targetUID = request.getSender().getName();
         Player recipient = Bukkit.getPlayer(targetUID);
         teams.putAll(Map.of(targetUID, 0,
-                user.getUniqueId(), 0));
+                user.getName(), 0));
 
         int check = getAvailable(request.getType());
         if (check >= 6) {

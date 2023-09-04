@@ -9,7 +9,7 @@ import org.yuri.aestheticnetwork.inventories.ShopInventory;
 
 public class Shop implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, Command command, @NotNull String s, String[] strings) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         new ShopInventory(((Player) commandSender).getPlayer()).open();
         return true;
     }

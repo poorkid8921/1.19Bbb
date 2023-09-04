@@ -3,6 +3,7 @@ package org.yuri.aestheticnetwork;
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -32,7 +32,6 @@ import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.spawn;
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
@@ -41,8 +40,8 @@ import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.spawn;
 import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 
+@SuppressWarnings("deprecation")
 public class events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
@@ -56,14 +55,14 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
-        UUID playerUniqueId = e.getPlayer().getUniqueId();
+        String name = e.getPlayer().getName();
         if (e.getMessage().length() > 98 ||
-                (chatdelay.containsKey(playerUniqueId) &&
-                        chatdelay.get(playerUniqueId) > System.currentTimeMillis())) {
+                (chatdelay.containsKey(name) &&
+                        chatdelay.get(name) > System.currentTimeMillis())) {
             e.setCancelled(true);
             return;
         }
-        chatdelay.put(playerUniqueId, System.currentTimeMillis() + 500);
+        chatdelay.put(name, System.currentTimeMillis() + 500);
     }
 
     @EventHandler
@@ -77,13 +76,12 @@ public class events implements Listener {
     @EventHandler
     private void onPlayerLeave(final PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        UUID playerUniqueId = p.getUniqueId();
         String playerName = p.getName();
 
         // duel related
-        if (teams.containsKey(playerUniqueId)) {
-            teams.remove(playerUniqueId);
-            valid.remove(playerUniqueId);
+        if (teams.containsKey(playerName)) {
+            teams.remove(playerName);
+            valid.remove(playerName);
             DuelRequest tpr = getDUELrequest(playerName);
             List<Player> plist = new ArrayList<>(e.getPlayer()
                     .getWorld()
@@ -93,7 +91,7 @@ public class events implements Listener {
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
-            int t1 = teams.get(pw.getUniqueId());
+            int t1 = teams.get(pw.getName());
 
             if (t1 == 1) red += 1;
             else blue += 1;
@@ -111,7 +109,7 @@ public class events implements Listener {
                     translate(t1 == 0 ? "#31ed1cʏᴏᴜ ᴡᴏɴ!" : "#fc282fʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
-                teams.remove(pw.getUniqueId());
+                teams.remove(pw.getName());
                 duel.remove(tpr);
                 spawn(pw);
             }, 60L);
@@ -121,9 +119,9 @@ public class events implements Listener {
         removeDUELrequest(getDUELrequest(playerName));
         removeTPArequest(getTPArequest(playerName));
         // misc
-        chatdelay.remove(playerUniqueId);
-        //teams.remove(playerUniqueId);
-        lastReceived.remove(playerUniqueId);
+        chatdelay.remove(playerName);
+        //teams.remove(playerName);
+        lastReceived.remove(playerName);
         msg.remove(playerName);
         Initializer.tpa.remove(playerName);
         ffaconst.remove(p);
@@ -164,7 +162,7 @@ public class events implements Listener {
         if (!ffaconst.contains(e.getPlayer())) e.getDrops().clear();
 
         Player killer = e.getPlayer().getKiller();
-        if (teams.containsKey(p.getUniqueId())) {
+        if (teams.containsKey(p.getName())) {
             e.setCancelled(true);
             DuelRequest tpr = getDUELrequest(p.getName());
             List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
@@ -172,18 +170,18 @@ public class events implements Listener {
                     killer == null) ? plist.get(1) : killer;
 
             duel_spawnFireworks(p.getLocation());
-            UUID kuid = killer.getUniqueId();
+            String kuid = kp.getName();
 
             Bukkit.getScheduler().scheduleSyncDelayedTask(AestheticNetwork.getInstance(), () -> {
-                if (Bukkit.getPlayer(e.getPlayer().getUniqueId()) == null ||
-                Bukkit.getPlayer(kuid) == null) {
+                if (Bukkit.getPlayer(e.getPlayer().getName()) == null ||
+                        Bukkit.getPlayer(kuid) == null) {
                     return;
                 }
 
                 int newrounds = tpr.getRounds() + 1;
                 int red = tpr.getRed();
                 int blue = tpr.getBlue();
-                int t1 = teams.get(kp.getUniqueId());
+                int t1 = teams.get(kuid);
                 Player redp, bluep;
 
                 if (t1 == 1) {
@@ -246,8 +244,8 @@ public class events implements Listener {
                     kp.setFoodLevel(20);
                     kp.setHealth(20);
                     Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                        teams.remove(kp.getUniqueId());
-                        teams.remove(p.getUniqueId());
+                        teams.remove(kuid);
+                        teams.remove(p.getName());
                         duel.remove(tpr);
                         spawn(kp);
                         spawn(p);
@@ -361,12 +359,11 @@ public class events implements Listener {
         }
 
         String name = e.getPlayer().getName();
-        UUID uid = e.getPlayer().getUniqueId();
 
-        if (Utils.manager1().get("r." + uid + ".t") == null)
+        if (Utils.manager1().get("r." + name + ".t") == null)
             Initializer.tpa.add(name);
 
-        if (Utils.manager1().get("r." + uid + ".m") == null)
+        if (Utils.manager1().get("r." + name + ".m") == null)
             msg.add(name);
         spawn(e.getPlayer());
     }

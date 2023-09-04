@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class TabMSG implements TabCompleter {
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         return args.length < 1 ? Initializer.msg
                 .stream()
                 .sorted(String::compareToIgnoreCase)

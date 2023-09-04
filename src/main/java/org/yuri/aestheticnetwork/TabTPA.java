@@ -13,7 +13,7 @@ import static org.yuri.aestheticnetwork.utils.Initializer.tpa;
 
 public class TabTPA implements TabCompleter {
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         return args.length < 1 ? tpa
                 .stream()
                 .sorted(String::compareToIgnoreCase)

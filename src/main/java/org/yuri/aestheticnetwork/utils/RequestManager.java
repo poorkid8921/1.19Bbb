@@ -2,7 +2,6 @@ package org.yuri.aestheticnetwork.utils;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public class RequestManager {
     public static final ArrayList<TpaRequest> tpa = new ArrayList<>();
 
@@ -77,8 +77,7 @@ public class RequestManager {
         if (type == Type.TPA)
             tc.setText(translate("#fc282f" +
                     sender.getDisplayName() +
-                    " &7has requested to teleport to you "));
-
+                    " &7has requested to teleport to you. "));
         new BukkitRunnable() {
             @Override
             public void run() {

@@ -7,21 +7,22 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.utils.RequestManager;
 import org.yuri.aestheticnetwork.utils.Type;
 
 import java.util.UUID;
 
-import static org.yuri.aestheticnetwork.utils.RequestManager.*;
-import static org.yuri.aestheticnetwork.utils.Utils.*;
+import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
+import static org.yuri.aestheticnetwork.utils.RequestManager.tpa;
+import static org.yuri.aestheticnetwork.utils.Utils.translate;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public class TpacceptCommand implements CommandExecutor {
     public TpacceptCommand() {
     }
 
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player user))
-            return true;
+        if (!(sender instanceof Player user)) return true;
 
         String msg = translateo("&7You got no active teleport request");
         TpaRequest request;
@@ -29,8 +30,7 @@ public class TpacceptCommand implements CommandExecutor {
         if (args.length == 0) {
             request = getTPArequest(user.getName());
         } else {
-            request = getTPArequest(user.getName(),
-                    args[0].toLowerCase());
+            request = getTPArequest(user.getName(), args[0].toLowerCase());
             msg = translate("&7You got no active teleport request from #fc282f" + args[0]);
         }
 
@@ -58,8 +58,7 @@ public class TpacceptCommand implements CommandExecutor {
             temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         }
 
-        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason ->
-                tpa.remove(request));
+        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
         return true;
     }
 }

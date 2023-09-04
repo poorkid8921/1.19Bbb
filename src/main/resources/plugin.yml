@@ -31,9 +31,6 @@ commands:
   msg:
     usage: /<command>
     aliases: [ tell, whisper, w, t ]
-  back:
-    usage: /<command>
-    aliases: [ b, ag, again, redo ]
   reply:
     usage: /<command>
     aliases: r

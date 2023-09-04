@@ -11,15 +11,12 @@ import org.yuri.aestheticnetwork.utils.Utils;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.RequestManager.*;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
-@SuppressWarnings("deprecation")
 public class TpaCommand implements CommandExecutor {
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player user))
-            return true;
+        if (!(sender instanceof Player user)) return true;
 
         if (args.length < 1) {
             user.sendMessage(translateo("&7You must specify who you want to teleport to"));
@@ -45,13 +42,12 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        if (Utils.manager1().get(
-                "r." + recipient.getUniqueId() + ".t") != null) {
+        if (Utils.manager1().get("r." + recipient.getName() + ".t") != null) {
             user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests"));
             return true;
         }
 
-        if (teams.containsKey(recipient.getUniqueId())) {
+        if (teams.containsKey(recipient.getName())) {
             user.sendMessage(translateo("&7You can't request this player since they're in a duel"));
             return true;
         }

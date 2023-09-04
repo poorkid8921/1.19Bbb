@@ -1,7 +1,5 @@
 package org.yuri.aestheticnetwork.commands;
 
-import net.luckperms.api.LuckPerms;
-import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
@@ -12,7 +10,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +18,9 @@ import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
+@SuppressWarnings("deprecation")
 public class rank implements CommandExecutor, TabCompleter {
-    List<String> tiers = new ArrayList<>(List.of("HT1",
-            "HT2",
-            "HT3",
-            "HT4",
-            "HT5",
-            "LT1",
-            "LT2",
-            "LT3",
-            "LT4",
-            "LT5"));
+    List<String> tiers = new ArrayList<>(List.of("HT1", "HT2", "HT3", "HT4", "HT5", "LT1", "LT2", "LT3", "LT4", "LT5"));
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

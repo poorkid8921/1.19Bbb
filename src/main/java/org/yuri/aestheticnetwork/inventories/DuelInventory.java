@@ -5,20 +5,12 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.yuri.aestheticnetwork.AestheticNetwork;
-import org.yuri.aestheticnetwork.commands.Report;
-import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
+import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.InventoryInstanceShop;
-import org.yuri.aestheticnetwork.utils.Utils;
 import org.yuri.aestheticnetwork.utils.duels.DuelManager;
 
-import java.util.List;
-
-import static org.yuri.aestheticnetwork.utils.Utils.report;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.updateDuels;
 
 public class DuelInventory extends InventoryInstanceShop {
@@ -61,8 +53,10 @@ public class DuelInventory extends InventoryInstanceShop {
         if (slot == 9) {
             meta.addEnchant(Enchantment.DURABILITY, 1, false);
             item.setItemMeta(meta);
-            if (!DuelManager.alreadyInMatchmaking(player.getName(), "field"))
+            if (!DuelManager.alreadyInMatchmaking(player.getName(), "field")) {
                 DuelManager.startMatchmaking(player, "field");
+                Initializer.inMatchmaking.put(player.getName(), "field");
+            }
         }
     }
 }

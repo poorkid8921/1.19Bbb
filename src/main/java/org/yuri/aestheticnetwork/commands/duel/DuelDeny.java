@@ -12,10 +12,10 @@ import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.getDUELrequest;
 
+@SuppressWarnings("deprecation")
 public class DuelDeny implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player))
-            return true;
+        if (!(sender instanceof Player player)) return true;
 
         DuelRequest request = getDUELrequest(player.getName());
         if (request == null) {
