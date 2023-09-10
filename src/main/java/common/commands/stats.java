@@ -20,13 +20,13 @@ public class stats implements CommandExecutor {
         if (sender instanceof Player pp) {
             if (args.length == 0) showstats(pp);
             else {
-                Player p2 = (Player) Bukkit.getOfflinePlayer(args[0]);
-                if (p2 == null) {
-                    pp.sendMessage(translateo("&7You must specify a valid player"));
+                Player p = Bukkit.getOfflinePlayer(args[0]).getPlayer();
+                if (p == null) {
+                    pp.sendMessage(translateo("&7You must specify a valid player."));
                     return true;
                 }
 
-                showstats(pp, p2);
+                showstats(pp, p);
                 return true;
             }
             return true;

@@ -15,12 +15,12 @@ public class TpaLock implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = ((Player) sender);
         if (Utils.manager().get("r." + p.getUniqueId() + ".t") != null) {
-            p.sendMessage(Utils.translateo("&7You can receive tp requests again"));
+            p.sendMessage(Utils.translateo("&7You can receive tp requests again."));
             Utils.manager().set("r." + p.getUniqueId() + (Utils.manager().get("r." + p.getUniqueId() + ".m") == null ? "" : ".t"), null);
             Initializer.p.saveCustomConfig();
             tpa.add(p.getName());
         } else {
-            p.sendMessage(Utils.translateo("&7You will no longer receive tp requests"));
+            p.sendMessage(Utils.translateo("&7You will no longer receive tp requests."));
             Utils.manager().set("r." + p.getUniqueId() + ".t", "");
             Initializer.p.saveCustomConfig();
             tpa.remove(p.getName());

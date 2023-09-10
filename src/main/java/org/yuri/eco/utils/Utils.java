@@ -1,6 +1,7 @@
 package org.yuri.eco.utils;
 
 import common.commands.tpa.TpaRequest;
+import io.papermc.lib.PaperLib;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -63,7 +64,7 @@ public class Utils {
                 throw new RuntimeException(ex);
             }
         });
-        e.sendMessage(translateo("&7Successfully submitted the report"));
+        e.sendMessage(translateo("&7Successfully submitted the report."));
     }
 
     public static TpaRequest getRequest(String user) {
@@ -76,11 +77,35 @@ public class Utils {
 
     public static TpaRequest getRequest(String user, String lookup) {
         for (TpaRequest r : Initializer.requests) {
-            if ((r.getReciever().getName().equals(user) || r.getSender().getName().equals(user)) && (r.getReciever().getName().equals(lookup) || r.getSender().getName().equals(lookup)))
+            if ((r.getReciever().getName().equals(user) ||
+                    r.getSender().getName().equals(user)) &&
+                    (r.getReciever().getName().equalsIgnoreCase(lookup) ||
+                            r.getSender().getName().equalsIgnoreCase(lookup)))
                 return r;
         }
 
         return null;
+    }
+
+    public static void tpaccept(TpaRequest request, Player user) {
+        Player tempuser;
+        Player temprecipient;
+
+        if (request.getType() == Type.TPA) {
+            tempuser = request.getSender();
+            temprecipient = user;
+            temprecipient.sendMessage(translate("&7You have accepted #fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
+            temprecipient.sendMessage(translateo("&7Teleporting..."));
+            tempuser.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+        } else {
+            tempuser = user;
+            temprecipient = request.getSender();
+            tempuser.sendMessage(translate("&7You have accepted #fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
+            tempuser.sendMessage(translateo("&7Teleporting..."));
+            temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+        }
+
+        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> Initializer.requests.remove(request));
     }
 
     public static void addRequest(Player sender, Player receiver, Type type, boolean showmsg) {
@@ -94,11 +119,11 @@ public class Utils {
 
         TextComponent a = new TextComponent(translateo("&7[&a✔&7]"));
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to accept the teleportation request"))));
-        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + receiver.getName()));
 
-        TextComponent b = new TextComponent(translate("&7[#fc282fx&7]"));
+        TextComponent b = new TextComponent(translate("&7[&cx&7]"));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to deny the teleportation request"))));
-        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + receiver.getName()));
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         if (showmsg) sender.sendMessage(translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
 

@@ -27,8 +27,8 @@ public class Initializer {
             Color.SILVER,
             Color.TEAL,
             Color.YELLOW);
-    public static final Map<UUID, Long> cooldowns = new HashMap<>();
-    public static final Map<UUID, UUID> lastReceived = new HashMap<>();
+    public static final Map<String, Long> cooldowns = new HashMap<>();
+    public static final Map<String, String> lastReceived = new HashMap<>();
     public static final ArrayList<String> tpa = new ArrayList<>();
     public static final ArrayList<String> msg = new ArrayList<>();
     public static AestheticNetwork p;

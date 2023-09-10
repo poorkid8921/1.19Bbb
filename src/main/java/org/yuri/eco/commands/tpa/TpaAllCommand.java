@@ -7,7 +7,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.eco.utils.Initializer;
 import org.yuri.eco.utils.Utils;
 
 import static org.yuri.eco.utils.Utils.getRequest;
@@ -24,14 +23,13 @@ public class TpaAllCommand implements CommandExecutor {
         user.sendMessage(translateo("&7Requested everyone to teleport to you"));
 
         for (Player i : Bukkit.getOnlinePlayers()) {
-            if (i.getUniqueId().equals(user.getUniqueId())) continue;
+            if (i.getName().equals(user.getName())) continue;
 
             TpaRequest tpr = getRequest(i.getName());
 
             if ((tpr != null && tpr.getSender().equals(sender)) || Utils.manager().get("r." + i.getUniqueId() + ".t") != null)
                 continue;
 
-            Initializer.requests.remove(tpr);
             Utils.addRequest(user, i, Utils.Type.TPAHERE, false);
         }
         return true;

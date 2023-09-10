@@ -40,8 +40,6 @@ commands:
   tpalock:
     usage: /<command>
     aliases: [ tpatoggle, toggletpa ]
-  ebaltop:
-    usage: /<command>
   stats:
     usage: /<command>
     aliases: statistics

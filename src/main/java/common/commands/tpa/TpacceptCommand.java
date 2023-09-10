@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.eco.utils.Initializer;
+import org.yuri.eco.utils.Utils;
 
 import java.util.UUID;
 
@@ -21,14 +22,22 @@ public class TpacceptCommand implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
-        String msg = translateo("&7You got no active teleport request");
+        String msg = translateo("&7You got no active teleport request.");
         TpaRequest request;
 
         if (args.length == 0) {
             request = getRequest(user.getName());
         } else {
-            request = getRequest(user.getName(), args[0].toLowerCase());
-            msg = translate("&7You got no active teleport request from #fc282f" + args[0]);
+            String n = args[0];
+            Player p = Bukkit.getPlayer(n);
+            if (p == null) {
+                user.sendMessage(translate("&7Couldn't find anyone online named #fc282f" + args[0]) + ".");
+                return true;
+            }
+            else
+                n = p.getName();
+            request = getRequest(user.getName(), n);
+            msg = translate("&7You got no active teleport request from #fc282f" + n + ".");
         }
 
         if (request == null) {
@@ -36,29 +45,7 @@ public class TpacceptCommand implements CommandExecutor {
             return true;
         }
 
-        UUID targetName = request.getSender().getUniqueId();
-        Player recipient = Bukkit.getPlayer(targetName);
-        Player tempuser;
-        Player temprecipient;
-
-        if (request.getType() == Type.TPA) {
-            tempuser = recipient;
-            temprecipient = user;
-
-            temprecipient.sendMessage(translate("&7You have accepted #fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
-            temprecipient.sendMessage(translateo("&7Teleporting..."));
-            if (request.getTpaAll())
-                tempuser.sendMessage(translate("#fc282f" + temprecipient.getDisplayName() + " &7has accepted your teleport request"));
-        } else {
-            tempuser = user;
-            temprecipient = recipient;
-            tempuser.sendMessage(translate("&7You have accepted #fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
-            tempuser.sendMessage(translateo("&7Teleporting..."));
-            if (request.getTpaAll())
-                temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
-        }
-
-        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> Initializer.requests.remove(request));
+        Utils.tpaccept(request, user);
         return true;
     }
 }
