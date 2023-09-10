@@ -43,22 +43,13 @@ public class DuelAccept implements CommandExecutor {
         String targetUID = request.getSender().getName();
         Player recipient = Bukkit.getPlayer(targetUID);
         teams.putAll(Map.of(targetUID, 0,
-                user.getName(), 0));
+                user.getName(), 1));
 
         int check = getAvailable(request.getType());
         if (check >= 6) {
             removeDUELrequest(request);
             user.sendMessage(translateo("&7There are no open arenas yet"));
             return true;
-        }
-
-        if (request.IsLegacy()) {
-            user.setMetadata("1.19.2",
-                    new FixedMetadataValue(AestheticNetwork.getInstance(),
-                            0));
-            recipient.setMetadata("1.19.2",
-                    new FixedMetadataValue(AestheticNetwork.getInstance(),
-                            0));
         }
 
         startduel(user,

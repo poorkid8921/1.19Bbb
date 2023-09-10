@@ -103,6 +103,89 @@ public class KitManager {
         p.getInventory().setItem(35, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
     }
 
+    public static void flat(Player p) {
+        p.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
+
+        for (int i = 10; i <= p.getInventory().getSize(); i++) {
+            p.getInventory().setItem(i, new ItemStack(Material.TOTEM_OF_UNDYING,
+                    1));
+        }
+
+        // utils
+        ItemStack slowfalling = new ItemStack(Material.TIPPED_ARROW, 64);
+        PotionMeta potmeta = (PotionMeta) slowfalling.getItemMeta();
+        potmeta.addCustomEffect(new PotionEffect(PotionEffectType.SLOW_FALLING,
+                600,
+                1), true);
+        p.getInventory().setItem(25, slowfalling);
+
+        ItemStack crossbow = new ItemStack(Material.CROSSBOW, 1);
+        crossbow.addEnchantment(Enchantment.MENDING, 1);
+        crossbow.addEnchantment(Enchantment.DURABILITY, 3);
+        crossbow.addEnchantment(Enchantment.PIERCING, 4);
+        crossbow.addEnchantment(Enchantment.QUICK_CHARGE, 3);
+        crossbow.addEnchantment(Enchantment.MULTISHOT, 1);
+        p.getInventory().setItem(34, crossbow);
+
+        ItemStack helmet = new ItemStack(Material.NETHERITE_HELMET, 1);
+        helmet.addEnchantment(Enchantment.MENDING, 1);
+        helmet.addEnchantment(Enchantment.DURABILITY, 3);
+        helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+        p.getInventory().setHelmet(helmet);
+
+        ItemStack chestplate = new ItemStack(Material.NETHERITE_CHESTPLATE, 1);
+        chestplate.addEnchantment(Enchantment.MENDING, 1);
+        chestplate.addEnchantment(Enchantment.DURABILITY, 3);
+        chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+        p.getInventory().setChestplate(chestplate);
+
+        ItemStack leggings = new ItemStack(Material.NETHERITE_LEGGINGS, 1);
+        leggings.addEnchantment(Enchantment.MENDING, 1);
+        leggings.addEnchantment(Enchantment.DURABILITY, 3);
+        leggings.addEnchantment(Enchantment.PROTECTION_EXPLOSIONS, 4);
+        p.getInventory().setLeggings(leggings);
+
+        ItemStack boots = new ItemStack(Material.NETHERITE_BOOTS, 1);
+        boots.addEnchantment(Enchantment.MENDING, 1);
+        boots.addEnchantment(Enchantment.DURABILITY, 3);
+        boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+        p.getInventory().setBoots(boots);
+
+        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD, 1);
+        sword.addEnchantment(Enchantment.MENDING, 1);
+        sword.addEnchantment(Enchantment.DURABILITY, 3);
+        sword.addEnchantment(Enchantment.DAMAGE_ALL, 5);
+        sword.addEnchantment(Enchantment.KNOCKBACK, 1);
+        p.getInventory().setItem(0, sword);
+
+        p.getInventory().setItem(2, new ItemStack(Material.GOLDEN_APPLE,
+                64));
+        p.getInventory().setItem(3, new ItemStack(Material.ENDER_PEARL,
+                16));
+        p.getInventory().setItem(4, new ItemStack(Material.OBSIDIAN,
+                64));
+        p.getInventory().setItem(8, new ItemStack(Material.TOTEM_OF_UNDYING,
+                1));
+
+        for (int i = 0; i <= 3; i++) {
+            p.getInventory().setItem(5 + (9 * i), new ItemStack(Material.END_CRYSTAL,
+                    64));
+        }
+
+        for (int i = 0; i <= 2; i++) {
+            int a = 9 * i;
+            p.getInventory().setItem(6 + a, new ItemStack(Material.GLOWSTONE,
+                    64));
+            p.getInventory().setItem(7 + a, new ItemStack(Material.RESPAWN_ANCHOR,
+                    64));
+        }
+
+        // xp bottles
+        p.getInventory().setItem(17, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
+        p.getInventory().setItem(26, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
+        p.getInventory().setItem(35, new ItemStack(Material.EXPERIENCE_BOTTLE, 64));
+    }
+
     public static void nethpot(Player p) {
         if (!p.hasPermission("has.staff"))
             return;

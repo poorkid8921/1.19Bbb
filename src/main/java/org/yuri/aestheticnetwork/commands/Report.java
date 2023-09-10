@@ -19,6 +19,7 @@ import org.yuri.aestheticnetwork.inventories.ReportInventory;
 import java.util.List;
 
 import static org.yuri.aestheticnetwork.utils.Utils.report;
+import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class Report implements CommandExecutor, TabExecutor {
@@ -54,7 +55,7 @@ public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7You must specify who you want to report"));
+            sender.sendMessage(translateo("&7You must specify who you want to report."));
             return true;
         }
 

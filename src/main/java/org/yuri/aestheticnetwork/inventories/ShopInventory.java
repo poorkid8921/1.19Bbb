@@ -28,7 +28,7 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie = new ItemStack(Material.BONE, 1);
         ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(translate("#fc282fLightning Bolt"));
+        iem.setDisplayName(translateo("&fLightning Bolt"));
         iem.setLore(Arrays.asList(translate("&a$100"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie.setItemMeta(iem);
@@ -36,7 +36,7 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie1 = new ItemStack(Material.TNT, 1);
         ItemMeta iem1 = ie1.getItemMeta();
-        iem1.setDisplayName(translate("#fc282fExplosion"));
+        iem1.setDisplayName(translateo("&fExplosion"));
         iem1.setLore(Arrays.asList(translateo("&a$200"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie1.setItemMeta(iem1);
@@ -44,7 +44,7 @@ public class ShopInventory extends InventoryInstanceShop {
 
         ItemStack ie2 = new ItemStack(Material.FIREWORK_ROCKET, 1);
         ItemMeta iem2 = ie2.getItemMeta();
-        iem2.setDisplayName(translate("#fc282fFirework"));
+        iem2.setDisplayName(translateo("&fFirework"));
         iem2.setLore(Arrays.asList(translateo("&a$250"),
                 translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
         ie2.setItemMeta(iem2);
@@ -67,9 +67,9 @@ public class ShopInventory extends InventoryInstanceShop {
             return;
 
         switch (slot) {
-            case 10 -> killeffect(player, "lightning", "ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 100);
-            case 11 -> killeffect(player, "totem_explosion", "ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 200);
-            case 12 -> killeffect(player, "firework", "ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
+            case 10 -> killeffect(player, 0, "ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 100);
+            case 11 -> killeffect(player, 1, "ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 200);
+            case 12 -> killeffect(player, 2, "ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
         }
     }
 }

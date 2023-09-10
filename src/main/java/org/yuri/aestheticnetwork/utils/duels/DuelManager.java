@@ -1,6 +1,9 @@
 package org.yuri.aestheticnetwork.utils.duels;
 
 import io.papermc.lib.PaperLib;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -16,12 +19,11 @@ import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.commands.duel.KitManager;
+import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
@@ -39,14 +41,64 @@ public class DuelManager {
         return null;
     }
 
+    public static void duelaccept(DuelRequest request, Player user) {
+        String targetUID = request.getSender().getName();
+        Player recipient = Bukkit.getPlayer(targetUID);
+        teams.putAll(Map.of(targetUID, 0,
+                user.getName(), 0));
+
+        int check = getAvailable(request.getType());
+        if (check >= 6) {
+            removeDUELrequest(request);
+            user.sendMessage(translateo("&7There are no open arenas yet."));
+            return;
+        }
+
+        startduel(user,
+                recipient,
+                request.getType(),
+                1,
+                request.getMaxrounds(),
+                check + 1);
+        User up = lp.getUserManager().getUser(recipient.getUniqueId());
+        up.data().add(Node.builder("permission:tab.scoreboard.duels").build());
+        lp.getUserManager().saveUser(up);
+
+        User u = lp.getUserManager().getUser(user.getUniqueId());
+        u.data().add(Node.builder("permission:tab.scoreboard.duels").build());
+        lp.getUserManager().saveUser(u);
+    }
+
+    public static void initializeSpectate(Inventory inv) {
+        //inv.setContents(Initializer.duelInventory);
+
+        int added = 9;
+        for (DuelRequest r : duel) {
+            if (r.getRounds() > 0) {
+                added++;
+                ItemStack i = new ItemStack(Objects.equals(r.getType(), "field") ? Material.END_CRYSTAL : Material.DIAMOND_SWORD);
+                ItemMeta im = i.getItemMeta();
+                im.setLore(List.of(translate("#fc282f" +
+                        r.getSender().getDisplayName() +
+                        " &7ᴀɢᴀɪɴsᴛ #fc282f" +
+                        r.getReciever().getDisplayName())));
+                i.setItemMeta(im);
+                inv.setItem(added, i);
+
+                if (added == 43)
+                    break;
+            }
+        }
+    }
+
     public static void updateDuels(Inventory inv) {
         ItemStack i = new ItemStack(Material.END_CRYSTAL, 1);
         ItemMeta meta = i.getItemMeta();
         meta.setDisplayName(translate("#fc282fꜰɪᴇʟᴅ"));
         meta.setLore(List.of(translate("#fc282f" + DuelManager.getAvailable("field"))));
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        //meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         i.setItemMeta(meta);
-        inv.setItem(9, i);
+        inv.setItem(10, i);
     }
 
     public static void startMatchmaking(Player p, String gm) {
@@ -59,6 +111,7 @@ public class DuelManager {
             public void run() {
                 timeout++;
                 if (inMatchmaking.containsKey(gm) && !inMatchmaking.get(gm).equals(p.getName())) {
+                    inMatchmaking.remove(gm);
                     int check = getAvailable(gm);
                     if (check >= 6) {
                         p.sendActionBar(translateo("&aCouldn't find any open arena. Please try again later"));
@@ -71,6 +124,7 @@ public class DuelManager {
 
                 if (timeout == 20) {
                     p.sendActionBar(translateo("&aYour session has timed out. Please try again later"));
+                    inMatchmaking.remove(gm);
                     this.cancel();
                 }
             }
@@ -104,13 +158,25 @@ public class DuelManager {
         return false;
     }
 
-    public static void addDUELrequest(Player sender, Player receiver, String type, int rounds, int sr, int sb, int arena, boolean islegacy) {
+    public static void addDUELrequest(Player sender, Player receiver, String type, int rounds, int sr, int sb, int arena) {
         duel.remove(getDUELrequest(sender.getName()));
-        DuelRequest tpaRequest = new DuelRequest(sender, receiver, type.toLowerCase(), rounds, 0, sr, sb, System.currentTimeMillis(), arena, islegacy);
+        DuelRequest tpaRequest = new DuelRequest(sender,
+                receiver,
+                type.toLowerCase(),
+                rounds,
+                0,
+                sr,
+                sb,
+                System.currentTimeMillis(),
+                arena);
         duel.add(tpaRequest);
 
-        String type2 = type + (rounds == 1 ? " " : " &7with #fc282f" + rounds + " rounds ") + (islegacy ? "" + "#fc282fin legacy " : "");
-        TextComponent tc = new TextComponent(translateo("&c" + sender.getDisplayName() + " &7has requested that you duel them in #fc282f" + type2));
+        String clean = ChatColor.stripColor(sender.getDisplayName());
+        int c = clean.indexOf(" ");
+        String n = clean.
+
+        TextComponent name = new TextComponent();
+        TextComponent tc = new TextComponent(translateo(" &7has requested that you duel them in "));
 
         TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
         Text acceptHoverText = new Text(translateo("&7Click to accept the duel request"));
@@ -132,6 +198,9 @@ public class DuelManager {
         }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
+        if (c != -1)
+
+            else
         receiver.sendMessage(tc, accept, space, deny);
     }
 
@@ -139,15 +208,14 @@ public class DuelManager {
         duel.remove(user);
     }
 
-    public static void displayduelresume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, boolean l, String f, String ff) {
+    public static void displayduelresume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
         SimpleDateFormat sdfDate = new SimpleDateFormat("mm:ss");
         sdfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
         String strDate = sdfDate.format(new Date(n - o));
-
-        String m = translate("#fc282f" + pl.getDisplayName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
+        String m = translate("#fc282f" + pl.getName() + " &fᴡᴏɴ ᴛʜᴇ ᴅᴜᴇʟ!");
 
         TextComponent hi = new TextComponent(translateo("&7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ"));
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + strDate + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + l + " " + Utils.manager().getInt("r." + pl.getName() + ".wins") + " " + Utils.manager().getInt("r." + pl.getName() + ".losses")));
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + strDate + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Utils.manager().getInt("r." + pl.getName() + ".wins") + " " + Utils.manager().getInt("r." + pl.getName() + ".losses")));
         valid.add(pl.getName());
         pl.sendMessage(translate("&7Teleporting back to spawn in #fc282f3 seconds..."));
         pl.sendMessage(hi);
@@ -165,10 +233,6 @@ public class DuelManager {
         Utils.manager().set("r." + p.getName() + ".losses", Utils.manager().getInt("r." + p.getName() + ".losses") + 1);
 
         AestheticNetwork.getInstance().saveCustomConfig();
-        if (p.hasMetadata("1.19.2")) {
-            p.removeMetadata("1.19.2", plugin);
-            pl.removeMetadata("1.19.2", plugin);
-        }
     }
 
     public static void startduel(Player user, Player recipient, String type, int round, int maxi, int arena) {
@@ -197,8 +261,8 @@ public class DuelManager {
                 recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
 
                 if (i == 1) {
-                    user.sendMessage(translateo("&7" + (maxi > 1 ? "Round " + round : "Duel") + " started! &cFight!"));
-                    recipient.sendMessage(translateo("&7" + (maxi > 1 ? "Round " + round : "Duel") + " started! &cFight!"));
+                    user.sendMessage(translate("&7" + (maxi > 1 ? "Round " + round : "Duel") + " started! #fc282fFight!"));
+                    recipient.sendMessage(translate("&7" + (maxi > 1 ? "Round " + round : "Duel") + " started! #fc282fFight!"));
 
                     user.sendTitle(translate("#fc282fFight!"), "", 1, 30, 1);
                     recipient.sendTitle(translate("#fc282fFight!"), "", 1, 30, 1);
@@ -228,10 +292,22 @@ public class DuelManager {
         if (type.equals("field")) {
             KitManager.field(p);
             loc = i == 1 ? red ? new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -279.5, 149, -303.5) : i == 2 ? red ? new Location(Bukkit.getWorld("world"), -391.5, 149, -432.5) : new Location(Bukkit.getWorld("world"), -279.5, 149, -432.5) : i == 3 ? red ? new Location(Bukkit.getWorld("world"), -520.5, 149, -432.5) : new Location(Bukkit.getWorld("world"), -408.5, 149, -432.5) : i == 4 ? red ? new Location(Bukkit.getWorld("world"), -520.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -408.5, 149, -303.5) : i == 5 ? red ? new Location(Bukkit.getWorld("world"), -649.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -537.5, 149, -303.5) : red ? new Location(Bukkit.getWorld("world"), -649.5, 149, -432.5) : new Location(Bukkit.getWorld("world"), -637.5, 149.5, -432.5);
-        } else if (type.equals("tank")) {
-            KitManager.tank(p);
+        } else if (type.equals("flat")) {
+            KitManager.flat(p);
+            loc = i == 1 ? red ? new Location(Bukkit.getWorld("world"), 89.5, 115, 700.5) :
+                    new Location(Bukkit.getWorld("world"), -31.5, 115, 580.5) : i == 2 ? red ?
+                    new Location(Bukkit.getWorld("world"), -391.5, 149, -432.5) :
+                    new Location(Bukkit.getWorld("world"), -279.5, 149, -432.5) : i == 3 ? red ?
+                    new Location(Bukkit.getWorld("world"), -520.5, 149, -432.5) :
+                    new Location(Bukkit.getWorld("world"), -408.5, 149, -432.5) : i == 4 ? red ?
+                    new Location(Bukkit.getWorld("world"), -520.5, 149, -303.5) :
+                    new Location(Bukkit.getWorld("world"), -408.5, 149, -303.5) : i == 5 ? red ?
+                    new Location(Bukkit.getWorld("world"), -649.5, 149, -303.5) :
+                    new Location(Bukkit.getWorld("world"), -537.5, 149, -303.5) : red ?
+                    new Location(Bukkit.getWorld("world"), -649.5, 149, -432.5) :
+                    new Location(Bukkit.getWorld("world"), -637.5, 149.5, -432.5);
         }
-        loc.setYaw(red ? -90.0F : 90.0F);
+        loc.setYaw(red ? 45.0F : -45.0F);
 
         return loc;
     }

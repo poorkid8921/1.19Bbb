@@ -53,9 +53,8 @@ commands:
     usage: /<command>
   event:
     usage: /<command>
-  flatlegacy:
+  back:
     usage: /<command>
-    aliases: [ lflat, legacyflat, oldflat ]
 permissions:
   has.staff:
     description: Is a staff member

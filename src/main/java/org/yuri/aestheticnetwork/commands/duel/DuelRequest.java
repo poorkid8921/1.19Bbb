@@ -9,12 +9,19 @@ public class DuelRequest {
     private final int maxrounds;
     private final long starttime;
     private final int arena;
-    private final boolean legacy;
     private int rounds;
     private int red;
     private int blue;
 
-    public DuelRequest(Player sender, Player reciever, String type, int maxrounds, int rounds, int sr, int sb, long starttime, int arena, boolean legacy) {
+    public DuelRequest(Player sender,
+                       Player reciever,
+                       String type,
+                       int maxrounds,
+                       int rounds,
+                       int sr,
+                       int sb,
+                       long starttime,
+                       int arena) {
         this.sender = sender;
         this.reciever = reciever;
         this.type = type;
@@ -24,7 +31,6 @@ public class DuelRequest {
         this.maxrounds = maxrounds;
         this.starttime = starttime;
         this.arena = arena;
-        this.legacy = legacy;
     }
 
     public Player getSender() {
@@ -73,9 +79,5 @@ public class DuelRequest {
 
     public int getArena() {
         return arena;
-    }
-
-    public boolean IsLegacy() {
-        return legacy;
     }
 }

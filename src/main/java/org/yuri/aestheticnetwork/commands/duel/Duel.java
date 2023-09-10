@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
+import static org.yuri.aestheticnetwork.utils.RequestManager.tpaccept;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
@@ -27,17 +28,12 @@ public class Duel implements CommandExecutor, TabExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        if (!user.hasPermission("has.staff")) {
-            user.sendMessage(translateo("&7This feature has been disabled and will be reenabled soon"));
-            return true;
-        }
-
         int i = 1;
         String gm = "field";
 
         if (args.length == 0) {
-            new DuelInventory(user).open();
-            //user.sendMessage(translateo("&7You must specify who you want to duel"));
+            user.sendMessage(translateo("&7You must specify who you want to duel."));
+            //new DuelInventory(user).open();
             return true;
         }
 
@@ -63,36 +59,39 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = getAvailable(gm);
 
         if (check >= 6) {
-            user.sendMessage(translateo("&7There are no open arenas yet"));
+            user.sendMessage(translateo("&7There are no open arenas yet."));
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translateo("&7You can't send duel requests to offline people"));
+            user.sendMessage(translateo("&7You can't send duel requests to offline players."));
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translateo("&7You can't duel yourself"));
+            user.sendMessage(translateo("&7You can't duel yourself."));
             return true;
         }
 
         DuelRequest tpr = getDUELrequest(recipient.getName());
 
         if (teams.containsKey(recipient.getName())) {
-            user.sendMessage(translateo("&7This player is already in a duel"));
+            user.sendMessage(translateo("&7This player is already in a duel."));
             return true;
         }
 
         if (tpr != null) {
-            user.sendMessage(translateo("&7This player already has an active request"));
-            return true;
+            if (tpr.getSender().equals(user)) {
+                user.sendMessage(translateo("&7You already have an ongoing request to this player."));
+                return true;
+            }
+            else if (tpr.getReciever().equals(user)) {
+                duelaccept(tpr, user);
+                return true;
+            }
         }
-
-        boolean legacy = args.length > 3 &&
-                Objects.equals(args[3].toLowerCase(), "legacy");
 
         addDUELrequest(user,
                 recipient,
@@ -100,8 +99,7 @@ public class Duel implements CommandExecutor, TabExecutor {
                 i,
                 0,
                 0,
-                check + 1,
-                legacy);
+                check + 1);
         return true;
     }
 
@@ -114,7 +112,6 @@ public class Duel implements CommandExecutor, TabExecutor {
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList()) :
                 args.length < 3 ? lg :
-                        args.length < 4 ? List.of("1", "2", "3", "4", "5") :
-                                args.length < 5 ? List.of("Legacy") : null;
+                        args.length < 4 ? List.of("1", "2", "3", "4", "5") : null;
     }
 }

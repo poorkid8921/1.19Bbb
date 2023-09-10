@@ -14,12 +14,12 @@ public class MsgLock implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = ((Player) sender);
         if (Utils.manager1().get("r." + p.getName() + ".m") != null) {
-            p.sendMessage(Utils.translateo("&7You can receive messages from players again"));
+            p.sendMessage(Utils.translateo("&7You can receive messages from players again."));
             Utils.manager1().set("r." + p.getName() + (Utils.manager1().get("r." + p.getName() + ".t") == null ? "" : ".m"), null);
             AestheticNetwork.getInstance().saveCustomConfig1();
             Initializer.msg.add(p.getName());
         } else {
-            p.sendMessage(Utils.translateo("&7You will no longer receive messages from players"));
+            p.sendMessage(Utils.translateo("&7You will no longer receive messages from players."));
             Utils.manager1().set("r." + p.getName() + ".m", "");
             AestheticNetwork.getInstance().saveCustomConfig1();
             Initializer.msg.remove(p.getName());

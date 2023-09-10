@@ -17,7 +17,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
@@ -25,6 +24,7 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
+import org.yuri.aestheticnetwork.json.UserData;
 import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
 import org.yuri.aestheticnetwork.utils.InventoryInstanceShop;
@@ -55,21 +55,19 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
-        String name = e.getPlayer().getName();
+        UserData user = users.get(e.getPlayer().getName());
         if (e.getMessage().length() > 98 ||
-                (chatdelay.containsKey(name) &&
-                        chatdelay.get(name) > System.currentTimeMillis())) {
+                user.getDelay() > System.currentTimeMillis()) {
             e.setCancelled(true);
             return;
         }
-        chatdelay.put(name, System.currentTimeMillis() + 500);
+        user.setDelay(System.currentTimeMillis() + 500);
     }
 
     @EventHandler
     private void onTeleport(final PlayerTeleportEvent e) {
         if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
 
-        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", p);
         ffaconst.remove(e.getPlayer());
     }
 
@@ -80,8 +78,6 @@ public class events implements Listener {
 
         // duel related
         if (teams.containsKey(playerName)) {
-            teams.remove(playerName);
-            valid.remove(playerName);
             DuelRequest tpr = getDUELrequest(playerName);
             List<Player> plist = new ArrayList<>(e.getPlayer()
                     .getWorld()
@@ -104,11 +100,11 @@ public class events implements Listener {
                     System.currentTimeMillis(),
                     " n ",
                     t1 == 1,
-                    tpr.IsLegacy(),
                     translate(t1 == 1 ? "#31ed1cʏᴏᴜ ᴡᴏɴ!" : "#fc282fʏᴏᴜ ʟᴏsᴛ"),
                     translate(t1 == 0 ? "#31ed1cʏᴏᴜ ᴡᴏɴ!" : "#fc282fʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+                teams.remove(playerName);
                 teams.remove(pw.getName());
                 duel.remove(tpr);
                 spawn(pw);
@@ -119,8 +115,7 @@ public class events implements Listener {
         removeDUELrequest(getDUELrequest(playerName));
         removeTPArequest(getTPArequest(playerName));
         // misc
-        chatdelay.remove(playerName);
-        //teams.remove(playerName);
+        users.remove(playerName);
         lastReceived.remove(playerName);
         msg.remove(playerName);
         Initializer.tpa.remove(playerName);
@@ -144,6 +139,10 @@ public class events implements Listener {
                     e.getSlot(),
                     holder.getArg());
         }
+        /*else if (e.getInventory().getHolder() instanceof InventoryInstanceDuel holder) {
+            e.setCancelled(true);
+            holder.whenClicked(e.getCurrentItem(), e.getSlot());
+        }*/
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -158,13 +157,14 @@ public class events implements Listener {
     @EventHandler
     private void onPlayerKill(final PlayerDeathEvent e) {
         Player p = e.getPlayer();
+        if (!ffaconst.contains(p)) e.getDrops().clear();
         ffaconst.remove(p);
-        if (!ffaconst.contains(e.getPlayer())) e.getDrops().clear();
 
-        Player killer = e.getPlayer().getKiller();
-        if (teams.containsKey(p.getName())) {
+        String name = p.getName();
+        Player killer = p.getKiller();
+        if (teams.containsKey(name)) {
             e.setCancelled(true);
-            DuelRequest tpr = getDUELrequest(p.getName());
+            DuelRequest tpr = getDUELrequest(name);
             List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player kp = (killer == p ||
                     killer == null) ? plist.get(1) : killer;
@@ -173,7 +173,7 @@ public class events implements Listener {
             String kuid = kp.getName();
 
             Bukkit.getScheduler().scheduleSyncDelayedTask(AestheticNetwork.getInstance(), () -> {
-                if (Bukkit.getPlayer(e.getPlayer().getName()) == null ||
+                if (Bukkit.getPlayer(name) == null ||
                         Bukkit.getPlayer(kuid) == null) {
                     return;
                 }
@@ -205,7 +205,6 @@ public class events implements Listener {
                                 System.currentTimeMillis(),
                                 " n ",
                                 true,
-                                tpr.IsLegacy(),
                                 translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"),
                                 translate("#fc282fʏᴏᴜ ʟᴏsᴛ"));
                     } else if (blue > red) {
@@ -218,7 +217,6 @@ public class events implements Listener {
                                 System.currentTimeMillis(),
                                 " n ",
                                 false,
-                                tpr.IsLegacy(),
                                 translate("#fc282fʏᴏᴜ ʟᴏsᴛ"),
                                 translate("#31ed1cʏᴏᴜ ᴡᴏɴ!"));
                     } else {
@@ -231,7 +229,6 @@ public class events implements Listener {
                                 System.currentTimeMillis(),
                                 " y ",
                                 false,
-                                tpr.IsLegacy(),
                                 translateo("&eᴅʀᴀᴡ"),
                                 translateo("&eᴅʀᴀᴡ"));
                     }
@@ -245,7 +242,7 @@ public class events implements Listener {
                     kp.setHealth(20);
                     Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                         teams.remove(kuid);
-                        teams.remove(p.getName());
+                        teams.remove(name);
                         duel.remove(tpr);
                         spawn(kp);
                         spawn(p);
@@ -281,43 +278,24 @@ public class events implements Listener {
             }, 60L);
             return;
         }
-
         if (killer == null) return;
 
-        /*User user = kp.getPlayerAdapter(Player.class).getUser(e.getEntity().getKiller());
-        if (!user.getPrimaryGroup().equals("default")) {
-            Random rnd = new Random();
-            float floati = rnd.nextInt(4);
-            Location loc = e.getEntity().getLocation();
-            loc.add(new Vector(0, 1, 0));
-            if (floati == 0)
-                spawnFireworks(e.getEntity().getLocation());
-            else if (floati == 1) {
-                Vector off = new Vector(3, 1, 3);
-                e.getEntity().getWorld().spawnParticle(Particle.TOTEM, loc, 50, off.getX(), off.getY(), off.getZ(), 0.0);
-            } else if (floati == 2)
-                e.getEntity().getWorld().strikeLightningEffect(e.getEntity().getLocation());
-            else
-                createHelix(e.getEntity());
-        } else
-            e.getEntity().getWorld().strikeLightningEffect(e.getEntity().getLocation());*/
+        UserData user = users.get(name);
+        user.setBack(Locationfrom(p.getLocation()));
+        p.sendMessage(translate("&7Use #fc282f/back &7to return to your death location."));
 
-        if (e.getPlayer().hasMetadata("1.19.2")) e.getPlayer().removeMetadata("1.19.2", Initializer.p);
         try {
             econ.depositPlayer(killer, 5);
         } catch (RuntimeException en) {
             en.printStackTrace();
         }
 
-        String peffect = Initializer.p.getCustomConfig().getString("r." + killer + ".killeffect");
-
-        if (peffect == null)
-            return;
+        int peffect = Initializer.p.getCustomConfig().getInt("r." + killer + ".killeffect", -1);
 
         switch (peffect) {
-            case "totem_explosion" -> createHelix(p);
-            case "firework" -> spawnFireworks(p.getLocation());
-            case "lightning" -> p.getWorld().strikeLightningEffect(p.getLocation());
+            case 0 -> createHelix(p);
+            case 1 -> spawnFireworks(p.getLocation());
+            case 2 -> p.getWorld().strikeLightningEffect(p.getLocation());
         }
     }
 
@@ -335,11 +313,6 @@ public class events implements Listener {
     @EventHandler
     public void onRedstone(BlockRedstoneEvent e) {
         e.setNewCurrent(e.getBlock() instanceof Piston ? e.getNewCurrent() : 0);
-    }
-
-    @EventHandler
-    public void onSpawn(EntitySpawnEvent e) {
-        e.setCancelled(!entities.contains(e.getEntity().getType()));
     }
 
     @EventHandler
@@ -365,6 +338,8 @@ public class events implements Listener {
 
         if (Utils.manager1().get("r." + name + ".m") == null)
             msg.add(name);
+
+        users.put(name, new UserData(null, false));
         spawn(e.getPlayer());
     }
 

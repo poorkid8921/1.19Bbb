@@ -3,6 +3,7 @@ package org.yuri.aestheticnetwork.utils;
 import io.papermc.lib.PaperLib;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -25,6 +26,10 @@ import static org.yuri.aestheticnetwork.utils.Initializer.*;
 @SuppressWarnings("deprecation")
 public class Utils {
     static AestheticNetwork plugin = AestheticNetwork.getInstance();
+
+    public static org.yuri.aestheticnetwork.utils.Location Locationfrom(org.bukkit.Location a) {
+        return new org.yuri.aestheticnetwork.utils.Location(a.getWorld(), a.getX(), a.getY(), a.getZ(), a.getYaw(), a.getPitch());
+    }
 
     public static void spawn(Player p) {
         PaperLib.teleportAsync(p, spawn);
@@ -63,8 +68,13 @@ public class Utils {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
-        Random random = new Random();
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random.nextInt(color.size()))).withColor(color.get(random.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.random
+                .nextInt(color.size())))
+                .withColor(color.get(random
+                        .nextInt(color.size())))
+                .with(FireworkEffect.Type.BALL_LARGE)
+                .flicker(true)
+                .build());
         fw.setFireworkMeta(fwm);
     }
 
@@ -78,7 +88,7 @@ public class Utils {
         fw.detonate();
     }
 
-    public static void killeffect(Player p, String toset, String fancy, int cost) {
+    public static void killeffect(Player p, int toset, String fancy, int cost) {
         p.closeInventory();
         double bal = econ.getBalance(p);
         if (bal < cost) {
@@ -91,7 +101,7 @@ public class Utils {
         if (ar.transactionSuccess()) {
             plugin.getCustomConfig().set("r." + p.getName() + ".killeffect", toset);
             plugin.saveCustomConfig();
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
+            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ʙᴜʏ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
         }
     }
 
