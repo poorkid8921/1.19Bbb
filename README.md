@@ -1,5 +1,3 @@
-# 1.19Bbb - revamped
+# AestheticEconomy Core Plugin
 
-cool plugin
-
-no cap
+: TPA, MSG, Report system, Optimizations, Stats
