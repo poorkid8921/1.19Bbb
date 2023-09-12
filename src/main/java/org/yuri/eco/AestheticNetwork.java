@@ -34,7 +34,7 @@ import static org.yuri.eco.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public final class AestheticNetwork extends JavaPlugin implements CommandExecutor, TabExecutor {
-    FileConfiguration config = getConfig();
+    //FileConfiguration config = getConfig();
     private File cf = new File(getDataFolder(), "data.yml");
     private FileConfiguration cc = YamlConfiguration.loadConfiguration(cf);
 

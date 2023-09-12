@@ -10,7 +10,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -29,15 +28,14 @@ import org.yuri.eco.utils.InventoryInstanceReport;
 import org.yuri.eco.utils.Utils;
 
 import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.yuri.eco.utils.Initializer.playerstoteming;
 import static org.yuri.eco.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class events implements Listener {
-    static Random random = new Random();
+    static ThreadLocalRandom random = ThreadLocalRandom.current();
 
     private static boolean isSuspectedScanPacket(String buffer) {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
@@ -149,21 +147,18 @@ public class events implements Listener {
             }
         } else p.getWorld().strikeLightningEffect(loc);
 
-        Bukkit.getServer().getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-            if (random.nextInt(100) <= 5)
-                Bukkit.getScheduler().runTask(Initializer.p, () ->
-                        Bukkit.getWorld(e
-                                .getPlayer()
-                                .getWorld()
-                                .getName())
-                                .dropItemNaturally(new Location(
-                                        e.getPlayer().getLocation().getWorld(),
-                                        e.getEntity().getLocation().getX(),
-                                        e.getEntity().getLocation().getY(),
-                                        e.getPlayer().getLocation().getZ()),
-                                        Utils.getHead(e.getPlayer(),
-                                                e.getPlayer().getKiller().getDisplayName())));
-        });
+        if (random.nextInt(100) <= 5)
+            Bukkit.getWorld(e
+                            .getPlayer()
+                            .getWorld()
+                            .getName())
+                    .dropItemNaturally(new Location(
+                                    e.getPlayer().getLocation().getWorld(),
+                                    e.getEntity().getLocation().getX(),
+                                    e.getEntity().getLocation().getY(),
+                                    e.getPlayer().getLocation().getZ()),
+                            Utils.getHead(e.getPlayer(),
+                                    e.getPlayer().getKiller().getDisplayName()));
     }
 
     public void createHelix(Location loc) {
@@ -175,11 +170,11 @@ public class events implements Listener {
                             (float) (loc.getX() + x),
                             (float) (loc.getY() + y),
                             (float) (loc.getZ() + z)),
-                            2,
-                            off.getX(),
-                            off.getY(),
-                            off.getZ(),
-                            1.0);
+                    2,
+                    off.getX(),
+                    off.getY(),
+                    off.getZ(),
+                    1.0);
         }
     }
 
