@@ -1,5 +1,3 @@
-# 1.19Bbb
+# AestheticPractice Core Plugin
 
-cool plugin
-
-no cap
+: Duels, TPA, MSG, Report system, Optimizations, Combat Tagging, AntiCheat, Main Warps
