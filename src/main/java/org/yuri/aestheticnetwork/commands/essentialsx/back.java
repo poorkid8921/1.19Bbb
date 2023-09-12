@@ -19,6 +19,7 @@ public class back implements CommandExecutor {
             sender.sendMessage(translateo("&7You got no back location."));
             return true;
         }
+
         PaperLib.teleportAsync((Player) sender, p.to()).thenAccept(r ->
                 sender.sendMessage(translateo("&7Teleported you to your previous location!")));
         return true;

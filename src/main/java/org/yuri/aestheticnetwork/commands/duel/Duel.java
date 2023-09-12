@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuri.aestheticnetwork.inventories.DuelInventory;
+import org.yuri.aestheticnetwork.utils.Languages;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class Duel implements CommandExecutor, TabExecutor {
         String gm = "field";
 
         if (args.length == 0) {
-            user.sendMessage(translateo("&7You must specify who you want to duel."));
+            user.sendMessage(Languages.WHO_DUEL);
             //new DuelInventory(user).open();
             return true;
         }
@@ -59,32 +60,32 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = getAvailable(gm);
 
         if (check >= 6) {
-            user.sendMessage(translateo("&7There are no open arenas yet."));
+            user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translateo("&7You can't send duel requests to offline players."));
+            user.sendMessage(Languages.EXCEPTION_DUEL_TARGET_OFF);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(translateo("&7You can't duel yourself."));
+            user.sendMessage(Languages.EXCEPTION_DUEL_SELF);
             return true;
         }
 
         DuelRequest tpr = getDUELrequest(recipient.getName());
 
         if (teams.containsKey(recipient.getName())) {
-            user.sendMessage(translateo("&7This player is already in a duel."));
+            user.sendMessage(Languages.EXCEPTION_ALREADY_IN_DUEL);
             return true;
         }
 
         if (tpr != null) {
             if (tpr.getSender().equals(user)) {
-                user.sendMessage(translateo("&7You already have an ongoing request to this player."));
+                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
             else if (tpr.getReciever().equals(user)) {

@@ -10,13 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.AestheticNetwork;
+import org.yuri.aestheticnetwork.utils.Languages;
 
 import java.util.Map;
 
 import static org.yuri.aestheticnetwork.utils.Initializer.lp;
 import static org.yuri.aestheticnetwork.utils.Initializer.teams;
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
+import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class DuelAccept implements CommandExecutor {
@@ -24,7 +24,7 @@ public class DuelAccept implements CommandExecutor {
         if (!(sender instanceof Player user))
             return true;
 
-        String msg = translateo("&7You got no active duel request");
+        String msg = Languages.EXCEPTION_NO_DUEL_REQ;
         DuelRequest request;
 
         if (args.length == 0) {
@@ -32,7 +32,7 @@ public class DuelAccept implements CommandExecutor {
         } else {
             request = getDUELrequest(user.getName(),
                     args[0].toLowerCase());
-            msg = translate("&7You got no active duel request from #fc282f" + args[0]);
+            msg = Languages.EXCEPTION_NO_ACTIVE_DUELREQ + translateA("#fc282f") + args[0] + ".";
         }
 
         if (request == null) {
@@ -48,7 +48,7 @@ public class DuelAccept implements CommandExecutor {
         int check = getAvailable(request.getType());
         if (check >= 6) {
             removeDUELrequest(request);
-            user.sendMessage(translateo("&7There are no open arenas yet"));
+            user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 

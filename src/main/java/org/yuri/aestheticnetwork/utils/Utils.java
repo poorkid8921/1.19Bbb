@@ -46,6 +46,17 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
     }
 
+    public static String translateA(String text) {
+        final Pattern hexPattern = Pattern.compile("#([A-Fa-f0-9]{6})");
+        Matcher matcher = hexPattern.matcher(text);
+        StringBuilder buffer = new StringBuilder(text.length() + 4 * 8);
+        while (matcher.find()) {
+            String group = matcher.group(1);
+            matcher.appendReplacement(buffer, COLOR_CHAR + "x" + COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1) + COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3) + COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
+        }
+        return matcher.appendTail(buffer).toString();
+    }
+
     public static String translateo(String text) {
         return ChatColor.translateAlternateColorCodes('&',
                 text);

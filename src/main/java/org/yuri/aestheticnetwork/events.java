@@ -17,6 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
@@ -25,10 +26,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
 import org.yuri.aestheticnetwork.json.UserData;
-import org.yuri.aestheticnetwork.utils.Initializer;
-import org.yuri.aestheticnetwork.utils.InventoryInstanceReport;
-import org.yuri.aestheticnetwork.utils.InventoryInstanceShop;
-import org.yuri.aestheticnetwork.utils.Utils;
+import org.yuri.aestheticnetwork.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +50,35 @@ public class events implements Listener {
     private void ItemConsume(PlayerItemConsumeEvent e) {
         e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
     }
+
+    // Combat Tag
+    @EventHandler
+    private void commandPreprocess(PlayerCommandPreprocessEvent e) {
+        Player player = e.getPlayer();
+        String pn = player.getName();
+        if (!Initializer.inCombat.contains(pn))
+            return;
+
+        player.sendMessage(translateA("#fc282fʏᴏᴜ ᴄᴀɴ'ᴛ ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ɪɴ ᴄᴏᴍʙᴀᴛ."));
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    private void onDamage(EntityDamageByEntityEvent e) {
+        if (!(e.getEntity() instanceof Player b))
+            return;
+
+        if (!inCombat.contains(b.getName()))
+            return;
+
+        new CombatTag(b, e.getDamager());
+    }
+
+    @EventHandler
+    private void onGlide(EntityToggleGlideEvent e) {
+        e.setCancelled(inCombat.contains(e.getEntity().getName()));
+    }
+    //
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent e) {
@@ -110,6 +137,10 @@ public class events implements Listener {
                 spawn(pw);
             }, 60L);
         }
+
+        // combat related
+        if (inCombat.contains(playerName))
+            e.getPlayer().setHealth(0.0D);
 
         // requests
         removeDUELrequest(getDUELrequest(playerName));

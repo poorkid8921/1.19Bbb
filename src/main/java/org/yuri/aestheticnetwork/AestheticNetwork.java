@@ -26,6 +26,7 @@ import org.yuri.aestheticnetwork.commands.tpa.TpaCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpacceptCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpahereCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpdenyCommand;
+import org.yuri.aestheticnetwork.utils.Languages;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.io.File;
@@ -161,6 +162,9 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
             });
         }, 0L, 6005L);
         Bukkit.getScheduler().runTaskLater(this, this::run, 100);
+
+        // Init Strings
+        Languages.init();
     }
 
     private boolean setupEconomy() {

@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuri.aestheticnetwork.utils.Languages;
 import org.yuri.aestheticnetwork.utils.Type;
 import org.yuri.aestheticnetwork.utils.Utils;
 
@@ -19,7 +20,7 @@ public class TpaCommand implements CommandExecutor {
         if (!(sender instanceof Player user)) return true;
 
         if (args.length < 1) {
-            user.sendMessage(translateo("&7You must specify who you want to teleport to."));
+            user.sendMessage(Languages.WHO_TPA);
             return true;
         }
 

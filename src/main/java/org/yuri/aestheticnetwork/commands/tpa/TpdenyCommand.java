@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuri.aestheticnetwork.utils.Languages;
 
 import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
 import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
@@ -20,7 +21,7 @@ public class TpdenyCommand implements CommandExecutor {
 
         TpaRequest request = getTPArequest(player.getName());
         if (request == null) {
-            player.sendMessage(translateo("&7You got no active teleport request."));
+            player.sendMessage(Languages.EXCEPTION_NO_ACTIVE_TPAREQ);
             return true;
         }
 

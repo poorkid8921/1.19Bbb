@@ -1,6 +1,5 @@
 package org.yuri.aestheticnetwork.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -15,11 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.inventories.ReportInventory;
+import org.yuri.aestheticnetwork.utils.Languages;
 
 import java.util.List;
 
 import static org.yuri.aestheticnetwork.utils.Utils.report;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class Report implements CommandExecutor, TabExecutor {
@@ -55,7 +54,7 @@ public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(translateo("&7You must specify who you want to report."));
+            sender.sendMessage(Languages.EXCEPTION_REPORT_SPECIFY_PLAYER);
             return true;
         }
 

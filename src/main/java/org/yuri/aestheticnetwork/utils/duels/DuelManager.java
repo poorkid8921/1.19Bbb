@@ -173,9 +173,7 @@ public class DuelManager {
 
         String clean = ChatColor.stripColor(sender.getDisplayName());
         int c = clean.indexOf(" ");
-        String n = clean.
 
-        TextComponent name = new TextComponent();
         TextComponent tc = new TextComponent(translateo(" &7has requested that you duel them in "));
 
         TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
@@ -198,10 +196,26 @@ public class DuelManager {
         }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
-        if (c != -1)
+        if (c != -1) {
+            String color = clean.substring(0, 7);
+            String noHex = clean.replace(color, "");
+            String rank = noHex.substring(0, c);
+            String realName = noHex.replace(rank + " ", "");
 
-            else
-        receiver.sendMessage(tc, accept, space, deny);
+            TextComponent nametc = new TextComponent(realName);
+            nametc.setColor(ChatColor.of(color));
+
+            TextComponent ranktc = new TextComponent(rank);
+            TextComponent duelType = new TextComponent(type + " ");
+            duelType.setColor(ChatColor.of("#fc282f"));
+
+            TextComponent duelType2 = new TextComponent(translateo("&7with "));
+            TextComponent duelType3 = new TextComponent(rounds + " rounds.");
+            duelType3.setColor(ChatColor.of("#fc282f"));
+
+            receiver.sendMessage(ranktc, nametc, tc, duelType, duelType2, duelType3, accept, space, deny);
+        } else
+            receiver.sendMessage(tc, accept, space, deny);
     }
 
     public static void removeDUELrequest(DuelRequest user) {

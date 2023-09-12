@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuri.aestheticnetwork.utils.Languages;
 import org.yuri.aestheticnetwork.utils.Type;
 import org.yuri.aestheticnetwork.utils.Utils;
 
@@ -19,26 +20,26 @@ public class TpahereCommand implements CommandExecutor {
             return true;
 
         if (args.length < 1) {
-            user.sendMessage(translateo("&7You must specify who you want to teleport to."));
+            user.sendMessage(Languages.WHO_TPA);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(translateo("&7You can't send teleport requests to offline players."));
+            user.sendMessage(Languages.EXCEPTION_PLAYER_OFFLINETPA);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(user.getName())) {
-            user.sendMessage(translateo("&7You can't teleport to yourself."));
+            user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 
         TpaRequest tpr = getTPArequest(recipient.getName());
 
         if (tpr != null && tpr.getSender().equals(user)) {
-            user.sendMessage(translateo("&7You already have an ongoing request to this player."));
+            user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
             return true;
         }
 

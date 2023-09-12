@@ -15,10 +15,8 @@ import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
-import static org.yuri.aestheticnetwork.utils.Utils.translate;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
+import static org.yuri.aestheticnetwork.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class RequestManager {
@@ -31,15 +29,27 @@ public class RequestManager {
         if (request.getType() == Type.TPA) {
             tempuser = request.getSender();
             temprecipient = user;
-            temprecipient.sendMessage(translate("&7You have accepted #fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
+            temprecipient.sendMessage(ChatColor.GRAY +
+                    "You have accepted " +
+                    translateA("#fc282f" +
+                            tempuser.getDisplayName()) + "&7's teleport request");
             temprecipient.sendMessage(translateo("&7Teleporting..."));
-            tempuser.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+            tempuser.sendMessage(translateA("#fc282f" +
+                    temprecipient.getDisplayName()) +
+                    ChatColor.GRAY +
+                    " &7has accepted your teleport request");
         } else {
             tempuser = user;
             temprecipient = request.getSender();
-            tempuser.sendMessage(translate("&7You have accepted #fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
+            temprecipient.sendMessage(ChatColor.GRAY +
+                    "You have accepted " +
+                    translateA("#fc282f" +
+                            temprecipient.getDisplayName()) + "&7's teleport request");
             tempuser.sendMessage(translateo("&7Teleporting..."));
-            temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
+            temprecipient.sendMessage(translateA("#fc282f" +
+                    tempuser.getDisplayName()) +
+                    ChatColor.GRAY +
+                    " &7has accepted your teleport request");
         }
 
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
@@ -99,7 +109,7 @@ public class RequestManager {
                 receiver.getDisplayName()));
 
         if (type == Type.TPAHERE)
-            tc.setText(translate(" &7has requested that you teleport to them. "));
+            tc.setText(translateo(" &7has requested that you teleport to them. "));
 
         new BukkitRunnable() {
             @Override
@@ -116,7 +126,7 @@ public class RequestManager {
             String realName = noHex.replace(rank + " ", "");
             TextComponent nametc = new TextComponent(realName);
             nametc.setColor(ChatColor.of(color));
-            TextComponent ranktc = new TextComponent(rank);
+            TextComponent ranktc = new TextComponent(rank + " ");
             receiver.sendMessage(ranktc, nametc, tc, a, space, b);
         } else
             receiver.sendMessage(new ComponentBuilder(sender.getDisplayName())

@@ -56,4 +56,5 @@ public class Initializer {
     public static ArrayList<String> tpa = new ArrayList<>();
     public static ArrayList<String> msg = new ArrayList<>();
     public static ArrayList<Player> ffaconst = new ArrayList<>();
+    public static ArrayList<String> inCombat = new ArrayList<>();
 }
