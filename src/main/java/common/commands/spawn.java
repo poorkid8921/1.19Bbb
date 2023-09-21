@@ -12,17 +12,12 @@ import org.yuri.eco.AestheticNetwork;
 import org.yuri.eco.utils.Initializer;
 
 public class spawn implements CommandExecutor {
-    AestheticNetwork plugin = Initializer.p;
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (sender instanceof Player pp) {
-            PaperLib.teleportAsync(pp, new Location(Bukkit.getWorld("world"),
-                    plugin.getConfig().getDouble("Spawn.X"),
-                    plugin.getConfig().getDouble("Spawn.Y"),
-                    plugin.getConfig().getDouble("Spawn.Z")));
+        if (!(sender instanceof Player pp))
             return true;
-        }
 
-        return false;
+        PaperLib.teleportAsync(pp, Initializer.spawn);
+        return true;
     }
 }

@@ -13,17 +13,17 @@ import static org.yuri.eco.utils.Initializer.tpa;
 public class TpaLock implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        Player p = ((Player) sender);
-        if (Utils.manager().get("r." + p.getUniqueId() + ".t") != null) {
-            p.sendMessage(Utils.translateo("&7You can receive tp requests again."));
-            Utils.manager().set("r." + p.getUniqueId() + (Utils.manager().get("r." + p.getUniqueId() + ".m") == null ? "" : ".t"), null);
+        String p = sender.getName();
+        if (Utils.manager().get("r." + p + ".t") != null) {
+            sender.sendMessage(Utils.translateo("&7You can receive tp requests again."));
+            Utils.manager().set("r." + p + (Utils.manager().get("r." + p + ".m") == null ? "" : ".t"), null);
             Initializer.p.saveCustomConfig();
-            tpa.add(p.getName());
+            tpa.add(p);
         } else {
-            p.sendMessage(Utils.translateo("&7You will no longer receive tp requests."));
-            Utils.manager().set("r." + p.getUniqueId() + ".t", "");
+            sender.sendMessage(Utils.translateo("&7You will no longer receive tp requests."));
+            Utils.manager().set("r." + p + ".t", "");
             Initializer.p.saveCustomConfig();
-            tpa.remove(p.getName());
+            tpa.remove(p);
         }
         return true;
     }

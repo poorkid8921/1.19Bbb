@@ -1,16 +1,12 @@
 package common.commands.tpa;
 
-import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.eco.utils.Initializer;
 import org.yuri.eco.utils.Utils;
-
-import java.util.UUID;
 
 import static org.yuri.eco.utils.Utils.*;
 
@@ -33,8 +29,7 @@ public class TpacceptCommand implements CommandExecutor {
             if (p == null) {
                 user.sendMessage(translate("&7Couldn't find anyone online named #fc282f" + args[0]) + ".");
                 return true;
-            }
-            else
+            } else
                 n = p.getName();
             request = getRequest(user.getName(), n);
             msg = translate("&7You got no active teleport request from #fc282f" + n + ".");

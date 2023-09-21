@@ -7,6 +7,7 @@ import common.commands.tpa.TpahereCommand;
 import common.commands.tpa.TpdenyCommand;
 import io.papermc.lib.PaperLib;
 import net.luckperms.api.LuckPerms;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.yuri.eco.commands.ChatLock;
 import org.yuri.eco.commands.tpa.TpaAllCommand;
 import org.yuri.eco.utils.Initializer;
+import org.yuri.eco.utils.Languages;
 import org.yuri.eco.utils.Utils;
 
 import java.io.File;
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
 
+import static org.yuri.eco.utils.Initializer.economy;
 import static org.yuri.eco.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
@@ -56,8 +59,25 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         }
     }
 
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) return false;
+
+        economy = rsp.getProvider();
+        return true;
+    }
+
     @Override
     public void onEnable() {
+        if (!setupEconomy())
+        {
+            setEnabled(false);
+            return;
+        }
+
         Initializer.p = this;
         saveConfig();
 
@@ -65,11 +85,8 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         if (!cf.exists()) this.saveCustomConfig();
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
+        if (provider != null)
             Initializer.lp = provider.getProvider();
-            Bukkit.getPluginManager().registerEvents(new events(), this);
-        }
-        Bukkit.getPluginManager().registerEvents(new AnvilListener(), this);
         Objects.requireNonNull(this.getCommand("chatlock")).setExecutor(new ChatLock());
 
         Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
@@ -93,14 +110,26 @@ public final class AestheticNetwork extends JavaPlugin implements CommandExecuto
         Objects.requireNonNull(this.getCommand("stats")).setExecutor(new stats());
 
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "killall endercrystals world");
-            Bukkit.getServer().getOnlinePlayers().stream().filter(s -> !s.isInsideVehicle() && !s.isGliding() && s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
-                Location loctp = new Location(player.getWorld(), player.getLocation().getX(), 135, player.getLocation().getZ());
-                loctp.setPitch(player.getLocation().getPitch());
-                loctp.setYaw(player.getLocation().getYaw());
+            Bukkit.getServer().getOnlinePlayers().stream().filter(s ->
+                    !s.isInsideVehicle() &&
+                            !s.isGliding() &&
+                            s.getWorld().getBlockAt(new Location(s.getWorld(),
+                                    s.getLocation().getX(),
+                                    319,
+                                    s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
+                Location loctp = new Location(player.getWorld(),
+                        player.getLocation().getX(),
+                        135,
+                        player.getLocation().getZ());
+                Location l = player.getLocation();
+                loctp.setPitch(l.getPitch());
+                loctp.setYaw(l.getYaw());
                 PaperLib.teleportAsync(player, loctp);
             });
         }, 0L, 24005L);
+
+        Bukkit.getServer().getScheduler().runTaskLater(this, Languages::init, 100L);
+        Bukkit.getPluginManager().registerEvents(new events(), this);
     }
 
     @Override

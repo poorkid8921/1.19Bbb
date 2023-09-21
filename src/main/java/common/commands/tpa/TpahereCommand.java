@@ -31,19 +31,20 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (recipient.getName().equalsIgnoreCase(sender.getName())) {
+        String rn = recipient.getName();
+        if (rn.equalsIgnoreCase(sender.getName())) {
             user.sendMessage(translateo("&7You can't teleport to yourself."));
             return true;
         }
 
-        TpaRequest tpr = getRequest(recipient.getName());
+        TpaRequest tpr = getRequest(rn);
 
         if (tpr != null && tpr.getSender().equals(sender)) {
             user.sendMessage(translateo("&7You already have an ongoing request to this player."));
             return true;
         }
 
-        if (Utils.manager().get("r." + recipient.getUniqueId() + ".t") != null) {
+        if (Utils.manager().get("r." + rn + ".t") != null) {
             user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests."));
             return true;
         }

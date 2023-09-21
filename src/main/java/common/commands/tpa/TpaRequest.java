@@ -3,31 +3,33 @@ package common.commands.tpa;
 import org.bukkit.entity.Player;
 import org.yuri.eco.utils.Utils;
 
+import java.lang.ref.WeakReference;
+
 public class TpaRequest {
-    private final Player sender;
-    private final Player reciever;
+    private final WeakReference<Player> sender;
+    private final WeakReference<Player> reciever;
     private final Utils.Type type;
     private final boolean showacceptmsg;
 
     public TpaRequest(Player sender, Player reciever, Utils.Type type, boolean showacceptmsg) {
-        this.sender = sender;
-        this.reciever = reciever;
+        this.sender = new WeakReference<>(sender);
+        this.reciever = new WeakReference<>(reciever);
         this.type = type;
         this.showacceptmsg = showacceptmsg;
     }
 
     public Player getSender() {
-        return sender;
+        return sender.get();
     }
 
     public boolean getTpaAll()
     {
-        return !showacceptmsg;
+        return showacceptmsg;
     }
 
     public Player getReciever()
     {
-        return reciever;
+        return reciever.get();
     }
 
     public Utils.Type getType() {

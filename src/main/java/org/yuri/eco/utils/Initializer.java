@@ -2,7 +2,9 @@ package org.yuri.eco.utils;
 
 import common.commands.tpa.TpaRequest;
 import net.luckperms.api.LuckPerms;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.yuri.eco.AestheticNetwork;
 
 import java.util.*;
@@ -34,4 +36,6 @@ public class Initializer {
     public static AestheticNetwork p;
     public static LuckPerms lp;
     public static boolean chatlock = false;
+    public static Location spawn;
+    public static Economy economy;
 }

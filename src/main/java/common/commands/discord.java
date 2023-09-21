@@ -21,9 +21,8 @@ public class discord implements CommandExecutor {
             hi.setColor(ChatColor.of("#fc282f"));
             hi.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/aestheticnetwork"));
             pp.sendMessage(a, hi);
-            return true;
         }
 
-        return false;
+        return true;
     }
 }

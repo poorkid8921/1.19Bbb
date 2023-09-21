@@ -13,19 +13,19 @@ import static org.yuri.eco.utils.Initializer.msg;
 public class MsgLock implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        Player p = ((Player) sender);
-        if (Utils.manager().get("r." + p.getUniqueId() + ".m") != null) {
-            p.sendMessage(Utils.translateo("&7You can receive messages from players again."));
-            Utils.manager().set("r." + p.getUniqueId() + (Utils.manager().get("r." + p.getUniqueId() + ".t") == null ? "" : ".m"), null);
+        String p = sender.getName();
+        if (Utils.manager().get("r." + p + ".m") != null) {
+            sender.sendMessage(Utils.translateo("&7You can receive messages from players again."));
+            Utils.manager().set("r." + p + (Utils.manager().get("r." + p + ".t") == null ? "" : ".m"), null);
             Initializer.p.saveCustomConfig();
-            msg.add(p.getName());
+            msg.add(p);
         }
         else
         {
-            p.sendMessage(Utils.translateo("&7You will no longer receive messages from players."));
-            Utils.manager().set("r." + p.getUniqueId() + ".m", "");
+            sender.sendMessage(Utils.translateo("&7You will no longer receive messages from players."));
+            Utils.manager().set("r." + p + ".m", "");
             Initializer.p.saveCustomConfig();
-            msg.remove(p.getName());
+            msg.remove(p);
         }
         return true;
     }

@@ -6,10 +6,8 @@ depend: [Vault, LuckPerms]
 
 commands:
   spawn:
-    description: Teleports you to spawn
     usage: /<command>
   discord:
-    description: Displays the discord link
     usage: /<command>
   tpa:
     usage: /<command>
@@ -46,5 +44,3 @@ commands:
 permissions:
   has.staff:
     description: Use chatlock & Bypass it
-  coloranvils.use:
-    description: Use colored anvils

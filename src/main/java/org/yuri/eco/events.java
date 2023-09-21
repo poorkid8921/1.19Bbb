@@ -2,6 +2,7 @@ package org.yuri.eco;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import io.papermc.lib.PaperLib;
+import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import net.luckperms.api.model.user.User;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
@@ -23,12 +24,17 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.ServerOperator;
 import org.bukkit.util.Vector;
+import org.yuri.eco.utils.DiscordWebhook;
 import org.yuri.eco.utils.Initializer;
 import org.yuri.eco.utils.InventoryInstanceReport;
 import org.yuri.eco.utils.Utils;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.yuri.eco.utils.Initializer.playerstoteming;
 import static org.yuri.eco.utils.Utils.translateo;
@@ -51,14 +57,13 @@ public class events implements Listener {
     }
 
     public static int countMinecartInChunk(Chunk chunk) {
-        int count = 0;
-
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                count++;
-            }
-        }
-        return count;
+        return
+                Arrays.stream(chunk.getEntities())
+                        .toList()
+                        .stream()
+                        .filter(r -> r instanceof Minecart)
+                        .toList()
+                        .size();
     }
 
     public static boolean removeMinecartInChunk(Chunk chunk) {
@@ -73,7 +78,7 @@ public class events implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onPortal(PlayerPortalEvent event) {
         Player player = event.getPlayer();
-        Initializer.p.getServer().getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
             if (!player.isOnline())
                 return;
 
@@ -86,8 +91,8 @@ public class events implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onInteract(PlayerInteractEvent e) {
-        if (!Objects.requireNonNull(e.getClickedBlock()).getType().equals(Material.LEVER)) return;
-        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) ||
+                e.getClickedBlock().getType().equals(Material.LEVER)) return;
 
         String name = e.getPlayer().getName();
         if (Initializer.cooldowns.containsKey(name) && Initializer.cooldowns.get(name) > System.currentTimeMillis())
@@ -99,6 +104,7 @@ public class events implements Listener {
     private void onPlayerLeave(final PlayerQuitEvent e) {
         String name = e.getPlayer().getName();
         Initializer.requests.remove(Utils.getRequest(name));
+        Initializer.playerstoteming.remove(name);
         Initializer.cooldowns.remove(name);
         Initializer.lastReceived.remove(name);
         Initializer.msg.remove(name);
@@ -112,15 +118,18 @@ public class events implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e) {
-        if (e.getInventory() instanceof PlayerInventory) return;
+        if (e.getInventory() instanceof PlayerInventory)
+            return;
 
         if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
             e.setCancelled(true);
-            final ItemStack clickedItem = e.getCurrentItem();
-            ItemMeta meta = clickedItem.getItemMeta();
-            if (!meta.hasLore()) return;
+            if (!e.getCurrentItem().getItemMeta().hasLore())
+                return;
 
-            holder.whenClicked(e.getCurrentItem(), e.getAction(), e.getSlot(), holder.getArg());
+            holder.whenClicked(e.getCurrentItem(),
+                    e.getAction(),
+                    e.getSlot(),
+                    holder.getArg());
         }
     }
 
@@ -130,29 +139,47 @@ public class events implements Listener {
     }
 
     @EventHandler
+    public void onDispense(final BlockPreDispenseEvent e) {
+        e.setCancelled(e.getItemStack().getType().equals(Material.TNT));
+    }
+
+    @EventHandler
     private void onPlayerKill(final PlayerDeathEvent e) {
         Player p = e.getPlayer();
         if (p.getKiller() == null) return;
         Player kp = p.getKiller();
 
         User user = Initializer.lp.getPlayerAdapter(Player.class).getUser(kp);
-        Location loc = e.getPlayer().getLocation();
+        Location loc = p.getLocation();
         if (!user.getPrimaryGroup().equals("default")) {
             loc.add(new Vector(0, 1, 0));
             switch (random.nextInt(4)) {
                 case 0 -> spawnFireworks(loc);
-                case 1 -> p.getWorld().spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
-                case 2 -> p.getWorld().strikeLightningEffect(loc);
-                case 3 -> createHelix(loc);
+                case 1 -> loc.getWorld().spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
+                case 2 -> loc.getWorld().strikeLightningEffect(loc);
+                case 3 -> {
+                    for (double y = 0; y <= 10; y += 0.05) {
+                        double x = 2 * Math.cos(y);
+                        double z = 2 * Math.sin(y);
+                        Vector off = new Vector(0, 0, 0);
+                        loc.getWorld().spawnParticle(Particle.TOTEM, new Location(loc.getWorld(),
+                                        (float) (loc.getX() + x),
+                                        (float) (loc.getY() + y),
+                                        (float) (loc.getZ() + z)),
+                                2,
+                                off.getX(),
+                                off.getY(),
+                                off.getZ(),
+                                1.0);
+                    }
+                }
             }
-        } else p.getWorld().strikeLightningEffect(loc);
+        } else loc.getWorld().strikeLightningEffect(loc);
 
         if (random.nextInt(100) <= 5)
-            Bukkit.getWorld(e
-                            .getPlayer()
+            Bukkit.getWorld(e.getPlayer()
                             .getWorld()
-                            .getName())
-                    .dropItemNaturally(new Location(
+                            .getName()).dropItemNaturally(new Location(
                                     e.getPlayer().getLocation().getWorld(),
                                     e.getEntity().getLocation().getX(),
                                     e.getEntity().getLocation().getY(),
@@ -161,28 +188,12 @@ public class events implements Listener {
                                     e.getPlayer().getKiller().getDisplayName()));
     }
 
-    public void createHelix(Location loc) {
-        for (double y = 0; y <= 10; y += 0.05) {
-            double x = 2 * Math.cos(y);
-            double z = 2 * Math.sin(y);
-            Vector off = new Vector(0, 0, 0);
-            loc.getWorld().spawnParticle(Particle.TOTEM, new Location(loc.getWorld(),
-                            (float) (loc.getX() + x),
-                            (float) (loc.getY() + y),
-                            (float) (loc.getZ() + z)),
-                    2,
-                    off.getX(),
-                    off.getY(),
-                    off.getZ(),
-                    1.0);
-        }
-    }
-
     @EventHandler(priority = EventPriority.LOWEST)
     private void onEventExplosion(final EntityDamageEvent e) {
-        if (e.getEntity().getType() != EntityType.DROPPED_ITEM || !(e.getEntity() instanceof Item)) return;
+        if (!(e.getEntity() instanceof Item)) return;
 
-        if (e.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && e.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
+        if (e.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
+                e.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
             return;
 
         final Material type = ((Item) e.getEntity()).getItemStack().getType();
@@ -196,19 +207,32 @@ public class events implements Listener {
 
     @EventHandler
     private void antiAuto(PlayerSwapHandItemsEvent e) {
-        Player ent = e.getPlayer();
         if (!e.getOffHandItem().getType().equals(Material.AIR)) return;
+        Player ent = e.getPlayer();
 
         String playerUniqueId = ent.getName();
         if (playerstoteming.containsKey(playerUniqueId) &&
                 playerstoteming.get(playerUniqueId) > System.currentTimeMillis()) {
-            for (Player i : Bukkit.getOnlinePlayers()) {
-                if (!i.hasPermission("has.staff")) continue;
-
-                long ms = playerstoteming.get(playerUniqueId) - System.currentTimeMillis();
-                i.sendMessage(translateo("&6" + ent.getName() + " totemed in less than " + ms + "ms! &7 " + ent.getPing() + "ms"));
-            }
-            //e.setCancelled(true);
+            long ms = playerstoteming.get(playerUniqueId) - System.currentTimeMillis();
+            int ping = ent.getPing();
+            String msg = translateo("&6" + playerUniqueId + " totemed in less than " + ms + "ms! &7 " + ping + "ms");
+            Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r ->
+                    r.sendMessage(msg));
+            Bukkit.getServer().getScheduler().runTaskAsynchronously(Initializer.p, () -> {
+                DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1154454195437572257/Y6dRpPyFLmlr7nhSIHEGL4-ByTAhb2ReyztwLEuzGoIZy5rTr_KUet86N9gUiw1vrKUg");
+                webhook.setUsername("Flag");
+                webhook.addEmbed(new DiscordWebhook.EmbedObject()
+                        .setTitle("Auto Totem")
+                        .addField("Suspect", playerUniqueId, true)
+                        .addField("Milliseconds", String.valueOf(ms), true)
+                        .addField("Ping", String.valueOf(ping), true)
+                        .setColor(java.awt.Color.ORANGE));
+                try {
+                    webhook.execute();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
             playerstoteming.remove(playerUniqueId);
         }
     }
@@ -245,12 +269,14 @@ public class events implements Listener {
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
         if (countMinecartInChunk(event.getVehicle().getChunk()) >= 16) {
             event.setCancelled(removeMinecartInChunk(event.getVehicle().getChunk()));
-            Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp).forEach(s -> s.sendMessage(translateo("&f*** minecart lag machine at &6" + event.getVehicle().getLocation().getX() + " " + event.getVehicle().getLocation().getZ() + " " + event.getVehicle().getLocation().getWorld().getName())));
+            Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp)
+                    .forEach(s -> s.sendMessage(translateo("&f*** minecart lag machine at &6" + event.getVehicle().getLocation().getX() + " " + event.getVehicle().getLocation().getZ() + " " + event.getVehicle().getLocation().getWorld().getName())));
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
         if (!e.getPlayer().hasPlayedBefore()) {
             ItemStack pick = new ItemStack(Material.IRON_PICKAXE, 1);
             ItemStack sword = new ItemStack(Material.IRON_SWORD, 1);
@@ -284,24 +310,24 @@ public class events implements Listener {
             boots.addEnchantment(Enchantment.DURABILITY, 2);
             boots.addEnchantment(Enchantment.MENDING, 1);
 
-            e.getPlayer().getInventory().addItem(sword);
-            e.getPlayer().getInventory().addItem(pick);
-            e.getPlayer().getInventory().setItemInOffHand(new ItemStack(Material.BREAD, 16));
-            e.getPlayer().getInventory().setHelmet(helmet);
-            e.getPlayer().getInventory().setChestplate(chestplate);
-            e.getPlayer().getInventory().setLeggings(leggings);
-            e.getPlayer().getInventory().setBoots(boots);
-            e.getPlayer().teleport(new Location(Bukkit.getWorld("world"), Initializer.p.getConfig().getDouble("Spawn.X"), Initializer.p.getConfig().getDouble("Spawn.Y"), Initializer.p.getConfig().getDouble("Spawn.Z")));
+            p.getInventory().addItem(sword);
+            p.getInventory().addItem(pick);
+            p.getInventory().setItemInOffHand(new ItemStack(Material.BREAD, 16));
+            p.getInventory().setHelmet(helmet);
+            p.getInventory().setChestplate(chestplate);
+            p.getInventory().setLeggings(leggings);
+            p.getInventory().setBoots(boots);
+            p.teleport(new Location(Bukkit.getWorld("world"), Initializer.p.getConfig().getDouble("Spawn.X"), Initializer.p.getConfig().getDouble("Spawn.Y"), Initializer.p.getConfig().getDouble("Spawn.Z")));
         }
 
-        if (e.getPlayer().getHealth() == 0.0) {
-            Bukkit.getServer().getScheduler().runTask(Initializer.p, () -> {
-                e.getPlayer().setHealth(20);
-                e.getPlayer().kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");
-            });
+        if (p.getHealth() == 0.0) {
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+                p.setHealth(20);
+                p.kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");
+            }, 2L);
         }
 
-        String name = e.getPlayer().getName();
+        String name = p.getName();
         if (Utils.manager().get("r." + name + ".t") == null)
             Initializer.tpa.add(name);
 

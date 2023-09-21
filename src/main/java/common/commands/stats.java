@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.yuri.eco.utils.Initializer;
 
 import java.util.List;
 
@@ -22,26 +23,35 @@ public class stats implements CommandExecutor {
             else {
                 Player p = Bukkit.getOfflinePlayer(args[0]).getPlayer();
                 if (p == null) {
-                    pp.sendMessage(translateo("&7You must specify a valid player."));
+                    pp.sendMessage(translateo("&7You must specify a valid player you want to view statistics of."));
                     return true;
                 }
 
                 showstats(pp, p);
-                return true;
             }
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     private void showstats(Player pp) {
-        for (String msg : List.of("", translateo("&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"), translate("  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS)), translate("  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS)), translate("  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT)), translate("  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_TAKEN))))
-            pp.sendMessage(msg);
+        pp.sendMessage("",
+                "&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
+                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» " + Initializer.economy.getBalance(pp),
+                "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
+                "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
+                "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
+                "  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
     }
 
     private void showstats(Player pp, Player t) {
-        for (String msg : List.of("", translate((t.isOnline() ? "&a" : "&c") + "◆ #fc282f" + t.getDisplayName() + "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"), translate("  &7ᴋɪʟʟs #fc282f» " + t.getStatistic(Statistic.PLAYER_KILLS)), translate("  &7ᴅᴇᴀᴛʜs #fc282f» " + t.getStatistic(Statistic.DEATHS)), translate("  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + t.getStatistic(Statistic.DAMAGE_DEALT)), translate("  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + t.getStatistic(Statistic.DAMAGE_TAKEN))))
-            pp.sendMessage(msg);
+        pp.sendMessage("",
+                translate((t.isOnline() ? "&a" : "&c") + "◆ #fc282f" +
+                        t.getDisplayName() + "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"),
+                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» " + Initializer.economy.getBalance(pp),
+                "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
+                "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
+                "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
+                "  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
     }
 }

@@ -36,11 +36,8 @@ public class ReportInventory extends InventoryInstanceReport {
         }
 
         inv.setItem(10, Report.createitemstack(Material.END_CRYSTAL, "Cheating", List.of(translateo("&aUse of a hacked client"), translateo("&aUse of an illegal client modification"), translateo("&aUse of walksy optimizer below 200ms")), arg));
-
         inv.setItem(11, Report.createitemstack(Material.PAPER, "Doxxing", List.of(translateo("&aSaying private info of a player in the chat")), arg));
-
         inv.setItem(12, Report.createitemstack(Utils.getHead(arg), "Ban Evading", List.of(translateo("&aUsing an alt to play after being banned")), arg));
-
         inv.setItem(13, Report.createitemstack(Material.RED_BED, "Spamming", List.of(translateo("&aSaying more than 5 messages on the same topic")), arg));
 
         return inv;
@@ -48,13 +45,6 @@ public class ReportInventory extends InventoryInstanceReport {
 
     @Override
     public void whenClicked(ItemStack item, InventoryAction action, int slot, String arg) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return;
-
-        if (!meta.hasLore()) return;
-
-        String str = slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : null;
-
-        report(Initializer.p, player, arg, str);
+        report(Initializer.p, player, arg, slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : null);
     }
 }

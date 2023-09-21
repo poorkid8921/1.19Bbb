@@ -35,7 +35,8 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        TpaRequest tpr = getRequest(recipient.getName());
+        String rep = recipient.getName();
+        TpaRequest tpr = getRequest(rep);
 
         if (tpr != null) {
             if (tpr.getSender().equals(user)) {
@@ -48,7 +49,7 @@ public class TpaCommand implements CommandExecutor {
             }
         }
 
-        if (manager().get("r." + recipient.getUniqueId() + ".t") != null) {
+        if (manager().get("r." + rep + ".t") != null) {
             user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests."));
             return true;
         }

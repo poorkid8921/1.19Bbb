@@ -20,14 +20,17 @@ public class TpaAllCommand implements CommandExecutor {
     public boolean onCommand(final @NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
-        user.sendMessage(translateo("&7Requested everyone to teleport to you"));
+        user.sendMessage(translateo("&7Requested everyone to teleport to you."));
 
+        String pn = user.getName();
         for (Player i : Bukkit.getOnlinePlayers()) {
-            if (i.getName().equals(user.getName())) continue;
+            String in = i.getName();
+            if (in.equals(pn)) continue;
 
             TpaRequest tpr = getRequest(i.getName());
 
-            if ((tpr != null && tpr.getSender().equals(sender)) || Utils.manager().get("r." + i.getUniqueId() + ".t") != null)
+            if ((tpr != null && tpr.getSender().equals(user)) ||
+                    Utils.manager().get("r." + in + ".t") != null)
                 continue;
 
             Utils.addRequest(user, i, Utils.Type.TPAHERE, false);
