@@ -1,19 +1,16 @@
 package org.yuri.aestheticnetwork.commands.duel;
 
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.utils.Initializer;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Initializer;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class Event implements CommandExecutor {
@@ -36,7 +33,7 @@ public class Event implements CommandExecutor {
         sender.sendMessage(Languages.DUELS_DELIM);
         sender.sendMessage(Languages.DUELS_WINNER,
                 hi2);
-        sender.sendMessage(translate("&7sᴄᴏʀᴇ #fc282f» " + Integer.parseInt(args[1]) + " &7- &9" + Integer.parseInt(args[2])));
+        sender.sendMessage(translate("&7sᴄᴏʀᴇ #fc282f» " + Integer.parseInt(args[1]) + " &7- #4d8eff" + Integer.parseInt(args[2])));
         sender.sendMessage(translate("&7ᴅᴜʀᴀᴛɪᴏɴ #fc282f» " + args[3]));
         sender.sendMessage(Languages.DUELS_DELIM);
         Initializer.valid.remove(p.getName());

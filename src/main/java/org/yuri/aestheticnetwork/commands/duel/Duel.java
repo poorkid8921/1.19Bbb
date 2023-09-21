@@ -8,16 +8,12 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yuri.aestheticnetwork.inventories.DuelInventory;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.teams;
-import static org.yuri.aestheticnetwork.utils.RequestManager.tpaccept;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 
 public class Duel implements CommandExecutor, TabExecutor {

@@ -2,8 +2,8 @@ package org.yuri.aestheticnetwork.utils;
 
 import io.papermc.lib.PaperLib;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.*;
 import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -16,12 +16,11 @@ import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
-import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.*;
 
 @SuppressWarnings("deprecation")
 public class Utils {
@@ -79,8 +78,8 @@ public class Utils {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.random
-                .nextInt(color.size())))
+        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random
+                        .nextInt(color.size())))
                 .withColor(color.get(random
                         .nextInt(color.size())))
                 .with(FireworkEffect.Type.BALL_LARGE)

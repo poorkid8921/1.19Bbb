@@ -5,17 +5,13 @@ api-version: 1.18
 
 commands:
   spawn:
-    description: Teleports you to spawn
     usage: /<command>
   discord:
-    description: Displays the discord link
     usage: /<command>
   ffa:
-    description: Teleports you to the FFA arena
     usage: /<command>
     aliases: [ hole, field ]
   flat:
-    description: Teleports you to the flat arena
     usage: /<command>
   tpa:
     usage: /<command>
@@ -54,6 +50,8 @@ commands:
   event:
     usage: /<command>
   back:
+    usage: /<command>
+  help:
     usage: /<command>
 permissions:
   has.staff:

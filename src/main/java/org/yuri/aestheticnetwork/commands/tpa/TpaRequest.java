@@ -1,25 +1,27 @@
 package org.yuri.aestheticnetwork.commands.tpa;
 
 import org.bukkit.entity.Player;
-import org.yuri.aestheticnetwork.utils.Type;
+import org.yuri.aestheticnetwork.utils.Instances.Type;
+
+import java.lang.ref.WeakReference;
 
 public class TpaRequest {
-    private final Player sender;
-    private final Player reciever;
+    private final WeakReference<Player> sender;
+    private final WeakReference<Player> reciever;
     private final Type type;
 
     public TpaRequest(Player sender, Player reciever, Type type) {
-        this.sender = sender;
-        this.reciever = reciever;
+        this.sender = new WeakReference<>(sender);
+        this.reciever = new WeakReference<>(reciever);
         this.type = type;
     }
 
     public Player getSender() {
-        return sender;
+        return sender.get();
     }
 
     public Player getReciever() {
-        return reciever;
+        return reciever.get();
     }
 
     public Type getType() {

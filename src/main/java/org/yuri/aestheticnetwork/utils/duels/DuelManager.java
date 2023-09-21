@@ -11,21 +11,18 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.duel.DuelRequest;
-import org.yuri.aestheticnetwork.commands.duel.KitManager;
-import org.yuri.aestheticnetwork.utils.Initializer;
 import org.yuri.aestheticnetwork.utils.Utils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
@@ -176,17 +173,18 @@ public class DuelManager {
 
         TextComponent tc = new TextComponent(translateo(" &7has requested that you duel them in "));
 
-        TextComponent accept = new TextComponent(translateo("&7[&a✔&7]"));
-        Text acceptHoverText = new Text(translateo("&7Click to accept the duel request"));
-        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, acceptHoverText));
-        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/duelaccept"));
-        TextComponent deny = new TextComponent(translateo("&7[&cX&7]"));
-        Text denyHoverText = new Text(translateo("Click to deny the duel request"));
-        deny.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, denyHoverText));
-        deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny"));
+        TextComponent a = new TextComponent(translateo("&7[&a✔&7]"));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
+                translateo("&7Click to accept the teleportation request"))));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sender.getName()));
 
+        TextComponent b = new TextComponent(translateo("&7[&cX&7]"));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
+                translateo("&7Click to deny the teleportation request"))));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sender.getName()));
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
+        sender.sendMessage(translate("&7Request sent to #fc282f" +
+                receiver.getDisplayName()));
 
         new BukkitRunnable() {
             @Override
@@ -196,6 +194,14 @@ public class DuelManager {
         }.runTaskLater(AestheticNetwork.getInstance(), 120 * 20);
 
         TextComponent space = new TextComponent("  ");
+
+        TextComponent duelType = new TextComponent(type + " ");
+        duelType.setColor(ChatColor.of("#fc282f"));
+
+        TextComponent duelType2 = new TextComponent(translateo("&7with "));
+        TextComponent duelType3 = new TextComponent(rounds + " rounds.");
+        duelType3.setColor(ChatColor.of("#fc282f"));
+
         if (c != -1) {
             String color = clean.substring(0, 7);
             String noHex = clean.replace(color, "");
@@ -203,19 +209,15 @@ public class DuelManager {
             String realName = noHex.replace(rank + " ", "");
 
             TextComponent nametc = new TextComponent(realName);
-            nametc.setColor(ChatColor.of(color));
-
             TextComponent ranktc = new TextComponent(rank);
-            TextComponent duelType = new TextComponent(type + " ");
-            duelType.setColor(ChatColor.of("#fc282f"));
 
-            TextComponent duelType2 = new TextComponent(translateo("&7with "));
-            TextComponent duelType3 = new TextComponent(rounds + " rounds.");
-            duelType3.setColor(ChatColor.of("#fc282f"));
+            receiver.sendMessage(ranktc, nametc, tc, duelType, duelType2, duelType3, a, space, b);
+        } else {
+            TextComponent e = new TextComponent(sender.getName());
+            e.setColor(ChatColor.of("#fc282f"));
 
-            receiver.sendMessage(ranktc, nametc, tc, duelType, duelType2, duelType3, accept, space, deny);
-        } else
-            receiver.sendMessage(tc, accept, space, deny);
+            receiver.sendMessage(e, tc, duelType, duelType2, duelType3, a, space, b);
+        }
     }
 
     public static void removeDUELrequest(DuelRequest user) {

@@ -6,12 +6,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import static org.yuri.aestheticnetwork.utils.RequestManager.getTPArequest;
 import static org.yuri.aestheticnetwork.utils.RequestManager.removeTPArequest;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class TpdenyCommand implements CommandExecutor {

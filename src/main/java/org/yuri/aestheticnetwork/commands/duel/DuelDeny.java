@@ -6,11 +6,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.duel;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.duel;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
-import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.getDUELrequest;
 
 @SuppressWarnings("deprecation")

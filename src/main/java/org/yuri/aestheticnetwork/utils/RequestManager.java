@@ -7,12 +7,12 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.yuri.aestheticnetwork.AestheticNetwork;
 import org.yuri.aestheticnetwork.commands.tpa.TpaRequest;
+import org.yuri.aestheticnetwork.utils.Instances.Type;
 
 import java.util.ArrayList;
 
@@ -32,24 +32,24 @@ public class RequestManager {
             temprecipient.sendMessage(ChatColor.GRAY +
                     "You have accepted " +
                     translateA("#fc282f" +
-                            tempuser.getDisplayName()) + "&7's teleport request");
+                            tempuser.getDisplayName()) + ChatColor.GRAY + "'s teleport request");
             temprecipient.sendMessage(translateo("&7Teleporting..."));
             tempuser.sendMessage(translateA("#fc282f" +
                     temprecipient.getDisplayName()) +
                     ChatColor.GRAY +
-                    " &7has accepted your teleport request");
+                    " has accepted your teleport request");
         } else {
             tempuser = user;
             temprecipient = request.getSender();
             temprecipient.sendMessage(ChatColor.GRAY +
                     "You have accepted " +
                     translateA("#fc282f" +
-                            temprecipient.getDisplayName()) + "&7's teleport request");
+                            temprecipient.getDisplayName()) + ChatColor.GRAY + "'s teleport request");
             tempuser.sendMessage(translateo("&7Teleporting..."));
             temprecipient.sendMessage(translateA("#fc282f" +
                     tempuser.getDisplayName()) +
                     ChatColor.GRAY +
-                    " &7has accepted your teleport request");
+                    " has accepted your teleport request");
         }
 
         PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
@@ -88,9 +88,7 @@ public class RequestManager {
                 type);
         tpa.add(tpaRequest);
 
-        Bukkit.getLogger().warning(sender.getDisplayName());
-
-        String clean = ChatColor.stripColor(sender.getDisplayName());
+        String clean = sender.getDisplayName();
         int c = clean.indexOf(" ");
 
         TextComponent tc = new TextComponent(translateo(" &7has requested to teleport to you. "));
@@ -98,12 +96,12 @@ public class RequestManager {
         TextComponent a = new TextComponent(translateo("&7[&a✔&7]"));
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
                 translateo("&7Click to accept the teleportation request"))));
-        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept"));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sender.getName()));
 
-        TextComponent b = new TextComponent(translateo("&7[&cx&7]"));
+        TextComponent b = new TextComponent(translateo("&7[&cX&7]"));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
                 translateo("&7Click to deny the teleportation request"))));
-        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny"));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sender.getName()));
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage(translate("&7Request sent to #fc282f" +
                 receiver.getDisplayName()));
@@ -125,11 +123,11 @@ public class RequestManager {
             String rank = noHex.substring(0, c);
             String realName = noHex.replace(rank + " ", "");
             TextComponent nametc = new TextComponent(realName);
-            nametc.setColor(ChatColor.of(color));
             TextComponent ranktc = new TextComponent(rank + " ");
+            nametc.setColor(ChatColor.of(color));
             receiver.sendMessage(ranktc, nametc, tc, a, space, b);
         } else
-            receiver.sendMessage(new ComponentBuilder(sender.getDisplayName())
+            receiver.sendMessage(new ComponentBuilder(sender.getName())
                     .color(ChatColor.of("#fc282f"))
                     .create()[0], tc, a, space, b);
     }

@@ -1,16 +1,12 @@
 package org.yuri.aestheticnetwork.commands.tpa;
 
-import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.utils.Languages;
-import org.yuri.aestheticnetwork.utils.Type;
-
-import java.util.UUID;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import static org.yuri.aestheticnetwork.utils.RequestManager.*;
 import static org.yuri.aestheticnetwork.utils.Utils.*;

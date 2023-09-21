@@ -16,15 +16,3 @@ flat:
   Z: -4734.5
   yaw: 0.0
   World: world
-sword:
-  X: 4448.5
-  Y: 99
-  Z: -5284.5
-  yaw: 0.0
-  World: world
-underwater:
-  X: 30.5
-  Y: 33.0
-  Z: -9.5
-  yaw: 0.0
-  World: world

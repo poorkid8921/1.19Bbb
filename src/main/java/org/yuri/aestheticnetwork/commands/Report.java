@@ -13,8 +13,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yuri.aestheticnetwork.AestheticNetwork;
-import org.yuri.aestheticnetwork.inventories.ReportInventory;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.inventories.ReportInventory;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import java.util.List;
 

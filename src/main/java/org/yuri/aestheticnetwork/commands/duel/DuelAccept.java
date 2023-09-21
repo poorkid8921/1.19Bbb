@@ -7,15 +7,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
-import org.yuri.aestheticnetwork.AestheticNetwork;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
 
 import java.util.Map;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.lp;
-import static org.yuri.aestheticnetwork.utils.Initializer.teams;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.lp;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.teams;
 import static org.yuri.aestheticnetwork.utils.Utils.*;
 import static org.yuri.aestheticnetwork.utils.duels.DuelManager.*;
 

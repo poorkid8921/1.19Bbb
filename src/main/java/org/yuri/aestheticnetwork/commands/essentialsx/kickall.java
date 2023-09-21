@@ -15,7 +15,7 @@ public class kickall implements CommandExecutor {
             return true;
 
         String b = translate(args.length == 0 ? "&6Restarting" : args[0]);
-        Bukkit.getOnlinePlayers().stream().forEach(a -> a.kickPlayer(b));
+        Bukkit.getOnlinePlayers().forEach(a -> a.kickPlayer(b));
         return true;
     }
 }

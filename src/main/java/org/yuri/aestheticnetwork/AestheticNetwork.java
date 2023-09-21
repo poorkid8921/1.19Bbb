@@ -19,22 +19,25 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.yuri.aestheticnetwork.commands.*;
 import org.yuri.aestheticnetwork.commands.duel.*;
+import org.yuri.aestheticnetwork.commands.essentialsx.back;
 import org.yuri.aestheticnetwork.commands.ffa;
 import org.yuri.aestheticnetwork.commands.flat;
-import org.yuri.aestheticnetwork.commands.essentialsx.back;
+import org.yuri.aestheticnetwork.commands.essentialsx.help;
 import org.yuri.aestheticnetwork.commands.tpa.TpaCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpacceptCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpahereCommand;
 import org.yuri.aestheticnetwork.commands.tpa.TpdenyCommand;
-import org.yuri.aestheticnetwork.utils.Languages;
+import org.yuri.aestheticnetwork.utils.Messages.Languages;
+import org.yuri.aestheticnetwork.utils.TabTPA;
 import org.yuri.aestheticnetwork.utils.Utils;
+import org.yuri.aestheticnetwork.utils.placeholders;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import static org.yuri.aestheticnetwork.utils.Initializer.*;
+import static org.yuri.aestheticnetwork.utils.Messages.Initializer.*;
 import static org.yuri.aestheticnetwork.utils.Utils.translate;
 import static org.yuri.aestheticnetwork.utils.Utils.translateo;
 
@@ -52,7 +55,6 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
 
     public void reloadCustomConfig() {
         if (cf == null) cf = new File(getDataFolder(), "data.yml");
-
         cc = YamlConfiguration.loadConfiguration(cf);
     }
 
@@ -89,35 +91,41 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
     @Override
     public void onEnable() {
         if (!setupEconomy()) {
-            this.setEnabled(false);
+            setEnabled(false);
             return;
         }
 
         p = this;
 
-        config.options().copyDefaults(true);
-        saveConfig();
-
-        if (cc == null) {
-            this.reloadCustomConfig();
-        }
-
-        if (cc1 == null) {
-            this.reloadCustomConfig1();
-        }
-
-        if (!cf.exists()) this.saveCustomConfig();
-
-        if (!cf1.exists()) this.saveCustomConfig1();
-
+        setupConfig();
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             lp = provider.getProvider();
-            Bukkit.getPluginManager().registerEvents(new events(), this);
+            Bukkit.getPluginManager().registerEvents(new Events(), this);
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) new placeholders(this).register();
 
+        initReset();
+        initMessages();
+        initMisc();
+        initMain();
+        new placeholders(this).register();
+    }
+
+    private void initMisc() {
+        Objects.requireNonNull(this.getCommand("msg")).setTabCompleter(new TabMSG());
+
+        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report(this));
+        Objects.requireNonNull(this.getCommand("shop")).setExecutor(new Shop());
+        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new discord());
+
+        Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
+        Objects.requireNonNull(this.getCommand("back")).setExecutor(new back());
+
+        Objects.requireNonNull(this.getCommand("help")).setExecutor(new help());
+    }
+
+    private void initMain() {
         Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
         Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
         Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
@@ -128,23 +136,33 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         Objects.requireNonNull(this.getCommand("tpahere")).setTabCompleter(new TabTPA());
         Objects.requireNonNull(this.getCommand("msg")).setTabCompleter(new TabMSG());
 
-        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report(this));
-        Objects.requireNonNull(this.getCommand("shop")).setExecutor(new Shop());
+        Objects.requireNonNull(this.getCommand("duel")).setExecutor(new Duel());
+        Objects.requireNonNull(this.getCommand("duelaccept")).setExecutor(new DuelAccept());
+        Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
+
         Objects.requireNonNull(this.getCommand("spawn")).setExecutor(new Spawn());
-        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new discord());
         Objects.requireNonNull(this.getCommand("ffa")).setExecutor(new ffa());
         Objects.requireNonNull(this.getCommand("flat")).setExecutor(new flat());
 
         Objects.requireNonNull(this.getCommand("msglock")).setExecutor(new MsgLock());
         Objects.requireNonNull(this.getCommand("tpalock")).setExecutor(new TpaLock());
+    }
 
-        Objects.requireNonNull(this.getCommand("duel")).setExecutor(new Duel());
-        Objects.requireNonNull(this.getCommand("duelaccept")).setExecutor(new DuelAccept());
-        Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
+    private void setupConfig() {
+        config.options().copyDefaults(true);
+        saveConfig();
 
-        Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-        Objects.requireNonNull(this.getCommand("back")).setExecutor(new back());
+        if (cc == null)
+            this.reloadCustomConfig();
 
+        if (cc1 == null)
+            this.reloadCustomConfig1();
+
+        if (!cf.exists()) this.saveCustomConfig();
+        if (!cf1.exists()) this.saveCustomConfig1();
+    }
+
+    private void initReset() {
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (ffaconst.isEmpty()) return;
 
@@ -161,10 +179,10 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
                 });
             });
         }, 0L, 6005L);
-        Bukkit.getScheduler().runTaskLater(this, this::run, 100);
+    }
 
-        // Init Strings
-        Languages.init();
+    private void initMessages() {
+        Bukkit.getScheduler().runTaskLater(this, Languages::init, 100);
     }
 
     private boolean setupEconomy() {
@@ -245,37 +263,5 @@ public final class AestheticNetwork extends JavaPlugin implements TabExecutor {
         }
 
         return false;
-    }
-
-    private void run() {
-        ffa = new Location(Bukkit.getWorld("world"), getConfig().getDouble("ffa.X"), getConfig().getDouble("ffa.Y"), getConfig().getDouble("ffa.Z"));
-        flat = new Location(Bukkit.getWorld("world"), getConfig().getDouble("flat.X"), getConfig().getDouble("flat.Y"), getConfig().getDouble("flat.Z"));
-        lflat = new Location(Bukkit.getWorld("world"), getConfig().getDouble("legacyflat.X"), getConfig().getDouble("legacyflat.Y"), getConfig().getDouble("legacyflat.Z"));
-        spawn = new Location(Bukkit.getWorld("world"), getConfig().getDouble("Spawn.X"), getConfig().getDouble("Spawn.Y"), getConfig().getDouble("Spawn.Z"));
-        spawn.setYaw(getConfig().getLong("Spawn.yaw"));
-        /*ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-        ItemMeta meta = glass.getItemMeta();
-        meta.setDisplayName(" ");
-        glass.setItemMeta(meta);
-
-        Inventory Backup = Bukkit.createInventory(null, 54);
-
-        for (int i = 0; i < 9; i++) {
-            Backup.setItem(i, glass);
-        }
-
-        for (int i = 45; i < 54; i++) {
-            Backup.setItem(i, glass);
-        }
-
-        for (int i = 1; i < 6; i++) {
-            Backup.setItem(i * 9, glass);
-        }
-
-        for (int i = 17; i < 21; i++) {
-            Backup.setItem(i + 9, glass);
-        }
-
-        duelInventory = Backup.getContents();*/
     }
 }
