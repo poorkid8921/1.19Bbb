@@ -1,6 +1,6 @@
 name: AestheticNetwork
 version: '${project.version}'
-main: org.yuri.aestheticnetwork.AestheticNetwork
+main: main.AestheticNetwork
 api-version: 1.18
 
 commands:
@@ -40,18 +40,21 @@ commands:
   tpalock:
     usage: /<command>
     aliases: [ tpatoggle, toggletpa ]
-  duel:
-    usage: /<command>
-    aliases: 1v1
-  duelaccept:
-    usage: /<command>
-  dueldeny:
-    usage: /<command>
-  event:
-    usage: /<command>
   back:
     usage: /<command>
   help:
+    usage: /<command>
+  kit:
+    aliases: k
+    usage: /<command>
+  kit1:
+    aliases: k1
+    usage: /<command>
+  kit2:
+    aliases: k2
+    usage: /<command>
+  kit3:
+    aliases: k3
     usage: /<command>
 permissions:
   has.staff:
