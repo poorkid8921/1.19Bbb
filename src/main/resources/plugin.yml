@@ -1,0 +1,48 @@
+name: AestheticNetwork
+version: '${project.version}'
+main: main.Economy
+api-version: 1.19
+depend: [Vault, LuckPerms]
+
+commands:
+  spawn:
+    usage: /<command>
+  discord:
+    usage: /<command>
+  tpa:
+    usage: /<command>
+    aliases: tpr
+  tpahere:
+    usage: /<command>
+  tpdeny:
+    usage: /<command>
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
+  msg:
+    usage: /<command>
+    aliases: [ tell, whisper, w, t ]
+  reply:
+    usage: /<command>
+    aliases: r
+  tpaall:
+    usage: /<command>
+  report:
+    usage: /<command>
+  chatlock:
+    usage: /<command>
+  msglock:
+    usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  stats:
+    usage: /<command>
+    aliases: statistics
+  purge:
+    usage: /<command>
+permissions:
+  has.staff:
+    description: Use chatlock & Bypass it
