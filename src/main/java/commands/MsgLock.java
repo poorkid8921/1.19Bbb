@@ -26,6 +26,7 @@ public class MsgLock implements CommandExecutor {
             Initializer.p.saveCustomConfig();
             msg.remove(p);
         }
+
         return true;
     }
 }

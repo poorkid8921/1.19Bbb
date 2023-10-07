@@ -13,9 +13,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
-    public static Map<String, Long> playerstoteming = new WeakHashMap<>();
     public static ArrayList<TpaRequest> requests = new ArrayList<>();
     public static List<Color> color = List.of(Color.LIME,
             Color.ORANGE,
@@ -43,5 +43,6 @@ public class Initializer {
     public static boolean chatlock = false;
     public static Location spawn;
     public static net.milkbowl.vault.economy.Economy economy;
-    public static ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
+    //public static ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
+    public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 }

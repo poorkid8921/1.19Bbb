@@ -43,6 +43,8 @@ commands:
     aliases: statistics
   purge:
     usage: /<command>
+  rtp:
+    usage: /<command>
 permissions:
   has.staff:
     description: Use chatlock & Bypass it

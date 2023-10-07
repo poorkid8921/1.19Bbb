@@ -2,15 +2,14 @@ package commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import main.utils.Utils;
 
 import java.lang.ref.WeakReference;
 
 public class TpaRequest {
-    private WeakReference<String> sender;
-    private WeakReference<String> reciever;
-    private int type;
-    private boolean showacceptmsg;
+    private final WeakReference<String> sender;
+    private final WeakReference<String> reciever;
+    private final int type;
+    private final boolean showacceptmsg;
 
     public TpaRequest(String sender, String reciever, int type, boolean showacceptmsg) {
         this.sender = new WeakReference<>(sender);
@@ -23,13 +22,11 @@ public class TpaRequest {
         return Bukkit.getPlayer(sender.get());
     }
 
-    public boolean getTpaAll()
-    {
-        return showacceptmsg;
+    public boolean getTpaAll() {
+        return !showacceptmsg;
     }
 
-    public Player getReceiver()
-    {
+    public Player getReceiver() {
         return Bukkit.getPlayer(reciever.get());
     }
 

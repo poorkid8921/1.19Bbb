@@ -1,7 +1,6 @@
 package main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
-import io.papermc.lib.PaperLib;
 import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import main.utils.DiscordWebhook;
 import main.utils.Initializer;
@@ -25,18 +24,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.permissions.ServerOperator;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    static ThreadLocalRandom random = ThreadLocalRandom.current();
-
     private static boolean isSuspectedScanPacket(String buffer) {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
@@ -46,21 +42,8 @@ public class Events implements Listener {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(random.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(random.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         fw.setFireworkMeta(fwm);
-    }
-
-    public static List<Entity> countMinecartInChunk(Chunk chunk) {
-        return Arrays.stream(chunk.getEntities()).toList().stream().filter(r -> r instanceof Minecart).toList();
-    }
-
-    public static boolean removeMinecartInChunk(Chunk chunk) {
-        for (Entity entity : chunk.getEntities()) {
-            if (entity instanceof Minecart) {
-                entity.remove();
-            }
-        }
-        return true;
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -71,7 +54,7 @@ public class Events implements Listener {
             if (!player.isOnline()) return;
 
             if (loc.getBlock().getType().equals(Material.NETHER_PORTAL)) {
-                PaperLib.teleportAsync(player, event.getFrom());
+                player.teleportAsync(event.getFrom());
                 player.playSound(loc, Sound.BLOCK_PORTAL_TRAVEL, 1.0F, 1.0F);
             }
         }, 200);
@@ -92,7 +75,6 @@ public class Events implements Listener {
     private void onPlayerLeave(PlayerQuitEvent e) {
         String name = e.getPlayer().getName();
         Initializer.requests.remove(Utils.getRequest(name));
-        Initializer.playerstoteming.remove(name);
         Initializer.cooldowns.remove(name);
         Initializer.lastReceived.remove(name);
         Initializer.msg.remove(name);
@@ -106,9 +88,36 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getInventory() instanceof PlayerInventory) return;
+        Player p = (Player) e.getWhoClicked();
+        if (e.getInventory() instanceof PlayerInventory)
+            /*final ItemStack clickedItem = e.getCurrentItem();
+            if (clickedItem != null && clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
+                final ItemStack oldOffHandItem = d.getItem(45);
+                new BukkitRunnable() {
+                    public void run() {
+                        final ItemStack newOffHandItem = d.getItem(45);
+                        if (newOffHandItem != null && newOffHandItem.getType() == Material.TOTEM_OF_UNDYING && oldOffHandItem.getType() == Material.AIR) {
+                            e.setCancelled(true);
+                            int ping = p.getPing();
+                            String a = p.getName();
+                            String msg = Utils.translateo("&6" + a + " failed auto totem on &7" + ping + "ms");
 
-        if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
+                            Bukkit.getScheduler().runTask(Initializer.p, () -> Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(msg)));
+                            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1154454195437572257/Y6dRpPyFLmlr7nhSIHEGL4-ByTAhb2ReyztwLEuzGoIZy5rTr_KUet86N9gUiw1vrKUg");
+                            webhook.setUsername("Flag");
+                            webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Auto Totem").addField("Suspect", a, true).addField("Ping", String.valueOf(ping), true).setColor(java.awt.Color.ORANGE));
+                            try {
+                                webhook.execute();
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    }
+                }.runTaskLaterAsynchronously(Initializer.p, 2L);
+            }*/
+            return;
+
+        if (p.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
             e.setCancelled(true);
             ItemStack currentItem = e.getCurrentItem();
             if (!currentItem.getItemMeta().hasLore()) return;
@@ -143,22 +152,21 @@ public class Events implements Listener {
         Location loc = p.getLocation();
         if (!user.getPrimaryGroup().equals("default")) {
             loc.add(new Vector(0, 1, 0));
-            switch (random.nextInt(4)) {
+            switch (Initializer.RANDOM.nextInt(4)) {
                 case 0 -> spawnFireworks(loc);
                 case 1 -> loc.getWorld().spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
                 case 2 -> loc.getWorld().strikeLightningEffect(loc);
                 case 3 -> {
                     World w = loc.getWorld();
                     for (double y = 0; y <= 10; y += 0.05) {
-                        double x = 2 * Math.cos(y);
                         double z = 2 * Math.sin(y);
-                        w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + x), (float) (loc.getY() + y), (float) (loc.getZ() + z)), 2, 0, 0, 0, 1.0);
+                        w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + (2 * Math.cos(y))), (float) (loc.getY() + (2 * Math.sin(y))), (float) (loc.getZ() + z)), 2, 0, 0, 0, 1.0);
                     }
                 }
             }
         } else loc.getWorld().strikeLightningEffect(loc);
 
-        if (random.nextInt(100) <= 5)
+        if (Initializer.RANDOM.nextInt(100) <= 5)
             p.getWorld().dropItemNaturally(p.getLocation(), Utils.getHead(p, kp.getDisplayName()));
     }
 
@@ -177,35 +185,6 @@ public class Events implements Listener {
     @EventHandler
     public void playeruse(PlayerItemConsumeEvent e) {
         e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
-    }
-
-    @EventHandler
-    private void antiAuto(PlayerSwapHandItemsEvent e) {
-        Player ent = e.getPlayer();
-
-        String playerUniqueId = ent.getName();
-        if (Initializer.playerstoteming.getOrDefault(playerUniqueId, 0L) > System.currentTimeMillis()) {
-            long ms = Initializer.playerstoteming.get(playerUniqueId) - System.currentTimeMillis();
-            int ping = ent.getPing();
-            String msg = Utils.translateo("&6" + playerUniqueId + " totemed in less than " + ms + "ms! &7 " + ping + "ms");
-            Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(msg));
-            Initializer.EXECUTOR.execute(() -> {
-                DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1154454195437572257/Y6dRpPyFLmlr7nhSIHEGL4-ByTAhb2ReyztwLEuzGoIZy5rTr_KUet86N9gUiw1vrKUg");
-                webhook.setUsername("Flag");
-                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Auto Totem").addField("Suspect", playerUniqueId, true).addField("Milliseconds", String.valueOf(ms), true).addField("Ping", String.valueOf(ping), true).setColor(java.awt.Color.ORANGE));
-                try {
-                    webhook.execute();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-            Initializer.playerstoteming.remove(playerUniqueId);
-        }
-    }
-
-    @EventHandler
-    public void antiAuto2(EntityResurrectEvent e) {
-        Initializer.playerstoteming.putIfAbsent(e.getEntity().getName(), System.currentTimeMillis() + 500);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -229,7 +208,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        List<Entity> c = countMinecartInChunk(event.getVehicle().getChunk());
+        List<Entity> c = Arrays.stream(event.getVehicle().getChunk().getEntities()).toList().stream().filter(r -> r instanceof Minecart).toList();
         if (c.size() >= 16) {
             c.forEach(Entity::remove);
             Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp).forEach(s -> s.sendMessage(Utils.translateo("&f*** minecart lag machine at &6" + event.getVehicle().getLocation().getX() + " " + event.getVehicle().getLocation().getZ() + " " + event.getVehicle().getLocation().getWorld().getName())));
@@ -279,9 +258,8 @@ public class Events implements Listener {
             p.getInventory().setChestplate(chestplate);
             p.getInventory().setLeggings(leggings);
             p.getInventory().setBoots(boots);
-            PaperLib.teleportAsync(p, Initializer.spawn);
-        }
-        else if (p.getHealth() == 0.0) {
+            p.teleportAsync(Initializer.spawn);
+        } else if (p.getHealth() == 0.0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
                 p.setHealth(20);
                 p.kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");

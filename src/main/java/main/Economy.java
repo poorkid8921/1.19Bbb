@@ -1,7 +1,6 @@
 package main;
 
 import commands.*;
-import io.papermc.lib.PaperLib;
 import main.utils.Initializer;
 import main.utils.Languages;
 import main.utils.Utils;
@@ -21,6 +20,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -89,20 +94,49 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
 
         Objects.requireNonNull(this.getCommand("spawn")).setExecutor(new Spawn());
         Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
-        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report(this));
+        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report());
 
         Objects.requireNonNull(this.getCommand("msglock")).setExecutor(new MsgLock());
         Objects.requireNonNull(this.getCommand("tpalock")).setExecutor(new TpaLock());
 
         Objects.requireNonNull(this.getCommand("stats")).setExecutor(new Stats());
         Objects.requireNonNull(this.getCommand("purge")).setExecutor(new Purge());
+        Objects.requireNonNull(this.getCommand("rtp")).setExecutor(new RTP());
 
-        Initializer.EXECUTOR.scheduleAtFixedRate(() ->
-                Bukkit.getScheduler().runTask(this, () ->
-                        Bukkit.getServer().getOnlinePlayers().stream().filter(s -> !s.isInsideVehicle() && !s.isGliding() && s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player -> {
-                            Location l = player.getLocation();
-                            PaperLib.teleportAsync(player, new Location(player.getWorld(), l.getX(), 135, l.getZ(), l.getYaw(), l.getPitch()));
-                        })), 0, 20, TimeUnit.MINUTES);
+        //Initializer.EXECUTOR.scheduleAtFixedRate(() ->
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () ->
+                Bukkit.getServer().getOnlinePlayers().stream().filter(s ->
+                !s.isInsideVehicle() &&
+                        !s.isGliding() &&
+                        s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
+                {
+                    Location l = player.getLocation();
+                    player.teleportAsync(new Location(player.getWorld(),
+                                    l.getX(),
+                                    135,
+                                    l.getZ(),
+                                    l.getYaw(),
+                                    l.getPitch()));
+                    }), 0L, 6000L);
+                                    //})), 0, 20, TimeUnit.MINUTES);
+        int i = 0;
+        long d = new Date().getTime();
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/playerdata/").listFiles()) {
+            if (d - p.lastModified() > 1296000000) {
+                i++;
+                p.delete();
+            }
+        }
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/stats/").listFiles()) {
+            if (d - p.lastModified() > 1296000000) {
+                p.delete();
+            }
+        }
+        Bukkit.getLogger().warning("Successfully purged " + i + " accounts.");
 
         Bukkit.getServer().getScheduler().runTaskLater(this, Languages::init, 100L);
         Bukkit.getPluginManager().registerEvents(new Events(), this);

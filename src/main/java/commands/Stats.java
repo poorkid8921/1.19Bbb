@@ -35,7 +35,7 @@ public class Stats implements CommandExecutor {
     private void showstats(Player pp) {
         pp.sendMessage("",
                 "&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
-                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + Initializer.economy.getBalance(pp),
+                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
                 "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
                 "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
                 "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
@@ -46,7 +46,7 @@ public class Stats implements CommandExecutor {
         pp.sendMessage("",
                 translate((t.isOnline() ? "&a" : "&c") + "◆ #fc282f" +
                         t.getDisplayName() + "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"),
-                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + Initializer.economy.getBalance(pp),
+                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
                 "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
                 "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
                 "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),

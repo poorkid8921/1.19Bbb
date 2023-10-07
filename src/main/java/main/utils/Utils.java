@@ -1,25 +1,21 @@
 package main.utils;
 
 import commands.TpaRequest;
-import io.papermc.lib.PaperLib;
-import main.Economy;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +31,17 @@ public class Utils {
     static {
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to accept the teleportation request"))));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(translateo("&7Click to deny the teleportation request"))));
+    }
+
+    public static String translateA(String text) {
+        Pattern hexPattern = Pattern.compile("#([A-Fa-f0-9]{6})");
+        Matcher matcher = hexPattern.matcher(text);
+        StringBuilder buffer = new StringBuilder(text.length() + 4 * 8);
+        while (matcher.find()) {
+            String group = matcher.group(1);
+            matcher.appendReplacement(buffer, COLOR_CHAR + "x" + COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1) + COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3) + COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
+        }
+        return matcher.appendTail(buffer).toString();
     }
 
     public static String translate(String text) {
@@ -56,11 +63,35 @@ public class Utils {
         return Initializer.p.getCustomConfig();
     }
 
+    public static ItemStack createItemStack(Material mat, String display, List<String> lore, String str) {
+        ItemStack ie = new ItemStack(mat, 1);
+        ItemMeta iem = ie.getItemMeta();
+        iem.setDisplayName(display);
+        iem.setLore(lore);
+        NamespacedKey key2 = new NamespacedKey(Initializer.p, "reported");
+        iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
+        ie.setItemMeta(iem);
+
+        return ie;
+    }
+
+    public static ItemStack createItemStack(ItemStack ie, String display, List<String> lore, String str) {
+        ItemMeta iem = ie.getItemMeta();
+        iem.setDisplayName(display);
+        iem.setLore(lore);
+        NamespacedKey key2 = new NamespacedKey(Initializer.p, "reported");
+        iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
+        ie.setItemMeta(iem);
+
+        return ie;
+    }
+
     public static void report(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(translate("#fc282f" + d + " &7has submitted a report against #fc282f" + report + " &7with the reason of #fc282f" + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Initializer.EXECUTOR.execute(() -> {
+        //Initializer.EXECUTOR.execute(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
             DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1125353498851168317/8CqqUqAHJn74K1X-9UCLUoHi6psT0Y1t051G5GtOQUPuFRnAAUCXxVL8_Z9jB0I7qm2y");
             webhook.setAvatarUrl(avturl);
@@ -95,27 +126,29 @@ public class Utils {
         return null;
     }
 
+
+
     public static void tpaccept(TpaRequest request, Player user) {
         Player tempuser;
         Player temprecipient;
 
         if (request.getType() == 0) {
-            tempuser = request.getSender();
-            temprecipient = user;
+            tempuser = user;
+            temprecipient = request.getSender();
             temprecipient.sendMessage(translate("&7You have accepted #fc282f" + tempuser.getDisplayName() + "&7's teleport request"));
             temprecipient.sendMessage(translateo("&7Teleporting..."));
             if (request.getTpaAll())
                 tempuser.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         } else {
-            tempuser = user;
-            temprecipient = request.getSender();
+            tempuser = request.getSender();
+            temprecipient = user;
             tempuser.sendMessage(translate("&7You have accepted #fc282f" + temprecipient.getDisplayName() + "&7's teleport request"));
             tempuser.sendMessage(translateo("&7Teleporting..."));
             if (request.getTpaAll())
                 temprecipient.sendMessage(translate("#fc282f" + tempuser.getDisplayName() + " &7has accepted your teleport request"));
         }
 
-        PaperLib.teleportAsync(tempuser, temprecipient.getLocation()).thenAccept(reason -> Initializer.requests.remove(request));
+        tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> Initializer.requests.remove(request));
     }
 
     public static void addRequest(Player sender, Player receiver, boolean tpahere, boolean showmsg) {

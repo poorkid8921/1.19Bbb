@@ -14,6 +14,8 @@ import main.utils.Initializer;
 
 import java.util.List;
 
+import static main.utils.Utils.createItemStack;
+
 @SuppressWarnings("deprecation")
 public class ReportInventory extends InventoryInstanceReport {
     public ReportInventory(Player player, String str) {
@@ -32,10 +34,10 @@ public class ReportInventory extends InventoryInstanceReport {
             inv.setItem(i, glass);
         }
 
-        inv.setItem(10, Report.createitemstack(Material.END_CRYSTAL, "Cheating", List.of(Utils.translateo("&aUse of a hacked client"), Utils.translateo("&aUse of an illegal client modification")), arg));
-        inv.setItem(11, Report.createitemstack(Material.PAPER, "Doxxing", List.of(Utils.translateo("&aSaying private info of a player in the chat")), arg));
-        inv.setItem(12, Report.createitemstack(Utils.getHead(arg), "Ban Evading", List.of(Utils.translateo("&aUsing an alt to play after being banned")), arg));
-        inv.setItem(13, Report.createitemstack(Material.RED_BED, "Spamming", List.of(Utils.translateo("&aSaying more than 5 messages on the same topic")), arg));
+        inv.setItem(10, createItemStack(Material.END_CRYSTAL, "Cheating", List.of(Utils.translateo("&aUse of a hacked client"), Utils.translateo("&aUse of an illegal client modification")), arg));
+        inv.setItem(11, createItemStack(Material.PAPER, "Doxxing", List.of(Utils.translateo("&aSaying private info of a player in the chat")), arg));
+        inv.setItem(12, createItemStack(Utils.getHead(arg), "Ban Evading", List.of(Utils.translateo("&aUsing an alt to play after being banned")), arg));
+        inv.setItem(13, createItemStack(Material.RED_BED, "Spamming", List.of(Utils.translateo("&aSaying more than 5 messages on the same topic")), arg));
 
         return inv;
     }
