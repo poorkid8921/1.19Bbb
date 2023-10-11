@@ -323,7 +323,7 @@ public class DiscordWebhook {
     }
 
     private static class JSONObject {
-        private WeakHashMap<String, Object> map = new WeakHashMap<>();
+        private HashMap<String, Object> map = new HashMap<>();
 
         void put(String key, Object value) {
             if (value != null) {

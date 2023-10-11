@@ -3,12 +3,11 @@ package main.utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.utils.Messages.Initializer.tpa;
+import static main.utils.Initializer.tpa;
 
 public class TabTPA implements TabCompleter {
     @Override

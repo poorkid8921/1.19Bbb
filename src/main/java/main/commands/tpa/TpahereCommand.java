@@ -1,13 +1,13 @@
 package main.commands.tpa;
 
-import main.utils.Messages.Languages;
-import main.utils.Utils;
+import main.Practice;
+import main.utils.Instances.TpaRequest;
+import main.utils.Languages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import static main.utils.RequestManager.addTPArequest;
 import static main.utils.RequestManager.getTPArequest;
@@ -43,7 +43,7 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (Utils.manager().get(
+        if (Practice.cc1.get(
                 "r." + recipient.getName() + ".t") != null) {
             user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests."));
             return true;

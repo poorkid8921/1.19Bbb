@@ -2,6 +2,7 @@ package main.utils;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -9,6 +10,18 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.List;
 
 public class ItemCreator {
+    public static ItemStack getItemFlagged(String name, Material mat, List<String> lore) {
+        ItemStack item = new ItemStack(mat, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        item.setItemMeta(meta);
+        return item;
+    }
+
     public static ItemStack getItem(String name, Material mat, List<String> lore) {
         ItemStack item = new ItemStack(mat, 1);
         ItemMeta meta = item.getItemMeta();

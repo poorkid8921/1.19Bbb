@@ -3,8 +3,7 @@ package main.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
-import main.utils.Messages.Initializer;
+import main.utils.Initializer;
 
 import java.util.List;
 import java.util.stream.Collectors;

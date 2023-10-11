@@ -1,6 +1,7 @@
 package main.commands.tpa;
 
-import main.utils.Messages.Languages;
+import main.utils.Instances.TpaRequest;
+import main.utils.Languages;
 import main.utils.RequestManager;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
@@ -8,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class TpacceptCommand implements CommandExecutor {
     public TpacceptCommand() {

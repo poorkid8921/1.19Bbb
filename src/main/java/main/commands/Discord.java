@@ -5,12 +5,16 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.spawn;
+import static main.utils.Languages.D_LINK;
+import static main.utils.Languages.D_USING;
 
-public class Spawn implements CommandExecutor {
+@SuppressWarnings("deprecation")
+public class Discord implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).teleportAsync(spawn);
+        if (sender instanceof Player pp)
+            pp.sendMessage(D_USING, D_LINK);
+
         return true;
     }
 }

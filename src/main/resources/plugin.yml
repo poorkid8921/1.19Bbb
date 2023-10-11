@@ -1,6 +1,6 @@
 name: AestheticNetwork
 version: '${project.version}'
-main: main.AestheticNetwork
+main: main.Practice
 api-version: 1.18
 
 commands:
@@ -24,6 +24,15 @@ commands:
   tpaccept:
     usage: /<command>
     aliases: [ tpy, tpyes ]
+  duel:
+    usage: /<command>
+    aliases: 1v1
+  dueldeny:
+    usage: /<command>
+  duelaccept:
+    usage: /<command>
+  event:
+    usage: /<command>
   msg:
     usage: /<command>
     aliases: [ tell, whisper, w, t ]
@@ -55,6 +64,8 @@ commands:
     usage: /<command>
   kit3:
     aliases: k3
+    usage: /<command>
+  acreate:
     usage: /<command>
 permissions:
   has.staff:

@@ -1,29 +1,30 @@
 package main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
-import main.expansions.kits.*;
-import main.utils.DiscordWebhook;
+import it.unimi.dsi.fastutil.Pair;
+import main.expansions.duels.Matchmaking;
+import main.utils.Instances.DuelHolder;
+import main.expansions.arenas.Arena;
+import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
-import main.utils.Instances.InventoryInstanceReport;
-import main.utils.Instances.InventoryInstanceShop;
-import main.utils.Instances.TotemHolder;
-import main.utils.ItemCreator;
-import main.utils.Messages.Initializer;
 import main.utils.Utils;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
@@ -31,75 +32,28 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
+import static main.expansions.duels.Utils.*;
+import static main.expansions.guis.Utils.*;
+import static main.utils.Initializer.duel;
+import static main.utils.Initializer.spawn;
+import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.RequestManager.getTPArequest;
-import static main.utils.RequestManager.removeTPArequest;
+import static main.utils.RequestManager.tpa;
+import static main.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
+    static String PREFIX = translateA("#d6a7eb☠ ");
+
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
         event.setCancelled(Utils.isSuspectedScanPacket(event.getBuffer()));
-    }
-
-    public void flag(int ping, String name, long ms) {
-        String msg = Utils.translateo("&6" + name + " totemed in less than " + ms + "ms! &7 " + ping + "ms");
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(msg));
-        Initializer.EXECUTOR.submit(() -> {
-            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1154454290233036810/DMkRG4YXKvUcbT5lq03QKNRL-YDYyFC0vFl0Akct_aCvc0-R7XG2C86KjsS7npR-PhjF");
-            webhook.setUsername("Flag");
-            webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Auto Totem").addField("Suspect", name, true).addField("Milliseconds", String.valueOf(ms), true).addField("Ping", String.valueOf(ping), true).setColor(java.awt.Color.ORANGE));
-            try {
-                webhook.execute();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-    }
-
-    @EventHandler
-    private void antiAuto(PlayerSwapHandItemsEvent e) {
-        Player ent = e.getPlayer();
-
-        String playerUniqueId = ent.getName();
-        TotemHolder th = Initializer.playerstoteming.getOrDefault(playerUniqueId, null);
-        if (th == null) return;
-
-        long f = th.getF();
-        long s = th.getS();
-        long t = th.getT();
-
-        flag(ent.getPing(), playerUniqueId, System.currentTimeMillis() - th.getF());
-        Bukkit.getLogger().warning(playerUniqueId + " might be auto toteming.");
-        if (s == 0L && t == 0L) {
-            th.setS(System.currentTimeMillis() - 500L);
-            return;
-        } else if (t == 0L) {
-            th.setT(System.currentTimeMillis() - 500L);
-            return;
-        }
-
-        Initializer.playerstoteming.remove(playerUniqueId);
-        if (((f + s + t) / 3) > 50L) {
-            // FLAG
-            ent.kickPlayer("Cheating");
-        }
-    }
-
-    @EventHandler
-    public void antiAuto2(EntityResurrectEvent e) {
-        Initializer.playerstoteming.putIfAbsent(e.getEntity().getName(), new TotemHolder(System.currentTimeMillis() + 500, 0, 0));
-    }
-
-    @EventHandler
-    private void ItemConsume(PlayerItemConsumeEvent e) {
-        e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
     }
 
     // Combat Tag
@@ -121,6 +75,11 @@ public class Events implements Listener {
     */
 
     @EventHandler
+    private void ItemConsume(PlayerItemConsumeEvent e) {
+        e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
+    }
+
+    @EventHandler
     private void onDamage(EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof EnderCrystal d && e.getDamager() instanceof Player a && a.getPing() > 75) {
             ((CraftPlayer) a).getHandle().b.a(new PacketPlayOutEntityDestroy(d.getEntityId()));
@@ -136,7 +95,6 @@ public class Events implements Listener {
 
         new CombatTag(b, p);*/
     }
-    //
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
@@ -152,7 +110,7 @@ public class Events implements Listener {
     @EventHandler
     private void onTeleport(PlayerTeleportEvent e) {
         if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
-        Initializer.ffaconst.remove(e.getPlayer());
+        Initializer.inFFA.remove(e.getPlayer());
     }
 
     @EventHandler
@@ -160,135 +118,115 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String playerName = p.getName();
 
-        // combat related
-        /*if (Initializer.inCombat.contains(playerName)) {
-            e.getPlayer().setHealth(0.0D);
-        }*/
+        if (Initializer.teams.containsKey(playerName)) {
+            DuelHolder tpr = getPlayerDuel(playerName);
+            List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
+            Player pw = plist.get(1);
+            int red = tpr.getRed();
+            int blue = tpr.getBlue();
+            int t1 = Initializer.teams.get(pw.getName());
 
-        // requests
-        removeTPArequest(getTPArequest(playerName));
-        // misc
-        Initializer.playerstoteming.remove(playerName);
+            if (t1 == 1) red += 1;
+            else blue += 1;
+            Duel_Resume(pw,
+                    p,
+                    false,
+                    red,
+                    blue,
+                    tpr.getStart(),
+                    System.currentTimeMillis(),
+                    " n ",
+                    t1 == 1,
+                    MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"),
+                    MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
+            plist.clear();
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+                Initializer.teams.remove(playerName);
+                Initializer.teams.remove(pw.getName());
+                Initializer.duel.remove(tpr);
+                pw.teleportAsync(Initializer.spawn);
+            }, 60L);
+        }
+
+        tpa.remove(getTPArequest(playerName));
+        duel.remove(getDUELrequest(playerName));
+
         Initializer.back.remove(playerName);
         Initializer.lastReceived.remove(playerName);
         Initializer.msg.remove(playerName);
         Initializer.tpa.remove(playerName);
-        Initializer.ffaconst.remove(p);
+        Initializer.inFFA.remove(p);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getClickedInventory() instanceof PlayerInventory) return;
 
-        if (e.getInventory().getHolder() instanceof InventoryInstanceShop holder) {
-            e.setCancelled(true);
-            ItemStack currentItem = e.getCurrentItem();
-            if (!currentItem.getItemMeta().hasLore()) return;
-
-            holder.whenClicked(e.getCurrentItem(), e.getSlot());
+        HumanEntity p = e.getWhoClicked();
+        Pair<Integer, String> inv = inInventory.getOrDefault(p.getName(), null);
+        if (inv == null)
             return;
-        } else if (e.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
-            e.setCancelled(true);
-            ItemStack currentItem = e.getCurrentItem();
-            if (!currentItem.getItemMeta().hasLore()) return;
 
-            holder.whenClicked(currentItem, e.getSlot(), holder.getArg());
-            return;
+        int slot = e.getSlot();
+        switch (inv.first()) {
+            case 0 -> {
+                e.setCancelled(true);
+                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+
+                switch (slot) {
+                    case 10 -> Utils.killeffect((Player) p, 0, "ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 100);
+                    case 11 -> Utils.killeffect((Player) p, 1, "ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 200);
+                    case 12 -> Utils.killeffect((Player) p, 2, "ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
+                }
+                return;
+            }
+            case 1 -> {
+                e.setCancelled(true);
+                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+
+                Utils.report((Player) p, inv.second(), slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : slot == 14 ? "Interrupting" : slot == 15 ? "Anchor Spam" : null);
+                return;
+            }
         }
 
-        Player player = (Player) e.getWhoClicked();
-        String pn = player.getName();
-        int k = main.expansions.kits.Utils.editorChecker.getOrDefault(pn, 0);
-        if (k == 0) {
-            int b = main.expansions.kits.Utils.checker.getOrDefault(pn, -1);
-            switch (b) {
-                case 0 -> {
-                    e.setCancelled(true);
-                    if (10 <= e.getSlot() && e.getSlot() <= 12) {
-                        if (e.isLeftClick()) {
-                            main.expansions.kits.Utils.claim(player, e.getSlot() - 9, false);
-                            player.closeInventory();
-                        } else new KitEditorInventory(player, e.getSlot() - 9);
-                    } else if (e.getSlot() == 38) new KitRoomInventory(player);
-                    else if (e.getSlot() == 43) new PublicKitsInventory(player, 1);
-                }
-                case 1 -> {
-                    if (e.getSlot() >= 45 || (e.getCurrentItem() != null && e.getCurrentItem().getType().toString().contains("SIGN") && !e.getWhoClicked().hasPermission("personalkits.edit"))) {
-                        e.setCancelled(true);
-                    }
-                    if (47 <= e.getSlot() && e.getSlot() <= 51) {
-                        final ItemStack cleanedItem = ItemCreator.disEnchant(e.getInventory().getItem(47));
-                        e.getInventory().setItem(47, cleanedItem);
-                        final int newPage = e.getSlot() - 46;
-                        final ItemStack enchantedItem = ItemCreator.enchant(e.getCurrentItem());
-                        e.getInventory().setItem(e.getSlot(), enchantedItem);
-                        for (int i = 0; i <= 44; ++i) {
-                            e.getInventory().setItem(i, main.expansions.kits.Utils.kitRoomMap.get(newPage)[i]);
+        switch (inv.second()) {
+            case "0"  -> {
+                switch (slot) {
+                    default -> {
+                        ItemStack item = e.getCurrentItem();
+                        if (item.getType() == Material.PLAYER_HEAD) {
+                            Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
+                                    .get(spectateHead, PersistentDataType.STRING));
+                            p.getInventory().close();
+                            return;
                         }
-                        main.expansions.kits.Utils.checker.put(pn, newPage);
-                    } else if (e.getSlot() == 53) {
-                        for (int j = 0; j <= 44; ++j) {
-                            e.getInventory().setItem(j, main.expansions.kits.Utils.kitRoomMap.get(main.expansions.kits.Utils.checker.get(pn))[j]);
-                        }
-                    } else if (e.getSlot() == 45) {
-                        if (player.hasPermission("personalkits.edit")) {
-                            final ItemStack[] items = Arrays.copyOfRange(e.getInventory().getContents(), 0, 45);
-                            main.expansions.kits.Utils.kitRoomMap.put(main.expansions.kits.Utils.checker.get(pn), items);
-                            player.sendMessage(ChatColor.AQUA + "Page " + main.expansions.kits.Utils.checker.get(pn) + ChatColor.LIGHT_PURPLE + " saved!");
-                        } else new KitMenuInventory(player);
-                    }
-                }
-                default -> {
-                    e.setCancelled(true);
-                    if (10 <= e.getSlot() && e.getSlot() <= 43 && e.getCurrentItem() != null && e.getCurrentItem().getType().toString().contains("CHEST") && (e.isLeftClick() || e.getClick().equals(ClickType.DOUBLE_CLICK))) {
-                        final NamespacedKey itemKey = new NamespacedKey(Initializer.p, "key");
-                        final ItemMeta meta = e.getCurrentItem().getItemMeta();
-                        final PersistentDataContainer container = meta.getPersistentDataContainer();
-                        if (container.has(itemKey, PersistentDataType.STRING)) {
-                            final String foundValue = container.get(itemKey, PersistentDataType.STRING);
-                            main.expansions.kits.Utils.claimPublicKit(player, foundValue);
-                            player.closeInventory();
-                        }
-                    }
-                    if (e.getSlot() == 48 && e.getCurrentItem().getType().toString().contains("PLAYER_HEAD"))
-                        new PublicKitsInventory(player, main.expansions.kits.Utils.publicChecker.get(pn) - 1);
-                    else if (e.getSlot() == 50 && e.getCurrentItem().getType().toString().contains("PLAYER_HEAD"))
-                        new PublicKitsInventory(player, main.expansions.kits.Utils.publicChecker.get(pn) + 1);
-                    else if (e.getSlot() == 49) {
-                        new KitMenuInventory(player);
                     }
                 }
             }
-        } else {
-            switch (e.getSlot()) {
-                case 41 -> e.setCancelled(true);
-                case 45 -> new KitMenuInventory(player);
-                case 47 -> {
-                    for (int j = 0; j <= 40; ++j) {
-                        e.getInventory().setItem(j, player.getInventory().getItem(j));
+            case "1" -> {
+            }
+            default -> {
+                switch (slot) {
+                    case 9 -> {
+                        ItemStack s = e.getCurrentItem();
+                        ItemMeta meta = s.getItemMeta();
+                        meta.addEnchant(Enchantment.DURABILITY, 1, false);
+                        s.setItemMeta(meta);
+                        String pn = p.getName();
+                        DuelHolder d = getDUELrequest(pn);
+                        if (!Initializer.duel.contains(d)) {
+                            p.closeInventory();
+                            Matchmaking.start_unranked((Player) p, slot);
+                        }
+                        else
+                            Initializer.duel.remove(d);
+
+                        p.getInventory().close();
                     }
-                }
-                case 50 -> {
-                    for (int j = 0; j <= 40; ++j) {
-                        e.getInventory().setItem(j, null);
+                    case 43 -> {
+                        updateSpectate();
+                        inv.second("0");
                     }
-                }
-                case 53 -> {
-                    String key = player.getName() + "-" + k;
-                    main.expansions.kits.Utils.save(player, k, false);
-                    if (main.expansions.kits.Utils.kitMap.get(key).containsKey("public")) {
-                        main.expansions.kits.Utils.kitMap.get(key).remove("public");
-                        player.sendMessage("§dKit made private.");
-                        e.getInventory().setItem(53, ItemCreator.getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos", null));
-                        break;
-                    }
-                    if (main.expansions.kits.Utils.kitMap.get(key).containsKey("items")) {
-                        player.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
-                        main.expansions.kits.Utils.kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
-                        e.getInventory().setItem(53, ItemCreator.getItem(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PRIVATE", Material.FIREWORK_STAR, null));
-                        break;
-                    }
-                    player.sendMessage("§cCannot publish an empty kit.");
                 }
             }
         }
@@ -298,29 +236,126 @@ public class Events implements Listener {
     public void onGUIClose(InventoryCloseEvent e) {
         if (e.getInventory() instanceof PlayerInventory) return;
 
-        Player player = (Player) e.getPlayer();
-        String pn = player.getName();
-        int k = main.expansions.kits.Utils.editorChecker.getOrDefault(pn, -1);
-
-        switch (k) {
-            case 0, 1 -> main.expansions.kits.Utils.checker.remove(pn);
-            case -1 -> main.expansions.kits.Utils.publicChecker.remove(pn);
-            default -> {
-                main.expansions.kits.Utils.save(player, k, true);
-                main.expansions.kits.Utils.editorChecker.remove(pn);
-            }
-        }
+        inInventory.remove(e.getPlayer().getName());
     }
 
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
-        if (!Initializer.ffaconst.contains(p)) e.getDrops().clear();
-        else Initializer.ffaconst.remove(p);
+        if (!Initializer.inFFA.contains(p)) e.getDrops().clear();
+        else Initializer.inFFA.remove(p);
 
         String name = p.getName();
         Player killer = p.getKiller();
-        if (killer == null) return;
+
+        if (Initializer.teams.containsKey(name)) {
+            e.setCancelled(true);
+            p.setNoDamageTicks(100);
+            p.setFoodLevel(20);
+            p.setHealth(20);
+
+            DuelHolder tpr = getDUELrequest(name);
+            List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
+            Player kp = (killer == p || killer == null) ? plist.get(1) : killer;
+
+            kp.setNoDamageTicks(100);
+            kp.setFoodLevel(20);
+            kp.setHealth(20);
+
+            duel_spawnFireworks(p.getLocation());
+            String kuid = kp.getName();
+
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+                int newrounds = tpr.getRounds() + 1;
+                int red = tpr.getRed();
+                int blue = tpr.getBlue();
+                int t1 = Initializer.teams.get(kuid);
+                Player redp, bluep;
+
+                if (t1 == 1) {
+                    redp = kp;
+                    bluep = p;
+                    red += 1;
+                } else {
+                    redp = p;
+                    bluep = kp;
+                    blue += 1;
+                }
+
+                int arena = tpr.getArena();
+                int type = tpr.getType();
+                Arena.arenas.get("d_" + type + arena).reset(1000000);
+
+                if (Bukkit.getPlayer(name) == null ||
+                        Bukkit.getPlayer(kuid) == null) {
+                    return;
+                }
+
+                if (newrounds == tpr.getMaxrounds()) {
+                    if (red > blue) {
+                        Duel_Resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!");
+                    } else if (blue > red) {
+                        Duel_Resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ");
+                    } else {
+                        Duel_Resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, Utils.translateo("&eᴅʀᴀᴡ"), Utils.translateo("&eᴅʀᴀᴡ"));
+                    }
+
+                    Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                        Initializer.teams.remove(kuid);
+                        Initializer.teams.remove(name);
+                        Initializer.inDuel.remove(tpr);
+                        kp.teleportAsync(Initializer.spawn);
+                        p.teleportAsync(Initializer.spawn);
+                        plist.clear();
+
+                        updateDuels();
+                        updateSpectate();
+                    }, 60L);
+                    return;
+                }
+
+                tpr.setRounds(newrounds);
+                tpr.setRed(red);
+                tpr.setBlue(blue);
+                Duel_Start(kp, p, type, newrounds, tpr.getMaxrounds(), arena);
+                plist.clear();
+            }, 60L);
+            Initializer.back.remove(name);
+            return;
+        }
+
+        EntityDamageEvent.DamageCause b = p.getLastDamageCause().getCause();
+        if (killer == null) {
+            e.setDeathMessage(
+                    PREFIX + name +
+                            ((b.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) ||
+                                    b.equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION)) ?
+                                    Utils.translateA(" §7blasted themselves") :
+                                    b.equals(EntityDamageEvent.DamageCause.FALL) ?
+                                            Utils.translateA(" §7broke their legs") :
+                                            b.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK) ?
+                                                    Utils.translateA(" §7suffocated in a wall") :
+                                                    b.equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL) ?
+                                                            " §7thought they can fly" :
+                                                            " §7suicided"));
+            return;
+        } else {
+            e.setDeathMessage(
+                    PREFIX + killer.getName() +
+                            (b.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) ?
+                                    Utils.translateA(" §7exploded #d6a7eb" + name) :
+                                    b.equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) ?
+                                            Utils.translateA(" §7imploded #d6a7eb" + name) :
+                                            b.equals(EntityDamageEvent.DamageCause.FALL) ?
+                                                    Utils.translateA(" §7broke #d6a7eb" + name + "§7's legs") :
+                                                    b.equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK) ?
+                                                            Utils.translateA(" §7sworded #d6a7eb" + name) :
+                                                            b.equals(EntityDamageEvent.DamageCause.PROJECTILE) ?
+                                                                    " §7shot #d6a7eb" + name + " §7in the ass" :
+                                                                    b.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK) ?
+                                                                            Utils.translateA(name + " §7suffocated in a wall whilst fighting #d6a7eb" + killer.getName()) :
+                                                                            " §7suicided"));
+        }
 
         Location l = p.getLocation();
         BackHolder back = Initializer.back.getOrDefault(name, null);
@@ -328,7 +363,7 @@ public class Events implements Listener {
             Initializer.back.put(name, new BackHolder(Utils.Locationfrom(l)));
         } else back.setBack(Utils.Locationfrom(l));
 
-        p.sendMessage(Utils.translate("&7Use #fc282f/back &7to return to your death location."));
+        p.sendMessage("§7Use " + MAIN_COLOR + "/back §7to return to your death location.");
 
         try {
             Initializer.econ.depositPlayer(killer, 5);
@@ -336,16 +371,14 @@ public class Events implements Listener {
             en.printStackTrace();
         }
 
-        int peffect = Initializer.p.getCustomConfig().getInt("r." + killer + ".killeffect", -1);
+        int peffect = Practice.cc.getInt("r." + killer + ".killeffect", -1);
 
         Location loc = p.getLocation().add(0, 1, 0);
         switch (peffect) {
             case 0 -> {
                 World w = loc.getWorld();
                 for (double y = 0; y <= 10; y += 0.05) {
-                    double x = 2 * Math.cos(y);
-                    double z = 2 * Math.sin(y);
-                    w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + x), (float) (loc.getY() + y), (float) (loc.getZ() + z)), 2, 0, 0, 0, 1.0);
+                    w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                 }
             }
             case 1 -> Utils.spawnFireworks(loc);
@@ -368,7 +401,7 @@ public class Events implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (p.getHealth() == 0.0) {
-            Initializer.s.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
                 p.setHealth(20);
                 p.kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");
             }, 2L);
@@ -378,18 +411,14 @@ public class Events implements Listener {
 
         String name = p.getName();
 
-        if (Utils.manager().get("r." + name + ".t") == null) Initializer.tpa.add(name);
-        if (Utils.manager().get("r." + name + ".m") == null) Initializer.msg.add(name);
+        if (Practice.cc1.get("r." + name + ".t") == null) Initializer.tpa.add(name);
+        if (Practice.cc1.get("r." + name + ".m") == null) Initializer.msg.add(name);
 
-        Utils.spawn(p);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
-            List<String> m = Languages.MOTD;
-            p.sendMessage(m.get(0), m.get(1), m.get(2));
-        }, 5L);
+        p.teleportAsync(spawn);
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
-        e.setRespawnLocation(Initializer.spawn);
+        e.setRespawnLocation(spawn);
     }
 }
