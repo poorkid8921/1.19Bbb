@@ -35,8 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Objects;
-import java.util.logging.Level;
 
 import static main.utils.Initializer.*;
 import static main.utils.Utils.translate;
@@ -52,10 +50,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
     int ffastr = 1;
     int flatstr = 1;
     boolean hasReset;
-
-    public static void log(String a) {
-        Bukkit.getLogger().log(Level.FINE, a);
-    }
 
     public void saveCustomConfig() {
         try {
@@ -131,84 +125,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         p = this;
 
-        setupConfig();
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            lp = provider.getProvider();
-            Bukkit.getPluginManager().registerEvents(new Events(), this);
-        }
-
-        long a = System.currentTimeMillis();
-        initReset();
-        initMessages();
-        initMisc();
-        initMain();
-
-        // EXPANSIONS
-        initExpansions(a);
-    }
-
-    private void initExpansions(long a) {
-        File folder = new File(getDataFolder(), "Arenas");
-        if (!folder.exists()) folder.mkdirs();
-
-        Arena.arenas.clear();
-        Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
-            try {
-                Arena arena = ArenaIO.loadArena(r);
-                if (arena == null) return;
-                Arena.arenas.put(arena.getName(), arena);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        Practice.log("Initialized the Arenas expansion.");
-        main.expansions.guis.Utils.init();
-        log("Initialization Done! It took: " + (System.currentTimeMillis() - a) + " in order to finish.");
-    }
-
-    private void initMisc() {
-        Objects.requireNonNull(this.getCommand("msg")).setTabCompleter(new TabMSG());
-
-        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report());
-        Objects.requireNonNull(this.getCommand("shop")).setExecutor(new Shop());
-        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
-
-        Objects.requireNonNull(this.getCommand("back")).setExecutor(new Back());
-
-        Objects.requireNonNull(this.getCommand("help")).setExecutor(new Help());
-        log("Initialized Background commands.");
-    }
-
-    private void initMain() {
-        Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new TpaCommand());
-        Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new TpacceptCommand());
-        Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new TpahereCommand());
-        Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpdenyCommand());
-
-        Objects.requireNonNull(this.getCommand("tpa")).setTabCompleter(new TabTPA());
-        Objects.requireNonNull(this.getCommand("tpaccept")).setTabCompleter(new TabTPA());
-        Objects.requireNonNull(this.getCommand("tpahere")).setTabCompleter(new TabTPA());
-
-        Objects.requireNonNull(this.getCommand("duel")).setExecutor(new Duel());
-        Objects.requireNonNull(this.getCommand("duelaccept")).setExecutor(new DuelAccept());
-        Objects.requireNonNull(this.getCommand("dueldeny")).setExecutor(new DuelDeny());
-        Objects.requireNonNull(this.getCommand("event")).setExecutor(new Event());
-
-        Objects.requireNonNull(this.getCommand("msg")).setTabCompleter(new TabMSG());
-
-        Objects.requireNonNull(this.getCommand("spawn")).setExecutor(new Spawn());
-        Objects.requireNonNull(this.getCommand("ffa")).setExecutor(new Ffa());
-        Objects.requireNonNull(this.getCommand("flat")).setExecutor(new Flat());
-
-        Objects.requireNonNull(this.getCommand("msglock")).setExecutor(new MsgLock());
-        Objects.requireNonNull(this.getCommand("tpalock")).setExecutor(new TpaLock());
-
-        Objects.requireNonNull(this.getCommand("acreate")).setExecutor(new CreateCommand());
-        log("Initialized Main commands.");
-    }
-
-    private void setupConfig() {
         saveConfig();
 
         if (cc == null) cc = YamlConfiguration.loadConfiguration(cf);
@@ -216,10 +132,13 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         if (!cf.exists()) this.saveCustomConfig();
         if (!cf1.exists()) this.saveCustomConfig1();
-    }
 
-    private void initReset() {
-        //Initializer.EXECUTOR.scheduleAtFixedRate(() -> Bukkit.getScheduler().runTask(this, () -> {
+        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        if (provider != null) {
+            lp = provider.getProvider();
+            Bukkit.getPluginManager().registerEvents(new Events(), this);
+        }
+
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
                 Bukkit.getWorld("world").getEntities().stream()
@@ -258,13 +177,57 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 });
             }
         }, 0L, 2400L);
-        // }), 0L, 5, TimeUnit.MINUTES);
-        log("Initialized Auto arena reset.");
-    }
 
-    private void initMessages() {
-        Bukkit.getScheduler().runTaskLater(this, Languages::init, 100);
-        log("Initialized the Language.");
+        this.getCommand("msg").setTabCompleter(new TabMSG());
+
+        this.getCommand("report").setExecutor(new Report());
+        this.getCommand("shop").setExecutor(new Shop());
+        this.getCommand("discord").setExecutor(new Discord());
+
+        this.getCommand("back").setExecutor(new Back());
+
+        this.getCommand("help").setExecutor(new Help());
+        this.getCommand("tpa").setExecutor(new TpaCommand());
+        this.getCommand("tpaccept").setExecutor(new TpacceptCommand());
+        this.getCommand("tpahere").setExecutor(new TpahereCommand());
+        this.getCommand("tpdeny").setExecutor(new TpdenyCommand());
+
+        this.getCommand("tpa").setTabCompleter(new TabTPA());
+        this.getCommand("tpaccept").setTabCompleter(new TabTPA());
+        this.getCommand("tpahere").setTabCompleter(new TabTPA());
+
+        this.getCommand("duel").setExecutor(new Duel());
+        this.getCommand("duelaccept").setExecutor(new DuelAccept());
+        this.getCommand("dueldeny").setExecutor(new DuelDeny());
+        this.getCommand("event").setExecutor(new Event());
+
+        this.getCommand("msg").setTabCompleter(new TabMSG());
+
+        this.getCommand("spawn").setExecutor(new Spawn());
+        this.getCommand("ffa").setExecutor(new Ffa());
+        this.getCommand("flat").setExecutor(new Flat());
+
+        this.getCommand("msglock").setExecutor(new MsgLock());
+        this.getCommand("tpalock").setExecutor(new TpaLock());
+
+        this.getCommand("acreate").setExecutor(new CreateCommand());
+        this.getCommand("rtp").setExecutor(new RTP());
+
+        File folder = new File(getDataFolder(), "Arenas");
+        if (!folder.exists()) folder.mkdirs();
+
+        Arena.arenas.clear();
+        Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
+            try {
+                Arena arena = ArenaIO.loadArena(r);
+                if (arena == null) return;
+                Arena.arenas.put(arena.getName(), arena);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        main.expansions.guis.Utils.init();
+        Languages.init();
     }
 
     private boolean setupEconomy() {

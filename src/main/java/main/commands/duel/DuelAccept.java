@@ -2,6 +2,7 @@ package main.commands.duel;
 
 import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
+import main.utils.Languages;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
@@ -9,7 +10,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import main.utils.Languages;
 
 import java.util.Map;
 
@@ -17,7 +17,6 @@ import static main.expansions.duels.Utils.*;
 import static main.utils.Initializer.lp;
 import static main.utils.Initializer.teams;
 import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.Utils.*;
 
 public class DuelAccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

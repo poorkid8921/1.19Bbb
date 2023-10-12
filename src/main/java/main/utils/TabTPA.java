@@ -16,9 +16,9 @@ public class TabTPA implements TabCompleter {
                 .stream()
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList()) : tpa
-                        .stream()
-                        .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                        .sorted(String::compareToIgnoreCase)
-                        .collect(Collectors.toList());
+                .stream()
+                .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
     }
 }

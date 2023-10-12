@@ -11,9 +11,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class Initializer {
     public static short[] NULL_SHORT = new short[0];
@@ -31,7 +31,7 @@ public class Initializer {
     public static LuckPerms lp;
     public static Practice p;
 
-    public static ThreadLocalRandom random = ThreadLocalRandom.current();
+    public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     public static List<Color> color = List.of(org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW);
 
@@ -41,6 +41,4 @@ public class Initializer {
 
     public static ArrayList<DuelHolder> duel = new ArrayList<>();
     public static ArrayList<String> valid = new ArrayList<>();
-
-    //public static ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
 }

@@ -2,14 +2,12 @@ package main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import it.unimi.dsi.fastutil.Pair;
-import main.expansions.duels.Matchmaking;
-import main.utils.Instances.DuelHolder;
 import main.expansions.arenas.Arena;
+import main.expansions.duels.Matchmaking;
 import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
+import main.utils.Instances.DuelHolder;
 import main.utils.Utils;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
 import org.bukkit.block.data.type.Piston;
@@ -33,7 +31,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +42,8 @@ import static main.utils.Initializer.spawn;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.RequestManager.getTPArequest;
 import static main.utils.RequestManager.tpa;
-import static main.utils.Utils.*;
+import static main.utils.Utils.duel_spawnFireworks;
+import static main.utils.Utils.translateA;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -190,7 +188,7 @@ public class Events implements Listener {
         }
 
         switch (inv.second()) {
-            case "0"  -> {
+            case "0" -> {
                 switch (slot) {
                     default -> {
                         ItemStack item = e.getCurrentItem();
@@ -217,8 +215,7 @@ public class Events implements Listener {
                         if (!Initializer.duel.contains(d)) {
                             p.closeInventory();
                             Matchmaking.start_unranked((Player) p, slot);
-                        }
-                        else
+                        } else
                             Initializer.duel.remove(d);
 
                         p.getInventory().close();

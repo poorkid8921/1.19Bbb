@@ -6,8 +6,8 @@ import java.lang.ref.WeakReference;
 
 public class Location {
     WeakReference<World> a;
-    double[] b = { 0, 1, 2 };
-    float[] c = { 0, 1 };
+    double[] b = {0, 1, 2};
+    float[] c = {0, 1};
 
     public Location(World a, double b, double c, double d, float e, float f) {
         this.a = new WeakReference<>(a);

@@ -11,14 +11,14 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.Vector;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Initializer.*;
+import static main.utils.Initializer.color;
+import static main.utils.Initializer.econ;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")

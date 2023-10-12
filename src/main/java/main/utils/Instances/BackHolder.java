@@ -2,20 +2,18 @@ package main.utils.Instances;
 
 import main.utils.Location;
 
-import java.lang.ref.WeakReference;
-
 public class BackHolder {
-    WeakReference<Location> back;
+    Location back;
 
     public BackHolder(Location back) {
-        this.back = new WeakReference<>(back);
+        this.back = back;
     }
 
     public Location getBack() {
-        return back.get();
+        return back;
     }
 
     public void setBack(Location a) {
-        back = new WeakReference<>(a);
+        back = a;
     }
 }

@@ -13,6 +13,8 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
+import static main.utils.Languages.MAIN_COLOR;
+
 @SuppressWarnings("deprecation")
 public class RequestManager {
     public static ArrayList<TpaRequest> tpa = new ArrayList<>();
@@ -31,17 +33,17 @@ public class RequestManager {
         Player temprecipient;
 
         if (request.isHere()) {
-            tempuser = request.getReceiver();
-            temprecipient = user;
-            temprecipient.sendMessage(ChatColor.GRAY + "You have accepted " + Utils.translateA("#fc282f" + tempuser.getDisplayName()) + ChatColor.GRAY + "'s teleport request");
-            temprecipient.sendMessage(Utils.translateo("&7Teleporting..."));
-            tempuser.sendMessage(Utils.translateA("#fc282f" + temprecipient.getDisplayName()) + ChatColor.GRAY + " has accepted your teleport request");
-        } else {
             tempuser = user;
-            temprecipient = request.getReceiver();
-            temprecipient.sendMessage(ChatColor.GRAY + "You have accepted " + Utils.translateA("#fc282f" + temprecipient.getDisplayName()) + ChatColor.GRAY + "'s teleport request");
-            temprecipient.sendMessage(Utils.translateA("#fc282f" + tempuser.getDisplayName()) + ChatColor.GRAY + " has accepted your teleport request");
-            tempuser.sendMessage(Utils.translateo("&7Teleporting..."));
+            temprecipient = request.getSender();
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + tempuser.getDisplayName() + "§7's teleport request");
+            temprecipient.sendMessage("§7Teleporting...");
+            tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
+        } else {
+            tempuser = request.getSender();
+            temprecipient = user;
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + temprecipient.getDisplayName() + "§7's teleport request");
+            temprecipient.sendMessage("§7Teleporting...");
+            tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         }
 
         tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));

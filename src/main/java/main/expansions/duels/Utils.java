@@ -103,8 +103,6 @@ public class Utils {
         Initializer.duel.remove(getDUELrequest(sn));
         DuelHolder duelRequest = new DuelHolder(sn, receiver.getName(), t, rounds, 0, sr, sb, System.currentTimeMillis(), arena, length);
         Initializer.duel.add(duelRequest);
-        String clean = ChatColor.stripColor(sender.getDisplayName());
-        int c = clean.indexOf(" ");
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage(main.utils.Utils.translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
 
@@ -119,22 +117,10 @@ public class Utils {
         TextComponent duelType3 = new TextComponent(rounds + " rounds.");
         duelType3.setColor(ChatColor.of("#fc282f"));
 
-        if (c != -1) {
-            String color = clean.substring(0, 7);
-            String noHex = clean.replace(color, "");
-            String rank = noHex.substring(0, c);
-            String realName = noHex.replace(rank + " ", "");
+        TextComponent e = new TextComponent(sn);
+        e.setColor(ChatColor.of("#fc282f"));
 
-            TextComponent nametc = new TextComponent(realName);
-            TextComponent ranktc = new TextComponent(rank);
-
-            receiver.sendMessage(ranktc, nametc, tc, duelType, duelType2, duelType3, a, space, b);
-        } else {
-            TextComponent e = new TextComponent(sn);
-            e.setColor(ChatColor.of("#fc282f"));
-
-            receiver.sendMessage(e, tc, duelType, duelType2, duelType3, a, space, b);
-        }
+        receiver.sendMessage(e, tc, duelType, duelType2, duelType3, a, space, b);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> Initializer.duel.remove(duelRequest), 2400L);
     }

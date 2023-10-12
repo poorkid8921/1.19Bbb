@@ -3,7 +3,6 @@ package main.commands;
 import main.Practice;
 import main.utils.Initializer;
 import main.utils.Languages;
-import main.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +13,7 @@ public class MsgLock implements CommandExecutor {
         String p = sender.getName();
         if (Practice.cc1.get("r." + p + ".m") != null) {
             sender.sendMessage(Languages.MSGLOCK);
-            Practice.cc1.set("r." + p + 
+            Practice.cc1.set("r." + p +
                     (Practice.cc1.get("r." + p + ".t") == null ? "" : ".m"), null);
             Initializer.p.saveCustomConfig1();
             Initializer.msg.add(p);

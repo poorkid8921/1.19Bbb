@@ -28,8 +28,7 @@ public class TpacceptCommand implements CommandExecutor {
             if (p == null) {
                 user.sendMessage(msg);
                 return true;
-            }
-            else
+            } else
                 n = p.getName();
             request = RequestManager.getTPArequest(user.getName(), n);
             msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ1 +

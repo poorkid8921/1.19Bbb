@@ -5,8 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.Objects;
-
 public class Section {
     private final Arena parent;
     private final Location start;

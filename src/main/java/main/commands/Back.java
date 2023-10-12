@@ -1,7 +1,7 @@
 package main.commands;
 
-import main.utils.Instances.BackHolder;
 import main.utils.Initializer;
+import main.utils.Instances.BackHolder;
 import main.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

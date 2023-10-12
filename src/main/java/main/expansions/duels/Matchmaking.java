@@ -10,11 +10,10 @@ import java.util.Optional;
 
 import static main.expansions.duels.Utils.*;
 import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.Utils.translateA;
 
 public class Matchmaking {
     public static void start_ranked(Player p,
-                                      int gm,
+                                    int gm,
                                     int tier) {
         p.sendActionBar(main.utils.Utils.translateo(
                 "&aYou have been placed into the " + Duel_Formatted_Type(gm) + " queue."));
@@ -56,7 +55,7 @@ public class Matchmaking {
     }
 
     public static void start_unranked(Player p,
-                             int gm) {
+                                      int gm) {
         String n = p.getName();
         Optional<Map.Entry<String, Integer>> op = Initializer.inMatchmaking
                 .entrySet().stream()

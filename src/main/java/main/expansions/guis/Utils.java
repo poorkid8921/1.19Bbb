@@ -2,9 +2,9 @@ package main.expansions.guis;
 
 import it.unimi.dsi.fastutil.Pair;
 import main.Practice;
+import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
 import main.utils.ItemCreator;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,10 +13,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.HashMap;
 
 import static main.expansions.duels.Utils.*;
 import static main.utils.Languages.MAIN_COLOR;
@@ -51,7 +50,7 @@ public class Utils {
 
         inv.setItem(10, createItemStack(Material.BONE, "Lightning Bolt",
                 List.of(main.utils.Utils.translateo("&a$100"),
-                main.utils.Utils.translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ"))));
+                        main.utils.Utils.translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ"))));
 
         inv.setItem(11, createItemStack(Material.TNT, "Explosion",
                 List.of(main.utils.Utils.translateo("&a$200"),

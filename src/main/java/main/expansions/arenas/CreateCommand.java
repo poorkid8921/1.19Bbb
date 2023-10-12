@@ -1,9 +1,7 @@
 package main.expansions.arenas;
 
-import main.expansions.ExpansionManager;
-import main.expansions.arenas.Arena;
-import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,25 +14,18 @@ public class CreateCommand implements CommandExecutor {
             return true;
         }
 
-        if (!sender.hasPermission("platinumarenas.create")) {
+        if (!sender.isOp()) {
             return true;
         }
 
-        String wand = ExpansionManager.regionSelection.getWand().toString();
-
-        if (Arena.arenas.containsKey(args[0].toLowerCase())) {
-            sender.sendMessage(ChatColor.RED + " An arena by that name already exists!");
-            return true;
-        }
-
-        if (!ExpansionManager.regionSelection.hasSelectedRegion((Player) sender)) {
-            sender.sendMessage(ChatColor.RED + " Create an arena by selecting a region with a " + wand + " and then run /arena create [name]");
-            return true;
-        }
-
-        Block[] corners = ExpansionManager.regionSelection.getRegionCorners((Player) sender);
-        Arena.createNewArena(args[0].toLowerCase(), corners[0].getLocation(), corners[1].getLocation(), (Player) sender);
-
+        Arena.createNewArena(args[0].toLowerCase(), new Location(Bukkit.getWorld("world"),
+                        Integer.parseInt(args[1]),
+                        Integer.parseInt(args[2]),
+                        Integer.parseInt(args[3])),
+                new Location(Bukkit.getWorld("world"),
+                        Integer.parseInt(args[4]),
+                        Integer.parseInt(args[5]),
+                        Integer.parseInt(args[6])), (Player) sender);
         return true;
     }
 }

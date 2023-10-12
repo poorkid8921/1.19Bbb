@@ -3,25 +3,23 @@ package main.utils.Instances;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.lang.ref.WeakReference;
-
 public class TpaRequest {
-    private final WeakReference<String> sender;
-    private final WeakReference<String> reciever;
+    private final String sender;
+    private final String receiver;
     private final boolean type;
 
     public TpaRequest(String sender, String reciever, boolean type) {
-        this.sender = new WeakReference<>(sender);
-        this.reciever = new WeakReference<>(reciever);
+        this.sender = sender;
+        this.receiver = reciever;
         this.type = type;
     }
 
     public Player getSender() {
-        return Bukkit.getPlayer(sender.get());
+        return Bukkit.getPlayer(sender);
     }
 
     public Player getReceiver() {
-        return Bukkit.getPlayer(reciever.get());
+        return Bukkit.getPlayer(receiver);
     }
 
     public boolean isHere() {

@@ -67,6 +67,8 @@ commands:
     usage: /<command>
   acreate:
     usage: /<command>
+  rtp:
+    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

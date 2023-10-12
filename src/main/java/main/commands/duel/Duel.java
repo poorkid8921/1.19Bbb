@@ -21,6 +21,15 @@ public class Duel implements CommandExecutor, TabExecutor {
     List<String> lg = List.of("Field", "Flat");
     List<String> lgsel = List.of("field", "flat");
 
+    public int getGM(String i) {
+        return switch (i.toLowerCase()) {
+            case "field" -> 0;
+            case "flat" -> 1;
+            case "tank" -> 2;
+            default -> throw new IllegalStateException("Unexpected value: " + i);
+        };
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user))
@@ -53,7 +62,8 @@ public class Duel implements CommandExecutor, TabExecutor {
             }
         }
 
-        int check = Duel_GetDuelsAvailableForGM(gm);
+        int d = getGM(gm);
+        int check = Duel_GetDuelsAvailableForGM(d);
 
         if (check >= 32) {
             user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
@@ -83,8 +93,7 @@ public class Duel implements CommandExecutor, TabExecutor {
             if (tpr.getSender().equals(user)) {
                 user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
-            }
-            else if (tpr.getReceiver().equals(user)) {
+            } else if (tpr.getReceiver().equals(user)) {
                 Duel_Accept_Request(tpr, user);
                 return true;
             }
@@ -92,7 +101,7 @@ public class Duel implements CommandExecutor, TabExecutor {
 
         addDUELrequest(user,
                 recipient,
-                gm,
+                d,
                 i,
                 0,
                 0,

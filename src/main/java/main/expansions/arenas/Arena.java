@@ -2,14 +2,16 @@ package main.expansions.arenas;
 
 import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class Arena {
     public static Map<String, Arena> arenas = new HashMap<>();

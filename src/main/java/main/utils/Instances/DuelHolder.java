@@ -3,8 +3,6 @@ package main.utils.Instances;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.lang.ref.WeakReference;
-
 public class DuelHolder {
     private final String sender;
     private final String receiver;
@@ -12,10 +10,10 @@ public class DuelHolder {
     private final int maxrounds;
     private final long starttime;
     private final int arena;
+    private final int maxPlayers;
     private int rounds;
     private int red;
     private int blue;
-    private final int maxPlayers;
 
     public DuelHolder(String sender, String reciever, int type, int maxrounds, int rounds, int sr, int sb, long starttime, int arena, int maxPlayers) {
         this.sender = sender;
