@@ -3,8 +3,6 @@ package main.commands.duel;
 import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
 import main.utils.Languages;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,7 +12,6 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 
 import static main.expansions.duels.Utils.*;
-import static main.utils.Initializer.lp;
 import static main.utils.Initializer.teams;
 import static main.utils.Languages.MAIN_COLOR;
 
@@ -45,7 +42,7 @@ public class DuelAccept implements CommandExecutor {
                 user.getName(), 1));
 
         int check = Duel_GetDuelsAvailableForGM(request.getType());
-        if (check >= 32) {
+        if (check == 32) {
             Initializer.duel.remove(request);
             user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
@@ -59,13 +56,6 @@ public class DuelAccept implements CommandExecutor {
                 1,
                 request.getMaxrounds(),
                 check + 1);
-        User up = lp.getUserManager().getUser(recipient.getUniqueId());
-        up.data().add(Node.builder("permission:tab.scoreboard.duels").build());
-        lp.getUserManager().saveUser(up);
-
-        User u = lp.getUserManager().getUser(user.getUniqueId());
-        u.data().add(Node.builder("permission:tab.scoreboard.duels").build());
-        lp.getUserManager().saveUser(u);
         return true;
     }
 }

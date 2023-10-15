@@ -13,15 +13,12 @@ import org.bukkit.*;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -29,6 +26,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -37,18 +35,16 @@ import java.util.List;
 
 import static main.expansions.duels.Utils.*;
 import static main.expansions.guis.Utils.*;
-import static main.utils.Initializer.duel;
-import static main.utils.Initializer.spawn;
+import static main.utils.Initializer.*;
+import static main.utils.Initializer.color;
 import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Languages.SECOND_COLOR;
 import static main.utils.RequestManager.getTPArequest;
 import static main.utils.RequestManager.tpa;
 import static main.utils.Utils.duel_spawnFireworks;
-import static main.utils.Utils.translateA;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    static String PREFIX = translateA("#d6a7eb☠ ");
-
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
         event.setCancelled(Utils.isSuspectedScanPacket(event.getBuffer()));
@@ -138,7 +134,7 @@ public class Events implements Listener {
                     MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"),
                     MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+            Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> {
                 Initializer.teams.remove(playerName);
                 Initializer.teams.remove(pw.getName());
                 Initializer.duel.remove(tpr);
@@ -172,75 +168,86 @@ public class Events implements Listener {
                 if (!e.getCurrentItem().getItemMeta().hasLore()) return;
 
                 switch (slot) {
-                    case 10 -> Utils.killeffect((Player) p, 0, "ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 100);
-                    case 11 -> Utils.killeffect((Player) p, 1, "ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 200);
-                    case 12 -> Utils.killeffect((Player) p, 2, "ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
+                    case 10 -> Utils.killeffect((Player) p, -1, null);
+                    case 11 -> Utils.killeffect((Player) p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 12 -> Utils.killeffect((Player) p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 13 -> Utils.killeffect((Player) p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
                 }
-                return;
-            }
+            } // settings: killeffect
             case 1 -> {
                 e.setCancelled(true);
                 if (!e.getCurrentItem().getItemMeta().hasLore()) return;
 
-                Utils.report((Player) p, inv.second(), slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : slot == 14 ? "Interrupting" : slot == 15 ? "Anchor Spam" : null);
-                return;
-            }
-        }
+                Utils.report((Player) p, inv.second(), switch (slot) {
+                    case 10 -> "Cheating";
+                    case 11 -> "Doxxing";
+                    case 12 -> "Ban Evading";
+                    case 13 -> "Spamming";
+                    case 14 -> "Interrupting";
+                    case 15 -> "Anchor Spamming";
+                    default -> null;
+                });
+            } // report: report
+            case 2 -> {
+                e.setCancelled(true);
 
-        switch (inv.second()) {
-            case "0" -> {
-                switch (slot) {
-                    default -> {
-                        ItemStack item = e.getCurrentItem();
-                        if (item.getType() == Material.PLAYER_HEAD) {
-                            Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
-                                    .get(spectateHead, PersistentDataType.STRING));
-                            p.getInventory().close();
-                            return;
+                switch (inv.second()) {
+                    case null -> { // duels (main menu)
+                        switch (slot) {
+                            case 9 -> {
+                                ItemStack s = e.getCurrentItem();
+                                ItemMeta meta = s.getItemMeta();
+                                meta.addEnchant(Enchantment.DURABILITY, 1, false);
+                                s.setItemMeta(meta);
+                                String pn = p.getName();
+                                DuelHolder d = getDUELrequest(pn);
+                                if (!duel.contains(d)) {
+                                    p.closeInventory();
+                                    Matchmaking.start_unranked((Player) p, slot);
+                                } else
+                                    duel.remove(d);
+
+                                p.getInventory().close();
+                            }
+                            case 53 -> {
+                                openDuelsSpectate((Player) p);
+                                updateSpectate();
+                                inv.second("0");
+                            }
                         }
                     }
-                }
-            }
-            case "1" -> {
-            }
-            default -> {
-                switch (slot) {
-                    case 9 -> {
-                        ItemStack s = e.getCurrentItem();
-                        ItemMeta meta = s.getItemMeta();
-                        meta.addEnchant(Enchantment.DURABILITY, 1, false);
-                        s.setItemMeta(meta);
-                        String pn = p.getName();
-                        DuelHolder d = getDUELrequest(pn);
-                        if (!Initializer.duel.contains(d)) {
-                            p.closeInventory();
-                            Matchmaking.start_unranked((Player) p, slot);
-                        } else
-                            Initializer.duel.remove(d);
-
-                        p.getInventory().close();
+                    case "0" -> {
+                        switch (slot) {
+                            default -> {
+                                ItemStack item = e.getCurrentItem();
+                                if (item.getType() == Material.PLAYER_HEAD) {
+                                    Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
+                                            .get(spectateHead, PersistentDataType.STRING));
+                                    p.getInventory().close();
+                                }
+                            }
+                        }
+                    } // spectate
+                    case "1" -> { // kits
                     }
-                    case 43 -> {
-                        updateSpectate();
-                        inv.second("0");
+                    default -> {
                     }
                 }
-            }
+            } // duels: null\dynamic
         }
     }
 
     @EventHandler
     public void onGUIClose(InventoryCloseEvent e) {
         if (e.getInventory() instanceof PlayerInventory) return;
-
         inInventory.remove(e.getPlayer().getName());
     }
 
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
-        if (!Initializer.inFFA.contains(p)) e.getDrops().clear();
-        else Initializer.inFFA.remove(p);
+        if (Initializer.inFFA.contains(p)) Initializer.inFFA.remove(p);
+        else e.getDrops().clear();
 
         String name = p.getName();
         Player killer = p.getKiller();
@@ -251,7 +258,7 @@ public class Events implements Listener {
             p.setFoodLevel(20);
             p.setHealth(20);
 
-            DuelHolder tpr = getDUELrequest(name);
+            DuelHolder tpr = getPlayerDuel(name);
             List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player kp = (killer == p || killer == null) ? plist.get(1) : killer;
 
@@ -294,10 +301,10 @@ public class Events implements Listener {
                     } else if (blue > red) {
                         Duel_Resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ");
                     } else {
-                        Duel_Resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, Utils.translateo("&eᴅʀᴀᴡ"), Utils.translateo("&eᴅʀᴀᴡ"));
+                        Duel_Resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ");
                     }
 
-                    Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(Initializer.p, () -> {
                         Initializer.teams.remove(kuid);
                         Initializer.teams.remove(name);
                         Initializer.inDuel.remove(tpr);
@@ -321,65 +328,55 @@ public class Events implements Listener {
             return;
         }
 
-        EntityDamageEvent.DamageCause b = p.getLastDamageCause().getCause();
-        if (killer == null) {
-            e.setDeathMessage(
-                    PREFIX + name +
-                            ((b.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) ||
-                                    b.equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION)) ?
-                                    Utils.translateA(" §7blasted themselves") :
-                                    b.equals(EntityDamageEvent.DamageCause.FALL) ?
-                                            Utils.translateA(" §7broke their legs") :
-                                            b.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK) ?
-                                                    Utils.translateA(" §7suffocated in a wall") :
-                                                    b.equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL) ?
-                                                            " §7thought they can fly" :
-                                                            " §7suicided"));
+        if (killer == null ||
+                killer.getName().equals(name)) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" +
+                    switch (p.getLastDamageCause().getCause()) {
+                        case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
+                        case FALL -> "broke their legs";
+                        case FALLING_BLOCK -> "suffocated";
+                        case FLY_INTO_WALL -> "thought they're a fly";
+                        default -> "suicided";
+                    });
             return;
         } else {
-            e.setDeathMessage(
-                    PREFIX + killer.getName() +
-                            (b.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) ?
-                                    Utils.translateA(" §7exploded #d6a7eb" + name) :
-                                    b.equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) ?
-                                            Utils.translateA(" §7imploded #d6a7eb" + name) :
-                                            b.equals(EntityDamageEvent.DamageCause.FALL) ?
-                                                    Utils.translateA(" §7broke #d6a7eb" + name + "§7's legs") :
-                                                    b.equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK) ?
-                                                            Utils.translateA(" §7sworded #d6a7eb" + name) :
-                                                            b.equals(EntityDamageEvent.DamageCause.PROJECTILE) ?
-                                                                    " §7shot #d6a7eb" + name + " §7in the ass" :
-                                                                    b.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK) ?
-                                                                            Utils.translateA(name + " §7suffocated in a wall whilst fighting #d6a7eb" + killer.getName()) :
-                                                                            " §7suicided"));
+            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" +
+                    switch (p.getLastDamageCause().getCause()) {
+                        case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + killer.getName();
+                        case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + killer.getName();
+                        case FALL -> "broke " + SECOND_COLOR + killer.getName() + "§7's legs";
+                        case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + killer.getName();
+                        case PROJECTILE -> "shot " + SECOND_COLOR + killer.getName() + " §7in the ass";
+                        default -> "suicided";
+                    });
         }
 
         Location l = p.getLocation();
         BackHolder back = Initializer.back.getOrDefault(name, null);
         if (back == null) {
-            Initializer.back.put(name, new BackHolder(Utils.Locationfrom(l)));
-        } else back.setBack(Utils.Locationfrom(l));
+            Initializer.back.put(name, new BackHolder(l));
+        } else back.setBack(l);
 
         p.sendMessage("§7Use " + MAIN_COLOR + "/back §7to return to your death location.");
 
-        try {
-            Initializer.econ.depositPlayer(killer, 5);
-        } catch (RuntimeException en) {
-            en.printStackTrace();
-        }
-
-        int peffect = Practice.cc.getInt("r." + killer + ".killeffect", -1);
-
-        Location loc = p.getLocation().add(0, 1, 0);
-        switch (peffect) {
+        switch (Practice.config.getInt("r." + killer + ".c", -1)) {
             case 0 -> {
+                Location loc = p.getLocation().add(0, 1, 0);
                 World w = loc.getWorld();
                 for (double y = 0; y <= 10; y += 0.05) {
                     w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                 }
             }
-            case 1 -> Utils.spawnFireworks(loc);
-            case 2 -> loc.getWorld().strikeLightningEffect(loc);
+            case 1 -> {
+                Firework fw = (Firework) p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.FIREWORK);
+                FireworkMeta fwm = fw.getFireworkMeta();
+                fwm.setPower(2);
+                fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+                fw.setFireworkMeta(fwm);
+            }
+            case 2 -> {
+                p.getWorld().strikeLightningEffect(p.getLocation().add(0, 1, 0));
+            }
         }
     }
 
@@ -408,8 +405,8 @@ public class Events implements Listener {
 
         String name = p.getName();
 
-        if (Practice.cc1.get("r." + name + ".t") == null) Initializer.tpa.add(name);
-        if (Practice.cc1.get("r." + name + ".m") == null) Initializer.msg.add(name);
+        if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
+        if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
 
         p.teleportAsync(spawn);
     }

@@ -1,8 +1,6 @@
 package main.utils;
 
 import main.Practice;
-import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Location;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -17,18 +15,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static main.utils.Initializer.RANDOM;
 import static main.utils.Initializer.color;
-import static main.utils.Initializer.econ;
+import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Languages.SECOND_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
     static Practice plugin = Initializer.p;
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-
-    public static main.utils.Location Locationfrom(org.bukkit.Location a) {
-        return new main.utils.Location(a.getWorld(), a.getX(), a.getY(), a.getZ(), a.getYaw(), a.getPitch());
-    }
 
     public static String translate(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
@@ -50,10 +46,6 @@ public class Utils {
         return matcher.appendTail(buffer).toString();
     }
 
-    public static String translateo(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
-    }
-
     public static boolean isSuspectedScanPacket(String buffer) {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
@@ -63,25 +55,17 @@ public class Utils {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(random.nextInt(color.size()))).withColor(color.get(random.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         fw.setFireworkMeta(fwm);
     }
 
-    public static void killeffect(Player p, int toset, String fancy, int cost) {
+    public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
-        double bal = econ.getBalance(p);
-        if (bal < cost) {
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» #fc282fʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ"));
-            return;
-        }
 
-        EconomyResponse ar = econ.withdrawPlayer(p, cost);
-
-        if (ar.transactionSuccess()) {
-            Practice.cc.set("r." + p.getName() + ".killeffect", toset);
-            plugin.saveCustomConfig();
-            p.sendMessage(translate("#d6a7ebꜱʜᴏᴘ &7» &fʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ʙᴜʏ ᴛʜᴇ #d6a7eb" + fancy + " &fꜰᴏʀ #d6a7eb$" + cost));
-        }
+        Practice.config.set("r." + p.getName() + ".c", toset == -1 ? null : toset);
+        plugin.saveCustomConfig();
+        p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇғғᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
+                "ʏᴏᴜʀ ᴋɪʟʟ ᴇғғᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
     }
 
     public static ItemStack createItemStack(Material mat, String display, List<String> lore) {
@@ -103,7 +87,7 @@ public class Utils {
 
     public static void report(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(translate("#fc282f" + d + " &7has submitted a report against #fc282f" + report + " &7with the reason of #fc282f" + reason)));
+        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(translate("#fc282f" + d + " §7has submitted a report against #fc282f" + report + " §7with the reason of #fc282f" + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
@@ -120,7 +104,7 @@ public class Utils {
                 throw new RuntimeException(ex);
             }
         });
-        pp.sendMessage(translateo("&7Successfully submitted the report."));
+        pp.sendMessage("§7Successfully submitted the report.");
     }
 
     public static void duel_spawnFireworks(Location loc) {

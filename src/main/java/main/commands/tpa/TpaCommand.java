@@ -3,14 +3,14 @@ package main.commands.tpa;
 import main.Practice;
 import main.utils.Instances.TpaRequest;
 import main.utils.Languages;
-import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.RequestManager.*;
+import static main.utils.RequestManager.addTPArequest;
+import static main.utils.RequestManager.getTPArequest;
 
 public class TpaCommand implements CommandExecutor {
     @Override
@@ -25,29 +25,24 @@ public class TpaCommand implements CommandExecutor {
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(Utils.translateo("&7You can't send teleport requests to offline players."));
+            user.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(user.getName())) {
-            user.sendMessage(Utils.translateo("&7You can't teleport to yourself."));
+            user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
         TpaRequest tpr = getTPArequest(recipient.getName());
 
-        if (tpr != null) {
-            if (tpr.getSender().equals(user)) {
-                user.sendMessage(Utils.translateo("&7You already have an ongoing request to this player."));
-                return true;
-            } else if (tpr.getReceiver().equals(user)) {
-                tpaccept(tpr, user);
-                return true;
-            }
+        if (tpr != null && tpr.getSender().equals(user)) {
+            user.sendMessage("§7You already have an ongoing request to this player.");
+            return true;
         }
 
-        if (Practice.cc1.get("r." + recipient.getName() + ".t") != null) {
-            user.sendMessage(Utils.translateo("&7You can't request this player since they've locked their tp requests."));
+        if (Practice.config.get("r." + recipient.getName() + ".t") != null) {
+            user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 

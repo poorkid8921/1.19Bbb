@@ -53,21 +53,17 @@ commands:
     usage: /<command>
   help:
     usage: /<command>
-  kit:
-    aliases: k
-    usage: /<command>
-  kit1:
-    aliases: k1
-    usage: /<command>
-  kit2:
-    aliases: k2
-    usage: /<command>
-  kit3:
-    aliases: k3
-    usage: /<command>
   acreate:
     usage: /<command>
   rtp:
+    usage: /<command>
+  gmc:
+    usage: /<command>
+  gms:
+    usage: /<command>
+  kickall:
+    usage: /<command>
+  list:
     usage: /<command>
 permissions:
   has.staff:

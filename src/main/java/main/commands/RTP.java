@@ -1,8 +1,11 @@
 package main.commands;
 
 import main.utils.Initializer;
-import main.utils.Utils;
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,13 +14,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import java.util.List;
-
 import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Languages.SECOND_COLOR;
 
 public class RTP implements CommandExecutor {
-    List<Material> BLACKLIST = List.of(Material.WATER, Material.LAVA);
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player p)) return true;
@@ -30,16 +30,16 @@ public class RTP implements CommandExecutor {
         int az = 0;
         int x2 = 0;
         while (loc == null) {
-            int x = Initializer.RANDOM.nextInt(3000);
-            int z = Initializer.RANDOM.nextInt(3000);
-            if (x > 1500) x = -x;
-            if (z > 1500) z = -z;
+            ax = Initializer.RANDOM.nextInt(10000);
+            az = Initializer.RANDOM.nextInt(10000);
+            if (ax > 5000) ax = -ax;
+            if (az > 5000) az = -az;
 
-            int i = d.getHighestBlockYAt(x, z);
+            Block b = d.getHighestBlockAt(ax, az);
             p.playSound(p, Sound.ENTITY_TNT_PRIMED, 1, 1);
-            if (!BLACKLIST.contains(d.getBlockAt(x, i, z).getType()))
-                loc = new Location(d, x, i + 1, z, l.getYaw(), l.getPitch());
-            else if (x2++ == 10) {
+            if (b.isSolid()) {
+                loc = new Location(d, ax, b.getLocation().getY() + 1, az, l.getYaw(), l.getPitch());
+            } else if (x2++ == 10) {
                 p.sendMessage(MAIN_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ.");
                 return true;
             }
@@ -48,20 +48,23 @@ public class RTP implements CommandExecutor {
         Location c = p.getLocation();
         if (c.distance(l) < 2) {
             Location finalLoc = loc;
+            int finalAx = ax;
+            int finalAz = az;
             p.teleportAsync(loc).thenAccept(r -> {
                 p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                p.sendTitle(Utils.translateA("#d6a7ebᴛᴇʟᴇᴘᴏʀᴛᴇᴅ"), "§7" + ax + " " + ay + " " + az);
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 35, 1));
+                p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + finalAx + " " + ay + " " + finalAz);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
                 Location cd = finalLoc.add(0, 1, 0);
                 for (int index = 1; index < 16; index++) {
                     Vector vec = getVecCircle(index);
-                    d.spawnParticle(Particle.TOTEM, cd.clone().add(vec), 0, 1.5f);
+                    d.spawnParticle(Particle.TOTEM, cd.clone().add(vec), 1, 1.5f);
                 }
             });
             return true;
         }
 
-        p.sendTitle("", Utils.translateA("#d6a7ebʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!"));
+        p.sendTitle("", SECOND_COLOR + "ʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!");
         return true;
     }
 

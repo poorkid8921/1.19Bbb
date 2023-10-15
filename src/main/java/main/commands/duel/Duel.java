@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 import static main.expansions.duels.Utils.*;
 
 public class Duel implements CommandExecutor, TabExecutor {
-    List<String> lg = List.of("Field", "Flat");
-    List<String> lgsel = List.of("field", "flat");
+    List<String> lg = List.of("Field", "Flat", "Tank");
+    List<String> lgsel = List.of("field", "flat", "tank");
 
     public int getGM(String i) {
         return switch (i.toLowerCase()) {
@@ -35,6 +35,9 @@ public class Duel implements CommandExecutor, TabExecutor {
         if (!(sender instanceof Player user))
             return true;
 
+        if (!user.isOp())
+            return true;
+
         int i = 1;
         String gm = "field";
 
@@ -46,7 +49,7 @@ public class Duel implements CommandExecutor, TabExecutor {
         if (args.length > 1) {
             gm = String.valueOf(args[1]).toLowerCase();
 
-            if (!lgsel.contains(gm.toLowerCase()))
+            if (!lgsel.contains(gm))
                 gm = "field";
         }
 
@@ -65,7 +68,7 @@ public class Duel implements CommandExecutor, TabExecutor {
         int d = getGM(gm);
         int check = Duel_GetDuelsAvailableForGM(d);
 
-        if (check >= 32) {
+        if (check == 32) {
             user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }

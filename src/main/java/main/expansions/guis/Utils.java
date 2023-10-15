@@ -1,7 +1,6 @@
 package main.expansions.guis;
 
 import it.unimi.dsi.fastutil.Pair;
-import main.Practice;
 import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
 import main.utils.ItemCreator;
@@ -19,12 +18,13 @@ import java.util.Map;
 
 import static main.expansions.duels.Utils.*;
 import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Languages.SECOND_COLOR;
 import static main.utils.Utils.createItemStack;
 
 public class Utils {
     public static Map<String, Pair<Integer, String>> inInventory = new HashMap<>();
     static ItemStack[] report = {};
-    static ItemStack[] shop = {};
+    static ItemStack[] killeffect = {};
     static ItemStack[] duel1 = {};
     static ItemStack[] duel2 = {};
     static ItemStack[] duel3 = {};
@@ -41,29 +41,30 @@ public class Utils {
             inv.setItem(i, glass);
         }
 
-        inv.setItem(10, createItemStack(Material.END_CRYSTAL, "Cheating", List.of(main.utils.Utils.translate("&aUse of a hacked client"), main.utils.Utils.translate("&aUse of an illegal client modification"))));
-        inv.setItem(11, createItemStack(Material.PAPER, "Doxxing", List.of(main.utils.Utils.translate("&aSaying private info of a player in the chat"))));
-        inv.setItem(13, createItemStack(Material.RED_BED, "Spamming", List.of(main.utils.Utils.translate("&aSaying more than 5 messages on the same topic"))));
-        inv.setItem(14, createItemStack(Material.DIAMOND_SWORD, "Interrupting", List.of(main.utils.Utils.translate("&aInterrupting fights in flat"))));
-        inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", List.of(main.utils.Utils.translate("&aUsing too many anchors in flat"))));
+        inv.setItem(10, createItemStack(Material.END_CRYSTAL, "Cheating", List.of("§aUse of a hacked client",
+                "§aUse of an illegal client modification")));
+        inv.setItem(11, createItemStack(Material.PAPER, "Doxxing", List.of("§aSaying private info of a player in the chat")));
+        inv.setItem(13, createItemStack(Material.RED_BED, "Spamming", List.of("§aSaying more than 5 messages on the same topic")));
+        inv.setItem(14, createItemStack(Material.DIAMOND_SWORD, "Interrupting", List.of("§aInterrupting fights in flat")));
+        inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", List.of("§aUsing too many anchors in flat")));
         report = inv.getContents();
 
         inv.setItem(10, createItemStack(Material.BONE, "Lightning Bolt",
-                List.of(main.utils.Utils.translateo("&a$100"),
-                        main.utils.Utils.translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ"))));
+                List.of("§a$100",
+                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fᴘᴜʀᴄʜᴀꜱᴇ")));
 
         inv.setItem(11, createItemStack(Material.TNT, "Explosion",
-                List.of(main.utils.Utils.translateo("&a$200"),
-                        main.utils.Utils.translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ"))));
+                List.of("§a$200",
+                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
 
         inv.setItem(12, createItemStack(Material.FIREWORK_STAR, "Firework Explosion",
-                List.of(main.utils.Utils.translateo("&a$250"),
-                        main.utils.Utils.translate("&7▪ #d6a7ebᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ"))));
+                List.of("§a$250",
+                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
 
         inv.setItem(13, glass);
         inv.setItem(14, glass);
         inv.setItem(15, glass);
-        shop = inv.getContents();
+        killeffect = inv.getContents();
 
         inv = Bukkit.createInventory(null, 54);
 
@@ -75,13 +76,12 @@ public class Utils {
         inv.setItem(10, i);
 
         ItemStack i2 = new ItemStack(Material.FEATHER);
-        ItemMeta im2 = i2.getItemMeta();
-        im2.setLore(List.of("§7Spectate others!"));
-        i2.setItemMeta(im2);
-        inv.setItem(43, i2);
+        meta = i2.getItemMeta();
+        meta.setDisplayName("§7Spectate");
+        meta.setLore(List.of("§7Spectate others!"));
+        i2.setItemMeta(meta);
+        inv.setItem(53, i2);
         duel1 = inv.getContents();
-
-        Practice.log("Initialized the GUI expansion.");
     }
 
     public static void openDuels0(Player p) {
@@ -105,10 +105,10 @@ public class Utils {
         p.openInventory(inv);
     }
 
-    public static void openShop(Player p) {
+    public static void openKilleffect(Player p) {
         inInventory.put(p.getName(), Pair.of(0, null));
-        Inventory inv = Bukkit.createInventory(p, 27, "ᴀᴇꜱᴛʜᴇᴛɪᴄꜱʜᴏᴘ | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
-        inv.setContents(shop);
+        Inventory inv = Bukkit.createInventory(p, 27, "sᴇᴛᴛɪɴɢs | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
+        inv.setContents(killeffect);
         p.openInventory(inv);
     }
 
@@ -116,7 +116,7 @@ public class Utils {
         inInventory.put(p.getName(), Pair.of(1, arg));
         Inventory inv = Bukkit.createInventory(p, 27, "ʀᴇᴘᴏʀᴛ");
         inv.setContents(report);
-        inv.setItem(12, createItemStack(ItemCreator.getHead(arg), "Ban Evading", List.of(main.utils.Utils.translate("&aUsing an alt to play after being banned"))));
+        inv.setItem(12, createItemStack(ItemCreator.getHead(arg), "Ban Evading", List.of("§aUsing an alt to play after being banned")));
         p.openInventory(inv);
     }
 
@@ -127,7 +127,7 @@ public class Utils {
             if (added++ == 44) break;
             ItemStack i = new ItemStack(Duel_Formatted_Type_Material(r.getType()));
             ItemMeta im = i.getItemMeta();
-            im.setLore(List.of(getLengthofDuel(r.getMaxPlayers()), main.utils.Utils.translate("#fc282f" + r.getSender().getDisplayName() + " &7ᴀɢᴀɪɴsᴛ #fc282f" + r.getReceiver().getDisplayName())));
+            im.setLore(List.of(getLengthofDuel(r.getMaxPlayers()), MAIN_COLOR + r.getSender().getName() + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver().getName()));
             im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, r.getSender().getName());
             i.setItemMeta(im);
             sp.setItem(added, i);
@@ -135,6 +135,7 @@ public class Utils {
 
         ItemStack[] s = sp.getContents();
         inInventory.entrySet().stream().filter(r -> r.getValue().second().equals("0")).forEach(r -> Bukkit.getPlayer(r.getKey()).getInventory().setContents(s));
+        duel2 = s;
     }
 
     public static void updateDuels() {

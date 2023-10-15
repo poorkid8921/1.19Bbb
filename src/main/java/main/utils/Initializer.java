@@ -4,8 +4,6 @@ import io.netty.util.internal.ThreadLocalRandom;
 import main.Practice;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
-import net.luckperms.api.LuckPerms;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Initializer {
-    public static short[] NULL_SHORT = new short[0];
     public static Map<String, Long> chatdelay = new HashMap<>();
     public static Map<String, Integer> teams = new HashMap<>();
     public static Map<String, String> spec = new HashMap<>();
@@ -27,8 +24,6 @@ public class Initializer {
     public static Location ffa;
     public static Location flat;
     public static Location spawn;
-    public static Economy econ;
-    public static LuckPerms lp;
     public static Practice p;
 
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();

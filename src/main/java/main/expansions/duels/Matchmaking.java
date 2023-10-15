@@ -12,48 +12,6 @@ import static main.expansions.duels.Utils.*;
 import static main.utils.Languages.MAIN_COLOR;
 
 public class Matchmaking {
-    public static void start_ranked(Player p,
-                                    int gm,
-                                    int tier) {
-        p.sendActionBar(main.utils.Utils.translateo(
-                "&aYou have been placed into the " + Duel_Formatted_Type(gm) + " queue."));
-        String n = p.getName();
-        new BukkitRunnable() {
-            int timeout = 0;
-
-            @Override
-            public void run() {
-                if (Bukkit.getPlayer(n) == null) {
-                    this.cancel();
-                    return;
-                }
-
-                Optional<Map.Entry<String, Integer>> op = Initializer.inMatchmaking
-                        .entrySet().stream()
-                        .filter(r -> r.getValue() == gm && !r.getKey().equals(n))
-                        .findFirst();
-                if (op.isPresent()) {
-                    Initializer.inMatchmaking.remove(n);
-                    int check = Duel_GetDuelsAvailableForGM(gm);
-                    if (check >= 32) {
-                        p.sendActionBar("§aCouldn't find any open arena.");
-                        this.cancel();
-                        return;
-                    }
-                    Duel_Start(p, Bukkit.getPlayer(op.get().getKey()), gm, 1, 1, check + 1);
-                    this.cancel();
-                    return;
-                }
-
-                if (++timeout == 10) {
-                    p.sendActionBar("§aCouldn't find any available duels.");
-                    Initializer.inMatchmaking.remove(n);
-                    this.cancel();
-                }
-            }
-        }.runTaskTimer(Initializer.p, 0L, 60L);
-    }
-
     public static void start_unranked(Player p,
                                       int gm) {
         String n = p.getName();
@@ -61,8 +19,21 @@ public class Matchmaking {
                 .entrySet().stream()
                 .filter(r -> r.getValue() == gm && !r.getKey().equals(n))
                 .findFirst();
-        p.sendActionBar(main.utils.Utils.translateo(
-                "&aYou have been placed into the " + Duel_Formatted_Type(gm) + " queue."));
+        if (op.isPresent()) {
+            int check = Duel_GetDuelsAvailableForGM(gm);
+            if (check >= 32) {
+                p.sendActionBar("§aCouldn't find any open arena.");
+                return;
+            }
+            Player j = Bukkit.getPlayer(op.get().getKey());
+            j.sendMessage("§7You are in a duel against " + MAIN_COLOR + n);
+            p.sendMessage("§7You are in a duel against " + MAIN_COLOR + j.getName());
+            Duel_Start(p, j, gm, 1, 1, check + 1);
+            return;
+        }
+
+        p.sendActionBar("§aYou have been placed into the " + Duel_Formatted_Type(gm) + " queue.");
+        Initializer.inMatchmaking.put(n, gm);
         new BukkitRunnable() {
             int timeout = 0;
 

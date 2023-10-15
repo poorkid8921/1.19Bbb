@@ -8,20 +8,91 @@ import org.bukkit.command.CommandSender;
 public class Help implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] strings) {
-        sender.sendMessage(
-                ChatColor.YELLOW + "---- " +
-                        ChatColor.GOLD + "Help " +
-                        ChatColor.YELLOW + "----",
+        int i = 1;
+        if (strings.length > 0) {
+            try {
+                i = Integer.parseInt(strings[0]);
+            } catch (NumberFormatException ignored) {
+            }
+        }
 
-                ChatColor.GOLD +
-                        "/msglock " +
-                        ChatColor.YELLOW +
-                        "- Toggle whether want to receive any messages from other players.",
+        if (i == 1) {
+            sender.sendMessage(
+                    ChatColor.YELLOW + "---- " +
+                            ChatColor.GOLD + "Help | Page 1/3" +
+                            ChatColor.YELLOW + " ----",
 
-                ChatColor.GOLD +
-                        "/tpatoggle " +
-                        ChatColor.YELLOW +
-                        "- Toggle whether you want to receive tp requests.");
+                    ChatColor.GOLD +
+                            "/msglock " +
+                            ChatColor.YELLOW +
+                            "- Toggle whether want to receive any messages from other players.",
+
+                    ChatColor.GOLD +
+                            "/tpatoggle " +
+                            ChatColor.YELLOW +
+                            "- Toggle whether you want to receive tp requests.",
+
+                    ChatColor.GOLD +
+                            "/rtp " +
+                            ChatColor.YELLOW +
+                            "- Random teleport around the world.",
+
+                    ChatColor.GOLD +
+                            "/kit " +
+                            ChatColor.YELLOW +
+                            "- Create or use a kit.");
+        } else if (i == 2) {
+            sender.sendMessage(
+                    ChatColor.YELLOW + "---- " +
+                            ChatColor.GOLD + "Help | Page 2/3" +
+                            ChatColor.YELLOW + " ----",
+
+                    ChatColor.GOLD +
+                            "/kit " +
+                            ChatColor.YELLOW +
+                            "- Create or use a kit.",
+
+                    ChatColor.GOLD +
+                            "/killeffect " +
+                            ChatColor.YELLOW +
+                            "- Choose a kill-effect.",
+
+                    ChatColor.GOLD +
+                            "/report " +
+                            ChatColor.YELLOW +
+                            "- Report a player who broke our rules.",
+
+                    ChatColor.GOLD +
+                            "/duel " +
+                            ChatColor.YELLOW +
+                            "- Open the duel selector, or duel a player in a gamemode you specify.");
+        } else {
+            sender.sendMessage(
+                    ChatColor.YELLOW + "---- " +
+                            ChatColor.GOLD + "Help | Page 3/3" +
+                            ChatColor.YELLOW + " ----",
+
+                    ChatColor.GOLD +
+                            "/ffa " +
+                            ChatColor.YELLOW +
+                            "- Teleport to the FFA arena.",
+
+                    ChatColor.GOLD +
+                            "/flat " +
+                            ChatColor.YELLOW +
+                            "- Teleport to the Flat arena.",
+
+                    ChatColor.GOLD +
+                            "/back " +
+                            ChatColor.YELLOW +
+                            "- Teleport back to the place where you died.",
+
+                    ChatColor.GOLD +
+                            "/discord " +
+                            ChatColor.YELLOW +
+                            "- Get to know our discord link.");
+        }
+
         return true;
     }
 }

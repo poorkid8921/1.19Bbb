@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 
 import static main.utils.RequestManager.addTPArequest;
 import static main.utils.RequestManager.getTPArequest;
-import static main.utils.Utils.translateo;
 
 public class TpahereCommand implements CommandExecutor {
     @Override
@@ -43,9 +42,9 @@ public class TpahereCommand implements CommandExecutor {
             return true;
         }
 
-        if (Practice.cc1.get(
+        if (Practice.config.get(
                 "r." + recipient.getName() + ".t") != null) {
-            user.sendMessage(translateo("&7You can't request this player since they've locked their tp requests."));
+            user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 

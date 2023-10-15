@@ -26,6 +26,13 @@ public class Arena {
         this.c1 = c1;
         this.c2 = c2;
 
+        keys = new Material[]{
+                Material.AIR,
+                Material.DIRT,
+                Material.GRASS_BLOCK,
+                Material.STONE
+        };
+
         int x1 = c1.getBlockX();
         int x2 = c2.getBlockX();
         int y1 = c1.getBlockY();
@@ -181,8 +188,8 @@ public class Arena {
             loc = start.clone().add(loc);
             if (data.index >= width * height * length) {
                 data.sections.add(new Section(data.arena, data.sections.size(), start, end, data.blockTypes, data.blockAmounts));
-                data.blockAmounts = Initializer.NULL_SHORT;
-                data.blockTypes = Initializer.NULL_SHORT;
+                data.blockAmounts = new short[0];
+                data.blockTypes = new short[0];
                 data.sectionStarts.remove(0);
                 data.sectionEnds.remove(0);
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);

@@ -1,6 +1,6 @@
 package main.utils.Instances;
 
-import main.utils.Location;
+import org.bukkit.Location;
 
 public class BackHolder {
     Location back;

@@ -10,15 +10,10 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -30,17 +25,17 @@ import static main.utils.Languages.MAIN_COLOR;
 
 public class Utils {
     public static NamespacedKey spectateHead = new NamespacedKey(Initializer.p, "against");
-    static TextComponent tc = new TextComponent(main.utils.Utils.translateo(" &7has requested that you duel them in "));
-    static TextComponent a = new TextComponent(main.utils.Utils.translateo("&7[&a✔&7]"));
-    static TextComponent b = new TextComponent(main.utils.Utils.translateo("&7[&cX&7]"));
-    static TextComponent duelType2 = new TextComponent(main.utils.Utils.translateo("&7with "));
+    static TextComponent tc = new TextComponent(" §7has requested that you duel them in ");
+    static TextComponent a = new TextComponent("§7[§a✔§7]");
+    static TextComponent b = new TextComponent("§7[§cX§7]");
+    static TextComponent duelType2 = new TextComponent("§7with ");
     static TextComponent space = new TextComponent("  ");
     static SimpleDateFormat MM_HH = new SimpleDateFormat("mm:ss", Locale.ENGLISH);
-    static TextComponent hi = new TextComponent(main.utils.Utils.translateo("&7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ"));
+    static TextComponent hi = new TextComponent("§7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ");
 
     static {
-        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(main.utils.Utils.translateo("&7Click to accept the duel request"))));
-        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(main.utils.Utils.translateo("&7Click to deny the duel request"))));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the duel request")));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the duel request")));
     }
 
     public static DuelHolder getDUELrequest(String user) {
@@ -63,7 +58,7 @@ public class Utils {
         int check = Duel_GetDuelsAvailableForGM(request.getType());
         if (check >= 32) {
             Initializer.duel.remove(request);
-            user.sendMessage(main.utils.Utils.translateo("&7There are no open arenas yet."));
+            user.sendMessage("§7There are no open arenas yet.");
             return;
         }
 
@@ -94,24 +89,22 @@ public class Utils {
             case 0 -> "Field";
             case 1 -> "Flat";
             case 2 -> "Tank";
-            default -> throw new IllegalStateException("Unexpected value: " + i);
+            default -> null;
         };
     }
 
     public static void addDUELrequest(Player sender, Player receiver, int t, int rounds, int sr, int sb, int arena, int length) {
         String sn = sender.getName();
-        Initializer.duel.remove(getDUELrequest(sn));
-        DuelHolder duelRequest = new DuelHolder(sn, receiver.getName(), t, rounds, 0, sr, sb, System.currentTimeMillis(), arena, length);
+        String rn = receiver.getName();
+        DuelHolder duelRequest = new DuelHolder(sn, rn, t, rounds, 0, sr, sb, System.currentTimeMillis(), arena, length);
         Initializer.duel.add(duelRequest);
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage(main.utils.Utils.translate("&7Request sent to #fc282f" + receiver.getDisplayName()));
+        sender.sendMessage(main.utils.Utils.translate("§7Request sent to #fc282f" + receiver.getDisplayName()));
 
-        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
-        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sn));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/duelaccept " + sn));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny " + sn));
 
-        String type = Duel_Formatted_Type(t);
-
-        TextComponent duelType = new TextComponent(type + " ");
+        TextComponent duelType = new TextComponent(Duel_Formatted_Type(t) + " ");
         duelType.setColor(ChatColor.of("#fc282f"));
 
         TextComponent duelType3 = new TextComponent(rounds + " rounds.");
@@ -122,29 +115,29 @@ public class Utils {
 
         receiver.sendMessage(e, tc, duelType, duelType2, duelType3, a, space, b);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> Initializer.duel.remove(duelRequest), 2400L);
+        Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> Initializer.duel.remove(duelRequest), 2400L);
     }
 
     public static void Duel_Resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.cc1.getInt("r." + pl.getName() + ".wins") + " " + Practice.cc1.getInt("r." + pl.getName() + ".losses")));
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
         Initializer.valid.add(rd);
-        pl.sendMessage(main.utils.Utils.translate("&7Teleporting back to spawn in #fc282f3 seconds..."));
+        pl.sendMessage(main.utils.Utils.translate("§7Teleporting back to spawn in #fc282f3 seconds..."));
         pl.sendMessage(hi);
         pl.sendTitle(ff, "", 1, 100, 1);
         pl.getInventory().clear();
         if (i) {
             Initializer.valid.add(ad);
-            p.sendMessage(main.utils.Utils.translate("&7Teleporting back to spawn in #fc282f3 seconds..."));
+            p.sendMessage(main.utils.Utils.translate("§7Teleporting back to spawn in #fc282f3 seconds..."));
             p.sendMessage(hi);
             p.sendTitle(f, "", 1, 100, 1);
             p.getInventory().clear();
         }
 
-        Practice.cc1.set("r." + rd + ".wins", Practice.cc1.getInt("r." + rd + ".wins") + 1);
-        Practice.cc1.set("r." + ad + ".losses", Practice.cc1.getInt("r." + ad + ".losses") + 1);
+        Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
+        Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
 
         Initializer.p.saveCustomConfig();
     }
@@ -165,7 +158,7 @@ public class Utils {
         });
 
         World w = Bukkit.getWorld("world");
-        String a = "&7" + (maxi > 1 ? "Round " + round : "Duel");
+        String a = "§7" + (maxi > 1 ? "Round " + round : "Duel");
         new BukkitRunnable() {
             int i = 5;
 
@@ -174,7 +167,7 @@ public class Utils {
                 user.playSound(user.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
                 recipient.playSound(recipient.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
 
-                if (i == 1) {
+                if (i == 0) {
                     user.sendMessage(a + DUEL_STARTED);
                     recipient.sendMessage(a + DUEL_STARTED);
 
@@ -258,32 +251,5 @@ public class Utils {
             case 2 -> Material.DIAMOND_SWORD;
             default -> throw new IllegalStateException("Unexpected value: " + i);
         };
-    }
-
-    public static void GUI_Duels_Init_Spectate(Inventory inv) {
-        int added = 9;
-        for (DuelHolder r : Initializer.duel) {
-            if (r.getRounds() > 0) {
-                added++;
-                ItemStack i = new ItemStack(Duel_Formatted_Type_Material(r.getType()));
-                ItemMeta im = i.getItemMeta();
-                im.setLore(List.of(getLengthofDuel(r.getMaxPlayers()), main.utils.Utils.translate("#fc282f" + r.getSender().getDisplayName() + " &7ᴀɢᴀɪɴsᴛ #fc282f" + r.getReceiver().getDisplayName())));
-                im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, r.getSender().getName());
-                i.setItemMeta(im);
-                inv.setItem(added, i);
-
-                if (added == 43) break;
-            }
-        }
-    }
-
-    public static void GUI_Duels_Update(Inventory inv) {
-        ItemStack i = new ItemStack(Material.END_CRYSTAL, 1);
-        ItemMeta meta = i.getItemMeta();
-        meta.setDisplayName(main.utils.Utils.translate("#fc282fꜰɪᴇʟᴅ"));
-        meta.setLore(List.of("1V1"));
-        i.setItemMeta(meta);
-        i.setAmount(Math.min(Duel_GetDuelsAvailableForGM(0), 1));
-        inv.setItem(10, i);
     }
 }
