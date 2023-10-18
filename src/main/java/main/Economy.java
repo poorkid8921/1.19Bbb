@@ -1,62 +1,55 @@
 package main;
 
 import commands.*;
+import commands.chat.Msg;
+import commands.chat.MsgLock;
+import commands.chat.Reply;
+import commands.chat.TpaLock;
+import commands.tpa.*;
+import main.expansions.arenas.Arena;
+import main.expansions.arenas.ArenaIO;
+import main.expansions.arenas.CreateCommand;
 import main.utils.Initializer;
 import main.utils.Languages;
-import main.utils.Utils;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.command.Command;
+import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Entity;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static main.utils.Initializer.economy;
 
 @SuppressWarnings("deprecation")
 public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor {
-    private final File cf = new File(getDataFolder(), "data.yml");
-    private FileConfiguration cc = YamlConfiguration.loadConfiguration(cf);
-
-    public void reloadCustomConfig() {
-        cc = YamlConfiguration.loadConfiguration(cf);
-    }
-
-    public FileConfiguration getCustomConfig() {
-        return cc;
-    }
+    public static FileConfiguration cc;
+    int ffa = 1;
+    private File cf;
 
     public void saveCustomConfig() {
         try {
-            getCustomConfig().save(cf);
-        } catch (IOException ex) {
-            this.getLogger().log(Level.SEVERE, "Could not save config to " + cf, ex);
+            cc.save(cf);
+        } catch (IOException ignored) {
         }
     }
 
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+        if (getServer().getPluginManager().getPlugin("Vault") == null)
             return false;
-        }
+
         RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
         if (rsp == null) return false;
 
@@ -71,143 +64,116 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             return;
         }
 
+        cf = new File(getDataFolder(), "data.yml");
+        cc = YamlConfiguration.loadConfiguration(cf);
         Initializer.p = this;
         saveConfig();
 
-        if (cc == null) this.reloadCustomConfig();
         if (!cf.exists()) this.saveCustomConfig();
 
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) Initializer.lp = provider.getProvider();
-        Objects.requireNonNull(this.getCommand("chatlock")).setExecutor(new ChatLock());
-
-        Objects.requireNonNull(this.getCommand("tpa")).setExecutor(new Tpa());
-        Objects.requireNonNull(this.getCommand("tpaall")).setExecutor(new TpaAll());
-        Objects.requireNonNull(this.getCommand("tpaccept")).setExecutor(new Tpaccept());
-        Objects.requireNonNull(this.getCommand("tpahere")).setExecutor(new Tpahere());
-        Objects.requireNonNull(this.getCommand("tpdeny")).setExecutor(new TpDeny());
-
-        Objects.requireNonNull(this.getCommand("tpa")).setTabCompleter(new TabTPA());
-        Objects.requireNonNull(this.getCommand("tpaccept")).setTabCompleter(new TabTPA());
-        Objects.requireNonNull(this.getCommand("tpahere")).setTabCompleter(new TabTPA());
-        Objects.requireNonNull(this.getCommand("msg")).setTabCompleter(new TabMSG());
-
-        Objects.requireNonNull(this.getCommand("spawn")).setExecutor(new Spawn());
-        Objects.requireNonNull(this.getCommand("discord")).setExecutor(new Discord());
-        Objects.requireNonNull(this.getCommand("report")).setExecutor(new Report());
-
-        Objects.requireNonNull(this.getCommand("msglock")).setExecutor(new MsgLock());
-        Objects.requireNonNull(this.getCommand("tpalock")).setExecutor(new TpaLock());
-
-        Objects.requireNonNull(this.getCommand("stats")).setExecutor(new Stats());
-        Objects.requireNonNull(this.getCommand("purge")).setExecutor(new Purge());
-        Objects.requireNonNull(this.getCommand("rtp")).setExecutor(new RTP());
-
-        //Initializer.EXECUTOR.scheduleAtFixedRate(() ->
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () ->
-                Bukkit.getServer().getOnlinePlayers().stream().filter(s ->
-                !s.isInsideVehicle() &&
-                        !s.isGliding() &&
-                        s.getWorld().getBlockAt(new Location(s.getWorld(), s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
-                {
-                    Location l = player.getLocation();
-                    player.teleportAsync(new Location(player.getWorld(),
-                                    l.getX(),
-                                    135,
-                                    l.getZ(),
-                                    l.getYaw(),
-                                    l.getPitch()));
-                    }), 0L, 6000L);
-                                    //})), 0, 20, TimeUnit.MINUTES);
-        int i = 0;
-        long d = new Date().getTime();
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/playerdata/").listFiles()) {
-            if (d - p.lastModified() > 1296000000) {
-                i++;
-                p.delete();
-            }
-        }
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/stats/").listFiles()) {
-            if (d - p.lastModified() > 1296000000) {
-                p.delete();
-            }
-        }
-        Bukkit.getLogger().warning("Successfully purged " + i + " accounts.");
-
-        Bukkit.getServer().getScheduler().runTaskLater(this, Languages::init, 100L);
         Bukkit.getPluginManager().registerEvents(new Events(), this);
-    }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) return true;
+        World d = Bukkit.getWorld("world");
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            d.getEntities().stream()
+                    .filter(r -> r instanceof EnderCrystal)
+                    .forEach(Entity::remove);
+            if (ffa++ == 3)
+                ffa = 1;
 
-        if (cmd.getName().equals("msg")) {
-            if (args.length == 0) {
-                player.sendMessage(Utils.translateo("&7You must specify who you want to message."));
-                return true;
-            } else if (args.length == 1) {
-                player.sendMessage(Utils.translateo("&7You must specify a message to send to the player."));
-                return true;
+            Arena.arenas.get("ffa").reset(200000, "ffa" + ffa, 200000, d);
+        }, 0L, 24000L);
+        // CHAT
+        this.getCommand("msg").setExecutor(new Msg());
+        this.getCommand("reply").setExecutor(new Reply());
+
+        // TPA
+        this.getCommand("tpa").setExecutor(new Tpa());
+        this.getCommand("tpaall").setExecutor(new TpaAll());
+        this.getCommand("tpaccept").setExecutor(new Tpaccept());
+        this.getCommand("tpahere").setExecutor(new Tpahere());
+        this.getCommand("tpdeny").setExecutor(new TpDeny());
+
+        this.getCommand("tpa").setTabCompleter(new TabTPA());
+        this.getCommand("tpaccept").setTabCompleter(new TabTPA());
+        this.getCommand("tpahere").setTabCompleter(new TabTPA());
+
+        // OTHER
+        this.getCommand("report").setExecutor(new Report());
+
+        this.getCommand("msglock").setExecutor(new MsgLock());
+        this.getCommand("tpalock").setExecutor(new TpaLock());
+
+        this.getCommand("stats").setExecutor(new Stats());
+        this.getCommand("acreate").setExecutor(new CreateCommand());
+
+        this.getCommand("spawn").setExecutor(new Spawn());
+        this.getCommand("discord").setExecutor(new Discord());
+        this.getCommand("purge").setExecutor(new Purge());
+
+        File folder = new File(Initializer.p.getDataFolder(), "Arenas");
+        if (!folder.exists()) folder.mkdirs();
+
+        Arena.arenas.clear();
+        Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
+            try {
+                Arena arena = ArenaIO.loadArena(r);
+                if (arena == null) return;
+                Arena.arenas.put(arena.getName(), arena);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        File[] rc = new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/logs/").listFiles();
+
+        try {
+            Pattern p = Pattern.compile("\\$[0-9]+(.[0-9]+)?\\w", Pattern.CASE_INSENSITIVE);
+            String toLookup = "???? » PRITHVI_XD bought";
+            String toLookup2 = "???? » PRITHVI_XD sold";
+            int sold = 0;
+            int bought = 0;
+            int fails = 0;
+            for (File r : Arrays.stream(rc).sorted().toList()) {
+                try {
+                    Scanner myReader = new Scanner(r);
+                    while (myReader.hasNextLine()) {
+                        String data = myReader.nextLine();
+                        if (data.contains(toLookup2)) {
+                            Matcher dc = p.matcher(data.replace(",", ""));
+                            if (!dc.find()) {
+                                fails++;
+                                continue;
+                            }
+
+                            sold += Integer.parseInt(dc.group(1).replace("$", ""));
+                            Bukkit.getLogger().warning(data);
+                        } else if (data.contains(toLookup)) {
+                            Matcher dc = p.matcher(data.replace(",", ""));
+                            if (!dc.find()) {
+                                fails++;
+                                continue;
+                            }
+
+                            bought += Integer.parseInt(dc.group(1).replace("$", ""));
+                            Bukkit.getLogger().warning(data);
+                        } else
+                            fails++;
+                    }
+                    myReader.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
 
-            Player target = Bukkit.getPlayer(args[0]);
+            Bukkit.getLogger().warning("sum: " + (sold - bought) + " | fails: " + fails);
+        } catch (RuntimeException ignored) {
 
-            if (target == null) {
-                player.sendMessage(Utils.translateo("&7You can't send messages to offline players."));
-                return true;
-            }
-
-            String tn = target.getName();
-            if (Utils.manager().get("r." + tn + ".m") != null && !sender.hasPermission("has.staff")) {
-                player.sendMessage(Utils.translateo("&7You can't send messages to this player since they've locked their messages."));
-                return true;
-            }
-
-            StringBuilder msgargs = new StringBuilder();
-
-            for (int i = 1; i < args.length; i++)
-                msgargs.append(args[i]).append(" ");
-
-            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
-            String pn = player.getName();
-            Initializer.lastReceived.put(pn, tn);
-            Initializer.lastReceived.put(tn, pn);
-            return true;
-        } else if (cmd.getName().equals("reply")) {
-            if (args.length == 0) {
-                player.sendMessage(Utils.translateo("&7You must specify a message to send to the player."));
-                return true;
-            }
-
-            String pn = player.getName();
-            if (!Initializer.lastReceived.containsKey(pn)) {
-                player.sendMessage(Utils.translateo("&7You have no one to reply to."));
-                return true;
-            }
-
-            Player target = Bukkit.getPlayer(Initializer.lastReceived.get(pn));
-            if (target == null) {
-                Initializer.lastReceived.remove(pn);
-                player.sendMessage(Utils.translateo("&7You have no one to reply to."));
-                return true;
-            }
-
-            StringBuilder msgargs = new StringBuilder();
-            for (String arg : args) msgargs.append(arg).append(" ");
-
-            player.sendMessage(Utils.translate("&6[&cme &6-> &c" + target.getDisplayName() + "&6] &r" + msgargs));
-            target.sendMessage(Utils.translate("&6[&c" + player.getDisplayName() + " &6-> &cme&6] &r" + msgargs));
-            String tn = target.getName();
-            Initializer.lastReceived.put(tn, pn);
-            return true;
         }
-
-        return false;
+        Languages.init();
     }
 }

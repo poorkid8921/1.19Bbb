@@ -1,8 +1,9 @@
 package main;
 
 import main.utils.Initializer;
-import org.bukkit.command.*;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 
 import java.util.List;
 import java.util.stream.Collectors;

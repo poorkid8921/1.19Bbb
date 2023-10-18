@@ -2,7 +2,7 @@ name: AestheticNetwork
 version: '${project.version}'
 main: main.Economy
 api-version: 1.19
-depend: [Vault, LuckPerms]
+depend: [ Vault ]
 
 commands:
   spawn:
@@ -30,8 +30,6 @@ commands:
     usage: /<command>
   report:
     usage: /<command>
-  chatlock:
-    usage: /<command>
   msglock:
     usage: /<command>
     aliases: [ msgtoggle, togglemsg ]
@@ -43,7 +41,7 @@ commands:
     aliases: statistics
   purge:
     usage: /<command>
-  rtp:
+  acreate:
     usage: /<command>
 permissions:
   has.staff:

@@ -11,14 +11,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 import static main.utils.Utils.report;
-import static main.utils.Utils.translateo;
 
 @SuppressWarnings("deprecation")
 public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(translateo("&7You must specify who you want to report."));
+            sender.sendMessage("§7You must specify who you want to report.");
             return true;
         }
 

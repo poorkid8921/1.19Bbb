@@ -1,16 +1,14 @@
 package commands;
 
+import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import main.utils.Initializer;
 
-import static main.utils.Utils.translate;
-import static main.utils.Utils.translateo;
+import static main.utils.Languages.MAIN_COLOR;
 
 @SuppressWarnings("deprecation")
 public class Stats implements CommandExecutor {
@@ -21,7 +19,7 @@ public class Stats implements CommandExecutor {
             else {
                 Player p = Bukkit.getOfflinePlayer(args[0]).getPlayer();
                 if (p == null) {
-                    pp.sendMessage(translateo("&7You must specify a valid player you want to view statistics of."));
+                    pp.sendMessage("§7You must specify a valid player you want to view statistics of.");
                     return true;
                 }
 
@@ -34,22 +32,23 @@ public class Stats implements CommandExecutor {
 
     private void showstats(Player pp) {
         pp.sendMessage("",
-                "&7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
-                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
-                "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
-                "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
-                "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
-                "  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
+                "§7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
+                "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
+                "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.PLAYER_KILLS),
+                "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DEATHS),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
     }
 
     private void showstats(Player pp, Player t) {
         pp.sendMessage("",
-                translate((t.isOnline() ? "&a" : "&c") + "◆ #fc282f" +
-                        t.getDisplayName() + "&7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:"),
-                "  &7ʙᴀʟᴀɴᴄᴇ #fc282f» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
-                "  &7ᴋɪʟʟs #fc282f» " + pp.getStatistic(Statistic.PLAYER_KILLS),
-                "  &7ᴅᴇᴀᴛʜs #fc282f» " + pp.getStatistic(Statistic.DEATHS),
-                "  &7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
-                "  &7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ #fc282f» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
+                (t.isOnline() ? "§a" : "§c") + "◆ " + MAIN_COLOR +
+                        t.getDisplayName() + "§7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
+                "§7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
+                "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
+                "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.PLAYER_KILLS),
+                "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DEATHS),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
     }
 }

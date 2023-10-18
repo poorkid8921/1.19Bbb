@@ -19,6 +19,7 @@ public abstract class InventoryInstanceReport implements InventoryHolder {
     public Player getPlayer() {
         return player.get();
     }
+
     public String getArg() {
         return arg;
     }

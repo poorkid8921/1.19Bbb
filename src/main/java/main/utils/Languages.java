@@ -1,10 +1,15 @@
 package main.utils;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 public class Languages {
-    // REQUESTS
+    public static TextComponent D_USING = new TextComponent(ChatColor.GRAY + "ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
+    public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴀᴇsᴛʜᴇᴛɪᴄɴᴇᴛᴡᴏʀᴋ");
+
     public static String WHO_TPA;
     public static String MSGLOCK;
     public static String TPALOCK;
@@ -16,23 +21,27 @@ public class Languages {
     public static String EXCEPTION_PLAYER_OFFLINETPA;
     public static String EXCEPTION_PLAYER_TPSELF;
 
-    // GLOBAL
     public static String GLOBAL_EXCEPTION_ALREADY_REQ;
+    public static String MAIN_COLOR;
 
     public static void init() {
-        WHO_TPA = Utils.translateo("&7You must specify who you want to teleport to.");
-        MSGLOCK = Utils.translateo("&7You can receive messages from players again.");
-        TPALOCK = Utils.translateo("&7You can receive tp requests again.");
-        MSGLOCK1 = Utils.translateo("&7You will no longer receive messages from players.");
-        TPALOCK1 = Utils.translateo("&7You will no longer receive tp requests from players.");
+        D_LINK.setColor(ChatColor.of("#fc282f"));
+        D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/aestheticnetwork"));
 
-        EXCEPTION_NO_ACTIVE_TPAREQ = Utils.translateo("&7You got no active teleport request.");
-        EXCEPTION_NO_ACTIVE_TPAREQ1 = Utils.translateo("&7You got no active teleport request from ");
-        EXCEPTION_REPORT_SPECIFY_PLAYER = Utils.translateo("&7You must specify who you want to report.");
-        EXCEPTION_PLAYER_OFFLINETPA = Utils.translateo("&7You can't teleport to offline players.");
-        EXCEPTION_PLAYER_TPSELF = Utils.translateo("&7You can't teleport to yourself.");
+        WHO_TPA = "§7You must specify who you want to teleport to.";
+        MSGLOCK = "§7You can receive messages from players again.";
+        TPALOCK = "§7You can receive tp requests again.";
+        MSGLOCK1 = "§7You will no longer receive messages from players.";
+        TPALOCK1 = "§7You will no longer receive tp requests from players.";
 
-        GLOBAL_EXCEPTION_ALREADY_REQ = Utils.translateo("&7You already have an ongoing request to this player.");
+        EXCEPTION_NO_ACTIVE_TPAREQ = "§7You got no active teleport request.";
+        EXCEPTION_NO_ACTIVE_TPAREQ1 = "§7You got no active teleport request from ";
+        EXCEPTION_REPORT_SPECIFY_PLAYER = "§7You must specify who you want to report.";
+        EXCEPTION_PLAYER_OFFLINETPA = "§7You can't teleport to offline players.";
+        EXCEPTION_PLAYER_TPSELF = "§7You can't teleport to yourself.";
+
+        GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
+        MAIN_COLOR = Utils.translateA("#fc282f");
 
         Initializer.spawn = new Location(Bukkit.getWorld("world"),
                 Initializer.p.getConfig().getDouble("Spawn.X"),
