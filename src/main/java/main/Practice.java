@@ -8,6 +8,7 @@ import main.commands.duel.Duel;
 import main.commands.duel.DuelAccept;
 import main.commands.duel.DuelDeny;
 import main.commands.duel.Event;
+import main.commands.ess.*;
 import main.commands.tpa.*;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
@@ -122,7 +123,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         saveConfig();
 
         if (!cf.exists()) this.saveCustomConfig();
-        Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
@@ -138,7 +138,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     if (flatstr == 5)
                         flatstr = 1;
 
-                    Arena.arenas.get("p_f" + flatstr).reset(940);
+                    Arena.arenas.get("p_f" + flatstr).reset(64);
                     flatstr++;
                 }
 
@@ -164,7 +164,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }, 0L, 2400L);
 
         this.getCommand("report").setExecutor(new Report());
-        this.getCommand("shop").setExecutor(new Killeffect());
+        this.getCommand("killeffect").setExecutor(new Killeffect());
         this.getCommand("discord").setExecutor(new Discord());
 
         this.getCommand("back").setExecutor(new Back());
@@ -201,6 +201,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("gms").setExecutor(new GMs());
         this.getCommand("kickall").setExecutor(new Kickall());
         this.getCommand("list").setExecutor(new List());
+        this.getCommand("unban").setExecutor(new Unban());
+        this.getCommand("ban").setExecutor(new Ban());
 
         File folder = new File(getDataFolder(), "Arenas");
         if (!folder.exists()) folder.mkdirs();
@@ -215,7 +217,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 e.printStackTrace();
             }
         });
-        main.expansions.guis.Utils.init();
         Languages.init();
+        main.expansions.guis.Utils.init();
+        Bukkit.getPluginManager().registerEvents(new Events(), this);
     }
 }

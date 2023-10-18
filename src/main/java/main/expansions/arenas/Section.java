@@ -3,7 +3,6 @@ package main.expansions.arenas;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 
 public class Section {
     private final Arena parent;
@@ -32,13 +31,11 @@ public class Section {
         int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
         int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
 
-        if (resetTypeIndex < 0) {
+        if (resetTypeIndex < 0)
             resetTypeIndex = 0;
-        }
 
-        if (resetLocationIndex < 0) {
+        if (resetLocationIndex < 0)
             resetLocationIndex = 0;
-        }
 
         int count = 0;
         blocksResetThisTick = 0;
@@ -53,9 +50,8 @@ public class Section {
             while (resetCurrentTypeIndex < amount) {
                 Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
 
-                Block block = getStart().add(offset).getBlock();
+                ww.getBlockAt(getStart().add(offset)).setType(data, false);
                 getStart().subtract(offset);
-                if (block.getType() != data) block.setType(data, false);
 
                 count++;
                 resetCurrentTypeIndex++;

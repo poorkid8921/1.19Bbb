@@ -49,20 +49,20 @@ public class Utils {
         inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", List.of("§aUsing too many anchors in flat")));
         report = inv.getContents();
 
-        inv.setItem(10, createItemStack(Material.BONE, "Lightning Bolt",
-                List.of("§a$100",
-                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fᴘᴜʀᴄʜᴀꜱᴇ")));
+        List<String> s = List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fsᴇᴛ");
+        inv.setItem(10, createItemStack(Material.BARRIER, "None",
+                s));
 
-        inv.setItem(11, createItemStack(Material.TNT, "Explosion",
-                List.of("§a$200",
-                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
+        inv.setItem(12, createItemStack(Material.BONE, "Lightning Bolt",
+                s));
 
-        inv.setItem(12, createItemStack(Material.FIREWORK_STAR, "Firework Explosion",
-                List.of("§a$250",
-                        "§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: &fᴘᴜʀᴄʜᴀꜱᴇ")));
+        inv.setItem(13, createItemStack(Material.TNT, "Explosion",
+                s));
 
-        inv.setItem(13, glass);
-        inv.setItem(14, glass);
+        inv.setItem(14, createItemStack(Material.FIREWORK_STAR, "Firework Explosion",
+                s));
+
+        inv.setItem(11, glass);
         inv.setItem(15, glass);
         killeffect = inv.getContents();
 
@@ -85,7 +85,7 @@ public class Utils {
     }
 
     public static void openDuels0(Player p) {
-        inInventory.put(p.getName(), Pair.of(2, null));
+        inInventory.put(p.getName(), Pair.of(2, "-"));
         Inventory inv = Bukkit.createInventory(p, 54, "ᴅᴜᴇʟs");
         inv.setContents(duel1);
         p.openInventory(inv);

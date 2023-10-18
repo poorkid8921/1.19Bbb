@@ -8,6 +8,7 @@ commands:
     usage: /<command>
   discord:
     usage: /<command>
+    aliases: dc
   ffa:
     usage: /<command>
     aliases: [ hole, field ]
@@ -41,7 +42,7 @@ commands:
     aliases: r
   report:
     usage: /<command>
-  shop:
+  killeffect:
     usage: /<command>
   msglock:
     usage: /<command>
@@ -64,6 +65,10 @@ commands:
   kickall:
     usage: /<command>
   list:
+    usage: /<command>
+  ban:
+    usage: /<command>
+  unban:
     usage: /<command>
 permissions:
   has.staff:

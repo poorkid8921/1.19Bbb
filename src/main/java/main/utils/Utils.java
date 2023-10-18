@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Initializer.RANDOM;
-import static main.utils.Initializer.color;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
@@ -50,22 +48,13 @@ public class Utils {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
 
-    public static void spawnFireworks(Location loc) {
-        loc.add(0, 1, 0);
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-    }
-
     public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
 
         Practice.config.set("r." + p.getName() + ".c", toset == -1 ? null : toset);
         plugin.saveCustomConfig();
-        p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇғғᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
-                "ʏᴏᴜʀ ᴋɪʟʟ ᴇғғᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
+        p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
+                "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
     }
 
     public static ItemStack createItemStack(Material mat, String display, List<String> lore) {
@@ -91,7 +80,7 @@ public class Utils {
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
-            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1125353498851168317/8CqqUqAHJn74K1X-9UCLUoHi6psT0Y1t051G5GtOQUPuFRnAAUCXxVL8_Z9jB0I7qm2y");
+            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1163543558398156871/XigQ8rIWMLG2Nh0-j-XjQdourDcvsskcehRBTXRHJMfX63_9cqD5aiDQyvg-s58uVPNj");
             webhook.setAvatarUrl(avturl);
             webhook.setUsername("Report");
             if (reason == null)

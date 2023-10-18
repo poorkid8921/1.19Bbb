@@ -5,9 +5,13 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
-public class Ffa implements CommandExecutor {
+import java.util.List;
+
+public class Ffa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
@@ -19,5 +23,10 @@ public class Ffa implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }

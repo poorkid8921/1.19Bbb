@@ -185,7 +185,7 @@ public class Utils {
                 user.sendTitle(s, "", 1, 20, 1);
                 recipient.sendTitle(s, "", 1, 20, 1);
                 i--;
-                String sec = i == 1 ? MAIN_COLOR + "a second" : s + " seconds";
+                String sec = i == 0 ? MAIN_COLOR + "a second" : s + " seconds";
                 String msg = round > 1 ? "§7Round " + MAIN_COLOR + round + " / " + maxi + " §7starting in " + sec :
                         "§7" + (maxi > 1 ? "Round" : "Duel") + " starting in " + sec;
                 user.sendMessage(msg);
@@ -201,7 +201,41 @@ public class Utils {
         switch (type) {
             case 0 -> {
                 Duels_Kit_Field(p);
-                loc = i == 1 ? new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5) : i == 2 ? new Location(Bukkit.getWorld("world"), -279.5, 149, -432.5) : i == 3 ? new Location(Bukkit.getWorld("world"), -408.5, 149, -432.5) : i == 4 ? new Location(Bukkit.getWorld("world"), -408.5, 149, -303.5) : i == 5 ? new Location(Bukkit.getWorld("world"), -537.5, 149, -303.5) : new Location(Bukkit.getWorld("world"), -637.5, 149.5, -432.5);
+                loc = switch (i) {
+                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
+                    default -> throw new IllegalStateException("Unexpected value: " + i);
+                };
             }
             case 1 -> {
                 Duels_Kit_Flat(p);

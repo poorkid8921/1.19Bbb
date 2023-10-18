@@ -47,22 +47,18 @@ public class TpacceptCommand implements CommandExecutor {
         Player temprecipient;
 
         if (request.isHere()) {
-            tempuser = user;
-            temprecipient = request.getSender();
+            tempuser = request.getSender();
+            temprecipient = user;
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + tempuser.getDisplayName() + "§7's teleport request",
                     "§7Teleporting...");
             tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         } else {
-            tempuser = request.getSender();
-            temprecipient = user;
+            tempuser = user;
+            temprecipient = request.getSender();
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + temprecipient.getDisplayName() + "§7's teleport request",
                     "§7Teleporting...");
             tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         }
-
-        // DEBUG
-        Bukkit.getLogger().warning("HERE: " + (request.isHere() ? "y" : "n") + " USER: " + tempuser.getName() + " | " +
-                "RECIPIENT:" + temprecipient.getName());
 
         tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
         return true;

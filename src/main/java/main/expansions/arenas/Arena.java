@@ -123,7 +123,6 @@ public class Arena {
 
         for (int sx = 0; sx < sectionsX; sx++) {
             for (int zx = 0; zx < sectionsZ; zx++) {
-
                 int xStart = (int) (Math.floor(width / sectionsX) * sx);
                 int zStart = (int) (Math.floor(length / sectionsZ) * zx);
 
@@ -276,13 +275,11 @@ public class Arena {
     }
 
     public void reset(int resetSpeed) {
-        if (getSections().size() == 0) return;
-
         ResetLoopinData data = new ResetLoopinData();
         data.maxBlocksThisTick = resetSpeed;
         data.speed = resetSpeed;
         for (Section s : getSections()) {
-            int sectionAmount = (int) ((double) resetSpeed / (double) getTotalBlocks() * (double) s.getTotalBlocks());
+            int sectionAmount = (int) ((double) resetSpeed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
             if (sectionAmount <= 0) sectionAmount = 1;
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
@@ -291,7 +288,7 @@ public class Arena {
         loopyReset(data);
     }
 
-    private int loopyReset(ResetLoopinData data) {
+    private void loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
 
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
@@ -304,7 +301,6 @@ public class Arena {
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
-
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
 
                 List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
@@ -323,12 +319,10 @@ public class Arena {
             }
         }
 
-        if (data.sections.size() == 0) {
-            return 0;
-        }
+        if (data.sections.size() == 0)
+            return;
 
         loopyReset(data);
-        return 1;
     }
 
     public Material[] getKeys() {
@@ -349,10 +343,6 @@ public class Arena {
 
     public Location getc2() {
         return c2;
-    }
-
-    public int getTotalBlocks() {
-        return (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1);
     }
 
     public List<Section> getSections() {

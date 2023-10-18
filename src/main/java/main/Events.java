@@ -36,19 +36,16 @@ import java.util.List;
 import static main.expansions.duels.Utils.*;
 import static main.expansions.guis.Utils.*;
 import static main.utils.Initializer.*;
-import static main.utils.Initializer.color;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
 import static main.utils.RequestManager.getTPArequest;
 import static main.utils.RequestManager.tpa;
 import static main.utils.Utils.duel_spawnFireworks;
+import static main.utils.Utils.translateA;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    @EventHandler(priority = EventPriority.HIGHEST)
-    private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
-        event.setCancelled(Utils.isSuspectedScanPacket(event.getBuffer()));
-    }
+    String JOIN_PREFIX = translateA("#31ed1c→ ");
 
     // Combat Tag
     /*@EventHandler
@@ -67,6 +64,12 @@ public class Events implements Listener {
         e.setCancelled(Initializer.inCombat.contains(e.getEntity().getName()));
     }
     */
+    String LEAVE_PREFIX = MAIN_COLOR + "← ";
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
+        event.setCancelled(Utils.isSuspectedScanPacket(event.getBuffer()));
+    }
 
     @EventHandler
     private void ItemConsume(PlayerItemConsumeEvent e) {
@@ -92,13 +95,16 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
-        String n = e.getPlayer().getName();
-        if (e.getMessage().length() > 98 || Initializer.chatdelay.getOrDefault(n, 0L) > System.currentTimeMillis()) {
+        Player p = e.getPlayer();
+        String n = p.getName();
+        if (e.getMessage().length() > 98 ||
+                Initializer.chatdelay.getOrDefault(n, 0L) > System.currentTimeMillis()) {
             e.setCancelled(true);
             return;
         }
 
         Initializer.chatdelay.put(n, System.currentTimeMillis() + 500);
+        e.setFormat(p.getDisplayName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -150,6 +156,8 @@ public class Events implements Listener {
         Initializer.msg.remove(playerName);
         Initializer.tpa.remove(playerName);
         Initializer.inFFA.remove(p);
+
+        e.setQuitMessage(LEAVE_PREFIX + playerName);
     }
 
     @EventHandler
@@ -169,9 +177,9 @@ public class Events implements Listener {
 
                 switch (slot) {
                     case 10 -> Utils.killeffect((Player) p, -1, null);
-                    case 11 -> Utils.killeffect((Player) p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
-                    case 12 -> Utils.killeffect((Player) p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
-                    case 13 -> Utils.killeffect((Player) p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 12 -> Utils.killeffect((Player) p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 13 -> Utils.killeffect((Player) p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 14 -> Utils.killeffect((Player) p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
                 }
             } // settings: killeffect
             case 1 -> {
@@ -192,7 +200,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
 
                 switch (inv.second()) {
-                    case null -> { // duels (main menu)
+                    case "-" -> { // duels (main menu)
                         switch (slot) {
                             case 9 -> {
                                 ItemStack s = e.getCurrentItem();
@@ -216,18 +224,18 @@ public class Events implements Listener {
                             }
                         }
                     }
-                    case "0" -> {
-                        switch (slot) {
-                            default -> {
-                                ItemStack item = e.getCurrentItem();
-                                if (item.getType() == Material.PLAYER_HEAD) {
-                                    Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
-                                            .get(spectateHead, PersistentDataType.STRING));
-                                    p.getInventory().close();
-                                }
-                            }
+                    case "0" -> { // spectate
+                        /*switch (slot) {
+                            default -> {*/
+                        ItemStack item = e.getCurrentItem();
+                        if (item.getType() == Material.PLAYER_HEAD) {
+                            Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
+                                    .get(spectateHead, PersistentDataType.STRING));
+                            p.getInventory().close();
                         }
-                    } // spectate
+                        //}
+                        //}
+                    }
                     case "1" -> { // kits
                     }
                     default -> {
@@ -328,6 +336,24 @@ public class Events implements Listener {
             return;
         }
 
+        Bukkit.getLogger().warning(SECOND_COLOR);
+        Bukkit.getLogger().warning(SECOND_COLOR + "☠ " + name);
+        Bukkit.getLogger().warning(switch (p.getLastDamageCause().getCause()) {
+            case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
+            case FALL -> "broke their legs";
+            case FALLING_BLOCK -> "suffocated";
+            case FLY_INTO_WALL -> "thought they're a fly";
+            default -> "suicided";
+        });
+        Bukkit.getLogger().warning(SECOND_COLOR + "☠ " + name + " §7" +
+                switch (p.getLastDamageCause().getCause()) {
+                    case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
+                    case FALL -> "broke their legs";
+                    case FALLING_BLOCK -> "suffocated";
+                    case FLY_INTO_WALL -> "thought they're a fly";
+                    default -> "suicided";
+                });
+
         if (killer == null ||
                 killer.getName().equals(name)) {
             e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" +
@@ -374,9 +400,7 @@ public class Events implements Listener {
                 fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
                 fw.setFireworkMeta(fwm);
             }
-            case 2 -> {
-                p.getWorld().strikeLightningEffect(p.getLocation().add(0, 1, 0));
-            }
+            case 2 -> p.getWorld().strikeLightningEffect(p.getLocation().add(0, 1, 0));
         }
     }
 
@@ -409,6 +433,7 @@ public class Events implements Listener {
         if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
 
         p.teleportAsync(spawn);
+        e.setJoinMessage(JOIN_PREFIX + name);
     }
 
     @EventHandler

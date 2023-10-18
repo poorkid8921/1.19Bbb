@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
-public class Report implements CommandExecutor, TabExecutor {
+public class Report implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
@@ -29,10 +29,5 @@ public class Report implements CommandExecutor, TabExecutor {
             Utils.report((Player) sender, msgargs.toString(), "Other");
         }
         return true;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return null;
     }
 }

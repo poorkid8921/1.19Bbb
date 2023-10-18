@@ -169,8 +169,6 @@ public class KitOverrider {
     }
 
     public static void Duels_Kit_NPOT(Player p) {
-        if (!p.hasPermission("has.staff")) return;
-
         // initializers
         ItemStack helmet = new ItemStack(Material.NETHERITE_HELMET);
         helmet.addEnchantment(Enchantment.MENDING, 1);

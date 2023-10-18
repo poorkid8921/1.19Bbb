@@ -13,7 +13,7 @@
   <component name="McpModuleSettings">
     <option name="srgType" value="SRG" />
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_17_PREVIEW">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_17">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -23,7 +23,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: net.luckperms:api:5.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:guava:31.1-jre" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
@@ -67,10 +66,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm:9.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-commons:9.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-tree:9.4" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.MilkBowl:VaultAPI:1.7" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.bukkit:bukkit:1.13.1-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot:1.19.4-R0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: jline:jline:2.12.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.logging.log4j:log4j-iostreams:2.19.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.oshi:oshi-core:6.2.2" level="project" />
@@ -105,20 +101,6 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-codec:commons-codec:1.11" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.httpcomponents:httpcore:4.4.14" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.slf4j:jcl-over-slf4j:1.7.32" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sk89q.worldedit:worldedit-bukkit:7.2.14" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sk89q.worldedit:worldedit-core:7.2.14" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sk89q.worldedit.worldedit-libs:core:7.2.14" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:antlr4:4.9.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:antlr-runtime:3.5.2" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:ST4:4.3" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.abego.treelayout:org.abego.treelayout.core:1.0.3" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish:javax.json:1.0.4" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.ibm.icu:icu4j:61.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.mozilla:rhino-runtime:1.7.13" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:antlr4-runtime:4.9.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sk89q.worldedit.worldedit-libs:bukkit:7.2.14" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: io.papermc:paperlib:1.0.7" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.bstats:bstats-bukkit:2.2.1" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.bstats:bstats-base:2.2.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT" level="project" />
   </component>
 </module>

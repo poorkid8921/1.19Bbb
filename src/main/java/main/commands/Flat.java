@@ -1,16 +1,27 @@
 package main.commands;
 
+import main.commands.ess.Ban;
 import main.utils.Initializer;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
-public class Flat implements CommandExecutor {
+import java.util.List;
+
+import static main.utils.Languages.MAIN_COLOR;
+
+public class Flat implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
+            if (Ban.flatB.contains(pp.getName())) {
+                pp.sendMessage(MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜɪs ᴍᴏᴅᴇ.");
+                return true;
+            }
             Location l = Initializer.flat;
             Location pl = pp.getLocation();
             l.setYaw(pl.getYaw());
@@ -19,5 +30,10 @@ public class Flat implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }
