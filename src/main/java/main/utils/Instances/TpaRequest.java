@@ -22,6 +22,14 @@ public class TpaRequest {
         return Bukkit.getPlayer(receiver);
     }
 
+    public String getSenderF() {
+        return sender;
+    }
+
+    public String getReceiverF() {
+        return receiver;
+    }
+
     public boolean isHere() {
         return type;
     }

@@ -10,27 +10,24 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static main.utils.Languages.MAIN_COLOR;
 
 @SuppressWarnings("deprecation")
 public class RequestManager {
     public static ArrayList<TpaRequest> tpa = new ArrayList<>();
-    static TextComponent tc = new TextComponent(" §7has requested to teleport to you. ");
-    static TextComponent a = new TextComponent("§7[§a✔§7]");
-    static TextComponent b = new TextComponent("§7[§cX§7]");
+    public static Map<String, Integer> bukkitTasks = new HashMap<>();
     static TextComponent space = new TextComponent("  ");
-
-    static {
-        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
-        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
-    }
 
     public static TpaRequest getTPArequest(String user) {
         for (TpaRequest r : tpa) {
-            if (r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiverF().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
         return null;
@@ -38,7 +35,7 @@ public class RequestManager {
 
     public static TpaRequest getTPArequest(String user, String lookup) {
         for (TpaRequest r : tpa) {
-            if ((r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) && (r.getReceiver().getName().equals(lookup) || r.getSender().getName().equals(lookup)))
+            if ((r.getReceiverF().equals(user) || r.getSenderF().equals(user)) && (r.getReceiverF().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
 
@@ -46,24 +43,39 @@ public class RequestManager {
     }
 
     public static void addTPArequest(Player sender, Player receiver, boolean tpahere) {
-        String sn = sender.getName();
         String rn = receiver.getName();
-        TpaRequest tpaRequest = new TpaRequest(sn, rn, tpahere);
-        tpa.add(tpaRequest);
 
+        TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
+
+        TextComponent b = new TextComponent("§7[§cX§7]");
         b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + rn));
+
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
+
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage("§7Request sent to " + MAIN_COLOR + Utils.translate(receiver.getDisplayName()));
 
-        if (tpahere) tc.setText(" §7has requested that you teleport to them. ");
+        TextComponent tc = new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
+                " §7has requested to teleport to you. ");
+        String sn = sender.getName();
         receiver.sendMessage(new ComponentBuilder(sn)
                         .color(ChatColor.of("#fc282f")).create()[0],
                 tc,
                 a,
                 space,
                 b);
+        TpaRequest tpaRequest = new TpaRequest(sn, rn, tpahere);
+        tpa.add(tpaRequest);
 
-        Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> tpa.remove(tpaRequest), 2400L);
+        BukkitTask br = new BukkitRunnable() {
+            @Override
+            public void run() {
+                tpa.remove(tpaRequest);
+            }
+        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
+
+        bukkitTasks.put(sn, br.getTaskId());
     }
 }

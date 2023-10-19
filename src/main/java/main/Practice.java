@@ -18,12 +18,14 @@ import main.utils.TabTPA;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -58,16 +60,16 @@ public class Practice extends JavaPlugin implements TabExecutor {
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/stats/").listFiles()) {
-            if (d - p.lastModified() > 1296000000) {
+            if (d - p.lastModified() > 6.048e+8) {
                 x++;
                 p.delete();
             }
         }
 
-        for (File p : new File(Bukkit.getWorld("world")
+        /*for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/poi/").listFiles()) {
-            if (d - p.lastModified() > 1296000000) {
+            if (d - p.lastModified() > 8.64e+7) {
                 poi++;
                 p.delete();
             }
@@ -76,11 +78,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/region/").listFiles()) {
-            if (d - p.lastModified() > 1296000000) {
+            if (d - p.lastModified() > 6.048e+8) {
                 poi++;
                 p.delete();
             }
-        }
+        }*/
 
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
@@ -89,8 +91,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
-        Bukkit.getLogger().warning("Successfully purged " + n + " regions.");
-        Bukkit.getLogger().warning("Successfully purged " + poi + " poi regions.");
+        //Bukkit.getLogger().warning("Successfully purged " + n + " regions.");
+        //Bukkit.getLogger().warning("Successfully purged " + poi + " poi regions.");
 
         // less job on the GC
         cf = null;
@@ -124,10 +126,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         if (!cf.exists()) this.saveCustomConfig();
 
+        World d = Bukkit.getWorld("world");
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
-                Bukkit.getWorld("world").getEntities().stream()
-                        .filter(r -> r instanceof EnderCrystal)
+                d.getEntities().stream()
+                        .filter(r -> !(r instanceof Player))
                         .forEach(Entity::remove);
 
                 if (ffastr++ == 3)
@@ -135,15 +138,15 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 Arena.arenas.get("p_h" + ffastr).reset(65000);
 
                 if (!hasReset) {
-                    if (flatstr == 5)
+                    if (flatstr++ == 6)
                         flatstr = 1;
 
-                    Arena.arenas.get("p_f" + flatstr).reset(64);
+                    Arena.arenas.get("p_f" + flatstr).reset(920);
                     flatstr++;
                 }
 
                 hasReset = !hasReset;
-                Arena.arenas.get("ffa").reset(2000000);
+                Arena.arenas.get("ffa").reset(65000);
                 Arena.arenas.get("flat").reset(940);
 
                 inFFA.stream().filter(s -> !s.isInsideVehicle() && !s.isGliding()).forEach(player -> {

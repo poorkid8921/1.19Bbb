@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.RequestManager.bukkitTasks;
 import static main.utils.RequestManager.tpa;
 
 public class TpacceptCommand implements CommandExecutor {
@@ -46,7 +47,7 @@ public class TpacceptCommand implements CommandExecutor {
         Player tempuser;
         Player temprecipient;
 
-        if (request.isHere()) {
+        if (!request.isHere()) {
             tempuser = request.getSender();
             temprecipient = user;
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + tempuser.getDisplayName() + "§7's teleport request",
@@ -60,6 +61,7 @@ public class TpacceptCommand implements CommandExecutor {
             tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         }
 
+        Bukkit.getScheduler().cancelTask(bukkitTasks.get(temprecipient.getName()));
         tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
         return true;
     }

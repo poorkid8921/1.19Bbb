@@ -336,24 +336,6 @@ public class Events implements Listener {
             return;
         }
 
-        Bukkit.getLogger().warning(SECOND_COLOR);
-        Bukkit.getLogger().warning(SECOND_COLOR + "☠ " + name);
-        Bukkit.getLogger().warning(switch (p.getLastDamageCause().getCause()) {
-            case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
-            case FALL -> "broke their legs";
-            case FALLING_BLOCK -> "suffocated";
-            case FLY_INTO_WALL -> "thought they're a fly";
-            default -> "suicided";
-        });
-        Bukkit.getLogger().warning(SECOND_COLOR + "☠ " + name + " §7" +
-                switch (p.getLastDamageCause().getCause()) {
-                    case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
-                    case FALL -> "broke their legs";
-                    case FALLING_BLOCK -> "suffocated";
-                    case FLY_INTO_WALL -> "thought they're a fly";
-                    default -> "suicided";
-                });
-
         if (killer == null ||
                 killer.getName().equals(name)) {
             e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" +
