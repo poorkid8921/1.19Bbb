@@ -10,6 +10,7 @@ public class Languages {
     public static TextComponent D_USING = new TextComponent(ChatColor.GRAY + "ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
     public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴀᴇsᴛʜᴇᴛɪᴄɴᴇᴛᴡᴏʀᴋ");
 
+    public static String BACK;
     public static String DUEL_STARTED;
     public static String WHO_TPA;
     public static String MSGLOCK;
@@ -45,6 +46,7 @@ public class Languages {
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/aestheticnetwork"));
 
+        BACK = "§7Use " + MAIN_COLOR + "/back §7to return to your death location";
         DUEL_STARTED = " started! " + MAIN_COLOR + "Fight!";
 
         WHO_TPA = "§7You must specify who you want to teleport to.";

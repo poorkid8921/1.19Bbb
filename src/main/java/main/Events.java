@@ -7,6 +7,7 @@ import main.expansions.duels.Matchmaking;
 import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
+import main.utils.Languages;
 import main.utils.Utils;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
@@ -76,35 +77,19 @@ public class Events implements Listener {
         e.setCancelled(e.getItem().getType().equals(Material.ENCHANTED_GOLDEN_APPLE));
     }
 
-    @EventHandler
-    private void onDamage(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof EnderCrystal d && e.getDamager() instanceof Player a && a.getPing() > 75) {
-            ((CraftPlayer) a).getHandle().b.a(new PacketPlayOutEntityDestroy(d.getEntityId()));
-            //return;
-        }
-
-        /*Player b = (Player) e.getEntity();
-        if (Initializer.inCombat.contains(b.getName())) return;
-
-        Entity d = e.getDamager();
-        if (!(d instanceof Player p))
-            return;
-
-        new CombatTag(b, p);*/
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
         String n = p.getName();
-        if (e.getMessage().length() > 98 ||
+        String msg = e.getMessage();
+        if (msg.length() > 98 ||
                 Initializer.chatdelay.getOrDefault(n, 0L) > System.currentTimeMillis()) {
             e.setCancelled(true);
             return;
         }
 
+        e.setFormat(chat.getPlayerPrefix("world", p) + n + SECOND_COLOR + " » §r");
         Initializer.chatdelay.put(n, System.currentTimeMillis() + 500);
-        e.setFormat(p.getDisplayName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -365,7 +350,7 @@ public class Events implements Listener {
             Initializer.back.put(name, new BackHolder(l));
         } else back.setBack(l);
 
-        p.sendMessage("§7Use " + MAIN_COLOR + "/back §7to return to your death location.");
+        p.sendMessage(Languages.BACK);
 
         switch (Practice.config.getInt("r." + killer + ".c", -1)) {
             case 0 -> {
@@ -393,7 +378,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        event.getEntity().remove();
+        event.getVehicle().remove();
         event.setCancelled(true);
     }
 

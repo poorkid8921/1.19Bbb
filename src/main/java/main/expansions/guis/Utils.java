@@ -124,7 +124,7 @@ public class Utils {
         Inventory sp = Bukkit.createInventory(null, 54);
         int added = 9;
         for (DuelHolder r : Initializer.duel.stream().filter(r -> r.getRounds() > 0).toList()) {
-            if (added++ == 44) break;
+            if (added++ >= 44) break;
             ItemStack i = new ItemStack(Duel_Formatted_Type_Material(r.getType()));
             ItemMeta im = i.getItemMeta();
             im.setLore(List.of(getLengthofDuel(r.getMaxPlayers()), MAIN_COLOR + r.getSender().getName() + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver().getName()));

@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -19,7 +20,8 @@ public class Ffa implements CommandExecutor, TabExecutor {
             Location pl = pp.getLocation();
             l.setYaw(pl.getYaw());
             l.setYaw(pl.getPitch());
-            pp.teleportAsync(l);
+            pp.teleportAsync(l, PlayerTeleportEvent.TeleportCause.COMMAND);
+            Initializer.inFFA.add(pp);
         }
 
         return true;

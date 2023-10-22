@@ -3,7 +3,6 @@ package main.commands.tpa;
 import main.utils.Instances.TpaRequest;
 import main.utils.Languages;
 import main.utils.RequestManager;
-import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,7 +35,7 @@ public class TpacceptCommand implements CommandExecutor {
                 n = p.getName();
             request = RequestManager.getTPArequest(user.getName(), n);
             msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ1 +
-                    Utils.translateA("#fc282f") + args[0] + ".";
+                    MAIN_COLOR + args[0] + ".";
         }
 
         if (request == null) {
@@ -56,12 +55,12 @@ public class TpacceptCommand implements CommandExecutor {
         } else {
             tempuser = user;
             temprecipient = request.getSender();
-            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + temprecipient.getDisplayName() + "§7's teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + tempuser.getDisplayName() + "§7's teleport request",
                     "§7Teleporting...");
             tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         }
 
-        Bukkit.getScheduler().cancelTask(bukkitTasks.get(temprecipient.getName()));
+        Bukkit.getScheduler().cancelTask(bukkitTasks.get(tempuser.getName()));
         tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
         return true;
     }

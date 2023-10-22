@@ -4,6 +4,7 @@ import io.netty.util.internal.ThreadLocalRandom;
 import main.Practice;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
+import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -36,4 +37,5 @@ public class Initializer {
 
     public static ArrayList<DuelHolder> duel = new ArrayList<>();
     public static ArrayList<String> valid = new ArrayList<>();
+    public static Chat chat;
 }

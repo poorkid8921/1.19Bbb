@@ -96,9 +96,6 @@ public class Duel implements CommandExecutor, TabExecutor {
             if (tpr.getSender().equals(user)) {
                 user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
-            } else if (tpr.getReceiver().equals(user)) {
-                Duel_Accept_Request(tpr, user);
-                return true;
             }
         }
 

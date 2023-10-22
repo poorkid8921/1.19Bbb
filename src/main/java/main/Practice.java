@@ -15,6 +15,7 @@ import main.expansions.arenas.ArenaIO;
 import main.expansions.arenas.CreateCommand;
 import main.utils.Languages;
 import main.utils.TabTPA;
+import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,9 +24,9 @@ import org.bukkit.block.Block;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -40,9 +41,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
     private static File cf;
-    int ffastr = 1;
     int flatstr = 1;
-    boolean hasReset;
+    int ticked = 0;
 
     public void saveCustomConfig() {
         try {
@@ -55,8 +55,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
     public void onDisable() {
         long d = new Date().getTime();
         int x = 0;
-        int n = 0;
-        int poi = 0;
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/stats/").listFiles()) {
@@ -66,24 +64,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
             }
         }
 
-        /*for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/poi/").listFiles()) {
-            if (d - p.lastModified() > 8.64e+7) {
-                poi++;
-                p.delete();
-            }
-        }
-
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/region/").listFiles()) {
-            if (d - p.lastModified() > 6.048e+8) {
-                poi++;
-                p.delete();
-            }
-        }*/
-
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/entities/").listFiles()) {
@@ -91,13 +71,12 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
-        //Bukkit.getLogger().warning("Successfully purged " + n + " regions.");
-        //Bukkit.getLogger().warning("Successfully purged " + poi + " poi regions.");
 
         // less job on the GC
+        ticked = 0;
+        chat = null;
         cf = null;
         config = null;
-        hasReset = false;
         df = null;
 
         RANDOM = null;
@@ -114,8 +93,17 @@ public class Practice extends JavaPlugin implements TabExecutor {
         valid.clear();
     }
 
+    private boolean setupChat() {
+        RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
+        chat = rsp.getProvider();
+        return chat != null;
+    }
+
     @Override
     public void onEnable() {
+        if (!setupChat())
+            return;
+
         df = getDataFolder();
 
         cf = new File(df, "data.yml");
@@ -133,38 +121,37 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         .filter(r -> !(r instanceof Player))
                         .forEach(Entity::remove);
 
-                if (ffastr++ == 3)
-                    ffastr = 1;
-                Arena.arenas.get("p_h" + ffastr).reset(65000);
-
-                if (!hasReset) {
+                Arena.arenas.get("flat").reset(30000);
+                if (ticked++ == 3) {
                     if (flatstr++ == 6)
                         flatstr = 1;
 
-                    Arena.arenas.get("p_f" + flatstr).reset(920);
-                    flatstr++;
+                    Arena.arenas.get("p_f" + flatstr).reset(30000);
                 }
 
-                hasReset = !hasReset;
-                Arena.arenas.get("ffa").reset(65000);
-                Arena.arenas.get("flat").reset(940);
+                if (ticked == 4) {
+                    ticked = 0;
+                    Arena.arenas.get("ffa").reset(30000);
+                    Arena.arenas.get("ffaup").reset(65000);
+                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                        Location location = player.getLocation();
+                        location.setY(200);
+                        Block b = d.getBlockAt(location);
+                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
 
-                inFFA.stream().filter(s -> !s.isInsideVehicle() && !s.isGliding()).forEach(player -> {
-                    Location location = player.getLocation();
-                    location.setY(198);
-                    Block b = player.getWorld().getBlockAt(location);
-                    Block b2 = player.getWorld().getBlockAt(location.add(0, 1, 0));
-
-                    b2.setType(Material.AIR, false);
-                    b.setType(Material.AIR, false);
-                    location.setY(player.getWorld().getHighestBlockYAt(location) + 1);
-                    player.teleportAsync(location).thenAccept(reason -> {
-                        b.setType(Material.BARRIER, false);
-                        b2.setType(Material.BARRIER, false);
+                        b2.setType(Material.AIR, false);
+                        b.setType(Material.AIR, false);
+                        location.setY(d.getHighestBlockYAt(location) + 1);
+                        player.teleportAsync(location).thenAccept(reason -> {
+                            b.setType(Material.BARRIER, false);
+                            b2.setType(Material.BARRIER, false);
+                        });
                     });
-                });
+                }
             }
         }, 0L, 2400L);
+
+        this.getCommand("vanish").setExecutor(new Vanish());
 
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
@@ -214,7 +201,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
             try {
                 Arena arena = ArenaIO.loadArena(r);
-                if (arena == null) return;
+                if (arena == null)
+                    return;
                 Arena.arenas.put(arena.getName(), arena);
             } catch (Exception e) {
                 e.printStackTrace();

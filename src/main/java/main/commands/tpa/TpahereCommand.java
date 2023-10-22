@@ -37,9 +37,11 @@ public class TpahereCommand implements CommandExecutor {
 
         TpaRequest tpr = getTPArequest(recipient.getName());
 
-        if (tpr != null && tpr.getSender().equals(user)) {
-            user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
-            return true;
+        if (tpr != null) {
+            if (tpr.getSender().equals(user)) {
+                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
+                return true;
+            }
         }
 
         if (Practice.config.get(

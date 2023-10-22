@@ -18,15 +18,11 @@ public class TpaRequest {
         return Bukkit.getPlayer(sender);
     }
 
-    public Player getReceiver() {
-        return Bukkit.getPlayer(receiver);
-    }
-
     public String getSenderF() {
         return sender;
     }
 
-    public String getReceiverF() {
+    public String getReceiver() {
         return receiver;
     }
 

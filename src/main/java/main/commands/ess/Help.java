@@ -12,11 +12,11 @@ import java.util.List;
 
 public class Help implements CommandExecutor, TabExecutor {
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] strings) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         int i = 1;
-        if (strings.length > 0) {
+        if (args.length > 0) {
             try {
-                i = Integer.parseInt(strings[0]);
+                i = Integer.parseInt(args[0]);
             } catch (NumberFormatException ignored) {
             }
         }

@@ -7,7 +7,6 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,7 +26,7 @@ public class RequestManager {
 
     public static TpaRequest getTPArequest(String user) {
         for (TpaRequest r : tpa) {
-            if (r.getReceiverF().equals(user) || r.getSenderF().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
         return null;
@@ -35,7 +34,7 @@ public class RequestManager {
 
     public static TpaRequest getTPArequest(String user, String lookup) {
         for (TpaRequest r : tpa) {
-            if ((r.getReceiverF().equals(user) || r.getSenderF().equals(user)) && (r.getReceiverF().equals(lookup) || r.getSenderF().equals(lookup)))
+            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
 
@@ -43,13 +42,12 @@ public class RequestManager {
     }
 
     public static void addTPArequest(Player sender, Player receiver, boolean tpahere) {
-        String rn = receiver.getName();
-
+        String sn = sender.getName();
         TextComponent a = new TextComponent("§7[§a✔§7]");
-        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
 
         TextComponent b = new TextComponent("§7[§cX§7]");
-        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + rn));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sn));
 
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
@@ -59,14 +57,13 @@ public class RequestManager {
 
         TextComponent tc = new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
                 " §7has requested to teleport to you. ");
-        String sn = sender.getName();
         receiver.sendMessage(new ComponentBuilder(sn)
                         .color(ChatColor.of("#fc282f")).create()[0],
                 tc,
                 a,
                 space,
                 b);
-        TpaRequest tpaRequest = new TpaRequest(sn, rn, tpahere);
+        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere);
         tpa.add(tpaRequest);
 
         BukkitTask br = new BukkitRunnable() {

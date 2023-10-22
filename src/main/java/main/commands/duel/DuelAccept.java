@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 
 import static main.expansions.duels.Utils.*;
+import static main.expansions.guis.Utils.updateDuels;
+import static main.expansions.guis.Utils.updateSpectate;
 import static main.utils.Initializer.teams;
 import static main.utils.Languages.MAIN_COLOR;
 
@@ -56,6 +58,8 @@ public class DuelAccept implements CommandExecutor {
                 1,
                 request.getMaxrounds(),
                 check + 1);
+        updateDuels();
+        updateSpectate();
         return true;
     }
 }

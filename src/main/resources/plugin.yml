@@ -70,6 +70,9 @@ commands:
     usage: /<command>
   unban:
     usage: /<command>
+  vanish:
+    aliases: v
+    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

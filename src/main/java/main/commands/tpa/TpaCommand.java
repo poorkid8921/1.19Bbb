@@ -36,9 +36,11 @@ public class TpaCommand implements CommandExecutor {
 
         TpaRequest tpr = getTPArequest(recipient.getName());
 
-        if (tpr != null && tpr.getSender().equals(user)) {
-            user.sendMessage("§7You already have an ongoing request to this player.");
-            return true;
+        if (tpr != null) {
+            if (tpr.getSender().equals(user)) {
+                user.sendMessage("§7You already have an ongoing request to this player.");
+                return true;
+            }
         }
 
         if (Practice.config.get("r." + recipient.getName() + ".t") != null) {

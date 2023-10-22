@@ -159,8 +159,7 @@ public class Arena {
                 Arena.arenas.put(arena.name, arena);
                 ArenaIO.saveArena(new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json"), arena);
 
-                if (player != null && player.isOnline())
-                    player.sendMessage(ChatColor.GREEN + "Done! The arena is now ready for use!");
+                player.sendMessage("Done! The arena is now ready for use!");
             }
         };
 
@@ -219,7 +218,8 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.totalBlocks++;
                 data.index++;
-                updatePlayerCreate(player, data);
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+                    data.lastUpdate = System.currentTimeMillis();
                 continue;
             }
 
@@ -228,7 +228,8 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.index++;
                 data.totalBlocks++;
-                updatePlayerCreate(player, data);
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+                    data.lastUpdate = System.currentTimeMillis();
 
                 if (data.blockAmounts[data.blockAmounts.length - 1] == Short.MAX_VALUE) {
                     data.blockTypes = ArrayUtils.add(data.blockTypes, blockKeyIndex);
@@ -243,22 +244,11 @@ public class Arena {
             data.index++;
             data.totalBlocks++;
 
-            updatePlayerCreate(player, data);
+            if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+                data.lastUpdate = System.currentTimeMillis();
         }
         if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
         loopyCreate(data, amount, player, onFinished);
-    }
-
-    private static void updatePlayerCreate(Player player, CreationLoopinData data) {
-        if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
-            double perc = ((double) data.totalBlocks / (double) data.maxBlocks);
-            NumberFormat format = NumberFormat.getPercentInstance();
-            format.setMinimumFractionDigits(2);
-            String percS = format.format(perc);
-            if (player != null && player.isOnline())
-                player.sendMessage(ChatColor.GREEN + "Arena " + percS + " analyzed (" + NumberFormat.getInstance().format(data.totalBlocks) + " blocks)");
-            data.lastUpdate = System.currentTimeMillis();
-        }
     }
 
     public static Location getLocationAtIndex(int width, int length, World world, int index) {
@@ -292,7 +282,7 @@ public class Arena {
         data.blocksThisTick = 0;
 
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
-            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
+            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
             boolean reset = s.reset(data.sections.get(id));
             if (reset) {
