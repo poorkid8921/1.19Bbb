@@ -1,22 +1,20 @@
 package main;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
-import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import main.utils.Initializer;
 import main.utils.InventoryInstanceReport;
 import main.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.SpawnerSpawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -25,8 +23,6 @@ import static main.utils.Utils.spawnFireworks;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    int x = 0;
-
     ItemStack pick = new ItemStack(Material.IRON_PICKAXE, 1);
     ItemStack sword = new ItemStack(Material.IRON_SWORD, 1);
     ItemStack helmet = new ItemStack(Material.IRON_HELMET, 1);
@@ -119,16 +115,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onSpawner(SpawnerSpawnEvent e) {
-        e.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onDispense(BlockPreDispenseEvent e) {
-        e.setCancelled(e.getItemStack().getType().equals(Material.TNT));
-    }
-
-    @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         Player kp = p.getKiller();
@@ -179,22 +165,6 @@ public class Events implements Listener {
         String name = p.getName();
         if (Initializer.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis()) e.setCancelled(true);
         else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500);
-    }
-
-    @EventHandler
-    public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        if (x++ == 128) {
-            x = 0;
-
-            int y = 0;
-            for (Entity e : event.getVehicle().getChunk().getEntities()) {
-                if (!(e instanceof Minecart))
-                    return;
-
-                if (y++ >= 16)
-                    e.remove();
-            }
-        }
     }
 
     @EventHandler

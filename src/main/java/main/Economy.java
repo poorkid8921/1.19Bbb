@@ -33,9 +33,9 @@ import static main.utils.Initializer.economy;
 @SuppressWarnings("deprecation")
 public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor {
     public static FileConfiguration cc;
-    int ffa = 1;
     public static File cf;
     public static File df;
+    int ffa = 1;
 
     public void saveCustomConfig() {
         try {
