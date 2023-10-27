@@ -5,13 +5,9 @@ import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import main.utils.Initializer;
 import main.utils.InventoryInstanceReport;
 import main.utils.Utils;
-import net.luckperms.api.model.user.User;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Minecart;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -24,14 +20,48 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static main.utils.Utils.isSuspectedScanPacket;
 import static main.utils.Utils.spawnFireworks;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
+    int x = 0;
+
+    ItemStack pick = new ItemStack(Material.IRON_PICKAXE, 1);
+    ItemStack sword = new ItemStack(Material.IRON_SWORD, 1);
+    ItemStack helmet = new ItemStack(Material.IRON_HELMET, 1);
+    ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE, 1);
+    ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS, 1);
+    ItemStack boots = new ItemStack(Material.IRON_BOOTS, 1);
+    int stock = 0;
+
+    public Events() {
+        pick.addEnchantment(Enchantment.DIG_SPEED, 3);
+        pick.addEnchantment(Enchantment.DURABILITY, 2);
+        pick.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 2);
+        pick.addEnchantment(Enchantment.MENDING, 1);
+
+        sword.addEnchantment(Enchantment.DAMAGE_ALL, 2);
+        sword.addEnchantment(Enchantment.DURABILITY, 2);
+        sword.addEnchantment(Enchantment.MENDING, 1);
+
+        helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+        helmet.addEnchantment(Enchantment.DURABILITY, 2);
+        helmet.addEnchantment(Enchantment.MENDING, 1);
+
+        chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+        chestplate.addEnchantment(Enchantment.DURABILITY, 2);
+        chestplate.addEnchantment(Enchantment.MENDING, 1);
+
+        leggings.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+        leggings.addEnchantment(Enchantment.DURABILITY, 2);
+        leggings.addEnchantment(Enchantment.MENDING, 1);
+
+        boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+        boots.addEnchantment(Enchantment.DURABILITY, 2);
+        boots.addEnchantment(Enchantment.MENDING, 1);
+    }
+
     @EventHandler
     private void onPortal(PlayerPortalEvent event) {
         Player player = event.getPlayer();
@@ -101,12 +131,11 @@ public class Events implements Listener {
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
-        if (p.getKiller() == null) return;
         Player kp = p.getKiller();
+        if (kp == null) return;
 
-        User user = Initializer.lp.getPlayerAdapter(Player.class).getUser(kp);
         Location loc = p.getLocation();
-        if (!user.getPrimaryGroup().equals("default")) {
+        if (!Initializer.lp.getPlayerAdapter(Player.class).getUser(kp).getPrimaryGroup().equals("default")) {
             loc.add(0, 1, 0);
             switch (Initializer.RANDOM.nextInt(4)) {
                 case 0 -> spawnFireworks(loc);
@@ -152,15 +181,19 @@ public class Events implements Listener {
         else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500);
     }
 
-    int x = 0;
     @EventHandler
     public void onVehicleCollide(VehicleEntityCollisionEvent event) {
-        if (++x == 16) {
+        if (x++ == 128) {
             x = 0;
-            List<Entity> c = Arrays.stream(event.getVehicle().getChunk()
-                    .getEntities()).toList().stream().filter(r -> r instanceof Minecart).toList();
-            if (c.size() >= 16)
-                c.forEach(Entity::remove);
+
+            int y = 0;
+            for (Entity e : event.getVehicle().getChunk().getEntities()) {
+                if (!(e instanceof Minecart))
+                    return;
+
+                if (y++ >= 16)
+                    e.remove();
+            }
         }
     }
 
@@ -168,45 +201,15 @@ public class Events implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (!p.hasPlayedBefore()) {
-            ItemStack pick = new ItemStack(Material.IRON_PICKAXE, 1);
-            ItemStack sword = new ItemStack(Material.IRON_SWORD, 1);
-            ItemStack helmet = new ItemStack(Material.IRON_HELMET, 1);
-            ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE, 1);
-            ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS, 1);
-            ItemStack boots = new ItemStack(Material.IRON_BOOTS, 1);
-
-            pick.addEnchantment(Enchantment.DIG_SPEED, 3);
-            pick.addEnchantment(Enchantment.DURABILITY, 2);
-            pick.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, 2);
-            pick.addEnchantment(Enchantment.MENDING, 1);
-
-            sword.addEnchantment(Enchantment.DAMAGE_ALL, 2);
-            sword.addEnchantment(Enchantment.DURABILITY, 2);
-            sword.addEnchantment(Enchantment.MENDING, 1);
-
-            helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
-            helmet.addEnchantment(Enchantment.DURABILITY, 2);
-            helmet.addEnchantment(Enchantment.MENDING, 1);
-
-            chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
-            chestplate.addEnchantment(Enchantment.DURABILITY, 2);
-            chestplate.addEnchantment(Enchantment.MENDING, 1);
-
-            leggings.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
-            leggings.addEnchantment(Enchantment.DURABILITY, 2);
-            leggings.addEnchantment(Enchantment.MENDING, 1);
-
-            boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
-            boots.addEnchantment(Enchantment.DURABILITY, 2);
-            boots.addEnchantment(Enchantment.MENDING, 1);
-
-            p.getInventory().addItem(sword);
-            p.getInventory().addItem(pick);
-            p.getInventory().setItemInOffHand(new ItemStack(Material.BREAD, 16));
-            p.getInventory().setHelmet(helmet);
-            p.getInventory().setChestplate(chestplate);
-            p.getInventory().setLeggings(leggings);
-            p.getInventory().setBoots(boots);
+            if (stock++ <= 50) {
+                p.getInventory().addItem(sword);
+                p.getInventory().addItem(pick);
+                p.getInventory().setItemInOffHand(new ItemStack(Material.BREAD, 16));
+                p.getInventory().setHelmet(helmet);
+                p.getInventory().setChestplate(chestplate);
+                p.getInventory().setLeggings(leggings);
+                p.getInventory().setBoots(boots);
+            }
             p.teleportAsync(Initializer.spawn);
         } else if (p.getHealth() == 0.0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {

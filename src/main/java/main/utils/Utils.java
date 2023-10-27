@@ -26,16 +26,8 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    static TextComponent tc = new TextComponent(" §7has requested to teleport to you. ");
-    static TextComponent a = new TextComponent("§7[§a✔§7]");
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-    static TextComponent b = new TextComponent("§7[§cX§7]");
     static TextComponent space = new TextComponent("  ");
-
-    static {
-        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
-        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
-    }
 
     public static boolean isSuspectedScanPacket(String buffer) {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
@@ -118,7 +110,7 @@ public class Utils {
 
     public static TpaRequest getRequest(String user) {
         for (TpaRequest r : Initializer.requests) {
-            if (r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
         return null;
@@ -126,7 +118,7 @@ public class Utils {
 
     public static TpaRequest getRequest(String user, String lookup) {
         for (TpaRequest r : Initializer.requests) {
-            if ((r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) && (r.getReceiver().getName().equalsIgnoreCase(lookup) || r.getSender().getName().equalsIgnoreCase(lookup)))
+            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equalsIgnoreCase(lookup) || r.getSender().getName().equalsIgnoreCase(lookup)))
                 return r;
         }
 
@@ -138,17 +130,22 @@ public class Utils {
         String rn = receiver.getName();
         TpaRequest tpaRequest;
 
+        TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
+
+        TextComponent b = new TextComponent("§7[§cX§7]");
         b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + rn));
+
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         if (showmsg) sender.sendMessage("§7Request sent to " + MAIN_COLOR + translate(receiver.getDisplayName()));
 
-        if (tpahere) {
-            tpaRequest = new TpaRequest(sn, receiver.getName(), true, false);
-            tc.setText(" §7has requested that you teleport to them. ");
-        } else tpaRequest = new TpaRequest(sn, receiver.getName(), false, true);
+        TextComponent tc = new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
+                " §7has requested to teleport to you. ");
 
+        tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
         Initializer.requests.add(tpaRequest);
         receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0], tc, a, space, b);
 

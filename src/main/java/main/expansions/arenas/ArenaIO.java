@@ -6,10 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -18,77 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ArenaIO {
-    private static final byte SECTION_SPLIT = '\u0002';
-    private static final byte KEY_SPLIT = '\u0003';
-
-    public static void saveArena(File file, final Arena arena, Runnable... callback) {
-        try {
-            FileOutputStream stream = new FileOutputStream(file);
-            Location l = arena.getc1();
-            Location l2 = arena.getc2();
-
-            String header = arena.getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ() + "," +
-                    l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ();
-            byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
-
-            byte[] keyBytes = new byte[0];
-
-            for (Material data : arena.getKeys()) {
-                keyBytes = ArrayUtils.addAll(keyBytes, data.name().getBytes(StandardCharsets.US_ASCII));
-                keyBytes = ArrayUtils.add(keyBytes, KEY_SPLIT);
-            }
-
-            keyBytes = ArrayUtils.remove(keyBytes, keyBytes.length - 1);
-
-            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-
-            short sections = (short) arena.getSections().size();
-
-            ByteBuffer sb = ByteBuffer.allocate(2);
-            sb.putShort(sections);
-
-            byteStream.write(sb.array());
-
-            for (int s = 0; s < arena.getSections().size(); s++) {
-                Section section = arena.getSections().get(s);
-
-                ByteBuffer ib = ByteBuffer.allocate((7 * 4) + (section.getBlockAmounts().length * 4));
-
-                ib.putInt(section.getStart().getBlockX());
-                ib.putInt(section.getStart().getBlockY());
-                ib.putInt(section.getStart().getBlockZ());
-                ib.putInt(section.getEnd().getBlockX());
-                ib.putInt(section.getEnd().getBlockY());
-                ib.putInt(section.getEnd().getBlockZ());
-
-                ib.putInt(section.getBlockTypes().length * 2);
-
-                for (int i = 0; i < section.getBlockAmounts().length; i++) {
-                    ib.putShort(section.getBlockAmounts()[i]);
-                    ib.putShort(section.getBlockTypes()[i]);
-                }
-
-                byteStream.write(ib.array());
-            }
-
-            byte[] blockBytes = byteStream.toByteArray();
-
-            byte[] totalBytes = new byte[0];
-            totalBytes = ArrayUtils.addAll(totalBytes, headerBytes);
-            totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
-            totalBytes = ArrayUtils.addAll(totalBytes, keyBytes);
-            totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
-            totalBytes = Utils.compress(ArrayUtils.addAll(totalBytes, blockBytes));
-
-            stream.write(totalBytes);
-            stream.close();
-
-            for (Runnable r : callback) r.run();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    static final byte SECTION_SPLIT = '\u0002';
+    static final byte KEY_SPLIT = '\u0003';
 
     public static Arena loadArena(File file) {
         try {
@@ -179,7 +107,6 @@ public class ArenaIO {
             }
 
             return arena;
-
         } catch (Exception e) {
             e.printStackTrace();
         }

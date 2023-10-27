@@ -9,6 +9,7 @@ commands:
     usage: /<command>
   discord:
     usage: /<command>
+    aliases: dc
   tpa:
     usage: /<command>
     aliases: tpr

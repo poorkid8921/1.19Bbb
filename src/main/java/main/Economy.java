@@ -13,6 +13,8 @@ import main.utils.Initializer;
 import main.utils.Languages;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabExecutor;
@@ -20,16 +22,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static main.utils.Initializer.economy;
 
@@ -37,7 +34,8 @@ import static main.utils.Initializer.economy;
 public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor {
     public static FileConfiguration cc;
     int ffa = 1;
-    private File cf;
+    public static File cf;
+    public static File df;
 
     public void saveCustomConfig() {
         try {
@@ -46,33 +44,18 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         }
     }
 
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null)
-            return false;
-
-        RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        if (rsp == null) return false;
-
-        economy = rsp.getProvider();
-        return true;
-    }
-
     @Override
     public void onEnable() {
-        if (!setupEconomy()) {
-            setEnabled(false);
-            return;
-        }
-
-        cf = new File(getDataFolder(), "data.yml");
+        df = getDataFolder();
+        cf = new File(df, "data.yml");
         cc = YamlConfiguration.loadConfiguration(cf);
         Initializer.p = this;
         saveConfig();
 
         if (!cf.exists()) this.saveCustomConfig();
 
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) Initializer.lp = provider.getProvider();
+        Initializer.lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
+        economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         World d = Bukkit.getWorld("world");
@@ -83,7 +66,19 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             if (ffa++ == 3)
                 ffa = 1;
 
-            Arena.arenas.get("ffa").reset(200000, "ffa" + ffa, 200000, d);
+            Arena.arenas.get("ffa").reset(200000);
+            Arena.arenas.get("ffa" + ffa).reset(20000);
+            Bukkit.getOnlinePlayers().stream().filter(s -> !s.isGliding() &&
+                    d.getBlockAt(new Location(d, s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
+            {
+                Location l = player.getLocation();
+                player.teleportAsync(new Location(d,
+                        l.getX(),
+                        135,
+                        l.getZ(),
+                        l.getYaw(),
+                        l.getPitch()));
+            });
         }, 0L, 24000L);
         // CHAT
         this.getCommand("msg").setExecutor(new Msg());
@@ -127,53 +122,7 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             }
         });
 
-        File[] rc = new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/logs/").listFiles();
-
-        try {
-            Pattern p = Pattern.compile("\\$[0-9]+(.[0-9]+)?\\w", Pattern.CASE_INSENSITIVE);
-            String toLookup = "???? » PRITHVI_XD bought";
-            String toLookup2 = "???? » PRITHVI_XD sold";
-            int sold = 0;
-            int bought = 0;
-            int fails = 0;
-            for (File r : Arrays.stream(rc).sorted().toList()) {
-                try {
-                    Scanner myReader = new Scanner(r);
-                    while (myReader.hasNextLine()) {
-                        String data = myReader.nextLine();
-                        if (data.contains(toLookup2)) {
-                            Matcher dc = p.matcher(data.replace(",", ""));
-                            if (!dc.find()) {
-                                fails++;
-                                continue;
-                            }
-
-                            sold += Integer.parseInt(dc.group(1).replace("$", ""));
-                            Bukkit.getLogger().warning(data);
-                        } else if (data.contains(toLookup)) {
-                            Matcher dc = p.matcher(data.replace(",", ""));
-                            if (!dc.find()) {
-                                fails++;
-                                continue;
-                            }
-
-                            bought += Integer.parseInt(dc.group(1).replace("$", ""));
-                            Bukkit.getLogger().warning(data);
-                        } else
-                            fails++;
-                    }
-                    myReader.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            Bukkit.getLogger().warning("sum: " + (sold - bought) + " | fails: " + fails);
-        } catch (RuntimeException ignored) {
-
-        }
         Languages.init();
+        Initializer.requests.remove(null);
     }
 }

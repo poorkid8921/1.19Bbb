@@ -9,7 +9,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import static main.utils.Utils.getRequest;
 
@@ -20,8 +20,9 @@ public class TpaAll implements CommandExecutor {
 
         user.sendMessage("§7Requested everyone to teleport to you.");
 
-        Collection<? extends Player> c = Bukkit.getOnlinePlayers();
+        ArrayList<Player> c = new ArrayList<>(Bukkit.getOnlinePlayers());
         c.remove(user);
+
         for (Player i : c) {
             TpaRequest tpr = getRequest(i.getName());
 

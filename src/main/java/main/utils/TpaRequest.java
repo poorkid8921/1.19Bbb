@@ -5,13 +5,13 @@ import org.bukkit.entity.Player;
 
 public class TpaRequest {
     private final String sender;
-    private final String reciever;
+    private final String receiver;
     private final boolean type;
     private final boolean showacceptmsg;
 
     public TpaRequest(String sender, String receiver, boolean type, boolean showacceptmsg) {
         this.sender = sender;
-        this.reciever = receiver;
+        this.receiver = receiver;
         this.type = type;
         this.showacceptmsg = showacceptmsg;
     }
@@ -24,8 +24,12 @@ public class TpaRequest {
         return !showacceptmsg;
     }
 
-    public Player getReceiver() {
-        return Bukkit.getPlayer(reciever);
+    public String getSenderF() {
+        return sender;
+    }
+
+    public String getReceiver() {
+        return receiver;
     }
 
     public boolean isHere() {

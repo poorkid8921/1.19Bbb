@@ -23,6 +23,7 @@ public class Languages {
 
     public static String GLOBAL_EXCEPTION_ALREADY_REQ;
     public static String MAIN_COLOR;
+    public static String SECOND_COLOR;
 
     public static void init() {
         D_LINK.setColor(ChatColor.of("#fc282f"));
@@ -42,6 +43,7 @@ public class Languages {
 
         GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
         MAIN_COLOR = Utils.translateA("#fc282f");
+        SECOND_COLOR = Utils.translateA("#d6a7eb");
 
         Initializer.spawn = new Location(Bukkit.getWorld("world"),
                 Initializer.p.getConfig().getDouble("Spawn.X"),

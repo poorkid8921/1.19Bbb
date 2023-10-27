@@ -1,6 +1,7 @@
 package commands.tpa;
 
 import main.Economy;
+import main.utils.Initializer;
 import main.utils.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -16,6 +17,7 @@ public class Tpa implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
+        Bukkit.getLogger().warning(Initializer.requests.toString());
         if (args.length < 1) {
             user.sendMessage("§7You must specify who you want to teleport to.");
             return true;
@@ -36,9 +38,11 @@ public class Tpa implements CommandExecutor {
         String rep = recipient.getName();
         TpaRequest tpr = getRequest(rep);
 
-        if (tpr != null && tpr.getSender().equals(user)) {
-            user.sendMessage("§7You already have an ongoing request to this player.");
-            return true;
+        if (tpr != null) {
+            if (tpr.getSender().equals(user)) {
+                user.sendMessage("§7You already have an ongoing request to this player.");
+                return true;
+            }
         }
 
         if (Economy.cc.get("r." + rep + ".t") != null) {

@@ -45,14 +45,14 @@ public class Tpaccept implements CommandExecutor {
         if (request.isHere()) {
             tempuser = user;
             temprecipient = request.getSender();
-            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
+            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(temprecipient.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
-                tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
+                temprecipient.sendMessage(MAIN_COLOR + translate(tempuser.getDisplayName()) + " §7has accepted your teleport request");
         } else {
             tempuser = request.getSender();
             temprecipient = user;
-            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(temprecipient.getDisplayName()) + "§7's teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
                 tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");

@@ -37,9 +37,11 @@ public class Tpahere implements CommandExecutor {
 
         TpaRequest tpr = getRequest(rn);
 
-        if (tpr != null && tpr.getSender().equals(sender)) {
-            user.sendMessage("§7You already have an ongoing request to this player.");
-            return true;
+        if (tpr != null) {
+            if (tpr.getSender().equals(sender)) {
+                user.sendMessage("§7You already have an ongoing request to this player.");
+                return true;
+            }
         }
 
         if (Economy.cc.get("r." + rn + ".t") != null) {
