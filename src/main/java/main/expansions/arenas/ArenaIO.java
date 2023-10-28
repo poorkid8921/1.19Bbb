@@ -18,10 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ArenaIO {
-    private static final byte SECTION_SPLIT = '\u0002';
-    private static final byte KEY_SPLIT = '\u0003';
+    private static byte SECTION_SPLIT = '\u0002';
+    private static byte KEY_SPLIT = '\u0003';
 
-    public static void saveArena(File file, final Arena arena, Runnable... callback) {
+    public static void saveArena(File file, Arena arena, Runnable... callback) {
         Location corner1 = arena.getc1();
         Location corner2 = arena.getc2();
 

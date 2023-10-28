@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.*;
 
 public class DiscordWebhook {
-    private final String url;
-    private final List<EmbedObject> embeds = new ArrayList<>();
+    private String url;
+    private List<EmbedObject> embeds = new ArrayList<>();
     private String content;
     private String username;
     private String avatarUrl;
@@ -136,7 +136,7 @@ public class DiscordWebhook {
     }
 
     public static class EmbedObject {
-        private final List<Field> fields = new ArrayList<>();
+        private List<Field> fields = new ArrayList<>();
         private String title;
         private String description;
         private String url;
@@ -204,8 +204,8 @@ public class DiscordWebhook {
         }
 
         private static class Footer {
-            private final String text;
-            private final String iconUrl;
+            private String text;
+            private String iconUrl;
 
             private Footer(String text, String iconUrl) {
                 this.text = text;
@@ -222,7 +222,7 @@ public class DiscordWebhook {
         }
 
         private static class Thumbnail {
-            private final String url;
+            private String url;
 
             private Thumbnail(String url) {
                 this.url = url;
@@ -234,7 +234,7 @@ public class DiscordWebhook {
         }
 
         private static class Image {
-            private final String url;
+            private String url;
 
             private Image(String url) {
                 this.url = url;
@@ -246,9 +246,9 @@ public class DiscordWebhook {
         }
 
         private static class Author {
-            private final String name;
-            private final String url;
-            private final String iconUrl;
+            private String name;
+            private String url;
+            private String iconUrl;
 
             private Author(String name, String url, String iconUrl) {
                 this.name = name;
@@ -270,9 +270,9 @@ public class DiscordWebhook {
         }
 
         private static class Field {
-            private final String name;
-            private final String value;
-            private final boolean inline;
+            private String name;
+            private String value;
+            private boolean inline;
 
             private Field(String name, String value, boolean inline) {
                 this.name = name;
@@ -295,7 +295,7 @@ public class DiscordWebhook {
     }
 
     private static class JSONObject {
-        private final HashMap<String, Object> map = new HashMap<>();
+        private HashMap<String, Object> map = new HashMap<>();
 
         void put(String key, Object value) {
             if (value != null) {

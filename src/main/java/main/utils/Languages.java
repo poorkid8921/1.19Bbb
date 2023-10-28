@@ -28,9 +28,14 @@ public class Languages {
     public static String EXCEPTION_REPORT_SPECIFY_PLAYER;
     public static String EXCEPTION_PLAYER_OFFLINETPA;
     public static String EXCEPTION_PLAYER_TPSELF;
+    public static String EXCEPTION_NO_ARGS_TELEPORT;
 
     public static String MAIN_COLOR;
     public static String SECOND_COLOR;
+    public static String TELEPORTING_BACK;
+    public static String EXCEPTION_NO_ARGS_WARP;
+    public static String EXCEPTION_DOESNT_EXIST_WARP;
+    public static String EXCEPTION_INVALID_WARP;
 
     // GLOBAL
     public static String GLOBAL_EXCEPTION_ALREADY_REQ;
@@ -69,7 +74,13 @@ public class Languages {
 
         GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
 
+        TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
         DUELS_WINNER = new TextComponent("§7ᴡɪɴɴᴇʀ ");
+
+        EXCEPTION_NO_ARGS_TELEPORT = "§7You must specify a player";
+        EXCEPTION_NO_ARGS_WARP = "§7You must specify a warp";
+        EXCEPTION_DOESNT_EXIST_WARP = "§7The specified warp doesn't exist";
+        EXCEPTION_INVALID_WARP = "§7You must specify a valid warp";
 
         Initializer.ffa = new org.bukkit.Location(Bukkit.getWorld("world"),
                 Initializer.p.getConfig().getDouble("ffa.X"),

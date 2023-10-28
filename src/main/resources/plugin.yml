@@ -43,6 +43,7 @@ commands:
   report:
     usage: /<command>
   killeffect:
+    aliases: shop
     usage: /<command>
   msglock:
     usage: /<command>
@@ -72,6 +73,30 @@ commands:
     usage: /<command>
   vanish:
     aliases: v
+    usage: /<command>
+  warp:
+    usage: /<command>
+  setwarp:
+    usage: /<command>
+  tp:
+    usage: /<command>
+  tphere:
+    usage: /<command>
+  ss:
+    usage: /<command>
+  irename:
+    usage: /<command>
+    aliases: itemrename
+  k1:
+    usage: /<command>
+    aliases: kit1
+  k2:
+    usage: /<command>
+    aliases: kit2
+  k3:
+    usage: /<command>
+    aliases: kit3
+  kit:
     usage: /<command>
 permissions:
   has.staff:

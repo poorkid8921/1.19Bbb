@@ -5,13 +5,13 @@ import org.bukkit.Material;
 import org.bukkit.World;
 
 public class Section {
-    private final Arena parent;
-    private final Location start;
-    private final Location end;
-    private final short[] blockTypes;
-    private final short[] blockAmounts;
+    private Arena parent;
+    private Location start;
+    private Location end;
+    private short[] blockTypes;
+    private short[] blockAmounts;
 
-    private final int ID;
+    private int ID;
 
     private int resetTypeIndex;
     private int resetLocationIndex;

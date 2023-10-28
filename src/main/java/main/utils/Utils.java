@@ -76,7 +76,8 @@ public class Utils {
 
     public static void report(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(translate("#fc282f" + d + " §7has submitted a report against #fc282f" + report + " §7with the reason of #fc282f" + reason)));
+        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
+                report + " §7with the reason of " + MAIN_COLOR + reason));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";

@@ -2,7 +2,7 @@ package main.expansions.arenas;
 
 import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,15 +10,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.text.NumberFormat;
 import java.util.*;
 
 public class Arena {
     public static Map<String, Arena> arenas = new HashMap<>();
-    private final Location c1;
-    private final Location c2;
-    private final List<Section> sections = new ArrayList<>();
-    private final String name;
+    private Location c1;
+    private Location c2;
+    private List<Section> sections = new ArrayList<>();
+    private String name;
     private Material[] keys;
 
     Arena(String name, Location c1, Location c2) {
@@ -166,7 +165,7 @@ public class Arena {
         loopyCreate(data, 1000000, player, runnable);
     }
 
-    private static void loopyCreate(CreationLoopinData data, final int amount, Player player, Runnable onFinished) {
+    private static void loopyCreate(CreationLoopinData data, int amount, Player player, Runnable onFinished) {
         Location start = data.sectionStarts.get(0);
         Location end = data.sectionEnds.get(0);
         int width = end.getBlockX() - start.getBlockX() + 1;
@@ -312,7 +311,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return;
 
-        loopyReset(data);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
     }
 
     public Material[] getKeys() {

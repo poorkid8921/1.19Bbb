@@ -15,13 +15,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 import static main.expansions.duels.KitOverrider.*;
-import static main.expansions.guis.Utils.updateDuels;
-import static main.expansions.guis.Utils.updateSpectate;
-import static main.utils.Languages.DUEL_STARTED;
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Languages.*;
 
 public class Utils {
     public static NamespacedKey spectateHead = new NamespacedKey(Initializer.p, "against");
@@ -40,7 +36,7 @@ public class Utils {
 
     public static DuelHolder getDUELrequest(String user) {
         for (DuelHolder r : Initializer.duel) {
-            if (r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSender().getName().equals(user)) return r;
         }
 
         return null;
@@ -48,7 +44,7 @@ public class Utils {
 
     public static DuelHolder getPlayerDuel(String user) {
         for (DuelHolder r : Initializer.inDuel) {
-            if (r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSender().getName().equals(user)) return r;
         }
 
         return null;
@@ -56,7 +52,7 @@ public class Utils {
 
     public static DuelHolder getDUELrequest(String user, String lookup) {
         for (DuelHolder r : Initializer.duel) {
-            if ((r.getReceiver().getName().equals(user) || r.getSender().getName().equals(user)) && (r.getReceiver().getName().equals(lookup) || r.getSender().getName().equals(lookup)))
+            if ((r.getReceiver().equals(user) || r.getSender().getName().equals(user)) && (r.getReceiver().equals(lookup) || r.getSender().getName().equals(lookup)))
                 return r;
         }
 
@@ -82,7 +78,7 @@ public class Utils {
         DuelHolder duelRequest = new DuelHolder(sn, rn, t, rounds, 0, sr, sb, System.currentTimeMillis(), arena, length);
         Initializer.duel.add(duelRequest);
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage("§7Request sent to #fc282f" + main.utils.Utils.translate(receiver.getDisplayName()));
+        sender.sendMessage("§7Request sent to " + MAIN_COLOR + main.utils.Utils.translate(receiver.getDisplayName()));
 
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/duelaccept " + sn));
         b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny " + sn));
@@ -106,15 +102,15 @@ public class Utils {
 
         hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
         Initializer.valid.add(rd);
-        pl.sendMessage(main.utils.Utils.translate("§7Teleporting back to spawn in #fc282f3 seconds..."));
+        pl.sendMessage(TELEPORTING_BACK);
         pl.sendMessage(hi);
-        pl.sendTitle(ff, "", 1, 100, 1);
+        pl.sendTitle(ff, null, 1, 100, 1);
         pl.getInventory().clear();
         if (i) {
             Initializer.valid.add(ad);
-            p.sendMessage(main.utils.Utils.translate("§7Teleporting back to spawn in #fc282f3 seconds..."));
+            p.sendMessage(TELEPORTING_BACK);
             p.sendMessage(hi);
-            p.sendTitle(f, "", 1, 100, 1);
+            p.sendTitle(f, null, 1, 100, 1);
             p.getInventory().clear();
         }
 
@@ -125,9 +121,241 @@ public class Utils {
     }
 
     public static void Duel_Start(Player user, Player recipient, int type, int round, int maxi, int arena) {
-        Location loc = Duel_Loc1(type, user, arena);
-        Location loc2 = Duel_Loc0(type, recipient, arena);
-        user.teleportAsync(loc).thenAccept(r -> {
+        Location loc1 = null;
+        Location loc2 = null;
+        user.getInventory().clear();
+        recipient.getInventory().clear();
+
+        World w = Bukkit.getWorld("world");
+        switch (type) {
+            case 0 -> {
+                Duels_Kit_Field(user);
+                Duels_Kit_Field(recipient);
+                loc1 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+                loc2 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+            }
+            case 1 -> {
+                Duels_Kit_Flat(user);
+                Duels_Kit_Flat(recipient);
+                loc1 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+                loc2 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+            }
+            case 2 -> {
+                Duels_Kit_Tank(user);
+                Duels_Kit_Tank(recipient);
+                loc1 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+                loc2 = switch (arena) {
+                    case 1 -> new Location(w, -391.5, 149, -303.5);
+                    case 2 -> new Location(w, -391.5, 149, -303.5);
+                    case 3 -> new Location(w, -391.5, 149, -303.5);
+                    case 4 -> new Location(w, -391.5, 149, -303.5);
+                    case 5 -> new Location(w, -391.5, 149, -303.5);
+                    case 6 -> new Location(w, -391.5, 149, -303.5);
+                    case 7 -> new Location(w, -391.5, 149, -303.5);
+                    case 8 -> new Location(w, -391.5, 149, -303.5);
+                    case 9 -> new Location(w, -391.5, 149, -303.5);
+                    case 10 -> new Location(w, -391.5, 149, -303.5);
+                    case 11 -> new Location(w, -391.5, 149, -303.5);
+                    case 12 -> new Location(w, -391.5, 149, -303.5);
+                    case 13 -> new Location(w, -391.5, 149, -303.5);
+                    case 14 -> new Location(w, -391.5, 149, -303.5);
+                    case 15 -> new Location(w, -391.5, 149, -303.5);
+                    case 16 -> new Location(w, -391.5, 149, -303.5);
+                    case 17 -> new Location(w, -391.5, 149, -303.5);
+                    case 18 -> new Location(w, -391.5, 149, -303.5);
+                    case 19 -> new Location(w, -391.5, 149, -303.5);
+                    case 20 -> new Location(w, -391.5, 149, -303.5);
+                    case 21 -> new Location(w, -391.5, 149, -303.5);
+                    case 22 -> new Location(w, -391.5, 149, -303.5);
+                    case 23 -> new Location(w, -391.5, 149, -303.5);
+                    case 24 -> new Location(w, -391.5, 149, -303.5);
+                    case 25 -> new Location(w, -391.5, 149, -303.5);
+                    case 26 -> new Location(w, -391.5, 149, -303.5);
+                    case 27 -> new Location(w, -391.5, 149, -303.5);
+                    case 28 -> new Location(w, -391.5, 149, -303.5);
+                    case 29 -> new Location(w, -391.5, 149, -303.5);
+                    case 30 -> new Location(w, -391.5, 149, -303.5);
+                    case 31 -> new Location(w, -391.5, 149, -303.5);
+                    case 32 -> new Location(w, -391.5, 149, -303.5);
+                    default -> null;
+                };
+            }
+        }
+
+        loc1.setYaw(-45.0F);
+        loc2.setYaw(45.0F);
+
+        user.teleportAsync(loc1).thenAccept(r -> {
             user.setNoDamageTicks(100);
             user.setFoodLevel(20);
             user.setHealth(20);
@@ -139,8 +367,9 @@ public class Utils {
             recipient.setHealth(20);
         });
 
-        World w = Bukkit.getWorld("world");
         String a = "§7" + (maxi > 1 ? "Round " + round : "Duel");
+        Location finalLoc1 = loc1;
+        Location finalLoc2 = loc2;
         new BukkitRunnable() {
             int i = 5;
 
@@ -156,16 +385,16 @@ public class Utils {
                     user.sendTitle(MAIN_COLOR + "Fight!", "", 1, 30, 1);
                     recipient.sendTitle(MAIN_COLOR + "Fight!", "", 1, 30, 1);
 
-                    user.teleportAsync(loc).thenAccept(r -> w.setType(loc.subtract(0, 1, 0), Material.GOLD_BLOCK));
-                    recipient.teleportAsync(loc2).thenAccept(r -> w.setType(loc2.subtract(0, 1, 0), Material.GOLD_BLOCK));
+                    user.teleportAsync(finalLoc1).thenAccept(r -> w.setType(finalLoc1.subtract(0, 1, 0), Material.GOLD_BLOCK));
+                    recipient.teleportAsync(finalLoc2).thenAccept(r -> w.setType(finalLoc2.subtract(0, 1, 0), Material.GOLD_BLOCK));
 
                     this.cancel();
                     return;
                 }
 
                 String s = MAIN_COLOR + i;
-                user.sendTitle(s, "", 1, 20, 1);
-                recipient.sendTitle(s, "", 1, 20, 1);
+                user.sendTitle(s, null, 1, 20, 1);
+                recipient.sendTitle(s, null, 1, 20, 1);
                 i--;
                 String sec = i == 0 ? MAIN_COLOR + "a second" : s + " seconds";
                 String msg = round > 1 ? "§7Round " + MAIN_COLOR + round + " / " + maxi + " §7starting in " + sec :
@@ -174,256 +403,6 @@ public class Utils {
                 recipient.sendMessage(msg);
             }
         }.runTaskTimer(Initializer.p, 0L, 20L);
-    }
-
-    public static Location Duel_Loc1(int type, Player p, int i) {
-        Location loc = new Location(Bukkit.getWorld("world"), 0, 0, 0);
-        p.getInventory().clear();
-
-        switch (type) {
-            case 0 -> {
-                Duels_Kit_Field(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-            case 1 -> {
-                Duels_Kit_Flat(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-            case 2 -> {
-                Duels_Kit_Tank(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-        }
-        loc.setYaw(-45.0F);
-
-        return loc;
-    }
-
-    public static Location Duel_Loc0(int type, Player p, int i) {
-        Location loc = new Location(Bukkit.getWorld("world"), 0, 0, 0);
-        p.getInventory().clear();
-
-        switch (type) {
-            case 0 -> {
-                Duels_Kit_Field(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-            case 1 -> {
-                Duels_Kit_Flat(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-            case 2 -> {
-                Duels_Kit_Tank(p);
-                loc = switch (i) {
-                    case 1 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 2 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 3 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 4 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 5 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 6 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 7 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 8 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 9 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 10 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 11 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 12 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 13 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 14 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 15 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 16 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 17 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 18 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 19 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 20 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 21 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 22 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 23 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 24 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 25 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 26 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 27 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 28 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 29 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 30 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 31 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    case 32 -> new Location(Bukkit.getWorld("world"), -391.5, 149, -303.5);
-                    default -> throw new IllegalStateException("Unexpected value: " + i);
-                };
-            }
-        }
-        loc.setYaw(45.0F);
-
-        return loc;
     }
 
     public static String getLengthofDuel(int i) {

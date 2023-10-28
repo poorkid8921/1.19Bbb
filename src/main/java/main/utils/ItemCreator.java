@@ -31,6 +31,14 @@ public class ItemCreator {
         return item;
     }
 
+    public static ItemStack getItem(String name, Material mat) {
+        ItemStack item = new ItemStack(mat, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        item.setItemMeta(meta);
+        return item;
+    }
+
     public static ItemStack getHead(String name, String player, List<String> lore) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta meta = (SkullMeta) item.getItemMeta();

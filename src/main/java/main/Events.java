@@ -4,31 +4,30 @@ import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import it.unimi.dsi.fastutil.Pair;
 import main.expansions.arenas.Arena;
 import main.expansions.duels.Matchmaking;
-import main.utils.Initializer;
+import main.utils.*;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
-import main.utils.Languages;
-import main.utils.Utils;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
 import org.bukkit.block.data.type.Piston;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -39,8 +38,6 @@ import static main.expansions.guis.Utils.*;
 import static main.utils.Initializer.*;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
-import static main.utils.RequestManager.getTPArequest;
-import static main.utils.RequestManager.tpa;
 import static main.utils.Utils.duel_spawnFireworks;
 import static main.utils.Utils.translateA;
 
@@ -81,14 +78,17 @@ public class Events implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
         String n = p.getName();
-        String msg = e.getMessage();
-        if (msg.length() > 98 ||
+        if (e.getMessage().length() > 98 ||
                 Initializer.chatdelay.getOrDefault(n, 0L) > System.currentTimeMillis()) {
             e.setCancelled(true);
             return;
         }
 
-        e.setFormat(chat.getPlayerPrefix("world", p) + n + SECOND_COLOR + " » §r");
+        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") +
+                n +
+                SECOND_COLOR +
+                " » §r" +
+                e.getMessage());
         Initializer.chatdelay.put(n, System.currentTimeMillis() + 500);
     }
 
@@ -109,7 +109,8 @@ public class Events implements Listener {
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
-            int t1 = Initializer.teams.get(pw.getName());
+            String pwn = pw.getName();
+            int t1 = Initializer.teams.get(pwn);
 
             if (t1 == 1) red += 1;
             else blue += 1;
@@ -127,14 +128,14 @@ public class Events implements Listener {
             plist.clear();
             Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> {
                 Initializer.teams.remove(playerName);
-                Initializer.teams.remove(pw.getName());
+                Initializer.teams.remove(pwn);
                 Initializer.duel.remove(tpr);
                 pw.teleportAsync(Initializer.spawn);
             }, 60L);
         }
 
-        tpa.remove(getTPArequest(playerName));
-        duel.remove(getDUELrequest(playerName));
+        //tpa.remove(getTPArequest(playerName));
+        //duel.remove(getDUELrequest(playerName));
 
         Initializer.back.remove(playerName);
         Initializer.lastReceived.remove(playerName);
@@ -147,10 +148,12 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getClickedInventory() instanceof PlayerInventory) return;
+        Inventory c = e.getClickedInventory();
+        if (c instanceof PlayerInventory) return;
 
-        HumanEntity p = e.getWhoClicked();
-        Pair<Integer, String> inv = inInventory.getOrDefault(p.getName(), null);
+        Player p = (Player) e.getWhoClicked();
+        String pn = p.getName();
+        Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
         if (inv == null)
             return;
 
@@ -192,7 +195,6 @@ public class Events implements Listener {
                                 ItemMeta meta = s.getItemMeta();
                                 meta.addEnchant(Enchantment.DURABILITY, 1, false);
                                 s.setItemMeta(meta);
-                                String pn = p.getName();
                                 DuelHolder d = getDUELrequest(pn);
                                 if (!duel.contains(d)) {
                                     p.closeInventory();
@@ -210,30 +212,143 @@ public class Events implements Listener {
                         }
                     }
                     case "0" -> { // spectate
-                        /*switch (slot) {
-                            default -> {*/
                         ItemStack item = e.getCurrentItem();
                         if (item.getType() == Material.PLAYER_HEAD) {
                             Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer()
                                     .get(spectateHead, PersistentDataType.STRING));
                             p.getInventory().close();
                         }
-                        //}
-                        //}
                     }
-                    case "1" -> { // kits
+                    case "1" -> { // kit override
+
                     }
                     default -> {
                     }
                 }
             } // duels: null\dynamic
+            case 3 -> {
+                String s = inv.second();
+                switch (s) {
+                    case "0" -> {
+                        e.setCancelled(true);
+                        if (slot >= 10 && slot <= 12) {
+                            if (e.isLeftClick()) {
+                                KitClaimer.claim(p, slot - 9, false);
+                                p.closeInventory();
+                            } else
+                                main.expansions.guis.Utils.openKitEditor(p, slot - 9);
+                        } else if (slot == 38)
+                            main.expansions.guis.Utils.openKitRoom(p);
+                        else if (slot == 43)
+                            main.expansions.guis.Utils.openPublicKits(p, 1);
+                    } // kit menu
+                    default -> {
+                        if (slot >= 41)
+                            e.setCancelled(true);
+                        switch (slot) {
+                            case 45 -> main.expansions.guis.Utils.openKitMenu(p);
+                            case 47 -> {
+                                for (int j = 0; j <= 40; ++j) {
+                                    c.setItem(j, p.getInventory().getItem(j));
+                                }
+                            }
+                            case 50 -> {
+                                for (int j = 0; j <= 40; ++j) {
+                                    c.setItem(j, null);
+                                }
+                            }
+                            case 51 -> {
+                                /*String key = pn + "-" + s;
+                                if (!Practice.kitMap.get(key).containsKey("name")) {
+                                    new me.gatligator.personalkits.GUIs.RenameKit(p, s);
+                                    break;
+                                }
+                                Practice.kitMap.get(key).remove("name");
+                                p.sendMessage("§dKit name removed.");
+                                inInventory.remove(key);
+                                new me.gatligator.personalkits.GUIs.KitEditor(p, "Kit " + s);*/
+                            }
+                            case 53 -> {
+                                SaveEditor.save(p, s, false);
+
+                                String key = pn + "-" + s;
+                                if (Practice.kitMap.get(key).containsKey("public")) {
+                                    Practice.kitMap.get(key).remove("public");
+                                    p.sendMessage("§dKit made private.");
+                                    c.setItem(53, ItemCreator.getHead("§a§lMAKE PUBLIC", "Kevos", null));
+                                    break;
+                                }
+                                if (Practice.kitMap.get(key).containsKey("items")) {
+                                    p.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
+                                    Practice.kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
+                                    c.setItem(53, ItemCreator.getItem(ChatColor.GREEN + "" + ChatColor.BOLD + "§a§lMAKE PRIVATE", Material.FIREWORK_STAR, null));
+                                    break;
+                                }
+                                p.sendMessage("§cCannot publish an empty kit.");
+                            }
+                        }
+                    } // kit editor
+                }
+            } // kits
+            case 4 -> {
+                if (slot >= 45)
+                    e.setCancelled(true);
+
+                if (slot >= 47 && slot <= 51) {
+                    int oldPage = Integer.parseInt(inInventory.get(pn).second()) + 46;
+                    c.setItem(oldPage, ItemCreator.disEnchant(c.getItem(oldPage)));
+                    int newPage = slot - 46;
+                    c.setItem(slot, ItemCreator.enchant(e.getCurrentItem()));
+                    for (int i = 0; i <= 44; ++i) {
+                        c.setItem(i, Practice.kitRoomMap.get(newPage)[i]);
+                    }
+                    inInventory.put(pn, Pair.of(4, String.valueOf(newPage)));
+                } else if (slot == 53) {
+                    for (int j = 0; j <= 44; ++j) {
+                        c.setItem(j, Practice.kitRoomMap.get(Integer.parseInt(inInventory.get(pn).second()))[j]);
+                    }
+                } else if (slot == 45)
+                    main.expansions.guis.Utils.openKitMenu(p);
+            } // virtual kit room
+            case 5 -> {
+                e.setCancelled(true);
+                ItemStack ci = e.getCurrentItem();
+                if (slot >= 10 && slot <= 43 && ci.getType() == Material.CHEST &&
+                        e.isLeftClick()) {
+                    ItemMeta meta = ci.getItemMeta();
+                    PersistentDataContainer container = meta.getPersistentDataContainer();
+                    KitClaimer.claimPublicKit(p, container.get(itemKey, PersistentDataType.STRING));
+                    p.closeInventory();
+                    return;
+                }
+
+                if (slot == 48 && ci.getType() == Material.PLAYER_HEAD) {
+                    main.expansions.guis.Utils.openPublicKits(p, Integer.parseInt(inv.second()) - 1);
+                } else if (slot == 50 && ci.getType() == Material.PLAYER_HEAD) {
+                    main.expansions.guis.Utils.openPublicKits(p, Integer.parseInt(inv.second()) + 1);
+                } else if (slot == 49) {
+                    main.expansions.guis.Utils.openKitMenu(p);
+                }
+            } // public kits
         }
     }
 
     @EventHandler
     public void onGUIClose(InventoryCloseEvent e) {
         if (e.getInventory() instanceof PlayerInventory) return;
-        inInventory.remove(e.getPlayer().getName());
+        Player p = (Player) e.getPlayer();
+        String pn = p.getName();
+
+        Pair<Integer, String> v = inInventory.get(pn);
+        if (v.first() == 3) {
+            int s = Integer.parseInt(v.second());
+            if (s < 3)
+                return;
+
+            SaveEditor.save(p, v.second(), true);
+        }
+
+        inInventory.remove(pn);
     }
 
     @EventHandler
@@ -321,6 +436,14 @@ public class Events implements Listener {
             return;
         }
 
+        Location l = p.getLocation();
+        BackHolder back = Initializer.back.getOrDefault(name, null);
+        if (back == null) {
+            Initializer.back.put(name, new BackHolder(l));
+        } else back.setBack(l);
+
+        p.sendMessage(Languages.BACK);
+
         if (killer == null ||
                 killer.getName().equals(name)) {
             e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" +
@@ -343,14 +466,6 @@ public class Events implements Listener {
                         default -> "suicided";
                     });
         }
-
-        Location l = p.getLocation();
-        BackHolder back = Initializer.back.getOrDefault(name, null);
-        if (back == null) {
-            Initializer.back.put(name, new BackHolder(l));
-        } else back.setBack(l);
-
-        p.sendMessage(Languages.BACK);
 
         switch (Practice.config.getInt("r." + killer + ".c", -1)) {
             case 0 -> {

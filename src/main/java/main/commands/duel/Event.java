@@ -10,6 +10,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static main.utils.Languages.MAIN_COLOR;
+
 @SuppressWarnings("deprecation")
 public class Event implements CommandExecutor {
     @Override
@@ -26,8 +28,8 @@ public class Event implements CommandExecutor {
                 Languages.DUELS_DELIM);
         sender.sendMessage(Languages.DUELS_WINNER,
                 hi2);
-        sender.sendMessage(Utils.translate("§7sᴄᴏʀᴇ #fc282f» " + Integer.parseInt(args[1]) + " §7- #4d8eff" + Integer.parseInt(args[2])),
-                Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ #fc282f» " + args[3]),
+        sender.sendMessage("§7sᴄᴏʀᴇ " + MAIN_COLOR + "» " + Integer.parseInt(args[1]) + " §7- " + Utils.translateA(" #4d8eff" + Integer.parseInt(args[2])),
+                Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» " + args[3]),
                 Languages.DUELS_DELIM);
         Initializer.valid.remove(p.getName());
         return true;

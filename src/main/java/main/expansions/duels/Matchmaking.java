@@ -26,8 +26,8 @@ public class Matchmaking {
                 return;
             }
             Player j = Bukkit.getPlayer(op.get().getKey());
-            j.sendMessage("§7You are in a duel against " + MAIN_COLOR + n);
-            p.sendMessage("§7You are in a duel against " + MAIN_COLOR + j.getName());
+            j.sendMessage("§7You are now in a duel against " + MAIN_COLOR + n);
+            p.sendMessage("§7You are now in a duel against " + MAIN_COLOR + j.getName());
             Duel_Start(p, j, gm, 1, 1, check + 1);
             return;
         }
@@ -57,8 +57,8 @@ public class Matchmaking {
                         return;
                     }
                     Player j = Bukkit.getPlayer(op.get().getKey());
-                    j.sendMessage("§7You are in a duel against " + MAIN_COLOR + n);
-                    p.sendMessage("§7You are in a duel against " + MAIN_COLOR + j.getName());
+                    j.sendMessage("§7You are now in a duel against " + MAIN_COLOR + n);
+                    p.sendMessage("§7You are now in a duel against " + MAIN_COLOR + j.getName());
                     Duel_Start(p, j, gm, 1, 1, check + 1);
                     this.cancel();
                     return;

@@ -60,7 +60,7 @@ public class TpacceptCommand implements CommandExecutor {
             tempuser.sendMessage(MAIN_COLOR + temprecipient.getDisplayName() + " §7has accepted your teleport request");
         }
 
-        Bukkit.getScheduler().cancelTask(bukkitTasks.get(tempuser.getName()));
+        Bukkit.getScheduler().cancelTask(bukkitTasks.get(request.getSenderF()));
         tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
         return true;
     }

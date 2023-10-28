@@ -24,7 +24,7 @@ public class Vanish implements CommandExecutor, TabExecutor {
                 for (Player d : Bukkit.getOnlinePlayers()) {
                     d.showPlayer(Initializer.p, p);
                 }
-                sender.sendMessage("§7Successfully vanished.");
+                sender.sendMessage("§7Successfully un-vanished.");
                 vanished.remove(n);
             } else {
                 for (Player d : Bukkit.getOnlinePlayers()) {
