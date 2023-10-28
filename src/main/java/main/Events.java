@@ -29,7 +29,7 @@ public class Events implements Listener {
     ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE, 1);
     ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS, 1);
     ItemStack boots = new ItemStack(Material.IRON_BOOTS, 1);
-    int stock = 0;
+    ItemStack bread = new ItemStack(Material.BREAD, 16);
 
     public Events() {
         pick.addEnchantment(Enchantment.DIG_SPEED, 3);
@@ -88,7 +88,6 @@ public class Events implements Listener {
     private void onPlayerLeave(PlayerQuitEvent e) {
         String name = e.getPlayer().getName();
         Initializer.requests.remove(Utils.getRequest(name));
-        Initializer.cooldowns.remove(name);
         Initializer.lastReceived.remove(name);
         Initializer.msg.remove(name);
         Initializer.tpa.remove(name);
@@ -121,23 +120,23 @@ public class Events implements Listener {
         if (kp == null) return;
 
         Location loc = p.getLocation();
+        World w = loc.getWorld();
         if (!Initializer.lp.getPlayerAdapter(Player.class).getUser(kp).getPrimaryGroup().equals("default")) {
             loc.add(0, 1, 0);
             switch (Initializer.RANDOM.nextInt(4)) {
                 case 0 -> spawnFireworks(loc);
-                case 1 -> loc.getWorld().spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
-                case 2 -> loc.getWorld().strikeLightningEffect(loc);
+                case 1 -> w.spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
+                case 2 -> w.strikeLightningEffect(loc);
                 case 3 -> {
-                    World w = loc.getWorld();
                     for (double y = 0; y <= 10; y += 0.05) {
                         w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + (2 * Math.cos(y))), (float) (loc.getY() + (2 * Math.sin(y))), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                     }
                 }
             }
-        } else loc.getWorld().strikeLightningEffect(loc);
+        } else w.strikeLightningEffect(loc);
 
         if (Initializer.RANDOM.nextInt(100) <= 5)
-            p.getWorld().dropItemNaturally(p.getLocation(), Utils.getHead(p, kp.getDisplayName()));
+            w.dropItemNaturally(p.getLocation(), Utils.getHead(p, kp.getDisplayName()));
     }
 
     @EventHandler
@@ -154,32 +153,16 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent e) {
-        Player p = e.getPlayer();
-
-        if (e.getMessage().length() > 128) {
-            e.setCancelled(true);
-            return;
-        }
-
-        String name = p.getName();
-        if (Initializer.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis()) e.setCancelled(true);
-        else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500);
-    }
-
-    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (!p.hasPlayedBefore()) {
-            if (stock++ <= 50) {
-                p.getInventory().addItem(sword);
-                p.getInventory().addItem(pick);
-                p.getInventory().setItemInOffHand(new ItemStack(Material.BREAD, 16));
-                p.getInventory().setHelmet(helmet);
-                p.getInventory().setChestplate(chestplate);
-                p.getInventory().setLeggings(leggings);
-                p.getInventory().setBoots(boots);
-            }
+            p.getInventory().addItem(sword);
+            p.getInventory().addItem(pick);
+            p.getInventory().setItemInOffHand(bread);
+            p.getInventory().setHelmet(helmet);
+            p.getInventory().setChestplate(chestplate);
+            p.getInventory().setLeggings(leggings);
+            p.getInventory().setBoots(boots);
             p.teleportAsync(Initializer.spawn);
         } else if (p.getHealth() == 0.0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {

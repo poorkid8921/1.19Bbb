@@ -128,7 +128,6 @@ public class Arena {
 
         for (int sx = 0; sx < sectionsX; sx++) {
             for (int zx = 0; zx < sectionsZ; zx++) {
-
                 int xStart = (int) (Math.floor(width / sectionsX) * sx);
                 int zStart = (int) (Math.floor(length / sectionsZ) * zx);
 
@@ -161,7 +160,6 @@ public class Arena {
             @Override
             public void run() {
                 arena.getSections().addAll(data.sections);
-
                 Arena.arenas.put(arena.name, arena);
 
                 File file = new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json");
@@ -342,29 +340,28 @@ public class Arena {
         this.keys = keyList.toArray(new Material[keyList.size()]);
     }
 
-    public void reset(int resetSpeed) {
+    public void add(int speed) {
         if (getSections().size() == 0) return;
 
         ResetLoopinData data = new ResetLoopinData();
-        data.maxBlocksThisTick = resetSpeed;
-        data.speed = resetSpeed;
+        data.speed = speed;
         for (Section s : getSections()) {
-            int sectionAmount = (int) ((double) resetSpeed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
+            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
             if (sectionAmount <= 0) sectionAmount = 1;
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
         }
 
-        loopyReset(data);
+        loopyAdd(data);
     }
 
-    private void loopyReset(ResetLoopinData data) {
+    private void loopyAdd(ResetLoopinData data) {
         data.blocksThisTick = 0;
 
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
             Section s = getSections().get(id);
-            boolean reset = s.reset(data.sections.get(id));
+            boolean reset = s.add(data.sections.get(id));
             if (reset) {
                 data.sections.remove(id);
                 data.sectionIDs.remove((Object) id);
@@ -381,20 +378,13 @@ public class Arena {
                     data.sections.put(s1.getID(), sectionAmount);
                 }
             }
-            data.blocksThisTick += s.getBlocksResetThisTick();
-
-            if (data.blocksThisTick > data.maxBlocksThisTick) {
-                data.currentSectionResetting = (sectionsIterated + data.currentSectionResetting) % data.sections.size();
-                data.blocksThisTick += s.getBlocksResetThisTick();
-                break;
-            }
         }
 
         if (data.sections.size() == 0) {
             return;
         }
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
+        loopyAdd(data);
     }
 
     public Material[] getKeys() {

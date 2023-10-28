@@ -15,12 +15,16 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static main.utils.Initializer.bukkitTasks;
+import static main.utils.Initializer.requests;
 import static main.utils.Languages.MAIN_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
@@ -44,7 +48,7 @@ public class Utils {
 
     public static String translateA(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
-        StringBuilder buffer = new StringBuilder(text.length() + 4 * 8);
+        StringBuilder buffer = new StringBuilder(text.length() + 32);
         while (matcher.find()) {
             String group = matcher.group(1);
             matcher.appendReplacement(buffer, COLOR_CHAR + "x" + COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1) + COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3) + COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
@@ -54,7 +58,7 @@ public class Utils {
 
     public static String translate(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
-        StringBuilder buffer = new StringBuilder(text.length() + 4 * 8);
+        StringBuilder buffer = new StringBuilder(text.length() + 32);
         while (matcher.find()) {
             String group = matcher.group(1);
             matcher.appendReplacement(buffer, COLOR_CHAR + "x" + COLOR_CHAR + group.charAt(0) + COLOR_CHAR + group.charAt(1) + COLOR_CHAR + group.charAt(2) + COLOR_CHAR + group.charAt(3) + COLOR_CHAR + group.charAt(4) + COLOR_CHAR + group.charAt(5));
@@ -109,7 +113,7 @@ public class Utils {
     }
 
     public static TpaRequest getRequest(String user) {
-        for (TpaRequest r : Initializer.requests) {
+        for (TpaRequest r : requests) {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
@@ -117,8 +121,8 @@ public class Utils {
     }
 
     public static TpaRequest getRequest(String user, String lookup) {
-        for (TpaRequest r : Initializer.requests) {
-            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equalsIgnoreCase(lookup) || r.getSender().getName().equalsIgnoreCase(lookup)))
+        for (TpaRequest r : requests) {
+            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
 
@@ -128,7 +132,6 @@ public class Utils {
     public static void addRequest(Player sender, Player receiver, boolean tpahere, boolean showmsg) {
         String sn = sender.getName();
         String rn = receiver.getName();
-        TpaRequest tpaRequest;
 
         TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
@@ -142,14 +145,20 @@ public class Utils {
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         if (showmsg) sender.sendMessage("§7Request sent to " + MAIN_COLOR + translate(receiver.getDisplayName()));
 
-        TextComponent tc = new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
-                " §7has requested to teleport to you. ");
+        receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0],
+                new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
+                " §7has requested to teleport to you. "), a, space, b);
+        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
+        requests.add(tpaRequest);
 
-        tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
-        Initializer.requests.add(tpaRequest);
-        receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0], tc, a, space, b);
+        BukkitTask br = new BukkitRunnable() {
+            @Override
+            public void run() {
+                requests.remove(tpaRequest);
+            }
+        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
 
-        Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> Initializer.requests.remove(tpaRequest), 2400L);
+        bukkitTasks.put(sn, br.getTaskId());
     }
 
     public static ItemStack getHead(Player player, String killed) {

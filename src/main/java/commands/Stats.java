@@ -31,7 +31,7 @@ public class Stats implements CommandExecutor {
     }
 
     private void showstats(Player pp) {
-        pp.sendMessage("",
+        pp.sendMessage(
                 "§7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
                 "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", Initializer.economy.getBalance(pp)),
                 "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.PLAYER_KILLS),
@@ -41,7 +41,7 @@ public class Stats implements CommandExecutor {
     }
 
     private void showstats(Player pp, Player t) {
-        pp.sendMessage("",
+        pp.sendMessage(
                 (t.isOnline() ? "§a" : "§c") + "◆ " + MAIN_COLOR +
                         t.getDisplayName() + "§7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
                 "§7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",

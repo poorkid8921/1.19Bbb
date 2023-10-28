@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
     public static ArrayList<TpaRequest> requests = new ArrayList<>();
+    public static Map<String, Integer> bukkitTasks = new HashMap<>();
     public static List<Color> color = List.of(Color.LIME,
             Color.ORANGE,
             Color.RED,

@@ -29,13 +29,13 @@ public class Tpahere implements CommandExecutor {
             return true;
         }
 
-        String rn = recipient.getName();
-        if (rn.equalsIgnoreCase(sender.getName())) {
+        String ren = recipient.getName();
+        if (ren.equalsIgnoreCase(sender.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
-        TpaRequest tpr = getRequest(rn);
+        TpaRequest tpr = getRequest(ren);
 
         if (tpr != null) {
             if (tpr.getSender().equals(sender)) {
@@ -44,7 +44,7 @@ public class Tpahere implements CommandExecutor {
             }
         }
 
-        if (Economy.cc.get("r." + rn + ".t") != null) {
+        if (Economy.cc.get("r." + ren + ".t") != null) {
             user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }

@@ -24,9 +24,10 @@ public class TpaAll implements CommandExecutor {
         c.remove(user);
 
         for (Player i : c) {
-            TpaRequest tpr = getRequest(i.getName());
+            String in = i.getName();
+            TpaRequest tpr = getRequest(in);
 
-            if ((tpr != null && tpr.getSender().equals(sender)) || Economy.cc.get("r." + i + ".t") != null)
+            if ((tpr != null && tpr.getSender().equals(sender)) || Economy.cc.get("r." + in + ".t") != null)
                 continue;
 
             Utils.addRequest(user, i, true, false);

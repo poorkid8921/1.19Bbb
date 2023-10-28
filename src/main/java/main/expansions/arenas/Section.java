@@ -1,5 +1,6 @@
 package main.expansions.arenas;
 
+import main.Economy;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -17,7 +18,6 @@ public class Section {
     private int resetTypeIndex;
     private int resetLocationIndex;
     private int resetCurrentTypeIndex;
-    private int blocksResetThisTick = 0;
 
     Section(Arena parent, int ID, Location start, Location end, short[] blockTypes, short[] blockAmounts) {
         this.blockAmounts = blockAmounts;
@@ -28,7 +28,7 @@ public class Section {
         this.ID = ID;
     }
 
-    public boolean reset(int max) {
+    public boolean add(int max) {
         int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
         int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
 
@@ -41,7 +41,6 @@ public class Section {
         }
 
         int count = 0;
-        blocksResetThisTick = 0;
         World ww = getStart().getWorld();
 
         while (resetTypeIndex < blockTypes.length) {
@@ -53,13 +52,13 @@ public class Section {
             while (resetCurrentTypeIndex < amount) {
                 Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
 
-                Block block = getStart().add(offset).getBlock();
+                //Block block = getStart().add(offset).getBlock();
+                Economy.resetBlocks.put(getStart().add(offset).getBlock(), data);
                 getStart().subtract(offset);
-                if (block.getType() != data) block.setType(data, false);
+                //if (block.getType() != data) block.setType(data, false);
 
                 count++;
                 resetCurrentTypeIndex++;
-                blocksResetThisTick++;
                 resetLocationIndex++;
 
                 if (max > 0 && count > max) return false;
@@ -80,10 +79,6 @@ public class Section {
         return (getEnd().getBlockX() - getStart().getBlockX() + 1) *
                 (getEnd().getBlockY() - getStart().getBlockY() + 1) *
                 (getEnd().getBlockZ() - getStart().getBlockZ() + 1);
-    }
-
-    protected int getBlocksResetThisTick() {
-        return blocksResetThisTick;
     }
 
     public Location getStart() {

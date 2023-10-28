@@ -17,7 +17,6 @@ public class Tpa implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
-        Bukkit.getLogger().warning(Initializer.requests.toString());
         if (args.length < 1) {
             user.sendMessage("§7You must specify who you want to teleport to.");
             return true;
@@ -30,13 +29,13 @@ public class Tpa implements CommandExecutor {
             return true;
         }
 
-        if (recipient.getName().equalsIgnoreCase(sender.getName())) {
+        String ren = recipient.getName();
+        if (ren.equalsIgnoreCase(sender.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
-        String rep = recipient.getName();
-        TpaRequest tpr = getRequest(rep);
+        TpaRequest tpr = getRequest(ren);
 
         if (tpr != null) {
             if (tpr.getSender().equals(user)) {
@@ -45,7 +44,7 @@ public class Tpa implements CommandExecutor {
             }
         }
 
-        if (Economy.cc.get("r." + rep + ".t") != null) {
+        if (Economy.cc.get("r." + ren + ".t") != null) {
             user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }

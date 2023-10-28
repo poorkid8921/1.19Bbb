@@ -6,6 +6,7 @@ import commands.chat.MsgLock;
 import commands.chat.Reply;
 import commands.chat.TpaLock;
 import commands.tpa.*;
+import it.unimi.dsi.fastutil.Pair;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
 import main.expansions.arenas.CreateCommand;
@@ -16,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,7 +28,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static main.utils.Initializer.economy;
 
@@ -44,6 +49,8 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         }
     }
 
+    public static Map<Block, Material> resetBlocks = new HashMap<>();
+
     @Override
     public void onEnable() {
         df = getDataFolder();
@@ -59,6 +66,9 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         World d = Bukkit.getWorld("world");
+        Arena.arenas.get("ffa").add(200000);
+        Arena.arenas.get("ffa" + ffa).add(20000);
+
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             d.getEntities().stream()
                     .filter(r -> r instanceof EnderCrystal)
@@ -66,19 +76,26 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             if (ffa++ == 3)
                 ffa = 1;
 
-            Arena.arenas.get("ffa").reset(200000);
-            Arena.arenas.get("ffa" + ffa).reset(20000);
-            Bukkit.getOnlinePlayers().stream().filter(s -> !s.isGliding() &&
-                    d.getBlockAt(new Location(d, s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
-            {
-                Location l = player.getLocation();
-                player.teleportAsync(new Location(d,
-                        l.getX(),
-                        135,
-                        l.getZ(),
-                        l.getYaw(),
-                        l.getPitch()));
-            });
+            int i = 0;
+            int max = resetBlocks.size();
+            for (Map.Entry<Block, Material> a : resetBlocks.entrySet()) {
+                a.getKey().setType(a.getValue(), false);
+                if (i++ >= max) {
+                    Bukkit.getOnlinePlayers().stream().filter(s -> !s.isGliding() &&
+                            d.getBlockAt(new Location(d, s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
+                    {
+                        Location l = player.getLocation();
+                        player.teleportAsync(new Location(d,
+                                l.getX(),
+                                135,
+                                l.getZ(),
+                                l.getYaw(),
+                                l.getPitch()));
+                    });
+                }
+                else
+                    Bukkit.getLogger().warning(String.valueOf(i));
+            }
         }, 0L, 24000L);
         // CHAT
         this.getCommand("msg").setExecutor(new Msg());
@@ -123,6 +140,5 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         });
 
         Languages.init();
-        Initializer.requests.remove(null);
     }
 }
