@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Initializer {
-    public static Map<String, Long> chatdelay = new HashMap<>();
     public static Map<String, Integer> teams = new HashMap<>();
     public static Map<String, String> spec = new HashMap<>();
     public static Map<String, Integer> inMatchmaking = new HashMap<>();

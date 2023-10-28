@@ -29,21 +29,22 @@ public class TpaCommand implements CommandExecutor {
             return true;
         }
 
-        if (recipient.getName().equalsIgnoreCase(user.getName())) {
+        String ren = recipient.getName();
+        if (ren.equalsIgnoreCase(user.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
-        TpaRequest tpr = getTPArequest(recipient.getName());
+        TpaRequest tpr = getTPArequest(ren);
 
         if (tpr != null) {
             if (tpr.getSender().equals(user)) {
-                user.sendMessage("§7You already have an ongoing request to this player.");
+                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }
 
-        if (Practice.config.get("r." + recipient.getName() + ".t") != null) {
+        if (Practice.config.get("r." + ren + ".t") != null) {
             user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }

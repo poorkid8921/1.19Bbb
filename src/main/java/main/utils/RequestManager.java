@@ -55,11 +55,10 @@ public class RequestManager {
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage("§7Request sent to " + MAIN_COLOR + Utils.translate(receiver.getDisplayName()));
 
-        TextComponent tc = new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
-                " §7has requested to teleport to you. ");
         receiver.sendMessage(new ComponentBuilder(sn)
                         .color(ChatColor.of("#fc282f")).create()[0],
-                tc,
+                new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
+                        " §7has requested to teleport to you. "),
                 a,
                 space,
                 b);

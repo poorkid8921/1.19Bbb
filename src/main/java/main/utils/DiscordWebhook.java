@@ -34,10 +34,6 @@ public class DiscordWebhook {
     }
 
     public void execute() throws IOException {
-        if (this.content == null && this.embeds.isEmpty()) {
-            throw new IllegalArgumentException("Set content or add at least one EmbedObject");
-        }
-
         JSONObject json = new JSONObject();
 
         json.put("content", this.content);
@@ -136,7 +132,7 @@ public class DiscordWebhook {
     }
 
     public static class EmbedObject {
-        private List<Field> fields = new ArrayList<>();
+        private final List<Field> fields = new ArrayList<>();
         private String title;
         private String description;
         private String url;
@@ -204,8 +200,8 @@ public class DiscordWebhook {
         }
 
         private static class Footer {
-            private String text;
-            private String iconUrl;
+            private final String text;
+            private final String iconUrl;
 
             private Footer(String text, String iconUrl) {
                 this.text = text;
@@ -295,7 +291,7 @@ public class DiscordWebhook {
     }
 
     private static class JSONObject {
-        private HashMap<String, Object> map = new HashMap<>();
+        private final Map<String, Object> map = new HashMap<>();
 
         void put(String key, Object value) {
             if (value != null) {
