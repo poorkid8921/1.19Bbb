@@ -4,13 +4,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class DuelHolder {
-    private String sender;
-    private String receiver;
-    private int type;
-    private int maxrounds;
-    private long starttime;
-    private int arena;
-    private int maxPlayers;
+    private final String sender;
+    private final String receiver;
+    private final int type;
+    private final int maxrounds;
+    private final long starttime;
+    private final int arena;
+    private final int maxPlayers;
     private int rounds;
     private int red;
     private int blue;

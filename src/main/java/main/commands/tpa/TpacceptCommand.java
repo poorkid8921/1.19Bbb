@@ -2,7 +2,6 @@ package main.commands.tpa;
 
 import main.utils.Instances.TpaRequest;
 import main.utils.Languages;
-import main.utils.RequestManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -10,8 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.RequestManager.bukkitTasks;
-import static main.utils.RequestManager.tpa;
+import static main.utils.RequestManager.*;
 import static main.utils.Utils.translate;
 
 public class TpacceptCommand implements CommandExecutor {
@@ -23,24 +21,29 @@ public class TpacceptCommand implements CommandExecutor {
 
         String msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ;
         TpaRequest request;
+        String n = "";
+        String un = user.getName();
 
         if (args.length == 0) {
-            request = RequestManager.getTPArequest(user.getName());
+            request = getTPArequest(un);
         } else {
-            String n = args[0];
+            n = args[0];
             Player p = Bukkit.getPlayer(n);
             if (p == null) {
                 user.sendMessage(msg);
                 return true;
             } else
                 n = p.getName();
-            request = RequestManager.getTPArequest(user.getName(), n);
+            request = getTPArequest(un, n);
             msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ1 +
                     MAIN_COLOR + args[0] + ".";
         }
 
         if (request == null) {
             user.sendMessage(msg);
+            return true;
+        } else if (un.equals(n)) {
+            user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 

@@ -4,16 +4,17 @@ import main.commands.*;
 import main.commands.chat.Msg;
 import main.commands.chat.MsgLock;
 import main.commands.chat.Reply;
-import main.commands.duel.Duel;
-import main.commands.duel.DuelAccept;
-import main.commands.duel.DuelDeny;
-import main.commands.duel.Event;
-import main.commands.ess.List;
 import main.commands.ess.*;
 import main.commands.tpa.*;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
-import main.expansions.arenas.CreateCommand;
+import main.expansions.arenas.Section;
+import main.expansions.arenas.commands.CreateCommand;
+import main.expansions.duels.commands.Duel;
+import main.expansions.duels.commands.DuelAccept;
+import main.expansions.duels.commands.DuelDeny;
+import main.expansions.duels.commands.Event;
+import main.utils.Initializer;
 import main.utils.Languages;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
@@ -27,12 +28,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
 
 import static main.utils.Initializer.*;
 
@@ -40,65 +41,9 @@ import static main.utils.Initializer.*;
 public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
-    public static Map<File, FileConfiguration> toSave = new HashMap<>();
-    public static Map<String, Map<String, Object>> kitMap = new HashMap<>();
-    public static Map<Integer, ItemStack[]> kitRoomMap = new HashMap<>();
-    public static ArrayList<String> editorChecker = new ArrayList<>();
-    public static ArrayList<String> menuChecker = new ArrayList<>();
-    public static Map<String, Integer> publicChecker = new HashMap<>();
-    public static Map<String, Integer> roomChecker = new HashMap<>();
-    public static File kf;
-    public static FileConfiguration kfc;
-    public static File krf;
-    public static FileConfiguration krfc;
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
-    private KitClaim kc = new KitClaim();
-
-    public static void restoreKitMap() {
-        try {
-            for (String key : kfc.getConfigurationSection("data").getKeys(false)) {
-                kitMap.put(key, new HashMap<>());
-                for (String key2 : kfc.getConfigurationSection("data." + key).getKeys(false)) {
-                    switch (key2) {
-                        case "items" -> {
-                            ItemStack[] items = java.util.List.of(kfc.get("data." + key + "." + key2)).toArray(new ItemStack[0]);
-                            kitMap.get(key).put(key2, items);
-                        }
-                        case "name" -> {
-                            String name = kfc.get("data." + key + "." + key2).toString();
-                            kitMap.get(key).put(key2, name);
-                        }
-                        case "player" -> {
-                            String player = kfc.get("data." + key + "." + key2).toString();
-                            kitMap.get(key).put(key2, player);
-                        }
-                        case "UUID" -> {
-                            String uUID = kfc.get("data." + key + "." + key2).toString();
-                            kitMap.get(key).put(key2, uUID);
-                        }
-                        case "public" -> {
-                            String isPublic = kfc.get("data." + key + "." + key2).toString();
-                            kitMap.get(key).put(key2, isPublic);
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    public static void restoreKitRoom() {
-        for (Integer i = 1; i <= 5; ++i) {
-            try {
-                ItemStack[] content = java.util.List.of(krfc.get("data." + i)).toArray(new ItemStack[0]);
-                kitRoomMap.put(i, content);
-            } catch (Exception e) {
-                kitRoomMap.put(i, new ItemStack[45]);
-            }
-        }
-    }
 
     public void saveCustomConfig() {
         try {
@@ -127,21 +72,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
-
-        kfc.set("data", null);
-        if (!kitMap.isEmpty()) {
-            for (Map.Entry<String, Map<String, Object>> kit : kitMap.entrySet()) {
-                for (Map.Entry<String, Object> data : kit.getValue().entrySet()) {
-                    kfc.set("data." + kit.getKey() + "." + data.getKey(), data.getValue());
-                }
-            }
-        }
-
-        try {
-            kfc.save(kf);
-        } catch (IOException ignored) {
-
-        }
     }
 
     @Override
@@ -152,19 +82,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         p = this;
         saveConfig();
-
-        kf = new File(Practice.df, "kits.yml");
-        krf = new File(Practice.df, "kitroom.yml");
-        if (!kf.exists()) {
-            try {
-                kf.createNewFile();
-                krf.createNewFile();
-            } catch (IOException ignored) {
-            }
-        }
-        kfc = YamlConfiguration.loadConfiguration(kf);
-        krfc = YamlConfiguration.loadConfiguration(krf);
-        restoreKitMap();
 
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         World d = Bukkit.getWorld("world");
@@ -179,37 +96,55 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     if (flatstr++ == 6)
                         flatstr = 1;
 
-                    //Arena.arenas.get("p_f" + flatstr).reset(30000);
+                    Arena.arenas.get("p_f" + flatstr).reset(10000);
                 }
 
                 if (ticked == 6) {
                     ticked = 0;
-                    Arena.arenas.get("ffa").reset(30000);
-                    Arena.arenas.get("ffaup").reset(30000);
-                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                        Location location = player.getLocation();
-                        location.setY(200);
-                        Block b = d.getBlockAt(location);
-                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
-
-                        b2.setType(Material.AIR, false);
-                        b.setType(Material.AIR, false);
-                        location.setY(d.getHighestBlockYAt(location) + 1);
-                        player.teleportAsync(location).thenAccept(reason -> {
-                            b.setType(Material.BARRIER, false);
-                            b2.setType(Material.BARRIER, false);
-                        });
-                    });
-
-                    for (Map.Entry<File, FileConfiguration> fc : toSave.entrySet()) {
-                        File key = fc.getKey();
-                        try {
-                            fc.getValue().save(key);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        toSave.remove(key);
+                    Arena ffa = Arena.arenas.get("ffa");
+                    Arena.ResetLoopinData data = new Arena.ResetLoopinData();
+                    data.speed = 2000;
+                    for (Section s : ffa.getSections()) {
+                        int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                        if (sectionAmount <= 0) sectionAmount = 1;
+                        data.sections.put(s.getID(), sectionAmount);
+                        data.sectionIDs.add(s.getID());
                     }
+
+                    boolean ffaresetted;
+                    boolean ffaupresetted;
+                    do {
+                        ffaresetted = true;
+
+                        ffa = Arena.arenas.get("ffaup");
+                        data = new Arena.ResetLoopinData();
+                        data.speed = 2000;
+                        for (Section s : ffa.getSections()) {
+                            int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                            if (sectionAmount <= 0) sectionAmount = 1;
+                            data.sections.put(s.getID(), sectionAmount);
+                            data.sectionIDs.add(s.getID());
+                        }
+
+                        do {
+                            ffaupresetted = true;
+                            inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                Location location = player.getLocation();
+                                location.setY(200);
+                                Block b = d.getBlockAt(location);
+                                Block b2 = d.getBlockAt(location.add(0, 1, 0));
+
+                                b2.setType(Material.AIR, false);
+                                b.setType(Material.AIR, false);
+                                location.setY(d.getHighestBlockYAt(location) + 1);
+                                player.teleportAsync(location).thenAccept(reason -> {
+                                    b.setType(Material.BARRIER, false);
+                                    b2.setType(Material.BARRIER, false);
+                                });
+                            });
+                            bannedFromflat.clear();
+                        } while (!ffa.loopyReset(data) && !ffaupresetted);
+                    } while (!ffa.loopyReset(data) && !ffaresetted);
                 }
             }
         }, 0L, 2400L);
@@ -248,22 +183,15 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
 
-        this.getCommand("vanish").setExecutor(new Vanish());
         this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
-        this.getCommand("kickall").setExecutor(new Kickall());
         this.getCommand("list").setExecutor(new List());
         this.getCommand("unban").setExecutor(new Unban());
         this.getCommand("ban").setExecutor(new Ban());
         this.getCommand("tp").setExecutor(new Teleport());
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("ss").setExecutor(new Screenshare());
-
-        this.getCommand("kit").setExecutor(new Kit());
-        this.getCommand("k1").setExecutor(kc);
-        this.getCommand("k2").setExecutor(kc);
-        this.getCommand("k3").setExecutor(kc);
 
         this.getCommand("msg").setTabCompleter(new TabMSG());
         this.getCommand("tpa").setTabCompleter(new TabTPA());

@@ -9,15 +9,24 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.util.*;
+
+import static main.expansions.arenas.ArenaIO.KEY_SPLIT;
+import static main.expansions.arenas.ArenaIO.SECTION_SPLIT;
 
 public class Arena {
     public static Map<String, Arena> arenas = new HashMap<>();
-    private Location c1;
-    private Location c2;
-    private List<Section> sections = new ArrayList<>();
-    private String name;
+    private final Location c1;
+    private final Location c2;
+    private final List<Section> sections = new ArrayList<>();
+    private final String name;
     private Material[] keys;
 
     Arena(String name, Location c1, Location c2) {
@@ -154,18 +163,80 @@ public class Arena {
             @Override
             public void run() {
                 arena.getSections().addAll(data.sections);
-
                 Arena.arenas.put(arena.name, arena);
-                ArenaIO.saveArena(new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json"), arena);
 
-                player.sendMessage("Done! The arena is now ready for use!");
+                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
+                try {
+                    FileOutputStream stream = new FileOutputStream(file);
+                    Location l = arena.getc1();
+                    Location l2 = arena.getc2();
+
+                    String header = arena.getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ() + "," +
+                            l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ();
+                    byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
+
+                    byte[] keyBytes = new byte[0];
+
+                    for (Material data : arena.getKeys()) {
+                        keyBytes = ArrayUtils.addAll(keyBytes, data.name().getBytes(StandardCharsets.US_ASCII));
+                        keyBytes = ArrayUtils.add(keyBytes, KEY_SPLIT);
+                    }
+
+                    keyBytes = ArrayUtils.remove(keyBytes, keyBytes.length - 1);
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                    short sections = (short) arena.getSections().size();
+
+                    ByteBuffer sb = ByteBuffer.allocate(2);
+                    sb.putShort(sections);
+
+                    byteStream.write(sb.array());
+
+                    for (int s = 0; s < arena.getSections().size(); s++) {
+                        Section section = arena.getSections().get(s);
+
+                        ByteBuffer ib = ByteBuffer.allocate(28 + (section.getBlockAmounts().length * 4));
+
+                        ib.putInt(section.getStart().getBlockX());
+                        ib.putInt(section.getStart().getBlockY());
+                        ib.putInt(section.getStart().getBlockZ());
+                        ib.putInt(section.getEnd().getBlockX());
+                        ib.putInt(section.getEnd().getBlockY());
+                        ib.putInt(section.getEnd().getBlockZ());
+
+                        ib.putInt(section.getBlockTypes().length * 2);
+
+                        for (int i = 0; i < section.getBlockAmounts().length; i++) {
+                            ib.putShort(section.getBlockAmounts()[i]);
+                            ib.putShort(section.getBlockTypes()[i]);
+                        }
+
+                        byteStream.write(ib.array());
+                    }
+
+                    byte[] blockBytes = byteStream.toByteArray();
+
+                    byte[] totalBytes = new byte[0];
+                    totalBytes = ArrayUtils.addAll(totalBytes, headerBytes);
+                    totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
+                    totalBytes = ArrayUtils.addAll(totalBytes, keyBytes);
+                    totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
+                    totalBytes = Utils.compress(ArrayUtils.addAll(totalBytes, blockBytes));
+
+                    stream.write(totalBytes);
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (player != null && player.isOnline())
+                    player.sendMessage("§7Arena has been successfully created");
             }
         };
 
-        loopyCreate(data, 1000000, player, runnable);
+        loopyCreate(data, 500000, player, runnable);
     }
 
-    private static void loopyCreate(CreationLoopinData data, int amount, Player player, Runnable onFinished) {
+    private static void loopyCreate(CreationLoopinData data, final int amount, Player player, Runnable onFinished) {
         Location start = data.sectionStarts.get(0);
         Location end = data.sectionEnds.get(0);
         int width = end.getBlockX() - start.getBlockX() + 1;
@@ -217,8 +288,11 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.totalBlocks++;
                 data.index++;
-                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                    NumberFormat format = NumberFormat.getPercentInstance();
+                    format.setMinimumFractionDigits(2);
                     data.lastUpdate = System.currentTimeMillis();
+                }
                 continue;
             }
 
@@ -227,8 +301,11 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.index++;
                 data.totalBlocks++;
-                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                    NumberFormat format = NumberFormat.getPercentInstance();
+                    format.setMinimumFractionDigits(2);
                     data.lastUpdate = System.currentTimeMillis();
+                }
 
                 if (data.blockAmounts[data.blockAmounts.length - 1] == Short.MAX_VALUE) {
                     data.blockTypes = ArrayUtils.add(data.blockTypes, blockKeyIndex);
@@ -243,8 +320,11 @@ public class Arena {
             data.index++;
             data.totalBlocks++;
 
-            if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000)
+            if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                NumberFormat format = NumberFormat.getPercentInstance();
+                format.setMinimumFractionDigits(2);
                 data.lastUpdate = System.currentTimeMillis();
+            }
         }
         if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
         loopyCreate(data, amount, player, onFinished);
@@ -263,12 +343,11 @@ public class Arena {
         this.keys = keyList.toArray(new Material[keyList.size()]);
     }
 
-    public void reset(int resetSpeed) {
+    public void reset(int speed) {
         ResetLoopinData data = new ResetLoopinData();
-        data.maxBlocksThisTick = resetSpeed;
-        data.speed = resetSpeed;
+        data.speed = speed;
         for (Section s : getSections()) {
-            int sectionAmount = (int) ((double) resetSpeed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
+            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
             if (sectionAmount <= 0) sectionAmount = 1;
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
@@ -277,11 +356,10 @@ public class Arena {
         loopyReset(data);
     }
 
-    private void loopyReset(ResetLoopinData data) {
+    public boolean loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
-
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
-            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
+            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
             Section s = getSections().get(id);
             boolean reset = s.reset(data.sections.get(id));
             if (reset) {
@@ -290,6 +368,7 @@ public class Arena {
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
+
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
 
                 List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
@@ -299,19 +378,13 @@ public class Arena {
                     data.sections.put(s1.getID(), sectionAmount);
                 }
             }
-            data.blocksThisTick += s.getBlocksResetThisTick();
-
-            if (data.blocksThisTick > data.maxBlocksThisTick) {
-                data.currentSectionResetting = (sectionsIterated + data.currentSectionResetting) % data.sections.size();
-                data.blocksThisTick += s.getBlocksResetThisTick();
-                break;
-            }
         }
 
         if (data.sections.size() == 0)
-            return;
+            return true;
 
         Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
+        return false;
     }
 
     public Material[] getKeys() {
@@ -347,12 +420,11 @@ public class Arena {
         short[] blockAmounts, blockTypes = new short[0];
     }
 
-    private static class ResetLoopinData {
-        Map<Integer, Integer> sections = new HashMap<>();
-        List<Integer> sectionIDs = new ArrayList<>();
+    public static class ResetLoopinData {
+        public Map<Integer, Integer> sections = new HashMap<>();
+        public List<Integer> sectionIDs = new ArrayList<>();
+        public int speed;
         int currentSectionResetting;
         int blocksThisTick = 0;
-        int maxBlocksThisTick;
-        int speed;
     }
 }

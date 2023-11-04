@@ -16,12 +16,7 @@ public class Back implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         BackHolder u = Initializer.back.getOrDefault(sender.getName(), null);
 
-        if (u == null) {
-            sender.sendMessage("§7You got no back location.");
-            return true;
-        }
-
-        if (u.getBack() == null) {
+        if (u == null || u.getBack() == null) {
             sender.sendMessage("§7You got no back location.");
             return true;
         }

@@ -18,7 +18,7 @@ public class Screenshare implements CommandExecutor {
             if (p == null)
                 return true;
 
-            sender.sendMessage(Languages.MAIN_COLOR + "ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇǫᴜᴇsᴛᴇᴅ ᴛᴏ ss | §7discord.gg/aestheticnetwork | ᴘᴜʙʟɪᴄ ᴠᴄ");
+            sender.sendMessage(Languages.MAIN_COLOR + "ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇǫᴜᴇsᴛᴇᴅ ᴛᴏ ss §7| discord.gg/aestheticnetwork |" + Languages.MAIN_COLOR + " ᴘᴜʙʟɪᴄ ᴠᴄ");
         }
         return true;
     }

@@ -18,7 +18,7 @@ public class Flat implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
-            if (Ban.flatB.contains(pp.getName())) {
+            if (Initializer.bannedFromflat.contains(pp.getName())) {
                 pp.sendMessage(MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜɪs ᴍᴏᴅᴇ.");
                 return true;
             }

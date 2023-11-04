@@ -31,7 +31,7 @@ public class TpahereCommand implements CommandExecutor {
         }
 
         String ren = recipient.getName();
-        if (ren.equalsIgnoreCase(user.getName())) {
+        if (ren.equals(user.getName())) {
             user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
             return true;
         }

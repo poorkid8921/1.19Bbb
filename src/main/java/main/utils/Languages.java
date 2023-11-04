@@ -9,9 +9,8 @@ import org.bukkit.Location;
 public class Languages {
     public static TextComponent D_USING = new TextComponent(ChatColor.GRAY + "ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
     public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴀᴇsᴛʜᴇᴛɪᴄɴᴇᴛᴡᴏʀᴋ");
-
     public static String BACK;
-    public static String DUEL_STARTED;
+    public static String startED;
     public static String WHO_TPA;
     public static String MSGLOCK;
     public static String TPALOCK;
@@ -29,7 +28,6 @@ public class Languages {
     public static String EXCEPTION_PLAYER_OFFLINETPA;
     public static String EXCEPTION_PLAYER_TPSELF;
     public static String EXCEPTION_NO_ARGS_TELEPORT;
-
     public static String MAIN_COLOR;
     public static String SECOND_COLOR;
     public static String TELEPORTING_BACK;
@@ -41,7 +39,6 @@ public class Languages {
     public static String GLOBAL_EXCEPTION_ALREADY_REQ;
     public static String DUELS_RESULTS = "§7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs";
     public static String DUELS_DELIM = "§7------------------------";
-
     public static TextComponent DUELS_WINNER;
 
     public static void init() {
@@ -52,7 +49,7 @@ public class Languages {
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/aestheticnetwork"));
 
         BACK = "§7Use " + MAIN_COLOR + "/back §7to return to your death location";
-        DUEL_STARTED = " started! " + MAIN_COLOR + "Fight!";
+        startED = " started! " + MAIN_COLOR + "Fight!";
 
         WHO_TPA = "§7You must specify who you want to teleport to.";
         MSGLOCK = "§7You can receive messages from players again.";

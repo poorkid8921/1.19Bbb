@@ -21,33 +21,8 @@ public class Help implements CommandExecutor, TabExecutor {
             }
         }
 
-        if (i == 1) {
-            sender.sendMessage(
-                    ChatColor.YELLOW + "---- " +
-                            ChatColor.GOLD + "Help | Page 1/3" +
-                            ChatColor.YELLOW + " ----",
-
-                    ChatColor.GOLD +
-                            "/msglock " +
-                            ChatColor.YELLOW +
-                            "- Toggle whether want to receive any messages from other players.",
-
-                    ChatColor.GOLD +
-                            "/tpatoggle " +
-                            ChatColor.YELLOW +
-                            "- Toggle whether you want to receive tp requests.",
-
-                    ChatColor.GOLD +
-                            "/rtp " +
-                            ChatColor.YELLOW +
-                            "- Random teleport around the world.",
-
-                    ChatColor.GOLD +
-                            "/kit " +
-                            ChatColor.YELLOW +
-                            "- Create or use a kit.");
-        } else if (i == 2) {
-            sender.sendMessage(
+        switch (i) {
+            case 2 -> sender.sendMessage(
                     ChatColor.YELLOW + "---- " +
                             ChatColor.GOLD + "Help | Page 2/3" +
                             ChatColor.YELLOW + " ----",
@@ -71,8 +46,7 @@ public class Help implements CommandExecutor, TabExecutor {
                             "/duel " +
                             ChatColor.YELLOW +
                             "- Open the duel selector, or duel a player in a gamemode you specify.");
-        } else {
-            sender.sendMessage(
+            case 3 -> sender.sendMessage(
                     ChatColor.YELLOW + "---- " +
                             ChatColor.GOLD + "Help | Page 3/3" +
                             ChatColor.YELLOW + " ----",
@@ -96,6 +70,30 @@ public class Help implements CommandExecutor, TabExecutor {
                             "/discord " +
                             ChatColor.YELLOW +
                             "- Get to know our discord link.");
+            default -> sender.sendMessage(
+                    ChatColor.YELLOW + "---- " +
+                            ChatColor.GOLD + "Help | Page 1/3" +
+                            ChatColor.YELLOW + " ----",
+
+                    ChatColor.GOLD +
+                            "/msglock " +
+                            ChatColor.YELLOW +
+                            "- Toggle whether want to receive any messages from other players.",
+
+                    ChatColor.GOLD +
+                            "/tpatoggle " +
+                            ChatColor.YELLOW +
+                            "- Toggle whether you want to receive tp requests.",
+
+                    ChatColor.GOLD +
+                            "/rtp " +
+                            ChatColor.YELLOW +
+                            "- Random teleport around the world.",
+
+                    ChatColor.GOLD +
+                            "/kit " +
+                            ChatColor.YELLOW +
+                            "- Create or use a kit.");
         }
 
         return true;

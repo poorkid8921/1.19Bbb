@@ -4,9 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class TpaRequest {
-    private String sender;
-    private String receiver;
-    private boolean type;
+    private final String sender;
+    private final String receiver;
+    private final boolean type;
 
     public TpaRequest(String sender, String reciever, boolean type) {
         this.sender = sender;

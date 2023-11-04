@@ -7,7 +7,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-@SuppressWarnings("deprecation")
 public class Report implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -22,7 +21,7 @@ public class Report implements CommandExecutor {
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            Utils.report((Player) sender, msgargs.toString(), "Other");
+            Utils.report((Player) sender, msgargs.toString(), null);
         }
         return true;
     }

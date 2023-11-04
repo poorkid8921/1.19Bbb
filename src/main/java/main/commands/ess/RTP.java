@@ -1,10 +1,7 @@
 package main.commands.ess;
 
 import main.utils.Initializer;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,15 +12,72 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
 
 public class RTP implements CommandExecutor, TabExecutor {
+    ArrayList<String> playersRTPing = new ArrayList<>();
+    ArrayList<Location> baked = new ArrayList<>();
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player p)) return true;
+
+        String sn = p.getName();
+        if (playersRTPing.contains(sn))
+            return true;
+        else {
+            if (playersRTPing.size() > 0) {
+                Location loc = baked.get(Initializer.RANDOM.nextInt(baked.size()));
+                baked.remove(loc);
+                double x = loc.getX();
+                double y = loc.getY();
+                double z = loc.getZ();
+                World d = p.getWorld();
+                Location cd = loc.add(0, 1, 0);
+                p.teleportAsync(loc).thenAccept(r -> {
+                    p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + y + " " + z);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+                    for (int index = 1; index < 16; index++) {
+                        double p1 = (index * Math.PI) / 8;
+                        double p2 = (index - 1) * Math.PI / 8;
+
+                        int radius = 3;
+                        double x1 = Math.cos(p1) * radius;
+                        double xx2 = Math.cos(p2) * radius;
+                        double z1 = Math.sin(p1) * radius;
+                        double z2 = Math.sin(p2) * radius;
+                        d.spawnParticle(Particle.TOTEM, cd.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
+                    }
+                });
+
+                Bukkit.getPlayer(playersRTPing.get(Initializer.RANDOM.nextInt(baked.size()))).teleportAsync(loc).thenAccept(r -> {
+                    playersRTPing.remove(sn);
+                    p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + y + " " + z);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+                    for (int index = 1; index < 16; index++) {
+                        double p1 = (index * Math.PI) / 8;
+                        double p2 = (index - 1) * Math.PI / 8;
+
+                        int radius = 3;
+                        double x1 = Math.cos(p1) * radius;
+                        double xx2 = Math.cos(p2) * radius;
+                        double z1 = Math.sin(p1) * radius;
+                        double z2 = Math.sin(p2) * radius;
+                        d.spawnParticle(Particle.TOTEM, cd.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
+                    }
+                });
+                return true;
+            }
+            playersRTPing.add(sn);
+        }
 
         Location l = p.getLocation();
         World d = l.getWorld();
@@ -54,6 +108,7 @@ public class RTP implements CommandExecutor, TabExecutor {
             int finalAx = ax;
             int finalAz = az;
             p.teleportAsync(loc).thenAccept(r -> {
+                playersRTPing.remove(sn);
                 p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
                 p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + finalAx + " " + ay + " " + finalAz);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
@@ -70,10 +125,13 @@ public class RTP implements CommandExecutor, TabExecutor {
                     double z2 = Math.sin(p2) * radius;
                     d.spawnParticle(Particle.TOTEM, cd.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
                 }
+
+                baked.add(finalLoc);
             });
             return true;
         }
 
+        playersRTPing.remove(sn);
         p.sendTitle(null, SECOND_COLOR + "ʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!");
         return true;
     }

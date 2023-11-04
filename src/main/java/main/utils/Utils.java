@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,11 +44,6 @@ public class Utils {
         }
         return matcher.appendTail(buffer).toString();
     }
-
-    public static boolean isSuspectedScanPacket(String buffer) {
-        return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
-    }
-
     public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
 
@@ -77,7 +73,7 @@ public class Utils {
     public static void report(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
-                report + " §7with the reason of " + MAIN_COLOR + reason));
+                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
@@ -97,13 +93,12 @@ public class Utils {
         pp.sendMessage("§7Successfully submitted the report.");
     }
 
-    public static void duel_spawnFireworks(Location loc) {
-        loc.add(0, 1, 0);
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Color.WHITE).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-        fw.detonate();
+    public static ItemStack getHead(String player) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+        SkullMeta skull = (SkullMeta) item.getItemMeta();
+        skull.setDisplayName(player);
+        skull.setOwner(player);
+        item.setItemMeta(skull);
+        return item;
     }
 }

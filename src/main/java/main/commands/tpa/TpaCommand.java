@@ -30,7 +30,7 @@ public class TpaCommand implements CommandExecutor {
         }
 
         String ren = recipient.getName();
-        if (ren.equalsIgnoreCase(user.getName())) {
+        if (ren.equals(user.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }

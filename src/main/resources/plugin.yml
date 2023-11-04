@@ -63,16 +63,11 @@ commands:
     usage: /<command>
   gms:
     usage: /<command>
-  kickall:
-    usage: /<command>
   list:
     usage: /<command>
   ban:
     usage: /<command>
   unban:
-    usage: /<command>
-  vanish:
-    aliases: v
     usage: /<command>
   warp:
     usage: /<command>
@@ -87,17 +82,6 @@ commands:
   irename:
     usage: /<command>
     aliases: itemrename
-  k1:
-    usage: /<command>
-    aliases: kit1
-  k2:
-    usage: /<command>
-    aliases: kit2
-  k3:
-    usage: /<command>
-    aliases: kit3
-  kit:
-    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

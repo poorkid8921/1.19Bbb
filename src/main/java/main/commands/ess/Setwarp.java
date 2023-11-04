@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.io.IOException;
 
 import static main.utils.Languages.MAIN_COLOR;
 
@@ -30,7 +31,7 @@ public class Setwarp implements CommandExecutor {
         f.mkdirs();
         Player p = (Player) sender;
         FileConfiguration cf = YamlConfiguration.loadConfiguration(f);
-        cf.set("a", p.getWorld());
+        cf.set("a", p.getWorld().getName());
 
         Location l = p.getLocation();
         cf.set("b", l.getX());
@@ -38,7 +39,12 @@ public class Setwarp implements CommandExecutor {
         cf.set("d", l.getZ());
         cf.set("e", l.getYaw());
         cf.set("f", l.getPitch());
-        Practice.toSave.put(f, cf);
+        try {
+            cf.save(f);
+        } catch (IOException e) {
+            p.sendMessage("§7An error has occured when creating your warp.");
+            return true;
+        }
         p.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
         return true;
     }
