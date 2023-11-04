@@ -1,6 +1,5 @@
 package main.expansions.arenas;
 
-import main.Economy;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,7 +27,7 @@ public class Section {
         this.ID = ID;
     }
 
-    public boolean add(int max) {
+    public boolean reset(int max) {
         int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
         int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
 
@@ -52,10 +51,9 @@ public class Section {
             while (resetCurrentTypeIndex < amount) {
                 Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
 
-                //Block block = getStart().add(offset).getBlock();
-                Economy.resetBlocks.put(getStart().add(offset).getBlock(), data);
+                Block block = getStart().add(offset).getBlock();
                 getStart().subtract(offset);
-                //if (block.getType() != data) block.setType(data, false);
+                if (block.getType() != data) block.setType(data, false);
 
                 count++;
                 resetCurrentTypeIndex++;

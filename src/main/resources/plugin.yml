@@ -28,6 +28,7 @@ commands:
     usage: /<command>
     aliases: r
   tpaall:
+    aliases: tpall
     usage: /<command>
   report:
     usage: /<command>
@@ -40,8 +41,6 @@ commands:
   stats:
     usage: /<command>
     aliases: statistics
-  purge:
-    usage: /<command>
   acreate:
     usage: /<command>
 permissions:

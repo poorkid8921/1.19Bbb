@@ -1,41 +1,41 @@
 package main;
 
-import commands.*;
+import commands.Discord;
+import commands.Report;
+import commands.Spawn;
+import commands.deprecated.Stats;
 import commands.chat.Msg;
 import commands.chat.MsgLock;
 import commands.chat.Reply;
 import commands.chat.TpaLock;
 import commands.tpa.*;
-import it.unimi.dsi.fastutil.Pair;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
-import main.expansions.arenas.CreateCommand;
+import main.expansions.arenas.commands.CreateCommand;
+import main.expansions.arenas.Section;
 import main.utils.Initializer;
 import main.utils.Languages;
+import main.utils.Utils;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static main.utils.Initializer.economy;
+import static main.utils.Utils.lootDrop;
 
-@SuppressWarnings("deprecation")
 public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor {
     public static FileConfiguration cc;
     public static File cf;
@@ -48,8 +48,6 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         } catch (IOException ignored) {
         }
     }
-
-    public static Map<Block, Material> resetBlocks = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -65,38 +63,56 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
-        World d = Bukkit.getWorld("world");
-        Arena.arenas.get("ffa").add(200000);
-        Arena.arenas.get("ffa" + ffa).add(20000);
-
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            d.getEntities().stream()
+            Utils.d.getEntities().stream()
                     .filter(r -> r instanceof EnderCrystal)
                     .forEach(Entity::remove);
             if (ffa++ == 3)
                 ffa = 1;
 
-            int i = 0;
-            int max = resetBlocks.size();
-            for (Map.Entry<Block, Material> a : resetBlocks.entrySet()) {
-                a.getKey().setType(a.getValue(), false);
-                if (i++ >= max) {
-                    Bukkit.getOnlinePlayers().stream().filter(s -> !s.isGliding() &&
-                            d.getBlockAt(new Location(d, s.getLocation().getX(), 319, s.getLocation().getZ())).getType() == Material.BARRIER).forEach(player ->
-                    {
-                        Location l = player.getLocation();
-                        player.teleportAsync(new Location(d,
-                                l.getX(),
-                                135,
-                                l.getZ(),
-                                l.getYaw(),
-                                l.getPitch()));
-                    });
-                }
-                else
-                    Bukkit.getLogger().warning(String.valueOf(i));
+            Arena ffa = Arena.arenas.get("ffa");
+            Arena.ResetLoopinData data = new Arena.ResetLoopinData();
+            data.speed = 2000;
+            for (Section s : ffa.getSections()) {
+                int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                if (sectionAmount <= 0) sectionAmount = 1;
+                data.sections.put(s.getID(), sectionAmount);
+                data.sectionIDs.add(s.getID());
             }
-        }, 0L, 24000L);
+
+            boolean ffaresetted;
+            boolean ffaupresetted;
+            do {
+                ffaresetted = true;
+
+                ffa = Arena.arenas.get("ffa" + ffa);
+                data = new Arena.ResetLoopinData();
+                data.speed = 2000;
+                for (Section s : ffa.getSections()) {
+                    int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                    if (sectionAmount <= 0) sectionAmount = 1;
+                    data.sections.put(s.getID(), sectionAmount);
+                    data.sectionIDs.add(s.getID());
+                }
+
+                do {
+                    ffaupresetted = true;
+                    for (Player a : Bukkit.getOnlinePlayers()) {
+                        if (a.isGliding())
+                            continue;
+
+                        Location c = a.getLocation();
+                        c.setY(319);
+                        if (Utils.d.getBlockAt(c).getType() != Material.BARRIER)
+                            continue;
+
+                        c.setY(135);
+                        a.teleportAsync(c);
+                    }
+                    //lootDrop();
+                } while (!ffa.loopyReset(data) && !ffaupresetted);
+            } while (!ffa.loopyReset(data) && !ffaresetted);
+        }, 0L, 21000L);
         // CHAT
         this.getCommand("msg").setExecutor(new Msg());
         this.getCommand("reply").setExecutor(new Reply());
@@ -123,12 +139,10 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
 
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("discord").setExecutor(new Discord());
-        this.getCommand("purge").setExecutor(new Purge());
 
-        File folder = new File(Initializer.p.getDataFolder(), "Arenas");
+        File folder = new File(Initializer.p.getDataFolder(), "arenas");
         if (!folder.exists()) folder.mkdirs();
 
-        Arena.arenas.clear();
         Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
             try {
                 Arena arena = ArenaIO.loadArena(r);

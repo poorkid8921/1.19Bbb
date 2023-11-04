@@ -6,10 +6,14 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -32,14 +37,50 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
     static TextComponent space = new TextComponent("  ");
+    public static World d = Bukkit.getWorld("world");
+    public static Point point = new Point(0, 0);
+
+    public static void lootDrop() {
+        Location loc = null;
+        while (loc == null) {
+            int x = Initializer.RANDOM.nextInt(128);
+            int z = Initializer.RANDOM.nextInt(128);
+
+            if (Initializer.RANDOM.nextInt() == 0)
+                x = -x;
+
+            if (Initializer.RANDOM.nextInt() == 0)
+                z = -z;
+
+            if (new Point(x, z)
+                    .distance(point) > 48)
+                loc = new Location(d, x, 175, z);
+        }
+
+        StorageMinecart sm = (StorageMinecart) d.spawnEntity(loc, EntityType.MINECART_CHEST);
+        Inventory inv = sm.getInventory();
+        ItemStack is = new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                Material.END_CRYSTAL :
+                Material.OBSIDIAN,
+                Initializer.RANDOM.nextInt(32) +
+                        32);
+        inv.setItem(Initializer.RANDOM.nextInt(27), is);
+
+        is = new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                Material.END_CRYSTAL :
+                Material.OBSIDIAN,
+                Initializer.RANDOM.nextInt(32) +
+                        32);
+        inv.setItem(Initializer.RANDOM.nextInt(27), is);
+        Bukkit.broadcastMessage("§7ᴀ ʟᴏᴏᴛ ᴅʀᴏᴘ ʜᴀs sᴘᴀᴡɴᴇᴅ ᴀᴛ " + MAIN_COLOR + loc.getX() + " 135 " + loc.getZ());
+    }
 
     public static boolean isSuspectedScanPacket(String buffer) {
         return (buffer.split(" ").length == 1 && !buffer.endsWith(" ")) || !buffer.startsWith("/") || buffer.startsWith("/about");
     }
 
     public static void spawnFireworks(Location loc) {
-        loc.add(0, 1, 0);
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        Firework fw = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
         fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
@@ -93,7 +134,6 @@ public class Utils {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR + report + " §7with the reason of " + MAIN_COLOR + reason));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        //Initializer.EXECUTOR.execute(() -> {
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
             DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1163543558398156871/XigQ8rIWMLG2Nh0-j-XjQdourDcvsskcehRBTXRHJMfX63_9cqD5aiDQyvg-s58uVPNj");
@@ -133,6 +173,9 @@ public class Utils {
         String sn = sender.getName();
         String rn = receiver.getName();
 
+        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
+
+
         TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
 
@@ -147,8 +190,9 @@ public class Utils {
 
         receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0],
                 new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
-                " §7has requested to teleport to you. "), a, space, b);
-        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
+                        " §7has requested to teleport to you. "), a, space, b);
+
+        Bukkit.getLogger().warning(requests + " | " + sn + " | " + rn + " | " + tpaRequest + " - " + tpaRequest.getSender() + " - " + tpaRequest.getSenderF() + " - " + tpaRequest.getReceiver() + " - " + tpaRequest.getTpaAll() + " - " + tpaRequest.isHere());
         requests.add(tpaRequest);
 
         BukkitTask br = new BukkitRunnable() {

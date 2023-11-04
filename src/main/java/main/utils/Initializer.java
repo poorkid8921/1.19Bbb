@@ -39,6 +39,5 @@ public class Initializer {
     public static LuckPerms lp;
     public static Location spawn;
     public static net.milkbowl.vault.economy.Economy economy;
-    //public static ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 }

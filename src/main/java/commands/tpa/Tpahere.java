@@ -30,7 +30,7 @@ public class Tpahere implements CommandExecutor {
         }
 
         String ren = recipient.getName();
-        if (ren.equalsIgnoreCase(sender.getName())) {
+        if (ren.equals(sender.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }

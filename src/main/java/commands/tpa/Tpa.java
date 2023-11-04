@@ -1,7 +1,6 @@
 package commands.tpa;
 
 import main.Economy;
-import main.utils.Initializer;
 import main.utils.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -30,7 +29,7 @@ public class Tpa implements CommandExecutor {
         }
 
         String ren = recipient.getName();
-        if (ren.equalsIgnoreCase(sender.getName())) {
+        if (ren.equals(sender.getName())) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }

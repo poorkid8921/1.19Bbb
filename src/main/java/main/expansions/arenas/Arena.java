@@ -162,7 +162,7 @@ public class Arena {
                 arena.getSections().addAll(data.sections);
                 Arena.arenas.put(arena.name, arena);
 
-                File file = new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json");
+                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.getc1();
@@ -191,7 +191,7 @@ public class Arena {
                     for (int s = 0; s < arena.getSections().size(); s++) {
                         Section section = arena.getSections().get(s);
 
-                        ByteBuffer ib = ByteBuffer.allocate((7 * 4) + (section.getBlockAmounts().length * 4));
+                        ByteBuffer ib = ByteBuffer.allocate(28 + (section.getBlockAmounts().length * 4));
 
                         ib.putInt(section.getStart().getBlockX());
                         ib.putInt(section.getStart().getBlockY());
@@ -226,14 +226,14 @@ public class Arena {
                 }
 
                 if (player != null && player.isOnline())
-                    player.sendMessage(ChatColor.GREEN + "Done! The arena is now ready for use!");
+                    player.sendMessage("§7Arena has been successfully created");
             }
         };
 
-        loopyCreate(data, 500000, player, runnable);
+        loopyCreate(data, 500000, runnable);
     }
 
-    private static void loopyCreate(CreationLoopinData data, final int amount, Player player, Runnable onFinished) {
+    private static void loopyCreate(CreationLoopinData data, final int amount, Runnable onFinished) {
         Location start = data.sectionStarts.get(0);
         Location end = data.sectionEnds.get(0);
         int width = end.getBlockX() - start.getBlockX() + 1;
@@ -285,7 +285,11 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.totalBlocks++;
                 data.index++;
-                updatePlayerCreate(player, data);
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                    NumberFormat format = NumberFormat.getPercentInstance();
+                    format.setMinimumFractionDigits(2);
+                    data.lastUpdate = System.currentTimeMillis();
+                }
                 continue;
             }
 
@@ -294,7 +298,11 @@ public class Arena {
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
                 data.index++;
                 data.totalBlocks++;
-                updatePlayerCreate(player, data);
+                if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                    NumberFormat format = NumberFormat.getPercentInstance();
+                    format.setMinimumFractionDigits(2);
+                    data.lastUpdate = System.currentTimeMillis();
+                }
 
                 if (data.blockAmounts[data.blockAmounts.length - 1] == Short.MAX_VALUE) {
                     data.blockTypes = ArrayUtils.add(data.blockTypes, blockKeyIndex);
@@ -309,22 +317,14 @@ public class Arena {
             data.index++;
             data.totalBlocks++;
 
-            updatePlayerCreate(player, data);
+            if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
+                NumberFormat format = NumberFormat.getPercentInstance();
+                format.setMinimumFractionDigits(2);
+                data.lastUpdate = System.currentTimeMillis();
+            }
         }
         if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
-        loopyCreate(data, amount, player, onFinished);
-    }
-
-    private static void updatePlayerCreate(Player player, CreationLoopinData data) {
-        if (System.currentTimeMillis() - data.lastUpdate > 10 * 1000) {
-            double perc = ((double) data.totalBlocks / (double) data.maxBlocks);
-            NumberFormat format = NumberFormat.getPercentInstance();
-            format.setMinimumFractionDigits(2);
-            String percS = format.format(perc);
-            if (player != null && player.isOnline())
-                player.sendMessage(ChatColor.GREEN + "Arena " + percS + " analyzed (" + NumberFormat.getInstance().format(data.totalBlocks) + " blocks)");
-            data.lastUpdate = System.currentTimeMillis();
-        }
+        loopyCreate(data, amount, onFinished);
     }
 
     public static Location getLocationAtIndex(int width, int length, World world, int index) {
@@ -337,31 +337,15 @@ public class Arena {
             if (!keyList.contains(data)) keyList.add(data);
         }
 
-        this.keys = keyList.toArray(new Material[keyList.size()]);
+        this.keys = keyList.toArray(new Material[0]);
     }
 
-    public void add(int speed) {
-        if (getSections().size() == 0) return;
-
-        ResetLoopinData data = new ResetLoopinData();
-        data.speed = speed;
-        for (Section s : getSections()) {
-            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
-            if (sectionAmount <= 0) sectionAmount = 1;
-            data.sections.put(s.getID(), sectionAmount);
-            data.sectionIDs.add(s.getID());
-        }
-
-        loopyAdd(data);
-    }
-
-    private void loopyAdd(ResetLoopinData data) {
+    public boolean loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
-
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
             Section s = getSections().get(id);
-            boolean reset = s.add(data.sections.get(id));
+            boolean reset = s.reset(data.sections.get(id));
             if (reset) {
                 data.sections.remove(id);
                 data.sectionIDs.remove((Object) id);
@@ -380,11 +364,11 @@ public class Arena {
             }
         }
 
-        if (data.sections.size() == 0) {
-            return;
-        }
+        if (data.sections.size() == 0)
+            return true;
 
-        loopyAdd(data);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
+        return false;
     }
 
     public Material[] getKeys() {
@@ -392,7 +376,7 @@ public class Arena {
     }
 
     public void setKeys(Collection<Material> keys) {
-        this.keys = keys.toArray(new Material[keys.size()]);
+        this.keys = keys.toArray(new Material[0]);
     }
 
     public String getName() {
@@ -421,11 +405,10 @@ public class Arena {
     }
 
     public static class ResetLoopinData {
-        Map<Integer, Integer> sections = new HashMap<>();
-        List<Integer> sectionIDs = new ArrayList<>();
+        public Map<Integer, Integer> sections = new HashMap<>();
+        public List<Integer> sectionIDs = new ArrayList<>();
         int currentSectionResetting;
         int blocksThisTick = 0;
-        int maxBlocksThisTick;
-        int speed;
+        public int speed;
     }
 }

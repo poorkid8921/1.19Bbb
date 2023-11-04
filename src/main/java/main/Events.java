@@ -8,28 +8,37 @@ import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wither;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.awt.*;
 
 import static main.utils.Utils.isSuspectedScanPacket;
 import static main.utils.Utils.spawnFireworks;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    ItemStack pick = new ItemStack(Material.IRON_PICKAXE, 1);
-    ItemStack sword = new ItemStack(Material.IRON_SWORD, 1);
-    ItemStack helmet = new ItemStack(Material.IRON_HELMET, 1);
-    ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE, 1);
-    ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS, 1);
-    ItemStack boots = new ItemStack(Material.IRON_BOOTS, 1);
+    ItemStack pick = new ItemStack(Material.IRON_PICKAXE);
+    ItemStack sword = new ItemStack(Material.IRON_SWORD);
+    ItemStack helmet = new ItemStack(Material.IRON_HELMET);
+    ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE);
+    ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
+    ItemStack boots = new ItemStack(Material.IRON_BOOTS);
     ItemStack bread = new ItemStack(Material.BREAD, 16);
+    ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
 
     public Events() {
         pick.addEnchantment(Enchantment.DIG_SPEED, 3);
@@ -59,20 +68,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onPortal(PlayerPortalEvent event) {
-        Player player = event.getPlayer();
-        Location loc = player.getLocation();
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
-            if (!player.isOnline()) return;
-
-            if (loc.getBlock().getType().equals(Material.NETHER_PORTAL)) {
-                player.teleportAsync(event.getFrom());
-                player.playSound(loc, Sound.BLOCK_PORTAL_TRAVEL, 1.0F, 1.0F);
-            }
-        }, 200);
-    }
-
-    @EventHandler
     private void onInteract(PlayerInteractEvent e) {
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) ||
                 !e.getClickedBlock().getType().equals(Material.LEVER))
@@ -98,16 +93,42 @@ public class Events implements Listener {
         event.setCancelled(isSuspectedScanPacket(event.getBuffer()));
     }
 
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    private void onCreatureSpawn(CreatureSpawnEvent event) {
+        if (!(event.getEntity() instanceof Wither w)) return;
+
+        final Location witherLocation = w.getLocation();
+        if (new Point(witherLocation.getBlockX(), witherLocation.getBlockZ())
+                .distance(Utils.point) < 1500) {
+            event.setCancelled(true);
+            for (Player nearbyPlayer : witherLocation.getNearbyPlayers(8, 8, 8)) {
+                nearbyPlayer.sendMessage("§7You can only spawn withers 1.5k blocks away from spawn");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent e) {
+        Player p = e.getPlayer();
+
+        String name = p.getName();
+        if (Initializer.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis()) e.setCancelled(true);
+        else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500);
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         Player p = (Player) e.getWhoClicked();
         if (e.getInventory() instanceof PlayerInventory)
             return;
 
+        Bukkit.getLogger().warning("not PlayerInventory");
         if (p.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
+            Bukkit.getLogger().warning("cancelled");
             e.setCancelled(true);
             ItemStack currentItem = e.getCurrentItem();
             if (!currentItem.getItemMeta().hasLore()) return;
+            Bukkit.getLogger().warning("has lore");
 
             holder.whenClicked(currentItem, e.getAction(), e.getSlot(), holder.getArg());
         }
@@ -136,7 +157,7 @@ public class Events implements Listener {
         } else w.strikeLightningEffect(loc);
 
         if (Initializer.RANDOM.nextInt(100) <= 5)
-            w.dropItemNaturally(p.getLocation(), Utils.getHead(p, kp.getDisplayName()));
+            w.dropItemNaturally(loc, Utils.getHead(p, kp.getDisplayName()));
     }
 
     @EventHandler
@@ -149,7 +170,7 @@ public class Events implements Listener {
             return;
 
         String type = a.getItemStack().getType().name();
-        e.setCancelled(type.contains("DIAMOND") || type.contains("NETHERITE"));
+        e.setCancelled(type.contains("DIAMOND"));
     }
 
     @EventHandler
@@ -158,28 +179,17 @@ public class Events implements Listener {
         if (!p.hasPlayedBefore()) {
             p.getInventory().addItem(sword);
             p.getInventory().addItem(pick);
-            p.getInventory().setItemInOffHand(bread);
+            p.getInventory().addItem(bread);
             p.getInventory().setHelmet(helmet);
             p.getInventory().setChestplate(chestplate);
             p.getInventory().setLeggings(leggings);
             p.getInventory().setBoots(boots);
+            p.getInventory().setItemInOffHand(totem);
             p.teleportAsync(Initializer.spawn);
-        } else if (p.getHealth() == 0.0) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
-                p.setHealth(20);
-                p.kickPlayer("Internal Exception: io.netty.handler.timeout.ReadTimeoutException");
-            }, 2L);
-            e.setJoinMessage(null);
-            return;
         }
 
         String name = p.getName();
         if (Economy.cc.get("r." + name + ".t") == null) Initializer.tpa.add(name);
         if (Economy.cc.get("r." + name + ".m") == null) Initializer.msg.add(name);
-    }
-
-    @EventHandler
-    public void onRespawn(PlayerRespawnEvent e) {
-        e.setRespawnLocation(Initializer.spawn);
     }
 }

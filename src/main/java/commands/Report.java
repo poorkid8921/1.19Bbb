@@ -12,7 +12,6 @@ import java.util.List;
 
 import static main.utils.Utils.report;
 
-@SuppressWarnings("deprecation")
 public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -26,7 +25,7 @@ public class Report implements CommandExecutor, TabExecutor {
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            report((Player) sender, msgargs.toString(), "Other");
+            report((Player) sender, msgargs.toString(), null);
         }
 
         return true;
