@@ -15,41 +15,39 @@ import static main.utils.RequestManager.getTPArequest;
 public class TpaCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-
         if (args.length < 1) {
-            user.sendMessage(Languages.WHO_TPA);
+            sender.sendMessage(Languages.WHO_TPA);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage("§7You can't send teleport requests to offline players.");
+            sender.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
         }
 
         String ren = recipient.getName();
-        if (ren.equals(user.getName())) {
-            user.sendMessage("§7You can't teleport to yourself.");
+        if (ren.equals(sender.getName())) {
+            sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
         TpaRequest tpr = getTPArequest(ren);
 
         if (tpr != null) {
-            if (tpr.getSender().equals(user)) {
-                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
+            if (tpr.getSender().equals(sender)) {
+                sender.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }
 
         if (Practice.config.get("r." + ren + ".t") != null) {
-            user.sendMessage("§7You can't request this player since they've locked their tp requests.");
+            sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
-        addTPArequest(user, recipient, false);
+        addTPArequest((Player) sender, recipient, false);
         return true;
     }
 }

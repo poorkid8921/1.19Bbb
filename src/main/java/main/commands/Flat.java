@@ -1,6 +1,5 @@
 package main.commands;
 
-import main.commands.ess.Ban;
 import main.utils.Initializer;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -18,8 +17,8 @@ public class Flat implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
-            if (Initializer.bannedFromflat.contains(pp.getName())) {
-                pp.sendMessage(MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜɪs ᴍᴏᴅᴇ.");
+            if (Initializer.bannedFromflat.contains(sender.getName())) {
+                sender.sendMessage(MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜɪs ᴍᴏᴅᴇ.");
                 return true;
             }
             Location l = Initializer.flat;

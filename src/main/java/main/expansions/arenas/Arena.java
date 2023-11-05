@@ -233,10 +233,10 @@ public class Arena {
             }
         };
 
-        loopyCreate(data, 500000, player, runnable);
+        loopyCreate(data, 500000, runnable);
     }
 
-    private static void loopyCreate(CreationLoopinData data, final int amount, Player player, Runnable onFinished) {
+    private static void loopyCreate(CreationLoopinData data, final int amount, Runnable onFinished) {
         Location start = data.sectionStarts.get(0);
         Location end = data.sectionEnds.get(0);
         int width = end.getBlockX() - start.getBlockX() + 1;
@@ -327,7 +327,7 @@ public class Arena {
             }
         }
         if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
-        loopyCreate(data, amount, player, onFinished);
+        loopyCreate(data, amount, onFinished);
     }
 
     public static Location getLocationAtIndex(int width, int length, World world, int index) {
@@ -359,7 +359,7 @@ public class Arena {
     public boolean loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
-            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
+            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
             boolean reset = s.reset(data.sections.get(id));
             if (reset) {

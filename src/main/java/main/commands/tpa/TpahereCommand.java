@@ -15,43 +15,40 @@ import static main.utils.RequestManager.getTPArequest;
 public class TpahereCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user))
-            return true;
-
         if (args.length < 1) {
-            user.sendMessage(Languages.WHO_TPA);
+            sender.sendMessage(Languages.WHO_TPA);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(Languages.EXCEPTION_PLAYER_OFFLINETPA);
+            sender.sendMessage(Languages.EXCEPTION_PLAYER_OFFLINETPA);
             return true;
         }
 
         String ren = recipient.getName();
-        if (ren.equals(user.getName())) {
-            user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
+        if (ren.equals(sender.getName())) {
+            sender.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 
         TpaRequest tpr = getTPArequest(ren);
 
         if (tpr != null) {
-            if (tpr.getSender().equals(user)) {
-                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
+            if (tpr.getSender().equals(sender)) {
+                sender.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }
 
         if (Practice.config.get(
                 "r." + ren + ".t") != null) {
-            user.sendMessage("§7You can't request this player since they've locked their tp requests.");
+            sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
-        addTPArequest(user, recipient, true);
+        addTPArequest((Player) sender, recipient, true);
         return true;
     }
 }

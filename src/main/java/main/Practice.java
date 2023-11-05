@@ -14,7 +14,6 @@ import main.expansions.duels.commands.Duel;
 import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
-import main.utils.Initializer;
 import main.utils.Languages;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;

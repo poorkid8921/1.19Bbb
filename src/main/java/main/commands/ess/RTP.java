@@ -30,7 +30,8 @@ public class RTP implements CommandExecutor, TabExecutor {
         if (playersRTPing.contains(sn))
             return true;
         else {
-            if (playersRTPing.size() > 0) {
+            if (playersRTPing.size() > 0 &&
+                    baked.size() > 0) {
                 Location loc = baked.get(Initializer.RANDOM.nextInt(baked.size()));
                 baked.remove(loc);
                 double x = loc.getX();
@@ -97,7 +98,7 @@ public class RTP implements CommandExecutor, TabExecutor {
             if (b.isSolid()) {
                 loc = new Location(d, ax, b.getLocation().getY() + 1, az, l.getYaw(), l.getPitch());
             } else if (x2++ == 10) {
-                p.sendMessage(MAIN_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ.");
+                sender.sendMessage(MAIN_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ.");
                 return true;
             }
         }

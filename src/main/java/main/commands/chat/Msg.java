@@ -16,25 +16,24 @@ import java.util.stream.Collectors;
 public class Msg implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player player = (Player) sender;
         if (args.length == 0) {
-            player.sendMessage("§7You must specify who you want to message.");
+            sender.sendMessage("§7You must specify who you want to message.");
             return true;
         } else if (args.length == 1) {
-            player.sendMessage("§7You must specify a message to send to the player.");
+            sender.sendMessage("§7You must specify a message to send to the p.");
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
 
         if (target == null) {
-            player.sendMessage("§7You can't send messages to offline players.");
+            sender.sendMessage("§7You can't send messages to offline players.");
             return true;
         }
 
         String tn = target.getName();
         if (Practice.config.get("r." + tn + ".m") != null && !sender.hasPermission("has.staff")) {
-            player.sendMessage("§7You can't send messages to this player since they've locked their messages.");
+            sender.sendMessage("§7You can't send messages to this player since they've locked their messages.");
             return true;
         }
 
@@ -43,9 +42,9 @@ public class Msg implements CommandExecutor, TabCompleter {
         for (int i = 1; i < args.length; i++)
             msgargs.append(args[i]).append(" ");
 
-        player.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
-        target.sendMessage("§6[§c" + Utils.translate(player.getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
-        String pn = player.getName();
+        sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
+        target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
+        String pn = sender.getName();
         Initializer.lastReceived.put(pn, tn);
         Initializer.lastReceived.put(tn, pn);
         return true;

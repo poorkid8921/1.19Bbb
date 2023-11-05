@@ -16,32 +16,30 @@ import static main.utils.Utils.translate;
 @SuppressWarnings("deprecation")
 public class DuelDeny implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-
         String msg = Languages.EXCEPTION_NO_DUEL_REQ;
         DuelHolder request;
 
         if (args.length == 0) {
-            request = getDUELrequest(user.getName());
+            request = getDUELrequest(sender.getName());
         } else {
             String n = args[0];
             Player p = Bukkit.getPlayer(n);
             if (p == null) {
-                user.sendMessage(Languages.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".");
+                sender.sendMessage(Languages.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".");
                 return true;
             } else n = p.getName();
-            request = getDUELrequest(user.getName(), n);
+            request = getDUELrequest(sender.getName(), n);
             msg = "§7You got no active teleport request from " + MAIN_COLOR + n + ".";
         }
 
         if (request == null) {
-            user.sendMessage(msg);
+            sender.sendMessage(msg);
             return true;
         }
 
         Player recipient = request.getSender();
-        recipient.sendMessage(MAIN_COLOR + user.getDisplayName() + " §7denied your teleportation request.");
-        user.sendMessage("§7You have successfully deny " + MAIN_COLOR + translate(recipient.getDisplayName()) + "§7's request.");
+        recipient.sendMessage(MAIN_COLOR + ((Player) sender).getDisplayName() + " §7denied your teleportation request.");
+        sender.sendMessage("§7You have successfully deny " + MAIN_COLOR + translate(recipient.getDisplayName()) + "§7's request.");
         duel.remove(request);
         return true;
     }

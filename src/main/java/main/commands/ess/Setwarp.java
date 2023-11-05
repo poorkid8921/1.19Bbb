@@ -28,7 +28,12 @@ public class Setwarp implements CommandExecutor {
             return true;
         }
 
-        f.mkdirs();
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            sender.sendMessage("§7An error has occured when creating your warp.");
+            return true;
+        }
         Player p = (Player) sender;
         FileConfiguration cf = YamlConfiguration.loadConfiguration(f);
         cf.set("a", p.getWorld().getName());
@@ -42,10 +47,10 @@ public class Setwarp implements CommandExecutor {
         try {
             cf.save(f);
         } catch (IOException e) {
-            p.sendMessage("§7An error has occured when creating your warp.");
+            sender.sendMessage("§7An error has occured when creating your warp.");
             return true;
         }
-        p.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
+        sender.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
         return true;
     }
 }

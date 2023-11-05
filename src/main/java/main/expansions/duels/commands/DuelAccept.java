@@ -21,37 +21,37 @@ import static main.utils.RequestManager.getDUELrequest;
 
 public class DuelAccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-
         String msg = Languages.EXCEPTION_NO_DUEL_REQ;
         DuelHolder request;
 
+        String sn = sender.getName();
         if (args.length == 0) {
-            request = getDUELrequest(user.getName());
+            request = getDUELrequest(sn);
         } else {
-            request = getDUELrequest(user.getName(), args[0].toLowerCase());
+            request = getDUELrequest(sn, args[0].toLowerCase());
             msg = Languages.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".";
         }
 
         if (request == null) {
-            user.sendMessage(msg);
+            sender.sendMessage(msg);
             return true;
         }
 
         String targetUID = request.getSender().getName();
         Player recipient = Bukkit.getPlayer(targetUID);
-        teams.putAll(Map.of(targetUID, 0, user.getName(), 1));
+        teams.putAll(Map.of(targetUID, 0,
+                sn, 1));
 
         int check = duelsavailable(request.getType());
         if (check == 32) {
             Initializer.duel.remove(request);
-            user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
         Initializer.duel.remove(request);
         Initializer.inDuel.add(request);
-        start(user, recipient, request.getType(), 1, request.getMaxrounds(), check + 1);
+        start((Player) sender, recipient, request.getType(), 1, request.getMaxrounds(), check + 1);
         updateDuels();
         updateSpectate();
         return true;

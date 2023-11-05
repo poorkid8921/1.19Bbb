@@ -17,12 +17,10 @@ public class TpacceptCommand implements CommandExecutor {
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-
         String msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ;
         TpaRequest request;
         String n = "";
-        String un = user.getName();
+        String un = sender.getName();
 
         if (args.length == 0) {
             request = getTPArequest(un);
@@ -30,7 +28,7 @@ public class TpacceptCommand implements CommandExecutor {
             n = args[0];
             Player p = Bukkit.getPlayer(n);
             if (p == null) {
-                user.sendMessage(msg);
+                sender.sendMessage(msg);
                 return true;
             } else
                 n = p.getName();
@@ -40,10 +38,10 @@ public class TpacceptCommand implements CommandExecutor {
         }
 
         if (request == null) {
-            user.sendMessage(msg);
+            sender.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
+            sender.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 
@@ -52,12 +50,12 @@ public class TpacceptCommand implements CommandExecutor {
 
         if (!request.isHere()) {
             tempuser = request.getSender();
-            temprecipient = user;
+            temprecipient = (Player) sender;
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");
             tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
         } else {
-            tempuser = user;
+            tempuser = (Player) sender;
             temprecipient = request.getSender();
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");

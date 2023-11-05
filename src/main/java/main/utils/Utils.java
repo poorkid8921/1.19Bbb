@@ -1,13 +1,12 @@
 package main.utils;
 
 import main.Practice;
-import org.bukkit.*;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -44,6 +43,7 @@ public class Utils {
         }
         return matcher.appendTail(buffer).toString();
     }
+
     public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
 

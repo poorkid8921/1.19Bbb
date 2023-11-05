@@ -15,9 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import static main.expansions.duels.KitOverrider.*;
-import static main.expansions.duels.KitOverrider.Duels_Kit_Tank;
 import static main.utils.Languages.*;
-import static main.utils.Languages.MAIN_COLOR;
 
 public class DuelUtils {
     public static NamespacedKey spectateHead = new NamespacedKey(Initializer.p, "against");
@@ -55,6 +53,7 @@ public class DuelUtils {
             p.getInventory().clear();
         }
 
+        Bukkit.broadcastMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
         Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
         Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
 
@@ -355,7 +354,7 @@ public class DuelUtils {
             case 0 -> Material.RESPAWN_ANCHOR;
             case 1 -> Material.END_CRYSTAL;
             case 2 -> Material.DIAMOND_SWORD;
-            default -> throw new IllegalStateException("Unexpected value: " + i);
+            default -> null;
         };
     }
 

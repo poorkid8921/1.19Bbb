@@ -34,15 +34,11 @@ public class Duel implements CommandExecutor, TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-
-        if (!user.isOp()) return true;
-
         int i = 1;
         String gm = "field";
 
         if (args.length == 0) {
-            Utils.openDuels0(user);
+            Utils.openDuels0((Player) sender);
             return true;
         }
 
@@ -66,37 +62,37 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = duelsavailable(d);
 
         if (check == 32) {
-            user.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            user.sendMessage(Languages.EXCEPTION_DUEL_TARGET_OFF);
+            sender.sendMessage(Languages.EXCEPTION_DUEL_TARGET_OFF);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            user.sendMessage(Languages.EXCEPTION_DUEL_SELF);
+            sender.sendMessage(Languages.EXCEPTION_DUEL_SELF);
             return true;
         }
 
         DuelHolder tpr = getDUELrequest(recipient.getName());
 
         if (Initializer.teams.containsKey(recipient.getName())) {
-            user.sendMessage(Languages.EXCEPTION_ALREADY_IN_DUEL);
+            sender.sendMessage(Languages.EXCEPTION_ALREADY_IN_DUEL);
             return true;
         }
 
         if (tpr != null) {
-            if (tpr.getSender().equals(user)) {
-                user.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
+            if (tpr.getSender().equals(sender)) {
+                sender.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }
 
-        addDUELrequest(user, recipient, d, i, 0, 0, check + 1, 1);
+        addDUELrequest((Player) sender, recipient, d, i, 0, 0, check + 1, 1);
         return true;
     }
 

@@ -1,6 +1,5 @@
 package main;
 
-import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.Pair;
@@ -14,7 +13,6 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedEntitySpawn;
 import net.minecraft.server.level.EntityPlayer;
 import org.bukkit.*;
-import org.bukkit.block.data.type.Piston;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -23,11 +21,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -333,7 +333,7 @@ public class Events implements Listener {
         p.sendMessage(Languages.BACK);
 
         if (killer == null || killer == p) {
-            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+            Bukkit.broadcastMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -343,7 +343,7 @@ public class Events implements Listener {
             });
             return;
         } else {
-            e.setDeathMessage(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
+            Bukkit.broadcastMessage(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
@@ -353,16 +353,6 @@ public class Events implements Listener {
                 default -> "suicided";
             });
         }
-
-        Bukkit.getLogger().warning(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
-            case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
-            case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
-            case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
-            case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
-            case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7in the ass";
-            case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
-            default -> "suicided";
-        });
 
         switch (Practice.config.getInt("r." + killer + ".c", -1)) {
             case 0 -> {
