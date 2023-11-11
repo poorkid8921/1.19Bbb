@@ -37,9 +37,7 @@ public class DuelAccept implements CommandExecutor {
             return true;
         }
 
-        String targetUID = request.getSender().getName();
-        Player recipient = Bukkit.getPlayer(targetUID);
-        teams.putAll(Map.of(targetUID, 0,
+        teams.putAll(Map.of(request.getSenderF(), 0,
                 sn, 1));
 
         int check = duelsavailable(request.getType());
@@ -51,7 +49,7 @@ public class DuelAccept implements CommandExecutor {
 
         Initializer.duel.remove(request);
         Initializer.inDuel.add(request);
-        start((Player) sender, recipient, request.getType(), 1, request.getMaxrounds(), check + 1);
+        start((Player) sender, request.getSender(), request.getType(), 1, request.getMaxrounds(), check + 1);
         updateDuels();
         updateSpectate();
         return true;

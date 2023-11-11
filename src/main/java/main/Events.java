@@ -4,15 +4,22 @@ import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.Pair;
 import main.expansions.arenas.Arena;
+import main.expansions.arenas.Section;
 import main.expansions.duels.Matchmaking;
 import main.utils.*;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketDataSerializer;
+import net.minecraft.network.protocol.EnumProtocolDirection;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedEntitySpawn;
 import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.network.PlayerConnection;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -49,20 +56,6 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String LEAVE_PREFIX = MAIN_COLOR + "← ";
-    int b = 0;
-
-    private static <T> T createDataSerializer(UnsafeFunction<PacketDataSerializer, T> callback) {
-        PacketDataSerializer data = new PacketDataSerializer(Unpooled.buffer());
-        T result = null;
-        try {
-            result = callback.apply(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            data.release();
-        }
-        return result;
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
@@ -200,31 +193,12 @@ public class Events implements Listener {
         inInventory.remove(e.getPlayer().getName());
     }
 
-    private PacketPlayOutNamedEntitySpawn getEntitySpawnPacket(GameProfile gp, Location c, int id) {
-        return createDataSerializer((data) -> {
-            data.d(id);
-            data.a(gp.getId());
-            data.writeDouble(c.getX());
-            data.writeDouble(c.getY());
-            data.writeDouble(c.getZ());
-            data.writeByte((byte) ((int) (c.getYaw() * 256.0F / 360.0F)));
-            data.writeByte((byte) ((int) (c.getPitch() * 256.0F / 360.0F)));
-            return new PacketPlayOutNamedEntitySpawn(data);
-        });
-    }
-
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
         Location l = p.getLocation();
         if (Initializer.inFFA.contains(p)) {
-            EntityPlayer ep = ((CraftPlayer) p).getHandle();
-            int cached = b++;
-            ep.b.a(getEntitySpawnPacket(new GameProfile(UUID.randomUUID(), name), l, cached));
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                ep.b.a(new PacketPlayOutEntityDestroy(cached));
-            }, 100L);
             Initializer.inFFA.remove(p);
         } else e.getDrops().clear();
 
@@ -267,7 +241,15 @@ public class Events implements Listener {
 
                 int arena = tpr.getArena();
                 int type = tpr.getType();
-                Arena.arenas.get("d_" + type + arena).reset(1000000);
+                Arena ffa = Arena.arenas.get("d_" + type + arena);
+                Arena.ResetLoopinData data = new Arena.ResetLoopinData();
+                data.speed = 10000;
+                for (Section s : ffa.getSections()) {
+                    int sectionAmount = (int) ((double) 10000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                    if (sectionAmount <= 0) sectionAmount = 1;
+                    data.sections.put(s.getID(), sectionAmount);
+                    data.sectionIDs.add(s.getID());
+                }
 
                 if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(kuid) == null) {
                     if (red > blue) {
@@ -281,14 +263,18 @@ public class Events implements Listener {
                     Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                         Initializer.teams.remove(kuid);
                         Initializer.teams.remove(name);
-                        Initializer.inDuel.remove(tpr);
                         kp.teleportAsync(Initializer.spawn);
                         p.teleportAsync(Initializer.spawn);
                         plist.clear();
+                    }, 60L);
+                    boolean resetted;
+                    do {
+                        resetted = true;
 
+                        Initializer.inDuel.remove(tpr);
                         updateDuels();
                         updateSpectate();
-                    }, 60L);
+                    } while (!ffa.loopyReset(data) && !resetted);
                     return;
                 }
 
@@ -379,10 +365,5 @@ public class Events implements Listener {
 
         if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
         if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
-    }
-
-    @FunctionalInterface
-    private interface UnsafeFunction<K, T> {
-        T apply(K k) throws Exception;
     }
 }

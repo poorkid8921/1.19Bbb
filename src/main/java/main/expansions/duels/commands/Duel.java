@@ -37,6 +37,9 @@ public class Duel implements CommandExecutor, TabExecutor {
         int i = 1;
         String gm = "field";
 
+        if (!sender.isOp())
+            return true;
+
         if (args.length == 0) {
             Utils.openDuels0((Player) sender);
             return true;

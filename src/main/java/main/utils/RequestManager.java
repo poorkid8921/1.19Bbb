@@ -26,7 +26,7 @@ public class RequestManager {
     public static ArrayList<TpaRequest> tpa = new ArrayList<>();
     public static Map<String, Integer> bukkitTasks = new HashMap<>();
     static TextComponent space = new TextComponent("  ");
-    static TextComponent duelType2 = new TextComponent("§7with ");
+    static TextComponent duelType2 = new TextComponent(" §7with ");
     static TextComponent tc = new TextComponent(" §7has requested that you duel them in ");
 
     public static TpaRequest getTPArequest(String user) {
@@ -120,10 +120,10 @@ public class RequestManager {
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
 
-        TextComponent duelType = new TextComponent(formattedtype(t) + " ");
+        TextComponent duelType = new TextComponent(formattedtype(t));
         duelType.setColor(ChatColor.of("#fc282f"));
 
-        TextComponent duelType3 = new TextComponent(rounds + " rounds.");
+        TextComponent duelType3 = new TextComponent(rounds == 1 ? " a round" : rounds + " rounds");
         duelType3.setColor(ChatColor.of("#fc282f"));
 
         TextComponent e = new TextComponent(sn);

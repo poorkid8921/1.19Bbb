@@ -14,6 +14,7 @@ import main.expansions.duels.commands.Duel;
 import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
+import main.utils.Initializer;
 import main.utils.Languages;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
@@ -25,6 +26,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -73,24 +75,22 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
     }
 
+    public static World d;
+
     @Override
     public void onEnable() {
         df = getDataFolder();
         cf = new File(df, "data.yml");
         config = YamlConfiguration.loadConfiguration(cf);
-
         p = this;
-        saveConfig();
 
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        World d = Bukkit.getWorld("world");
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
                 d.getEntities().stream()
-                        .filter(r -> !(r instanceof Player))
+                        .filter(r -> !(r instanceof Player) && !(r instanceof EnderPearl))
                         .forEach(Entity::remove);
-
-                Arena.arenas.get("flat").reset(10000);
+                
                 if (ticked++ == 3) {
                     if (flatstr++ == 6)
                         flatstr = 1;
@@ -100,51 +100,69 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                 if (ticked == 6) {
                     ticked = 0;
-                    Arena ffa = Arena.arenas.get("ffa");
+
+                    Arena ffa = Arena.arenas.get("flat");
                     Arena.ResetLoopinData data = new Arena.ResetLoopinData();
-                    data.speed = 2000;
+                    data.speed = 10000;
                     for (Section s : ffa.getSections()) {
-                        int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                        int sectionAmount = (int) ((double) 10000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
                         if (sectionAmount <= 0) sectionAmount = 1;
                         data.sections.put(s.getID(), sectionAmount);
                         data.sectionIDs.add(s.getID());
                     }
-
+                    
+                    boolean flatresetted;
                     boolean ffaresetted;
                     boolean ffaupresetted;
                     do {
-                        ffaresetted = true;
+                        flatresetted = true;
 
-                        ffa = Arena.arenas.get("ffaup");
+                        ffa = Arena.arenas.get("ffa");
                         data = new Arena.ResetLoopinData();
-                        data.speed = 2000;
+                        data.speed = 1000000;
                         for (Section s : ffa.getSections()) {
-                            int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                            int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
                             if (sectionAmount <= 0) sectionAmount = 1;
                             data.sections.put(s.getID(), sectionAmount);
                             data.sectionIDs.add(s.getID());
                         }
 
                         do {
-                            ffaupresetted = true;
-                            inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                Location location = player.getLocation();
-                                location.setY(200);
-                                Block b = d.getBlockAt(location);
-                                Block b2 = d.getBlockAt(location.add(0, 1, 0));
+                            ffaresetted = true;
 
-                                b2.setType(Material.AIR, false);
-                                b.setType(Material.AIR, false);
-                                location.setY(d.getHighestBlockYAt(location) + 1);
-                                player.teleportAsync(location).thenAccept(reason -> {
-                                    b.setType(Material.BARRIER, false);
-                                    b2.setType(Material.BARRIER, false);
+                            ffa = Arena.arenas.get("ffaup");
+                            data = new Arena.ResetLoopinData();
+                            data.speed = 2000;
+                            for (Section s : ffa.getSections()) {
+                                int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                                if (sectionAmount <= 0) sectionAmount = 1;
+                                data.sections.put(s.getID(), sectionAmount);
+                                data.sectionIDs.add(s.getID());
+                            }
+
+                            do {
+                                ffaupresetted = true;
+                                inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                    Location location = player.getLocation();
+                                    location.setY(200);
+                                    Block b = d.getBlockAt(location);
+                                    Block b2 = d.getBlockAt(location.add(0, 1, 0));
+
+                                    b2.setType(Material.AIR, false);
+                                    b.setType(Material.AIR, false);
+                                    location.setY(d.getHighestBlockYAt(location) + 1);
+                                    player.teleportAsync(location).thenAccept(reason -> {
+                                        b.setType(Material.BARRIER, false);
+                                        b2.setType(Material.BARRIER, false);
+                                    });
                                 });
-                            });
-                            bannedFromflat.clear();
-                        } while (!ffa.loopyReset(data) && !ffaupresetted);
-                    } while (!ffa.loopyReset(data) && !ffaresetted);
+                                bannedFromflat.clear();
+                            } while (!ffa.loopyReset(data) && !ffaupresetted);
+                        } while (!ffa.loopyReset(data) && !ffaresetted);
+                    } while (!ffa.loopyReset(data) && !flatresetted);
                 }
+                else
+                    Arena.arenas.get("flat").reset(10000);
             }
         }, 0L, 2400L);
 
@@ -156,10 +174,10 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("back").setExecutor(new Back());
         this.getCommand("help").setExecutor(new Help());
 
-        this.getCommand("tpa").setExecutor(new TpaCommand());
-        this.getCommand("tpaccept").setExecutor(new TpacceptCommand());
-        this.getCommand("tpahere").setExecutor(new TpahereCommand());
-        this.getCommand("tpdeny").setExecutor(new TpdenyCommand());
+        this.getCommand("tpa").setExecutor(new Tpa());
+        this.getCommand("tpaccept").setExecutor(new Tpaccept());
+        this.getCommand("tpahere").setExecutor(new Tpahere());
+        this.getCommand("tpdeny").setExecutor(new Tpdeny());
 
         this.getCommand("msg").setExecutor(new Msg());
         this.getCommand("reply").setExecutor(new Reply());
@@ -216,5 +234,22 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Languages.init();
         main.expansions.guis.Utils.init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
+
+        d = Bukkit.getWorld("world");
+        Initializer.ffa = new Location(d,
+                -243.5,
+                156,
+                -580.5);
+        Initializer.flat = new Location(d,
+                -2.5,
+                131.0625,
+                363.5);
+        Initializer.spawn = new Location(d,
+                0.5,
+                86,
+                0.5);
+        Initializer.spawn.setYaw(
+                90F
+        );
     }
 }

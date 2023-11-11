@@ -1,5 +1,6 @@
 package main.utils;
 
+import main.Practice;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -78,21 +79,5 @@ public class Languages {
         EXCEPTION_NO_ARGS_WARP = "§7You must specify a warp";
         EXCEPTION_DOESNT_EXIST_WARP = "§7The specified warp doesn't exist";
         EXCEPTION_INVALID_WARP = "§7You must specify a valid warp";
-
-        Initializer.ffa = new org.bukkit.Location(Bukkit.getWorld("world"),
-                Initializer.p.getConfig().getDouble("ffa.X"),
-                Initializer.p.getConfig().getDouble("ffa.Y"),
-                Initializer.p.getConfig().getDouble("ffa.Z"));
-        Initializer.flat = new org.bukkit.Location(Bukkit.getWorld("world"),
-                Initializer.p.getConfig().getDouble("flat.X"),
-                Initializer.p.getConfig().getDouble("flat.Y"),
-                Initializer.p.getConfig().getDouble("flat.Z"));
-        Initializer.spawn = new Location(Bukkit.getWorld("world"),
-                Initializer.p.getConfig().getDouble("Spawn.X"),
-                Initializer.p.getConfig().getDouble("Spawn.Y"),
-                Initializer.p.getConfig().getDouble("Spawn.Z"));
-        Initializer.spawn.setYaw(
-                Initializer.p.getConfig().getLong("Spawn.yaw")
-        );
     }
 }

@@ -7,15 +7,18 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.List;
 
 import static main.utils.Languages.MAIN_COLOR;
 
-public class Warp implements CommandExecutor {
+public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
             sender.sendMessage(Languages.EXCEPTION_NO_ARGS_WARP);
@@ -36,7 +39,12 @@ public class Warp implements CommandExecutor {
                 cf.getDouble("d"),
                 (float) cf.getDouble("e"),
                 (float) cf.getDouble("f"))
-        ).thenAccept(r -> sender.sendMessage("§7Successfully teleported to the warp " + MAIN_COLOR + args[0]));
+        ).thenAccept(r -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0]));
         return true;
+    }
+
+    @Override
+    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }

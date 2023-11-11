@@ -32,6 +32,10 @@ public class DuelHolder {
         return Bukkit.getPlayer(sender);
     }
 
+    public String getSenderF() {
+        return sender;
+    }
+
     public String getReceiver() {
         return receiver;
     }
