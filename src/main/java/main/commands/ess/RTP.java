@@ -1,6 +1,5 @@
 package main.commands.ess;
 
-import io.papermc.lib.PaperLib;
 import main.Practice;
 import main.utils.Initializer;
 import org.bukkit.*;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
@@ -32,7 +30,8 @@ public class RTP implements CommandExecutor, TabExecutor {
 
         if (args.length > 0) {
             switch (args[0]) {
-                case "overworld", "world" -> {}
+                case "overworld", "world" -> {
+                }
                 default -> {
                     String sn = p.getName();
                     if (playersRTPing.contains(sn))

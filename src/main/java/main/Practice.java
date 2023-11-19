@@ -27,9 +27,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.ByteArrayOutputStream;
@@ -46,6 +44,7 @@ import static org.bukkit.Bukkit.getMessenger;
 public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
+    public static World d;
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
@@ -93,8 +92,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
         getMessenger().unregisterOutgoingPluginChannel(this);
     }
-
-    public static World d;
 
     @Override
     public void onEnable() {

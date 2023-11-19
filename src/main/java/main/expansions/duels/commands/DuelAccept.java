@@ -46,7 +46,7 @@ public class DuelAccept implements CommandExecutor {
         if (request == null) {
             sender.sendMessage(msg);
             return true;
-        }else if (un.equals(n)) {
+        } else if (un.equals(n)) {
             sender.sendMessage(Languages.EXCEPTION_PLAYER_DUELSELF);
             return true;
         }

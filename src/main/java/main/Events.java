@@ -1,7 +1,5 @@
 package main;
 
-import com.mojang.authlib.GameProfile;
-import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.Pair;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.Section;
@@ -9,18 +7,7 @@ import main.expansions.duels.Matchmaking;
 import main.utils.*;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.PacketDataSerializer;
-import net.minecraft.network.protocol.EnumProtocolDirection;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
-import net.minecraft.network.protocol.game.PacketPlayOutNamedEntitySpawn;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.server.level.WorldServer;
-import net.minecraft.server.network.PlayerConnection;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -44,7 +31,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static main.expansions.guis.Utils.*;
 import static main.utils.DuelUtils.*;
