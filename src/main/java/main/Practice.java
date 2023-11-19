@@ -26,17 +26,21 @@ import org.bukkit.block.Block;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
 import static main.utils.Initializer.*;
+import static org.bukkit.Bukkit.getMessenger;
 
 @SuppressWarnings("deprecation")
 public class Practice extends JavaPlugin implements TabExecutor {
@@ -55,6 +59,20 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onDisable() {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(b);
+
+        try {
+            out.writeUTF("Connect");
+            out.writeUTF("Economy");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Bukkit.getOnlinePlayers().forEach(r -> {
+            r.sendTitle("§aPractice is restarting", null, 20, 60, 30);
+            r.sendPluginMessage(Initializer.p, "BungeeCord", b.toByteArray());
+        });
+
         long d = new Date().getTime();
         int x = 0;
         for (File p : new File(Bukkit.getWorld("world")
@@ -73,6 +91,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
+        getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
     public static World d;
@@ -88,9 +107,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
                 d.getEntities().stream()
-                        .filter(r -> !(r instanceof Player) && !(r instanceof EnderPearl))
+                        .filter(r -> r instanceof EnderCrystal)
                         .forEach(Entity::remove);
-                
+
                 if (ticked++ == 3) {
                     if (flatstr++ == 6)
                         flatstr = 1;
@@ -98,7 +117,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     Arena.arenas.get("p_f" + flatstr).reset(10000);
                 }
 
-                if (ticked == 6) {
+                if (ticked == 24) {
                     ticked = 0;
 
                     Arena ffa = Arena.arenas.get("flat");
@@ -110,11 +129,12 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         data.sections.put(s.getID(), sectionAmount);
                         data.sectionIDs.add(s.getID());
                     }
-                    
+
                     boolean flatresetted;
                     boolean ffaresetted;
                     boolean ffaupresetted;
                     do {
+                        bannedFromflat.clear();
                         flatresetted = true;
 
                         ffa = Arena.arenas.get("ffa");
@@ -156,12 +176,10 @@ public class Practice extends JavaPlugin implements TabExecutor {
                                         b2.setType(Material.BARRIER, false);
                                     });
                                 });
-                                bannedFromflat.clear();
                             } while (!ffa.loopyReset(data) && !ffaupresetted);
                         } while (!ffa.loopyReset(data) && !ffaresetted);
                     } while (!ffa.loopyReset(data) && !flatresetted);
-                }
-                else
+                } else
                     Arena.arenas.get("flat").reset(10000);
             }
         }, 0L, 2400L);
@@ -192,6 +210,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("irename").setExecutor(new ItemRename());
+        this.getCommand("kickall").setExecutor(new Kickall());
 
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("ffa").setExecutor(new Ffa());
@@ -208,6 +227,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("ban").setExecutor(new Ban());
         this.getCommand("tp").setExecutor(new Teleport());
         this.getCommand("tphere").setExecutor(new TeleportHere());
+        this.getCommand("tpall").setExecutor(new TeleportAll());
         this.getCommand("ss").setExecutor(new Screenshare());
 
         this.getCommand("msg").setTabCompleter(new TabMSG());
@@ -251,5 +271,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Initializer.spawn.setYaw(
                 90F
         );
+        getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
     }
 }

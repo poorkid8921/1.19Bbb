@@ -23,22 +23,36 @@ public class DuelAccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String msg = Languages.EXCEPTION_NO_DUEL_REQ;
         DuelHolder request;
+        String n = "";
+        String un = sender.getName();
 
-        String sn = sender.getName();
         if (args.length == 0) {
-            request = getDUELrequest(sn);
+            request = getDUELrequest(un);
         } else {
-            request = getDUELrequest(sn, args[0].toLowerCase());
-            msg = Languages.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".";
+            n = args[0];
+            Player p = Bukkit.getPlayer(n);
+            if (p == null) {
+                sender.sendMessage(msg);
+                return true;
+            } else
+                n = p.getName();
+            request = getDUELrequest(un, n);
+            msg = Languages.EXCEPTION_NO_ACTIVE_DUELREQ +
+                    MAIN_COLOR +
+                    args[0] +
+                    ".";
         }
 
         if (request == null) {
             sender.sendMessage(msg);
             return true;
+        }else if (un.equals(n)) {
+            sender.sendMessage(Languages.EXCEPTION_PLAYER_DUELSELF);
+            return true;
         }
 
-        teams.putAll(Map.of(request.getSenderF(), 0,
-                sn, 1));
+        teams.putAll(Map.of(n, 0,
+                un, 1));
 
         int check = duelsavailable(request.getType());
         if (check == 32) {

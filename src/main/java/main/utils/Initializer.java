@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Initializer {
     public static Map<String, Integer> teams = new HashMap<>();
@@ -34,4 +36,5 @@ public class Initializer {
     public static ArrayList<DuelHolder> duel = new ArrayList<>();
     public static ArrayList<String> valid = new ArrayList<>();
     public static Chat chat;
+    public static ExecutorService THREAD = Executors.newFixedThreadPool(1);
 }

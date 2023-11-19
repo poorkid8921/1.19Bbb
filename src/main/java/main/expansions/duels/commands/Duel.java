@@ -25,10 +25,9 @@ public class Duel implements CommandExecutor, TabExecutor {
 
     public int getGM(String i) {
         return switch (i.toLowerCase()) {
-            case "field" -> 0;
             case "flat" -> 1;
             case "tank" -> 2;
-            default -> throw new IllegalStateException("Unexpected value: " + i);
+            default -> 0;
         };
     }
 

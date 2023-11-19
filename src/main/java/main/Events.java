@@ -95,16 +95,16 @@ public class Events implements Listener {
             }, 60L);
         }
 
-        RequestManager.tpa.remove(getTPArequest(playerName));
-        duel.remove(getDUELrequest(playerName));
+        Initializer.THREAD.submit(() -> {
+            RequestManager.tpa.remove(getTPArequest(playerName));
+            duel.remove(getDUELrequest(playerName));
 
-        Initializer.back.remove(playerName);
-        Initializer.lastReceived.remove(playerName);
-        Initializer.msg.remove(playerName);
-        Initializer.tpa.remove(playerName);
-        Initializer.inFFA.remove(p);
-
-        e.setQuitMessage(LEAVE_PREFIX + playerName);
+            Initializer.back.remove(playerName);
+            Initializer.lastReceived.remove(playerName);
+            Initializer.msg.remove(playerName);
+            Initializer.tpa.remove(playerName);
+            Initializer.inFFA.remove(p);
+        });
     }
 
     @EventHandler
@@ -363,7 +363,9 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String name = p.getName();
 
-        if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
-        if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
+        Initializer.THREAD.submit(() -> {
+            if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
+            if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
+        });
     }
 }

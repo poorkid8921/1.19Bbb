@@ -90,6 +90,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                     }
 
                     p.sendTitle(null, SECOND_COLOR + "ʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!");
+                    return true;
                 }
             }
         }
@@ -103,12 +104,12 @@ public class RTP implements CommandExecutor, TabExecutor {
                 Location loc = baked.get(Initializer.RANDOM.nextInt(baked.size()));
                 baked.remove(loc);
                 double x = loc.getX();
-                double y = loc.getY();
                 double z = loc.getZ();
+                int iy = (int) loc.getY();
                 Location cd = loc.add(0, 1, 0);
                 p.teleportAsync(loc).thenAccept(r -> {
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + y + " " + z);
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + iy + " " + z);
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
                     p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
                     for (int index = 1; index < 16; index++) {
@@ -127,7 +128,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                 Bukkit.getPlayer(playersRTPing.get(Initializer.RANDOM.nextInt(baked.size()))).teleportAsync(loc).thenAccept(r -> {
                     playersRTPing.remove(sn);
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + y + " " + z);
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + x + " " + iy + " " + z);
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
                     p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
                     for (int index = 1; index < 16; index++) {
@@ -148,54 +149,52 @@ public class RTP implements CommandExecutor, TabExecutor {
         }
 
         Location l = p.getLocation();
-        AtomicReference<Location> loc = null;
+        Location loc = null;
         int ax;
         int az;
         AtomicInteger x2 = new AtomicInteger();
-        while (loc.get() == null) {
+        while (loc == null) {
             ax = Initializer.RANDOM.nextInt(10000);
             az = Initializer.RANDOM.nextInt(10000);
             if (ax > 5000) ax = -ax;
             if (az > 5000) az = -az;
 
-            Location ld = new Location(Practice.d, ax, 69, az, l.getYaw(), l.getPitch());
             int finalAx1 = ax;
             int finalAz1 = az;
-            PaperLib.getChunkAtAsync(ld).thenAccept(r -> {
-                Block b = Practice.d.getHighestBlockAt(finalAx1, finalAz1);
-                p.playSound(p, Sound.ENTITY_TNT_PRIMED, 1, 1);
-                if (b.isSolid()) {
-                    if (p.getLocation().distance(l) < 2) {
-                        double finalAy1 = b.getLocation().getY() + 1;
-                        loc.get().setY(finalAy1);
-                        p.teleportAsync(loc.get()).thenAccept(rd -> {
-                            playersRTPing.remove(sn);
-                            p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                            p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + finalAx1 + " " + finalAy1 + " " + finalAz1);
-                            p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-                            p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-                            for (int index = 1; index < 16; index++) {
-                                double p1 = (index * Math.PI) / 8;
-                                double p2 = (index - 1) * Math.PI / 8;
-
-                                int radius = 3;
-                                double x1 = Math.cos(p1) * radius;
-                                double xx2 = Math.cos(p2) * radius;
-                                double z1 = Math.sin(p1) * radius;
-                                double z2 = Math.sin(p2) * radius;
-                                Practice.d.spawnParticle(Particle.TOTEM, loc.get().clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
-                            }
-
-                            baked.add(loc.get());
-                        });
-                    } else {
+            Block b = Practice.d.getHighestBlockAt(finalAx1, finalAz1);
+            p.playSound(p, Sound.ENTITY_TNT_PRIMED, 1, 1);
+            if (b.isSolid()) {
+                if (p.getLocation().distance(l) < 2) {
+                    int finalAy1 = (int) (b.getLocation().getY() + 1);
+                    loc = new Location(Practice.d, ax, finalAy1, az, l.getYaw(), l.getPitch());
+                    Location finalLoc = loc;
+                    p.teleportAsync(loc).thenAccept(rd -> {
                         playersRTPing.remove(sn);
-                        p.sendTitle(null, SECOND_COLOR + "ʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!");
-                    }
-                } else if (x2.getAndIncrement() == 10) {
-                    sender.sendMessage(MAIN_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ.");
+                        p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+                        p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + finalAx1 + " " + finalAy1 + " " + finalAz1);
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+                        for (int index = 1; index < 16; index++) {
+                            double p1 = (index * Math.PI) / 8;
+                            double p2 = (index - 1) * Math.PI / 8;
+
+                            int radius = 3;
+                            double x1 = Math.cos(p1) * radius;
+                            double xx2 = Math.cos(p2) * radius;
+                            double z1 = Math.sin(p1) * radius;
+                            double z2 = Math.sin(p2) * radius;
+                            Practice.d.spawnParticle(Particle.TOTEM, finalLoc.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
+                        }
+
+                        baked.add(finalLoc);
+                    });
+                } else {
+                    playersRTPing.remove(sn);
+                    p.sendTitle(null, SECOND_COLOR + "ʀᴛᴘ ᴡᴀꜱ ᴄᴀɴᴄᴇʟʟᴇᴅ!");
                 }
-            });
+            } else if (x2.getAndIncrement() == 10) {
+                sender.sendMessage(MAIN_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ.");
+            }
         }
 
         return true;

@@ -28,6 +28,7 @@ public class Languages {
     public static String EXCEPTION_REPORT_SPECIFY_PLAYER;
     public static String EXCEPTION_PLAYER_OFFLINETPA;
     public static String EXCEPTION_PLAYER_TPSELF;
+    public static String EXCEPTION_PLAYER_DUELSELF;
     public static String EXCEPTION_NO_ARGS_TELEPORT;
     public static String MAIN_COLOR;
     public static String SECOND_COLOR;
@@ -69,6 +70,7 @@ public class Languages {
         EXCEPTION_REPORT_SPECIFY_PLAYER = "§7You must specify who you want to report.";
         EXCEPTION_PLAYER_OFFLINETPA = "§7You can't teleport to offline players.";
         EXCEPTION_PLAYER_TPSELF = "§7You can't teleport to yourself.";
+        EXCEPTION_PLAYER_DUELSELF = "§7You can't duel yourself.";
 
         GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
 

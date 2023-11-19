@@ -62,7 +62,7 @@ public class Utils {
 
         inv = Bukkit.createInventory(null, 54);
 
-        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(duelsavailable(0), 1));
+        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(1, duelsavailable(0)));
         meta = i.getItemMeta();
         meta.setDisplayName(MAIN_COLOR + "ꜰɪᴇʟᴅ");
         meta.setLore(List.of("1V1"));

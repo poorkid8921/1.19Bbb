@@ -75,7 +75,7 @@ public class Utils {
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("chatlock.use")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
+        Initializer.THREAD.submit(() -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
             DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1163543558398156871/XigQ8rIWMLG2Nh0-j-XjQdourDcvsskcehRBTXRHJMfX63_9cqD5aiDQyvg-s58uVPNj");
             webhook.setAvatarUrl(avturl);
