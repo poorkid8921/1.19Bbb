@@ -1,3 +1,3 @@
 # AestheticPractice Core Plugin
 
-: Duels, TPA, MSG, Report system, Optimizations, Combat Tagging, AntiCheat, Main Warps
+: Duels, TPA, MSG, RTP, Report system, Optimizations, Main warps, Player warps, Main commands from EssentialsX
