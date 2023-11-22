@@ -15,7 +15,7 @@ public class ItemRename implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage("§7You must specify an item name");
+            sender.sendMessage("§7You must specify an item name.");
             return true;
         }
         Player p = (Player) sender;

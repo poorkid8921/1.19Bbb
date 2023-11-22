@@ -26,7 +26,7 @@ public class Ban implements CommandExecutor {
             String d = args.length > 1 ? args[1] : null;
             Initializer.bannedFromflat.add(pp.getName());
             sender.sendMessage("§7Successfully banned " + args[0] + ".");
-            pp.teleportAsync(spawn).thenAccept(r -> pp.sendMessage("§7You are now banned in flat for " + (d == null ? "breaking rules" : d + ".")));
+            pp.teleportAsync(spawn).thenAccept(r -> pp.sendMessage("§7You are now banned in flat for " + (d == null ? "breaking rules." : d + ".")));
         }
         return true;
     }

@@ -69,8 +69,13 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
         Bukkit.getOnlinePlayers().forEach(r -> {
             r.sendTitle("§aPractice is restarting", null, 20, 60, 30);
-            r.sendPluginMessage(Initializer.p, "BungeeCord", b.toByteArray());
         });
+
+        Bukkit.getScheduler().runTaskLater(this,
+                () -> Bukkit.getOnlinePlayers().forEach(r ->
+                        r.sendPluginMessage(Initializer.p, "BungeeCord",
+                                b.toByteArray())),
+                30L);
 
         long d = new Date().getTime();
         int x = 0;
@@ -101,6 +106,37 @@ public class Practice extends JavaPlugin implements TabExecutor {
         p = this;
 
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
+
+        Arena flat = Arena.arenas.get("flat");
+        Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
+        flat_data.speed = 10000;
+        for (Section s : flat.getSections()) {
+            int sectionAmount = (int) ((double) 10000 / (double) (flat.getc2().getBlockX() - flat.getc1().getBlockX() + 1) * (flat.getc2().getBlockY() - flat.getc1().getBlockY() + 1) * (flat.getc2().getBlockZ() - flat.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+            if (sectionAmount <= 0) sectionAmount = 1;
+            flat_data.sections.put(s.getID(), sectionAmount);
+            flat_data.sectionIDs.add(s.getID());
+        }
+
+        Arena ffa = Arena.arenas.get("ffa");
+        Arena.ResetLoopinData ffa_data = new Arena.ResetLoopinData();
+        ffa_data.speed = 1000000;
+        for (Section s : ffa.getSections()) {
+            int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+            if (sectionAmount <= 0) sectionAmount = 1;
+            ffa_data.sections.put(s.getID(), sectionAmount);
+            ffa_data.sectionIDs.add(s.getID());
+        }
+
+        Arena ffaup = Arena.arenas.get("ffaup");
+        Arena.ResetLoopinData ffaup_data = new Arena.ResetLoopinData();
+        ffaup_data.speed = 2000;
+        for (Section s : ffaup.getSections()) {
+            int sectionAmount = (int) ((double) 2000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+            if (sectionAmount <= 0) sectionAmount = 1;
+            ffaup_data.sections.put(s.getID(), sectionAmount);
+            ffaup_data.sectionIDs.add(s.getID());
+        }
+
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             if (Bukkit.getOnlinePlayers().size() > 0) {
                 d.getEntities().stream()
@@ -112,50 +148,20 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         flatstr = 1;
 
                     Arena.arenas.get("p_f" + flatstr).reset(10000);
+                    bannedFromflat.clear();
                 }
 
-                if (ticked == 24) {
+                if (ticked == 6) {
                     ticked = 0;
-
-                    Arena ffa = Arena.arenas.get("flat");
-                    Arena.ResetLoopinData data = new Arena.ResetLoopinData();
-                    data.speed = 10000;
-                    for (Section s : ffa.getSections()) {
-                        int sectionAmount = (int) ((double) 10000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                        if (sectionAmount <= 0) sectionAmount = 1;
-                        data.sections.put(s.getID(), sectionAmount);
-                        data.sectionIDs.add(s.getID());
-                    }
 
                     boolean flatresetted;
                     boolean ffaresetted;
                     boolean ffaupresetted;
                     do {
-                        bannedFromflat.clear();
                         flatresetted = true;
-
-                        ffa = Arena.arenas.get("ffa");
-                        data = new Arena.ResetLoopinData();
-                        data.speed = 1000000;
-                        for (Section s : ffa.getSections()) {
-                            int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                            if (sectionAmount <= 0) sectionAmount = 1;
-                            data.sections.put(s.getID(), sectionAmount);
-                            data.sectionIDs.add(s.getID());
-                        }
 
                         do {
                             ffaresetted = true;
-
-                            ffa = Arena.arenas.get("ffaup");
-                            data = new Arena.ResetLoopinData();
-                            data.speed = 2000;
-                            for (Section s : ffa.getSections()) {
-                                int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                                if (sectionAmount <= 0) sectionAmount = 1;
-                                data.sections.put(s.getID(), sectionAmount);
-                                data.sectionIDs.add(s.getID());
-                            }
 
                             do {
                                 ffaupresetted = true;
@@ -173,9 +179,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
                                         b2.setType(Material.BARRIER, false);
                                     });
                                 });
-                            } while (!ffa.loopyReset(data) && !ffaupresetted);
-                        } while (!ffa.loopyReset(data) && !ffaresetted);
-                    } while (!ffa.loopyReset(data) && !flatresetted);
+                            } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
+                        } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
+                    } while (!flat.loopyReset(flat_data) && !flatresetted);
                 } else
                     Arena.arenas.get("flat").reset(10000);
             }

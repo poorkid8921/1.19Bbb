@@ -83,7 +83,7 @@ commands:
     usage: /<command>
   irename:
     usage: /<command>
-    aliases: itemrename
+    aliases: [ name, iname, itemname, itemrename ]
   kickall:
     usage: /<command>
 permissions:
