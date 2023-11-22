@@ -21,6 +21,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -93,20 +94,6 @@ public class Events implements Listener {
         event.setCancelled(isSuspectedScanPacket(event.getBuffer()));
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    private void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (!(event.getEntity() instanceof Wither w)) return;
-
-        final Location witherLocation = w.getLocation();
-        if (new Point(witherLocation.getBlockX(), witherLocation.getBlockZ())
-                .distance(Utils.point) < 1500) {
-            event.setCancelled(true);
-            for (Player nearbyPlayer : witherLocation.getNearbyPlayers(8, 8, 8)) {
-                nearbyPlayer.sendMessage("§7You can only spawn withers 1.5k blocks away from spawn");
-            }
-        }
-    }
-
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
@@ -118,17 +105,14 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        Player p = (Player) e.getWhoClicked();
-        if (e.getInventory() instanceof PlayerInventory)
+        Inventory inv = e.getClickedInventory();
+        if (inv instanceof PlayerInventory)
             return;
 
-        Bukkit.getLogger().warning("not PlayerInventory");
-        if (p.getInventory().getHolder() instanceof InventoryInstanceReport holder) {
-            Bukkit.getLogger().warning("cancelled");
+        if (inv instanceof InventoryInstanceReport holder) {
             e.setCancelled(true);
             ItemStack currentItem = e.getCurrentItem();
             if (!currentItem.getItemMeta().hasLore()) return;
-            Bukkit.getLogger().warning("has lore");
 
             holder.whenClicked(currentItem, e.getAction(), e.getSlot(), holder.getArg());
         }
@@ -170,7 +154,7 @@ public class Events implements Listener {
             return;
 
         String type = a.getItemStack().getType().name();
-        e.setCancelled(type.contains("DIAMOND"));
+        e.setCancelled(type.contains("DIAMOND") || type.contains("NETHERITE"));
     }
 
     @EventHandler

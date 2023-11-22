@@ -8,16 +8,16 @@ import org.bukkit.inventory.ItemStack;
 import java.lang.ref.WeakReference;
 
 public abstract class InventoryInstanceReport implements InventoryHolder {
-    protected WeakReference<Player> player;
+    protected Player player;
     protected String arg;
 
     public InventoryInstanceReport(Player player, String arg) {
-        this.player = new WeakReference<>(player);
+        this.player = player;
         this.arg = arg;
     }
 
     public Player getPlayer() {
-        return player.get();
+        return player;
     }
 
     public String getArg() {

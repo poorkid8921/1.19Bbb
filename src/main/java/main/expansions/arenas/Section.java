@@ -53,7 +53,7 @@ public class Section {
 
                 Block block = getStart().add(offset).getBlock();
                 getStart().subtract(offset);
-                if (block.getType() != data) block.setType(data, false);
+                block.setType(data, false);
 
                 count++;
                 resetCurrentTypeIndex++;
@@ -68,7 +68,6 @@ public class Section {
 
         resetTypeIndex = 0;
         resetLocationIndex = -1;
-        resetCurrentTypeIndex = 0;
 
         return true;
     }

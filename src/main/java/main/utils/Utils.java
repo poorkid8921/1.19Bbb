@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -40,6 +41,28 @@ public class Utils {
     public static World d = Bukkit.getWorld("world");
     public static Point point = new Point(0, 0);
 
+    static ItemStack getArmor(Material mat, int prot, boolean leggings) {
+        ItemStack is = new ItemStack(mat);
+        ItemMeta im = is.getItemMeta();
+        im.addEnchant(Enchantment.MENDING, 1, false);
+        im.addEnchant(leggings ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, prot, false);
+        im.addEnchant(Enchantment.DURABILITY, 3, true);
+        im.setDisplayName(MAIN_COLOR + "ʟᴏᴏᴛᴅʀᴏᴘ");
+        is.setItemMeta(im);
+        return is;
+    }
+
+    static ItemStack getTool(Material mat, boolean lvl, boolean pick) {
+        ItemStack is = new ItemStack(mat);
+        ItemMeta im = is.getItemMeta();
+        im.addEnchant(Enchantment.MENDING, 1, false);
+        im.addEnchant(pick ? Enchantment.DIG_SPEED : Enchantment.DAMAGE_ALL, lvl ? 5 : 4,false);
+        im.addEnchant(Enchantment.DURABILITY, 3, true);
+        im.setDisplayName(MAIN_COLOR + "ʟᴏᴏᴛᴅʀᴏᴘ");
+        is.setItemMeta(im);
+        return is;
+    }
+
     public static void lootDrop() {
         Location loc = null;
         while (loc == null) {
@@ -53,26 +76,182 @@ public class Utils {
                 z = -z;
 
             if (new Point(x, z)
-                    .distance(point) > 48)
+                    .distance(point) > 52)
                 loc = new Location(d, x, 175, z);
         }
 
         StorageMinecart sm = (StorageMinecart) d.spawnEntity(loc, EntityType.MINECART_CHEST);
         Inventory inv = sm.getInventory();
-        ItemStack is = new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                Material.END_CRYSTAL :
-                Material.OBSIDIAN,
-                Initializer.RANDOM.nextInt(32) +
-                        32);
-        inv.setItem(Initializer.RANDOM.nextInt(27), is);
 
-        is = new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
                 Material.END_CRYSTAL :
                 Material.OBSIDIAN,
                 Initializer.RANDOM.nextInt(32) +
-                        32);
-        inv.setItem(Initializer.RANDOM.nextInt(27), is);
+                        32));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                Material.END_CRYSTAL :
+                Material.OBSIDIAN,
+                Initializer.RANDOM.nextInt(32) +
+                        32));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                Material.NETHERITE_INGOT :
+                Material.DIAMOND,
+                Initializer.RANDOM.nextInt(21) +
+                        7));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                Material.COBWEB :
+                Material.TNT,
+                Initializer.RANDOM.nextInt(21) +
+                        7));
+
+        // GAP
+        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Material.GOLDEN_APPLE,
+                Initializer.RANDOM.nextInt(32) +
+                        32));
+
+        // GEAR
+        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_HELMET :
+                        Material.NETHERITE_HELMET,
+                Initializer.RANDOM.nextInt(4) + 1,
+                false));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_CHESTPLATE :
+                        Material.NETHERITE_CHESTPLATE,
+                Initializer.RANDOM.nextInt(4) + 1,
+                false));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_LEGGINGS :
+                        Material.NETHERITE_LEGGINGS,
+                Initializer.RANDOM.nextInt(4) + 1,
+                true));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_BOOTS :
+                        Material.NETHERITE_BOOTS,
+                Initializer.RANDOM.nextInt(4) + 1,
+                false));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_PICKAXE :
+                        Material.NETHERITE_PICKAXE,
+                Initializer.RANDOM.nextInt() == 1,
+                true));
+
+        inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
+                        Material.DIAMOND_SWORD :
+                        Material.NETHERITE_SWORD,
+                Initializer.RANDOM.nextInt() == 1,
+                false));
+
         Bukkit.broadcastMessage("§7ᴀ ʟᴏᴏᴛ ᴅʀᴏᴘ ʜᴀs sᴘᴀᴡɴᴇᴅ ᴀᴛ " + MAIN_COLOR + loc.getX() + " 135 " + loc.getZ());
+    }
+
+    public static void lootDrop(int i) {
+        StringBuilder sb = new StringBuilder();
+        for (int a = 0; a < i; a++) {
+            Location loc = null;
+            while (loc == null) {
+                int x = Initializer.RANDOM.nextInt(128);
+                int z = Initializer.RANDOM.nextInt(128);
+
+                if (Initializer.RANDOM.nextInt() == 0)
+                    x = -x;
+
+                if (Initializer.RANDOM.nextInt() == 0)
+                    z = -z;
+
+                if (new Point(x, z)
+                        .distance(point) > 52)
+                    loc = new Location(d, x, 175, z);
+            }
+
+            sb.append(a == i-1 ?
+                    loc.getX() + "§7, " +
+                            MAIN_COLOR + "135 " +
+                            MAIN_COLOR + loc.getZ()
+                    : MAIN_COLOR +
+                    loc.getX() + "§7, " +
+                    MAIN_COLOR + "135 " +
+                    MAIN_COLOR + loc.getZ() + "§7, " +
+                    MAIN_COLOR);
+
+            StorageMinecart sm = (StorageMinecart) d.spawnEntity(loc, EntityType.MINECART_CHEST);
+            Inventory inv = sm.getInventory();
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                    Material.END_CRYSTAL :
+                    Material.OBSIDIAN,
+                    Initializer.RANDOM.nextInt(32) +
+                            32));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                    Material.END_CRYSTAL :
+                    Material.OBSIDIAN,
+                    Initializer.RANDOM.nextInt(32) +
+                            32));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                    Material.NETHERITE_INGOT :
+                    Material.DIAMOND,
+                    Initializer.RANDOM.nextInt(21) +
+                            7));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
+                    Material.COBWEB :
+                    Material.TNT,
+                    Initializer.RANDOM.nextInt(21) +
+                            7));
+
+            // GAP
+            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Material.GOLDEN_APPLE,
+                    Initializer.RANDOM.nextInt(32) +
+                            32));
+
+            // GEAR
+            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_HELMET :
+                            Material.NETHERITE_HELMET,
+                    Initializer.RANDOM.nextInt(4) + 1,
+                    false));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_CHESTPLATE :
+                            Material.NETHERITE_CHESTPLATE,
+                    Initializer.RANDOM.nextInt(4) + 1,
+                    false));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_LEGGINGS :
+                            Material.NETHERITE_LEGGINGS,
+                    Initializer.RANDOM.nextInt(4) + 1,
+                    true));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_BOOTS :
+                            Material.NETHERITE_BOOTS,
+                    Initializer.RANDOM.nextInt(4) + 1,
+                    false));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_PICKAXE :
+                            Material.NETHERITE_PICKAXE,
+                    Initializer.RANDOM.nextInt() == 1,
+                    true));
+
+            inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
+                            Material.DIAMOND_SWORD :
+                            Material.NETHERITE_SWORD,
+                    Initializer.RANDOM.nextInt() == 1,
+                    false));
+        }
+
+        Bukkit.broadcastMessage("§7" + i + " ʟᴏᴏᴛ ᴅʀᴏᴘs ʜᴀs sᴘᴀᴡɴᴇᴅ ᴀᴛ " + sb);
     }
 
     public static boolean isSuspectedScanPacket(String buffer) {
@@ -175,12 +354,11 @@ public class Utils {
 
         TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
 
-
         TextComponent a = new TextComponent("§7[§a✔§7]");
-        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + rn));
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
 
         TextComponent b = new TextComponent("§7[§cX§7]");
-        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + rn));
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sn));
 
         a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
@@ -192,7 +370,6 @@ public class Utils {
                 new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
                         " §7has requested to teleport to you. "), a, space, b);
 
-        Bukkit.getLogger().warning(requests + " | " + sn + " | " + rn + " | " + tpaRequest + " - " + tpaRequest.getSender() + " - " + tpaRequest.getSenderF() + " - " + tpaRequest.getReceiver() + " - " + tpaRequest.getTpaAll() + " - " + tpaRequest.isHere());
         requests.add(tpaRequest);
 
         BukkitTask br = new BukkitRunnable() {

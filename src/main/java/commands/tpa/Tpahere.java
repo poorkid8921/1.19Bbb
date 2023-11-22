@@ -30,7 +30,8 @@ public class Tpahere implements CommandExecutor {
         }
 
         String ren = recipient.getName();
-        if (ren.equals(sender.getName())) {
+        String sn = sender.getName();
+        if (ren.equals(sn)) {
             user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
@@ -38,7 +39,7 @@ public class Tpahere implements CommandExecutor {
         TpaRequest tpr = getRequest(ren);
 
         if (tpr != null) {
-            if (tpr.getSender().equals(sender)) {
+            if (tpr.getSenderF().equals(sn)) {
                 user.sendMessage("§7You already have an ongoing request to this player.");
                 return true;
             }

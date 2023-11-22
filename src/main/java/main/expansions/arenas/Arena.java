@@ -2,7 +2,10 @@ package main.expansions.arenas;
 
 import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -162,7 +165,7 @@ public class Arena {
                 arena.getSections().addAll(data.sections);
                 Arena.arenas.put(arena.name, arena);
 
-                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
+                File file = new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.getc1();
@@ -337,13 +340,13 @@ public class Arena {
             if (!keyList.contains(data)) keyList.add(data);
         }
 
-        this.keys = keyList.toArray(new Material[0]);
+        this.keys = keyList.toArray(new Material[keyList.size()]);
     }
 
     public boolean loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
-            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size(); //Get number x in list + offset, and wrap around with %
+            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
             boolean reset = s.reset(data.sections.get(id));
             if (reset) {
@@ -352,7 +355,6 @@ public class Arena {
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
-
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
 
                 List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
@@ -376,7 +378,7 @@ public class Arena {
     }
 
     public void setKeys(Collection<Material> keys) {
-        this.keys = keys.toArray(new Material[0]);
+        this.keys = keys.toArray(new Material[keys.size()]);
     }
 
     public String getName() {
@@ -407,8 +409,8 @@ public class Arena {
     public static class ResetLoopinData {
         public Map<Integer, Integer> sections = new HashMap<>();
         public List<Integer> sectionIDs = new ArrayList<>();
+        public int speed;
         int currentSectionResetting;
         int blocksThisTick = 0;
-        public int speed;
     }
 }

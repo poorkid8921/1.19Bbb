@@ -42,6 +42,6 @@ public class ReportInventory extends InventoryInstanceReport {
 
     @Override
     public void whenClicked(ItemStack item, InventoryAction action, int slot, String arg) {
-        Utils.report(player.get(), arg, slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : null);
+        Utils.report(player, arg, slot == 10 ? "Cheating" : slot == 11 ? "Doxxing" : slot == 12 ? "Ban Evading" : slot == 13 ? "Spamming" : null);
     }
 }

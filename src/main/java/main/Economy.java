@@ -32,6 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static main.utils.Initializer.economy;
 import static main.utils.Utils.lootDrop;
@@ -40,7 +41,6 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
     public static FileConfiguration cc;
     public static File cf;
     public static File df;
-    int ffa = 1;
 
     public void saveCustomConfig() {
         try {
@@ -67,14 +67,12 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             Utils.d.getEntities().stream()
                     .filter(r -> r instanceof EnderCrystal)
                     .forEach(Entity::remove);
-            if (ffa++ == 3)
-                ffa = 1;
 
             Arena ffa = Arena.arenas.get("ffa");
             Arena.ResetLoopinData data = new Arena.ResetLoopinData();
-            data.speed = 2000;
+            data.speed = 50000;
             for (Section s : ffa.getSections()) {
-                int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                int sectionAmount = (int) ((double) 50000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
                 if (sectionAmount <= 0) sectionAmount = 1;
                 data.sections.put(s.getID(), sectionAmount);
                 data.sectionIDs.add(s.getID());
@@ -85,11 +83,11 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
             do {
                 ffaresetted = true;
 
-                ffa = Arena.arenas.get("ffa" + ffa);
+                ffa = Arena.arenas.get("ffa" + Initializer.RANDOM.nextInt(2) + 1);
                 data = new Arena.ResetLoopinData();
-                data.speed = 2000;
+                data.speed = 50000;
                 for (Section s : ffa.getSections()) {
-                    int sectionAmount = (int) ((double) 2000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                    int sectionAmount = (int) ((double) 50000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
                     if (sectionAmount <= 0) sectionAmount = 1;
                     data.sections.put(s.getID(), sectionAmount);
                     data.sectionIDs.add(s.getID());
@@ -97,7 +95,8 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
 
                 do {
                     ffaupresetted = true;
-                    for (Player a : Bukkit.getOnlinePlayers()) {
+                    Collection<? extends Player> p = Bukkit.getOnlinePlayers();
+                    for (Player a : p) {
                         if (a.isGliding())
                             continue;
 
@@ -109,7 +108,15 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
                         c.setY(135);
                         a.teleportAsync(c);
                     }
-                    //lootDrop();
+
+                    int size = p.size();
+                    if (p.size() > 10) {
+                        int divided = size / 10;
+                        if (divided == 1) {
+                            lootDrop();
+                        } else
+                            lootDrop(divided);
+                    }
                 } while (!ffa.loopyReset(data) && !ffaupresetted);
             } while (!ffa.loopyReset(data) && !ffaresetted);
         }, 0L, 21000L);
@@ -140,9 +147,10 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("discord").setExecutor(new Discord());
 
-        File folder = new File(Initializer.p.getDataFolder(), "arenas");
+        File folder = new File(getDataFolder(), "Arenas");
         if (!folder.exists()) folder.mkdirs();
 
+        Arena.arenas.clear();
         Arrays.stream(folder.listFiles()).parallel().forEach(r -> {
             try {
                 Arena arena = ArenaIO.loadArena(r);

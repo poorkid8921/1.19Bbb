@@ -46,9 +46,6 @@ public class Languages {
         SECOND_COLOR = Utils.translateA("#d6a7eb");
 
         Initializer.spawn = new Location(Bukkit.getWorld("world"),
-                Initializer.p.getConfig().getDouble("Spawn.X"),
-                Initializer.p.getConfig().getDouble("Spawn.Y"),
-                Initializer.p.getConfig().getDouble("Spawn.Z"));
-        Initializer.spawn.setYaw(Initializer.p.getConfig().getLong("Spawn.yaw"));
+                -0.5, 142.06250, 0.5);
     }
 }
