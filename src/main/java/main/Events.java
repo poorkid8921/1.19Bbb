@@ -18,10 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -41,7 +38,12 @@ import static main.utils.RequestManager.*;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    String LEAVE_PREFIX = MAIN_COLOR + "← ";
+    String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
+
+    @EventHandler
+    public void onUse(PlayerItemConsumeEvent e) {
+        e.setCancelled(e.getItem().getType() == Material.ENCHANTED_GOLDEN_APPLE);
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
@@ -51,8 +53,8 @@ public class Events implements Listener {
 
     @EventHandler
     private void onTeleport(PlayerTeleportEvent e) {
-        if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
-        Initializer.inFFA.remove(e.getPlayer());
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN)
+            Initializer.inFFA.remove(e.getPlayer());
     }
 
     @EventHandler
@@ -91,6 +93,7 @@ public class Events implements Listener {
             Initializer.tpa.remove(playerName);
             Initializer.inFFA.remove(p);
         });
+        e.setQuitMessage(MAIN_COLOR + "← " + playerName);
     }
 
     @EventHandler
@@ -239,11 +242,11 @@ public class Events implements Listener {
 
                 if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(kuid) == null) {
                     if (red > blue) {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!");
+                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
                     } else if (blue > red) {
-                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ");
+                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
                     } else {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ");
+                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
                     }
 
                     Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
@@ -266,11 +269,11 @@ public class Events implements Listener {
 
                 if (newrounds == tpr.getMaxrounds()) {
                     if (red > blue) {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!");
+                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
                     } else if (blue > red) {
-                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ");
+                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
                     } else {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ");
+                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
                     }
 
                     Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
@@ -305,7 +308,7 @@ public class Events implements Listener {
         p.sendMessage(Languages.BACK);
 
         if (killer == null || killer == p) {
-            Bukkit.broadcastMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -315,7 +318,7 @@ public class Events implements Listener {
             });
             return;
         } else {
-            Bukkit.broadcastMessage(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
@@ -353,5 +356,12 @@ public class Events implements Listener {
             if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
             if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
         });
+        e.setJoinMessage(JOIN_PREFIX + name);
+        p.teleportAsync(spawn);
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent e) {
+        e.setRespawnLocation(spawn);
     }
 }

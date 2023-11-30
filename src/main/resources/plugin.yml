@@ -79,8 +79,6 @@ commands:
     usage: /<command>
   tphere:
     usage: /<command>
-  ss:
-    usage: /<command>
   irename:
     usage: /<command>
     aliases: [ name, iname, itemname, itemrename ]

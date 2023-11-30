@@ -18,11 +18,11 @@ public class Event implements CommandExecutor {
         String pn = sender.getName();
         if (!Initializer.valid.contains(pn)) return true;
 
-        TextComponent hi2 = new TextComponent("» " + (args[4].equals("y") ? "ɴᴏʙᴏᴅʏ" : args[5]));
-        hi2.setColor(ChatColor.of("#fc282f"));
+        TextComponent winner = new TextComponent("» " + (args[4].equals("y") ? "ɴᴏʙᴏᴅʏ" : args[5]));
+        winner.setColor(ChatColor.of("#fc282f"));
 
         sender.sendMessage(Languages.DUELS_RESULTS, Languages.DUELS_DELIM);
-        sender.sendMessage(Languages.DUELS_WINNER, hi2);
+        sender.sendMessage(Languages.DUELS_WINNER, winner);
         sender.sendMessage("§7sᴄᴏʀᴇ " + MAIN_COLOR + "» " + Integer.parseInt(args[1]) + " §7- " + Utils.translateA(" #4d8eff" + Integer.parseInt(args[2])), Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» " + args[3]), Languages.DUELS_DELIM);
         Initializer.valid.remove(pn);
         return true;

@@ -368,7 +368,6 @@ public class Arena {
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
-
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
 
                 List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
@@ -383,7 +382,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return true;
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 2L);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 4L);
         return false;
     }
 

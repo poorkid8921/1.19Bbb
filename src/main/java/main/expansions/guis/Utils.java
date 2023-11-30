@@ -49,11 +49,8 @@ public class Utils {
 
         List<String> s = List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fsᴇᴛ");
         inv.setItem(10, createItemStack(Material.BARRIER, "None", s));
-
         inv.setItem(12, createItemStack(Material.BONE, "Lightning Bolt", s));
-
         inv.setItem(13, createItemStack(Material.TNT, "Explosion", s));
-
         inv.setItem(14, createItemStack(Material.FIREWORK_STAR, "Firework Explosion", s));
 
         inv.setItem(11, glass);

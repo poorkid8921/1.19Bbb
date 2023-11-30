@@ -67,15 +67,13 @@ public class Practice extends JavaPlugin implements TabExecutor {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         Bukkit.getOnlinePlayers().forEach(r -> {
             r.sendTitle("§aPractice is restarting", null, 20, 60, 30);
         });
-
-        Bukkit.getScheduler().runTaskLater(this,
-                () -> Bukkit.getOnlinePlayers().forEach(r ->
-                        r.sendPluginMessage(Initializer.p, "BungeeCord",
-                                b.toByteArray())),
-                30L);
+        Bukkit.getOnlinePlayers().forEach(r ->
+                r.sendPluginMessage(Initializer.p, "BungeeCord",
+                        b.toByteArray()));
 
         long d = new Date().getTime();
         int x = 0;
@@ -107,85 +105,87 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
 
-        Arena flat = Arena.arenas.get("flat");
-        Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
-        flat_data.speed = 10000;
-        for (Section s : flat.getSections()) {
-            int sectionAmount = (int) ((double) 10000 / (double) (flat.getc2().getBlockX() - flat.getc1().getBlockX() + 1) * (flat.getc2().getBlockY() - flat.getc1().getBlockY() + 1) * (flat.getc2().getBlockZ() - flat.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-            if (sectionAmount <= 0) sectionAmount = 1;
-            flat_data.sections.put(s.getID(), sectionAmount);
-            flat_data.sectionIDs.add(s.getID());
-        }
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            Arena flat = Arena.arenas.get("flat");
+            Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
+            flat_data.speed = 10000;
+            for (Section s : flat.getSections()) {
+                int sectionAmount = (int) ((double) 10000 / (double) (flat.getc2().getBlockX() - flat.getc1().getBlockX() + 1) * (flat.getc2().getBlockY() - flat.getc1().getBlockY() + 1) * (flat.getc2().getBlockZ() - flat.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                if (sectionAmount <= 0) sectionAmount = 1;
+                flat_data.sections.put(s.getID(), sectionAmount);
+                flat_data.sectionIDs.add(s.getID());
+            }
 
-        Arena ffa = Arena.arenas.get("ffa");
-        Arena.ResetLoopinData ffa_data = new Arena.ResetLoopinData();
-        ffa_data.speed = 1000000;
-        for (Section s : ffa.getSections()) {
-            int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-            if (sectionAmount <= 0) sectionAmount = 1;
-            ffa_data.sections.put(s.getID(), sectionAmount);
-            ffa_data.sectionIDs.add(s.getID());
-        }
+            Arena ffa = Arena.arenas.get("ffa");
+            Arena.ResetLoopinData ffa_data = new Arena.ResetLoopinData();
+            ffa_data.speed = 1000000;
+            for (Section s : ffa.getSections()) {
+                int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                if (sectionAmount <= 0) sectionAmount = 1;
+                ffa_data.sections.put(s.getID(), sectionAmount);
+                ffa_data.sectionIDs.add(s.getID());
+            }
 
-        Arena ffaup = Arena.arenas.get("ffaup");
-        Arena.ResetLoopinData ffaup_data = new Arena.ResetLoopinData();
-        ffaup_data.speed = 2000;
-        for (Section s : ffaup.getSections()) {
-            int sectionAmount = (int) ((double) 2000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-            if (sectionAmount <= 0) sectionAmount = 1;
-            ffaup_data.sections.put(s.getID(), sectionAmount);
-            ffaup_data.sectionIDs.add(s.getID());
-        }
+            Arena ffaup = Arena.arenas.get("ffaup");
+            Arena.ResetLoopinData ffaup_data = new Arena.ResetLoopinData();
+            ffaup_data.speed = 2000;
+            for (Section s : ffaup.getSections()) {
+                int sectionAmount = (int) ((double) 2000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                if (sectionAmount <= 0) sectionAmount = 1;
+                ffaup_data.sections.put(s.getID(), sectionAmount);
+                ffaup_data.sectionIDs.add(s.getID());
+            }
 
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            if (Bukkit.getOnlinePlayers().size() > 0) {
-                d.getEntities().stream()
-                        .filter(r -> r instanceof EnderCrystal)
-                        .forEach(Entity::remove);
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+                if (Bukkit.getOnlinePlayers().size() > 0) {
+                    d.getEntities().stream()
+                            .filter(r -> r instanceof EnderCrystal)
+                            .forEach(Entity::remove);
 
-                if (ticked++ == 3) {
-                    if (flatstr++ == 6)
-                        flatstr = 1;
+                    if (ticked++ == 3) {
+                        if (flatstr++ == 6)
+                            flatstr = 1;
 
-                    Arena.arenas.get("p_f" + flatstr).reset(10000);
-                    bannedFromflat.clear();
-                }
+                        Arena.arenas.get("p_f" + flatstr).reset(10000);
+                        bannedFromflat.clear();
+                    }
 
-                if (ticked == 6) {
-                    ticked = 0;
+                    if (ticked == 6) {
+                        ticked = 0;
 
-                    boolean flatresetted;
-                    boolean ffaresetted;
-                    boolean ffaupresetted;
-                    do {
-                        flatresetted = true;
-
+                        boolean flatresetted;
+                        boolean ffaresetted;
+                        boolean ffaupresetted;
                         do {
-                            ffaresetted = true;
+                            flatresetted = true;
 
                             do {
-                                ffaupresetted = true;
-                                inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                    Location location = player.getLocation();
-                                    location.setY(200);
-                                    Block b = d.getBlockAt(location);
-                                    Block b2 = d.getBlockAt(location.add(0, 1, 0));
+                                ffaresetted = true;
 
-                                    b2.setType(Material.AIR, false);
-                                    b.setType(Material.AIR, false);
-                                    location.setY(d.getHighestBlockYAt(location) + 1);
-                                    player.teleportAsync(location).thenAccept(reason -> {
-                                        b.setType(Material.BARRIER, false);
-                                        b2.setType(Material.BARRIER, false);
+                                do {
+                                    ffaupresetted = true;
+                                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                        Location location = player.getLocation();
+                                        location.setY(200);
+                                        Block b = d.getBlockAt(location);
+                                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
+
+                                        b2.setType(Material.AIR, false);
+                                        b.setType(Material.AIR, false);
+                                        location.setY(d.getHighestBlockYAt(location) + 1);
+                                        player.teleportAsync(location).thenAccept(reason -> {
+                                            b.setType(Material.BARRIER, false);
+                                            b2.setType(Material.BARRIER, false);
+                                        });
                                     });
-                                });
-                            } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
-                        } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
-                    } while (!flat.loopyReset(flat_data) && !flatresetted);
-                } else
-                    Arena.arenas.get("flat").reset(10000);
-            }
-        }, 0L, 2400L);
+                                } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
+                            } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
+                        } while (!flat.loopyReset(flat_data) && !flatresetted);
+                    } else
+                        Arena.arenas.get("flat").reset(10000);
+                }
+            }, 0L, 2400L);
+        }, 2400L);
 
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
@@ -231,7 +231,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("tp").setExecutor(new Teleport());
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("tpall").setExecutor(new TeleportAll());
-        this.getCommand("ss").setExecutor(new Screenshare());
 
         this.getCommand("msg").setTabCompleter(new TabMSG());
         this.getCommand("tpa").setTabCompleter(new TabTPA());
@@ -272,6 +271,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 86,
                 0.5);
         Initializer.spawn.setYaw(
+                90F
+        );
+        Initializer.flat.setYaw(
                 90F
         );
         getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");

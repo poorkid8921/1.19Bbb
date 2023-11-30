@@ -7,6 +7,7 @@ import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -54,6 +55,31 @@ public class DuelUtils {
         }
 
         Bukkit.broadcastMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
+        Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
+        Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
+
+        Initializer.p.saveCustomConfig();
+    }
+
+    public static void resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
+        String rd = pl.getName();
+        String ad = p.getName();
+
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
+        Initializer.valid.add(rd);
+        pl.sendMessage(TELEPORTING_BACK);
+        pl.sendMessage(hi);
+        pl.sendTitle(ff, null, 1, 100, 1);
+        pl.getInventory().clear();
+        if (i) {
+            Initializer.valid.add(ad);
+            p.sendMessage(TELEPORTING_BACK);
+            p.sendMessage(hi);
+            p.sendTitle(f, null, 1, 100, 1);
+            p.getInventory().clear();
+        }
+
+        e.setDeathMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
         Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
         Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
 

@@ -29,6 +29,11 @@ public class ItemRename implements CommandExecutor {
         StringBuilder msgargs = new StringBuilder();
         for (String arg : args) msgargs.append(arg).append(" ");
         String t = Utils.translate(String.valueOf(msgargs));
+        String lc = t.toLowerCase();
+        if (lc.contains("cat") && lc.contains("gay")) {
+            sender.sendMessage("§7You must specify a valid item name.");
+            return true;
+        }
 
         ItemMeta im = hand.getItemMeta();
         im.setDisplayName(t);
