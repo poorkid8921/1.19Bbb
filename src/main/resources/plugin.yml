@@ -65,6 +65,12 @@ commands:
     usage: /<command>
   gms:
     usage: /<command>
+    aliases: [ s, survival ]
+  gmsp:
+    usage: /<command>
+    aliases: [ sp, spectator ]
+  playtime:
+    usage: /<command>
   list:
     usage: /<command>
   ban:

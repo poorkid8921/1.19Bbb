@@ -1,16 +1,15 @@
 package main.commands.ess;
 
-import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class GMs implements CommandExecutor {
+public class Clear implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).setGameMode(GameMode.SURVIVAL);
-        sender.sendMessage("§7Your gamemode has been changed to survival.");
+        ((Player) sender).getInventory().clear();
+        sender.sendMessage("§7Your inventory has been successfully cleared!");
         return true;
     }
 }

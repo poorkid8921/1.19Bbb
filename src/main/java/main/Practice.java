@@ -68,9 +68,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
             e.printStackTrace();
         }
 
-        Bukkit.getOnlinePlayers().forEach(r -> {
-            r.sendTitle("§aPractice is restarting", null, 20, 60, 30);
-        });
+        Bukkit.getOnlinePlayers().forEach(r -> r.sendTitle("§aPractice is restarting", null, 20, 60, 30));
         Bukkit.getOnlinePlayers().forEach(r ->
                 r.sendPluginMessage(Initializer.p, "BungeeCord",
                         b.toByteArray()));
@@ -214,6 +212,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("irename").setExecutor(new ItemRename());
         this.getCommand("kickall").setExecutor(new Kickall());
+        this.getCommand("clear").setExecutor(new Clear());
 
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("ffa").setExecutor(new Ffa());
@@ -225,6 +224,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
+        this.getCommand("gmsp").setExecutor(new GMsp());
+        this.getCommand("playtime").setExecutor(new Playtime());
         this.getCommand("list").setExecutor(new List());
         this.getCommand("unban").setExecutor(new Unban());
         this.getCommand("ban").setExecutor(new Ban());
