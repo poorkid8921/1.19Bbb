@@ -90,6 +90,8 @@ commands:
     aliases: [ name, iname, itemname, itemrename ]
   kickall:
     usage: /<command>
+  clear:
+    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

@@ -81,7 +81,7 @@ public class RequestManager {
 
     public static DuelHolder getDUELrequest(String user) {
         for (DuelHolder r : Initializer.duel) {
-            if (r.getReceiver().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
         return null;
@@ -89,7 +89,7 @@ public class RequestManager {
 
     public static DuelHolder getPlayerDuel(String user) {
         for (DuelHolder r : Initializer.inDuel) {
-            if (r.getReceiver().equals(user) || r.getSender().getName().equals(user)) return r;
+            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
 
         return null;
@@ -97,7 +97,7 @@ public class RequestManager {
 
     public static DuelHolder getDUELrequest(String user, String lookup) {
         for (DuelHolder r : Initializer.duel) {
-            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSender().getName().equals(lookup)))
+            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
 

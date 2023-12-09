@@ -36,7 +36,7 @@ public class Duel implements CommandExecutor, TabExecutor {
         int i = 1;
         String gm = "field";
 
-        if (!sender.isOp())
+        if (!sender.hasPermission("has.staff"))
             return true;
 
         if (args.length == 0) {

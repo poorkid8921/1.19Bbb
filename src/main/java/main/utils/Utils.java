@@ -21,7 +21,6 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    static Practice plugin = Initializer.p;
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
     public static String translate(String text) {
@@ -48,7 +47,7 @@ public class Utils {
         p.closeInventory();
 
         Practice.config.set("r." + p.getName() + ".c", toset == -1 ? null : toset);
-        plugin.saveCustomConfig();
+        Initializer.p.saveCustomConfig();
         p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
                 "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
     }

@@ -3,7 +3,7 @@ package main.utils.Instances;
 import org.bukkit.Location;
 
 public class BackHolder {
-    Location back;
+    private Location back;
 
     public BackHolder(Location back) {
         this.back = back;

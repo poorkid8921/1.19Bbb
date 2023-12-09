@@ -1,5 +1,6 @@
 package main;
 
+import io.papermc.lib.PaperLib;
 import main.commands.*;
 import main.commands.chat.Msg;
 import main.commands.chat.MsgLock;
@@ -15,6 +16,7 @@ import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
 import main.utils.Initializer;
+import main.utils.Instances.LocationHolder;
 import main.utils.Languages;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
@@ -27,11 +29,11 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,6 +47,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
     public static World d;
+    public static World d0;
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
@@ -58,23 +61,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onDisable() {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream(b);
-
-        try {
-            out.writeUTF("Connect");
-            out.writeUTF("Economy");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Bukkit.getOnlinePlayers().forEach(r -> r.sendTitle("§aPractice is restarting", null, 20, 60, 30));
-        Bukkit.getOnlinePlayers().forEach(r ->
-                r.sendPluginMessage(Initializer.p, "BungeeCord",
-                        b.toByteArray()));
-
         long d = new Date().getTime();
         int x = 0;
+        int y = 0;
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/stats/").listFiles()) {
@@ -86,12 +75,43 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
+                .getAbsolutePath() + "/region/").listFiles()) {
+            if (d - p.lastModified() > 6.048e+8) {
+                y++;
+                p.delete();
+            }
+        }
+
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
                 .getAbsolutePath() + "/entities/").listFiles()) {
             p.delete();
         }
 
-        Bukkit.getLogger().warning("Successfully purged " + x + " accounts.");
+        Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
         getMessenger().unregisterOutgoingPluginChannel(this);
+    }
+
+    LocationHolder getRandomLoc(int bound, World w, int sqrtBound) {
+        int boundX = Initializer.RANDOM.nextInt(bound);
+        int boundZ = Initializer.RANDOM.nextInt(bound);
+
+        if (boundX > sqrtBound)
+            boundX = -boundX;
+        if (boundZ > sqrtBound)
+            boundZ = -boundZ;
+
+        int finalBoundZ = boundZ;
+        int finalBoundX = boundX;
+        PaperLib.getChunkAtAsync(w, boundX, boundZ).thenApply(v -> {
+            Block b = w.getHighestBlockAt(finalBoundX, finalBoundZ);
+
+            if (!b.isSolid())
+                return getRandomLoc(finalBoundX, w, sqrtBound);
+
+            return new LocationHolder(new int[]{finalBoundX, b.getY() + 1, finalBoundZ});
+        });
+        return null;
     }
 
     @Override
@@ -99,11 +119,20 @@ public class Practice extends JavaPlugin implements TabExecutor {
         df = getDataFolder();
         cf = new File(df, "data.yml");
         config = YamlConfiguration.loadConfiguration(cf);
+        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         p = this;
 
-        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-
         Bukkit.getScheduler().runTaskLater(this, () -> {
+            Bukkit.getLogger().warning("Started populating Overworld's RTP");
+            for (int i = 0; i < 100; i++) {
+                overworldRTP.add(getRandomLoc(10000, d, 5000));
+            }
+            Bukkit.getLogger().warning("Started populating End's RTP");
+            for (int i = 0; i < 100; i++) {
+                endRTP.add(getRandomLoc(10000, d0, 5000));
+            }
+            Bukkit.getLogger().warning("Done!");
+
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
             flat_data.speed = 10000;
@@ -146,41 +175,40 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                         Arena.arenas.get("p_f" + flatstr).reset(10000);
                         bannedFromflat.clear();
-                    }
+                        if (ticked == 6) {
+                            ticked = 0;
 
-                    if (ticked == 6) {
-                        ticked = 0;
-
-                        boolean flatresetted;
-                        boolean ffaresetted;
-                        boolean ffaupresetted;
-                        do {
-                            flatresetted = true;
-
+                            boolean flatresetted;
+                            boolean ffaresetted;
+                            boolean ffaupresetted;
                             do {
-                                ffaresetted = true;
+                                flatresetted = true;
 
                                 do {
-                                    ffaupresetted = true;
-                                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                        Location location = player.getLocation();
-                                        location.setY(200);
-                                        Block b = d.getBlockAt(location);
-                                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
+                                    ffaresetted = true;
 
-                                        b2.setType(Material.AIR, false);
-                                        b.setType(Material.AIR, false);
-                                        location.setY(d.getHighestBlockYAt(location) + 1);
-                                        player.teleportAsync(location).thenAccept(reason -> {
-                                            b.setType(Material.BARRIER, false);
-                                            b2.setType(Material.BARRIER, false);
+                                    do {
+                                        ffaupresetted = true;
+                                        inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                            Location location = player.getLocation();
+                                            location.setY(200);
+                                            Block b = d.getBlockAt(location);
+                                            Block b2 = d.getBlockAt(location.add(0, 1, 0));
+
+                                            b2.setType(Material.AIR, false);
+                                            b.setType(Material.AIR, false);
+                                            location.setY(d.getHighestBlockYAt(location) + 1);
+                                            player.teleportAsync(location).thenAccept(reason -> {
+                                                b.setType(Material.BARRIER, false);
+                                                b2.setType(Material.BARRIER, false);
+                                            });
                                         });
-                                    });
-                                } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
-                            } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
-                        } while (!flat.loopyReset(flat_data) && !flatresetted);
-                    } else
-                        Arena.arenas.get("flat").reset(10000);
+                                    } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
+                                } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
+                            } while (!flat.loopyReset(flat_data) && !flatresetted);
+                        } else
+                            Arena.arenas.get("flat").reset(10000);
+                    }
                 }
             }, 0L, 2400L);
         }, 2400L);
@@ -259,6 +287,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         d = Bukkit.getWorld("world");
+        d0 = Bukkit.getWorld("world_the_end");
         Initializer.ffa = new Location(d,
                 -243.5,
                 156,

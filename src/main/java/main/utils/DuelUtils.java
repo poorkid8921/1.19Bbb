@@ -65,7 +65,7 @@ public class DuelUtils {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + rd + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
         Initializer.valid.add(rd);
         pl.sendMessage(TELEPORTING_BACK);
         pl.sendMessage(hi);

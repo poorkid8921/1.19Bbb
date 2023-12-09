@@ -25,8 +25,10 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static main.expansions.guis.Utils.*;
@@ -41,8 +43,8 @@ public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
 
     @EventHandler
-    public void onUse(PlayerItemConsumeEvent e) {
-        e.setCancelled(e.getItem().getType() == Material.ENCHANTED_GOLDEN_APPLE);
+    public void onCommand(PlayerCommandPreprocessEvent e) {
+        e.setCancelled(teams.containsKey(e.getPlayer().getName()));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -99,10 +101,11 @@ public class Events implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
-        if (c instanceof PlayerInventory) return;
-
         Player p = (Player) e.getWhoClicked();
         String pn = p.getName();
+        if (c instanceof PlayerInventory)
+            return;
+
         Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
         if (inv == null) return;
 
@@ -182,7 +185,7 @@ public class Events implements Listener {
         inInventory.remove(e.getPlayer().getName());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
@@ -200,9 +203,8 @@ public class Events implements Listener {
             p.setFoodLevel(20);
             p.setHealth(20);
 
-            DuelHolder tpr = getPlayerDuel(name);
-            List<Player> plist = new ArrayList<>(w.getNearbyPlayers(l, 100));
-            Player kp = (killer == p || killer == null) ? plist.get(1) : killer;
+            DuelHolder tpr = getPlayerDuel(name);;
+            Player kp = (killer == p || killer == null) ? w.getNearbyPlayers(l, 100).stream().toList().get(1) : killer;
 
             kp.setNoDamageTicks(100);
             kp.setFoodLevel(20);
@@ -230,7 +232,7 @@ public class Events implements Listener {
 
                 int arena = tpr.getArena();
                 int type = tpr.getType();
-                Arena ffa = Arena.arenas.get("d_" + type + arena);
+                /*Arena ffa = Arena.arenas.get("d_" + type + arena);
                 Arena.ResetLoopinData data = new Arena.ResetLoopinData();
                 data.speed = 10000;
                 for (Section s : ffa.getSections()) {
@@ -238,7 +240,7 @@ public class Events implements Listener {
                     if (sectionAmount <= 0) sectionAmount = 1;
                     data.sections.put(s.getID(), sectionAmount);
                     data.sectionIDs.add(s.getID());
-                }
+                }*/
 
                 if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(kuid) == null) {
                     if (red > blue) {
@@ -254,16 +256,15 @@ public class Events implements Listener {
                         Initializer.teams.remove(name);
                         kp.teleportAsync(Initializer.spawn);
                         p.teleportAsync(Initializer.spawn);
-                        plist.clear();
                     }, 60L);
-                    boolean resetted;
-                    do {
-                        resetted = true;
+                    //boolean resetted;
+                    //do {
+                        //resetted = true;
 
                         Initializer.inDuel.remove(tpr);
                         updateDuels();
                         updateSpectate();
-                    } while (!ffa.loopyReset(data) && !resetted);
+                    //} while (!ffa.loopyReset(data) && !resetted);
                     return;
                 }
 
@@ -282,8 +283,6 @@ public class Events implements Listener {
                         Initializer.inDuel.remove(tpr);
                         kp.teleportAsync(Initializer.spawn);
                         p.teleportAsync(Initializer.spawn);
-                        plist.clear();
-
                         updateDuels();
                         updateSpectate();
                     }, 60L);
@@ -294,7 +293,6 @@ public class Events implements Listener {
                 tpr.setRed(red);
                 tpr.setBlue(blue);
                 start(kp, p, type, newrounds, tpr.getMaxrounds(), arena);
-                plist.clear();
             }, 60L);
             Initializer.back.remove(name);
             return;

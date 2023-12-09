@@ -20,7 +20,7 @@ public class Msg implements CommandExecutor, TabCompleter {
             sender.sendMessage("§7You must specify who you want to message.");
             return true;
         } else if (args.length == 1) {
-            sender.sendMessage("§7You must specify a message to send to the p.");
+            sender.sendMessage("§7You must specify a message to send to the player.");
             return true;
         }
 

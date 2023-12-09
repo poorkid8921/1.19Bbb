@@ -1,6 +1,7 @@
 package main.commands.ess;
 
 import main.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,7 +30,7 @@ public class ItemRename implements CommandExecutor {
         StringBuilder msgargs = new StringBuilder();
         for (String arg : args) msgargs.append(arg).append(" ");
         String t = Utils.translate(String.valueOf(msgargs));
-        String lc = t.toLowerCase();
+        String lc = ChatColor.stripColor(t.toLowerCase());
         if (lc.contains("cat") && lc.contains("gay")) {
             sender.sendMessage("§7You must specify a valid item name.");
             return true;

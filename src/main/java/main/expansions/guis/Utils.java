@@ -30,7 +30,6 @@ public class Utils {
 
     public static void init() {
         Inventory inv = Bukkit.createInventory(null, 27);
-
         ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
         ItemMeta meta = glass.getItemMeta();
         meta.setDisplayName("");
@@ -59,13 +58,6 @@ public class Utils {
 
         inv = Bukkit.createInventory(null, 54);
 
-        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(1, duelsavailable(0)));
-        meta = i.getItemMeta();
-        meta.setDisplayName(MAIN_COLOR + "ꜰɪᴇʟᴅ");
-        meta.setLore(List.of("1V1"));
-        i.setItemMeta(meta);
-        inv.setItem(10, i);
-
         ItemStack i2 = new ItemStack(Material.FEATHER);
         meta = i2.getItemMeta();
         meta.setDisplayName("§7Spectate");
@@ -81,6 +73,12 @@ public class Utils {
         inInventory.put(p.getName(), Pair.of(2, "-"));
         Inventory inv = Bukkit.createInventory(p, 54, "ᴅᴜᴇʟs");
         inv.setContents(duel1);
+        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(1, duelsavailable(0)));
+        ItemMeta meta = i.getItemMeta();
+        meta.setDisplayName(MAIN_COLOR + "ꜰɪᴇʟᴅ");
+        meta.setLore(List.of("1V1"));
+        i.setItemMeta(meta);
+        inv.setItem(10, i);
         p.openInventory(inv);
     }
 

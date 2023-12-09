@@ -67,6 +67,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-commons:9.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-tree:9.4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot:1.19.4-R0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: jline:jline:2.12.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.logging.log4j:log4j-iostreams:2.19.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.oshi:oshi-core:6.2.2" level="project" />
@@ -101,7 +102,6 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-codec:commons-codec:1.11" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.httpcomponents:httpcore:4.4.14" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.slf4j:jcl-over-slf4j:1.7.32" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.MilkBowl:VaultAPI:1.7" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.bukkit:bukkit:1.13.1-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.papermc:paperlib:1.0.8" level="project" />
