@@ -1,13 +1,18 @@
 name: AestheticNetwork
 version: '${project.version}'
-main: org.yuri.eco.AestheticNetwork
-api-version: 1.19
-depend: [Vault, LuckPerms]
+main: main.Practice
+api-version: 1.18
 
 commands:
   spawn:
     usage: /<command>
   discord:
+    usage: /<command>
+    aliases: dc
+  ffa:
+    usage: /<command>
+    aliases: [ hole, field ]
+  flat:
     usage: /<command>
   tpa:
     usage: /<command>
@@ -20,17 +25,27 @@ commands:
   tpaccept:
     usage: /<command>
     aliases: [ tpy, tpyes ]
+  tpall:
+    usage: /<command>
+  duel:
+    usage: /<command>
+    aliases: 1v1
+  dueldeny:
+    usage: /<command>
+  duelaccept:
+    usage: /<command>
+  event:
+    usage: /<command>
   msg:
     usage: /<command>
     aliases: [ tell, whisper, w, t ]
   reply:
     usage: /<command>
     aliases: r
-  tpaall:
-    usage: /<command>
   report:
     usage: /<command>
-  chatlock:
+  killeffect:
+    aliases: shop
     usage: /<command>
   msglock:
     usage: /<command>
@@ -38,9 +53,45 @@ commands:
   tpalock:
     usage: /<command>
     aliases: [ tpatoggle, toggletpa ]
-  stats:
+  back:
     usage: /<command>
-    aliases: statistics
+  help:
+    usage: /<command>
+  acreate:
+    usage: /<command>
+  rtp:
+    usage: /<command>
+  gmc:
+    usage: /<command>
+  gms:
+    usage: /<command>
+    aliases: [ s, survival ]
+  gmsp:
+    usage: /<command>
+    aliases: [ sp, spectator ]
+  playtime:
+    usage: /<command>
+  list:
+    usage: /<command>
+  ban:
+    usage: /<command>
+  unban:
+    usage: /<command>
+  warp:
+    usage: /<command>
+  setwarp:
+    usage: /<command>
+  tp:
+    usage: /<command>
+  tphere:
+    usage: /<command>
+  irename:
+    usage: /<command>
+    aliases: [ name, iname, itemname, itemrename ]
+  kickall:
+    usage: /<command>
+  clear:
+    usage: /<command>
 permissions:
   has.staff:
-    description: Use chatlock & Bypass it
+    description: Is a staff member
