@@ -22,7 +22,7 @@ public class ItemRename implements CommandExecutor {
         Player p = (Player) sender;
 
         ItemStack hand = p.getItemInHand();
-        if (hand == null || hand.getType() == Material.AIR) {
+        if (hand.getType() == Material.AIR) {
             sender.sendMessage("§7You must hold an item in order to use this command.");
             return true;
         }
@@ -30,12 +30,6 @@ public class ItemRename implements CommandExecutor {
         StringBuilder msgargs = new StringBuilder();
         for (String arg : args) msgargs.append(arg).append(" ");
         String t = Utils.translate(String.valueOf(msgargs));
-        String lc = ChatColor.stripColor(t.toLowerCase());
-        if (lc.contains("cat") && lc.contains("gay")) {
-            sender.sendMessage("§7You must specify a valid item name.");
-            return true;
-        }
-
         ItemMeta im = hand.getItemMeta();
         im.setDisplayName(t);
         hand.setItemMeta(im);

@@ -112,6 +112,7 @@ public class RTP implements CommandExecutor, TabExecutor {
         LocationHolder locH = overworldRTP.get(RANDOM.nextInt(100));
         Location locC = new Location(Practice.d, locH.getX(), locH.getY(), locH.getZ());
         p.teleportAsync(locC).thenAccept(r -> {
+            playersRTPing.remove(sn);
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
             p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));

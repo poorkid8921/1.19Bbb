@@ -1,5 +1,7 @@
 package main.expansions.arenas;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -22,10 +24,10 @@ import static main.expansions.arenas.ArenaIO.KEY_SPLIT;
 import static main.expansions.arenas.ArenaIO.SECTION_SPLIT;
 
 public class Arena {
-    public static Map<String, Arena> arenas = new HashMap<>();
+    public static Map<String, Arena> arenas = new Object2ObjectOpenHashMap<>();
     private final Location c1;
     private final Location c2;
-    private final List<Section> sections = new ArrayList<>();
+    private final List<Section> sections = new ObjectArrayList<>();
     private final String name;
     private Material[] keys;
 
@@ -122,7 +124,6 @@ public class Arena {
             else sectionsZ++;
 
             sectionArea = (width / sectionsX) * (length / sectionsZ);
-
             x = !x;
         }
 
@@ -149,7 +150,6 @@ public class Arena {
         }
 
         Arena arena = new Arena(name, c1, c2);
-
         CreationLoopinData data = new CreationLoopinData();
 
         data.arena = arena;
@@ -361,8 +361,7 @@ public class Arena {
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
-            boolean reset = s.reset(data.sections.get(id));
-            if (reset) {
+            if (s.reset(data.sections.get(id))) {
                 data.sections.remove(id);
                 data.sectionIDs.remove((Object) id);
                 sectionsIterated--;
@@ -382,7 +381,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return true;
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 4L);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
         return false;
     }
 
@@ -420,7 +419,7 @@ public class Arena {
     }
 
     public static class ResetLoopinData {
-        public Map<Integer, Integer> sections = new HashMap<>();
+        public Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
         public List<Integer> sectionIDs = new ArrayList<>();
         public int speed;
         int currentSectionResetting;

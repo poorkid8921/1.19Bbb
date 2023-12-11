@@ -1,6 +1,5 @@
 package main;
 
-import io.papermc.lib.PaperLib;
 import main.commands.*;
 import main.commands.chat.Msg;
 import main.commands.chat.MsgLock;
@@ -29,9 +28,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -92,26 +89,25 @@ public class Practice extends JavaPlugin implements TabExecutor {
         getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
-    LocationHolder getRandomLoc(int bound, World w, int sqrtBound) {
-        int boundX = Initializer.RANDOM.nextInt(bound);
-        int boundZ = Initializer.RANDOM.nextInt(bound);
+    java.util.List<Material> blacklist = java.util.List.of(Material.AIR, Material.LAVA, Material.WATER);
 
-        if (boundX > sqrtBound)
-            boundX = -boundX;
-        if (boundZ > sqrtBound)
-            boundZ = -boundZ;
+    LocationHolder getRandomLoc(World w) {
+        LocationHolder loc = null;
+        while (loc == null) {
+            int boundX = Initializer.RANDOM.nextInt(10000);
+            int boundZ = Initializer.RANDOM.nextInt(10000);
 
-        int finalBoundZ = boundZ;
-        int finalBoundX = boundX;
-        PaperLib.getChunkAtAsync(w, boundX, boundZ).thenApply(v -> {
-            Block b = w.getHighestBlockAt(finalBoundX, finalBoundZ);
+            if (boundX > 5000)
+                boundX = -boundX;
+            if (boundZ > 5000)
+                boundZ = -boundZ;
 
-            if (!b.isSolid())
-                return getRandomLoc(finalBoundX, w, sqrtBound);
+            Block b = w.getHighestBlockAt(boundX, boundZ);
+            if (b.isSolid() && !blacklist.contains(b.getType()))
+                loc = new LocationHolder(new int[]{boundX, b.getY() + 1, boundZ});
+        }
 
-            return new LocationHolder(new int[]{finalBoundX, b.getY() + 1, finalBoundZ});
-        });
-        return null;
+        return loc;
     }
 
     @Override
@@ -123,15 +119,18 @@ public class Practice extends JavaPlugin implements TabExecutor {
         p = this;
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            Bukkit.getLogger().warning("Started populating Overworld's RTP");
+            Bukkit.getLogger().warning("Started population thread of Overworld's RTP");
             for (int i = 0; i < 100; i++) {
-                overworldRTP.add(getRandomLoc(10000, d, 5000));
+                Bukkit.getScheduler().runTaskLater(this,
+                        () -> overworldRTP.add(getRandomLoc(d)),
+                        5L);
             }
-            Bukkit.getLogger().warning("Started populating End's RTP");
+            Bukkit.getLogger().warning("Started population thread of End's RTP");
             for (int i = 0; i < 100; i++) {
-                endRTP.add(getRandomLoc(10000, d0, 5000));
+                Bukkit.getScheduler().runTaskLater(this,
+                        () -> endRTP.add(getRandomLoc(d)),
+                        5L);
             }
-            Bukkit.getLogger().warning("Done!");
 
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
@@ -155,9 +154,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             Arena ffaup = Arena.arenas.get("ffaup");
             Arena.ResetLoopinData ffaup_data = new Arena.ResetLoopinData();
-            ffaup_data.speed = 2000;
+            ffaup_data.speed = 200000;
             for (Section s : ffaup.getSections()) {
-                int sectionAmount = (int) ((double) 2000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
+                int sectionAmount = (int) ((double) 200000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
                 if (sectionAmount <= 0) sectionAmount = 1;
                 ffaup_data.sections.put(s.getID(), sectionAmount);
                 ffaup_data.sectionIDs.add(s.getID());
@@ -206,12 +205,14 @@ public class Practice extends JavaPlugin implements TabExecutor {
                                     } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
                                 } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
                             } while (!flat.loopyReset(flat_data) && !flatresetted);
-                        } else
+                        }
+                        else
                             Arena.arenas.get("flat").reset(10000);
-                    }
+                    } else
+                        Arena.arenas.get("flat").reset(10000);
                 }
             }, 0L, 2400L);
-        }, 2400L);
+        }, 240L);
 
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());

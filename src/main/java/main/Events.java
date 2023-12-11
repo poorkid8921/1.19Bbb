@@ -101,10 +101,11 @@ public class Events implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
-        Player p = (Player) e.getWhoClicked();
-        String pn = p.getName();
         if (c instanceof PlayerInventory)
             return;
+
+        Player p = (Player) e.getWhoClicked();
+        String pn = p.getName();
 
         Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
         if (inv == null) return;

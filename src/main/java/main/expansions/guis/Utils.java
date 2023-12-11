@@ -1,6 +1,7 @@
 package main.expansions.guis;
 
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
 import org.bukkit.Bukkit;
@@ -21,7 +22,7 @@ import static main.utils.Languages.SECOND_COLOR;
 import static main.utils.Utils.createItemStack;
 
 public class Utils {
-    public static Map<String, Pair<Integer, String>> inInventory = new HashMap<>();
+    public static Map<String, Pair<Integer, String>> inInventory = new Object2ObjectOpenHashMap<>();
     static ItemStack[] report = {};
     static ItemStack[] killeffect = {};
     static ItemStack[] duel1 = {};

@@ -1,5 +1,7 @@
 package main.utils;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.io.IOException;
@@ -181,7 +183,7 @@ public class DiscordWebhook {
     }
 
     private static class JSONObject {
-        private final HashMap<String, Object> map = new HashMap<>();
+        private final Map<String, Object> map = new Object2ObjectOpenHashMap<>();
 
         void put(String key, Object value) {
             if (value != null) {
