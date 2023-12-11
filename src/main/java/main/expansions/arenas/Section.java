@@ -31,14 +31,13 @@ public class Section {
     public boolean reset(int max) {
         int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
         int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
+        int wl = w * l;
 
-        if (resetTypeIndex < 0) {
+        if (resetTypeIndex < 0)
             resetTypeIndex = 0;
-        }
 
-        if (resetLocationIndex < 0) {
+        if (resetLocationIndex < 0)
             resetLocationIndex = 0;
-        }
 
         AtomicInteger count = new AtomicInteger(0);
         World ww = getStart().getWorld();
@@ -49,10 +48,7 @@ public class Section {
             Material data = this.getParent().getKeys()[type];
 
             while (resetCurrentTypeIndex < amount) {
-                Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
-                getStart().add(offset).getBlock().setType(data, false);
-                getStart().subtract(offset);
-
+                getStart().clone().add(new Location(ww, resetLocationIndex % w, resetLocationIndex / wl, (resetLocationIndex / w) % resetLocationIndex)).getBlock().setType(data, false);
                 count.getAndIncrement();
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;

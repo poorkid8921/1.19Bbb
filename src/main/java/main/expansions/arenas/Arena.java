@@ -7,7 +7,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -19,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.zip.Deflater;
 
 import static main.expansions.arenas.ArenaIO.KEY_SPLIT;
 import static main.expansions.arenas.ArenaIO.SECTION_SPLIT;
@@ -74,6 +74,21 @@ public class Arena {
         c2.setY(y2);
         c1.setZ(z1);
         c2.setZ(z2);
+    }
+
+    static byte[] compress(byte[] bytes) {
+        Deflater compresser = new Deflater();
+        compresser.setInput(bytes);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
+        compresser.finish();
+        byte[] buffer = new byte[1024];
+        while (!compresser.finished()) {
+            int count = compresser.deflate(buffer);
+            outputStream.write(buffer, 0, count);
+        }
+        compresser.end();
+        return outputStream.toByteArray();
     }
 
     public static void createNewArena(String name, Location c1, Location c2, Player player) {
@@ -220,7 +235,7 @@ public class Arena {
                     totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
                     totalBytes = ArrayUtils.addAll(totalBytes, keyBytes);
                     totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
-                    totalBytes = Utils.compress(ArrayUtils.addAll(totalBytes, blockBytes));
+                    totalBytes = compress(ArrayUtils.addAll(totalBytes, blockBytes));
 
                     stream.write(totalBytes);
                     stream.close();
@@ -236,7 +251,7 @@ public class Arena {
         loopyCreate(data, 500000, runnable);
     }
 
-    private static void loopyCreate(CreationLoopinData data, final int amount, Runnable onFinished) {
+    static void loopyCreate(CreationLoopinData data, final int amount, Runnable onFinished) {
         Location start = data.sectionStarts.get(0);
         Location end = data.sectionEnds.get(0);
         int width = end.getBlockX() - start.getBlockX() + 1;
@@ -247,7 +262,7 @@ public class Arena {
         for (int i = 0; i < amount; i++) {
             Location loc;
             try {
-                loc = Arena.getLocationAtIndex(width, length, data.arena.c1.getWorld(), data.index);
+                loc = new Location(data.arena.c1.getWorld(), data.index % width, data.index / (length * width), (data.index / width) % length);
             } catch (ArithmeticException e) {
                 e.printStackTrace();
                 return;
@@ -330,12 +345,8 @@ public class Arena {
         loopyCreate(data, amount, onFinished);
     }
 
-    public static Location getLocationAtIndex(int width, int length, World world, int index) {
-        return new Location(world, index % width, index / (length * width), (index / width) % length);
-    }
-
     protected void addKeys(Collection<Material> keys) {
-        List<Material> keyList = new ArrayList<>(Arrays.asList(this.keys));
+        List<Material> keyList = new ObjectArrayList<>(Arrays.asList(this.keys));
         for (Material data : keys) {
             if (!keyList.contains(data)) keyList.add(data);
         }
@@ -357,20 +368,18 @@ public class Arena {
     }
 
     public boolean loopyReset(ResetLoopinData data) {
-        data.blocksThisTick = 0;
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
-            int id = data.sectionIDs.get((sectionsIterated + data.currentSectionResetting) % data.sections.size()) % getSections().size();
+            int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
             if (s.reset(data.sections.get(id))) {
                 data.sections.remove(id);
-                data.sectionIDs.remove((Object) id);
+                data.sectionIDs.remove(id);
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
 
-                List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
-                for (Section s1 : sectionList) {
+                for (Section s1 : data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList()) {
                     int sectionAmount = (int) ((double) data.speed / (double) newTotalAmount * (double) s.getTotalBlocks());
                     if (sectionAmount <= 0) sectionAmount = 1;
                     data.sections.put(s1.getID(), sectionAmount);
@@ -422,7 +431,5 @@ public class Arena {
         public Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
         public List<Integer> sectionIDs = new ArrayList<>();
         public int speed;
-        int currentSectionResetting;
-        int blocksThisTick = 0;
     }
 }

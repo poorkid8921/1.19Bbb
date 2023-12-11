@@ -18,6 +18,7 @@ import main.utils.Initializer;
 import main.utils.Instances.LocationHolder;
 import main.utils.Languages;
 import main.utils.TabTPA;
+import main.utils.Utils;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -37,6 +38,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import static main.utils.Initializer.*;
+import static main.utils.Languages.MAIN_COLOR;
 import static org.bukkit.Bukkit.getMessenger;
 
 @SuppressWarnings("deprecation")
@@ -48,6 +50,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
+    java.util.List<Material> blacklist = java.util.List.of(Material.AIR, Material.LAVA, Material.WATER);
 
     public void saveCustomConfig() {
         try {
@@ -79,6 +82,12 @@ public class Practice extends JavaPlugin implements TabExecutor {
             }
         }
 
+        for (File p : new File(Bukkit.getWorld("world_the_end")
+                .getWorldFolder()
+                .getAbsolutePath() + "/DIM1/").listFiles()) {
+            p.delete();
+        }
+
         for (File p : new File(Bukkit.getWorld("world")
                 .getWorldFolder()
                 .getAbsolutePath() + "/entities/").listFiles()) {
@@ -88,8 +97,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
         getMessenger().unregisterOutgoingPluginChannel(this);
     }
-
-    java.util.List<Material> blacklist = java.util.List.of(Material.AIR, Material.LAVA, Material.WATER);
 
     LocationHolder getRandomLoc(World w) {
         LocationHolder loc = null;
@@ -108,6 +115,17 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         return loc;
+    }
+
+    void setupHolos() {
+        // Test
+        Location loc = new Location(d, 0, 0, 0);
+        for (int i = 0; i < 3; i++) {
+            loc.setY(loc.getY() - 0.3);
+            Utils.createHologram(i,
+                    MAIN_COLOR + "Test",
+                    loc);
+        }
     }
 
     @Override
@@ -162,6 +180,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 ffaup_data.sectionIDs.add(s.getID());
             }
 
+            //setupHolos();
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 if (Bukkit.getOnlinePlayers().size() > 0) {
                     d.getEntities().stream()
@@ -205,8 +224,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                                     } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
                                 } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
                             } while (!flat.loopyReset(flat_data) && !flatresetted);
-                        }
-                        else
+                        } else
                             Arena.arenas.get("flat").reset(10000);
                     } else
                         Arena.arenas.get("flat").reset(10000);
@@ -285,6 +303,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         });
         Languages.init();
         main.expansions.guis.Utils.init();
+        main.expansions.combat.Utils.init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         d = Bukkit.getWorld("world");

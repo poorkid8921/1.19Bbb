@@ -13,9 +13,6 @@ import static main.utils.RequestManager.*;
 import static main.utils.Utils.translate;
 
 public class Tpaccept implements CommandExecutor {
-    public Tpaccept() {
-    }
-
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ;
         TpaRequest request;

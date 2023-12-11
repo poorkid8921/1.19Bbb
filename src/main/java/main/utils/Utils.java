@@ -3,7 +3,10 @@ package main.utils;
 import main.Practice;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +25,18 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 @SuppressWarnings("deprecation")
 public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+
+    public static void createHologram(int id,
+                                      String text,
+                                      Location loc) {
+        ArmorStand holo = (ArmorStand) Practice.d.spawnEntity(loc, EntityType.ARMOR_STAND);
+        holo.setGravity(false);
+        holo.setCanPickupItems(false);
+        holo.setCustomName(text);
+        holo.setCustomNameVisible(true);
+        holo.setVisible(false);
+        Initializer.hologramsCreated.put(id, holo);
+    }
 
     public static String translate(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);

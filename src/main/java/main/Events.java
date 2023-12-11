@@ -1,8 +1,6 @@
 package main;
 
 import it.unimi.dsi.fastutil.Pair;
-import main.expansions.arenas.Arena;
-import main.expansions.arenas.Section;
 import main.expansions.duels.Matchmaking;
 import main.utils.*;
 import main.utils.Instances.BackHolder;
@@ -25,10 +23,8 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static main.expansions.guis.Utils.*;
@@ -41,6 +37,11 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
+
+    @EventHandler
+    public void onArmorStandClick(PlayerArmorStandManipulateEvent e) {
+        e.setCancelled(true);
+    }
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
@@ -204,7 +205,8 @@ public class Events implements Listener {
             p.setFoodLevel(20);
             p.setHealth(20);
 
-            DuelHolder tpr = getPlayerDuel(name);;
+            DuelHolder tpr = getPlayerDuel(name);
+            ;
             Player kp = (killer == p || killer == null) ? w.getNearbyPlayers(l, 100).stream().toList().get(1) : killer;
 
             kp.setNoDamageTicks(100);
@@ -260,11 +262,11 @@ public class Events implements Listener {
                     }, 60L);
                     //boolean resetted;
                     //do {
-                        //resetted = true;
+                    //resetted = true;
 
-                        Initializer.inDuel.remove(tpr);
-                        updateDuels();
-                        updateSpectate();
+                    Initializer.inDuel.remove(tpr);
+                    updateDuels();
+                    updateSpectate();
                     //} while (!ffa.loopyReset(data) && !resetted);
                     return;
                 }

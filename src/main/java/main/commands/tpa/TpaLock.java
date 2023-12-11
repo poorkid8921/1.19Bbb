@@ -11,18 +11,20 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 import static main.utils.Initializer.tpa;
+import static main.utils.Languages.TPALOCK;
+import static main.utils.Languages.TPALOCK1;
 
 public class TpaLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String p = sender.getName();
         if (Practice.config.get("r." + p + ".t") != null) {
-            sender.sendMessage("§7You can receive tp requests again.");
+            sender.sendMessage(TPALOCK);
             Practice.config.set("r." + p + (Practice.config.get("r." + p + ".m") == null ? "" : ".t"), null);
             Initializer.p.saveCustomConfig();
             tpa.add(p);
         } else {
-            sender.sendMessage("§7You will no longer receive tp requests.");
+            sender.sendMessage(TPALOCK1);
             Practice.config.set("r." + p + ".t", "");
             Initializer.p.saveCustomConfig();
             tpa.remove(p);

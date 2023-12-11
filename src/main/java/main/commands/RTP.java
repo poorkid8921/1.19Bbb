@@ -1,11 +1,12 @@
 package main.commands;
 
-import io.papermc.lib.PaperLib;
 import main.Practice;
 import main.utils.Initializer;
 import main.utils.Instances.LocationHolder;
-import org.bukkit.*;
-import org.bukkit.block.Block;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,12 +16,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static main.utils.Initializer.*;
-import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
 
 public class RTP implements CommandExecutor, TabExecutor {

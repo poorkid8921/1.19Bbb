@@ -11,9 +11,9 @@ import main.utils.Instances.LocationHolder;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +24,7 @@ public class Initializer {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, BackHolder> back = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
+    public static Map<Integer, ArmorStand> hologramsCreated = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
