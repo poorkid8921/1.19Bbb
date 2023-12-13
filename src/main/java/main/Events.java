@@ -1,10 +1,14 @@
 package main;
 
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.expansions.duels.Matchmaking;
-import main.utils.*;
+import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.DuelHolder;
+import main.utils.Languages;
+import main.utils.RequestManager;
+import main.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -24,9 +28,6 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static main.expansions.guis.Utils.*;
 import static main.utils.DuelUtils.*;
 import static main.utils.Initializer.*;
@@ -37,11 +38,6 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
-
-    @EventHandler
-    public void onArmorStandClick(PlayerArmorStandManipulateEvent e) {
-        e.setCancelled(true);
-    }
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
@@ -67,7 +63,7 @@ public class Events implements Listener {
 
         if (Initializer.teams.containsKey(playerName)) {
             DuelHolder tpr = getPlayerDuel(playerName);
-            List<Player> plist = new ArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
+            ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
@@ -206,16 +202,25 @@ public class Events implements Listener {
             p.setHealth(20);
 
             DuelHolder tpr = getPlayerDuel(name);
-            ;
             Player kp = (killer == p || killer == null) ? w.getNearbyPlayers(l, 100).stream().toList().get(1) : killer;
 
             kp.setNoDamageTicks(100);
             kp.setFoodLevel(20);
             kp.setHealth(20);
 
-            DuelUtils.spawnFireworks(l, w);
-            String kuid = kp.getName();
+            Firework fw = (Firework) w.spawnEntity(l.clone().add(0, 1, 0), EntityType.FIREWORK);
+            FireworkMeta fwm = fw.getFireworkMeta();
+            fwm.setPower(2);
+            fwm.addEffect(FireworkEffect.builder()
+                    .withColor(Color.WHITE)
+                    .withColor(Color.RED)
+                    .with(FireworkEffect.Type.BALL_LARGE)
+                    .flicker(true)
+                    .build());
+            fw.setFireworkMeta(fwm);
+            fw.detonate();
 
+            String kuid = kp.getName();
             Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
                 int newrounds = tpr.getRounds() + 1;
                 int red = tpr.getRed();
@@ -332,7 +337,7 @@ public class Events implements Listener {
 
         switch (Practice.config.getInt("r." + killer + ".c", -1)) {
             case 0 -> {
-                Location loc = p.getLocation().add(0, 1, 0);
+                Location loc = l.add(0, 1, 0);
                 for (double y = 0; y <= 10; y += 0.05) {
                     w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                 }
@@ -344,7 +349,7 @@ public class Events implements Listener {
                 fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
                 fw.setFireworkMeta(fwm);
             }
-            case 2 -> w.strikeLightningEffect(p.getLocation().add(0, 1, 0));
+            case 2 -> w.strikeLightningEffect(l.add(0, 1, 0));
         }
     }
 
@@ -353,10 +358,8 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String name = p.getName();
 
-        Initializer.THREAD.submit(() -> {
-            if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
-            if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
-        });
+        if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
+        if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleportAsync(spawn);
     }

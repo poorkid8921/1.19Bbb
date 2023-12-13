@@ -1,5 +1,6 @@
 package main.expansions.arenas;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,7 +12,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +93,7 @@ public class ArenaIO {
             int keySectionSplit = ArrayUtils.indexOf(readBytes, SECTION_SPLIT, firstSectionSplit + 1);
             byte[] keyBytes = Arrays.copyOfRange(readBytes, firstSectionSplit + 1, keySectionSplit);
 
-            List<Material> blockDataSet = new ArrayList<>();
+            List<Material> blockDataSet = new ObjectArrayList<>();
 
             for (byte[] key : split(new byte[]{KEY_SPLIT}, keyBytes)) {
                 String blockData = new String(key, StandardCharsets.US_ASCII);

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.Practice;
 import main.utils.Instances.BackHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.LocationHolder;
 import net.milkbowl.vault.chat.Chat;
@@ -25,6 +26,7 @@ public class Initializer {
     public static Map<String, BackHolder> back = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, ArmorStand> hologramsCreated = new Object2ObjectOpenHashMap<>();
+    public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();

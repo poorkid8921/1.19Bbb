@@ -48,7 +48,9 @@ public class Section {
             Material data = this.getParent().getKeys()[type];
 
             while (resetCurrentTypeIndex < amount) {
-                getStart().clone().add(new Location(ww, resetLocationIndex % w, resetLocationIndex / wl, (resetLocationIndex / w) % resetLocationIndex)).getBlock().setType(data, false);
+                Location offset = new Location(ww, resetLocationIndex % w, resetLocationIndex / wl, (resetLocationIndex / w) % l);
+                getStart().clone().add(offset).getBlock().setType(data, false);
+                getStart().subtract(offset);
                 count.getAndIncrement();
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;

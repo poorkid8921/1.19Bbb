@@ -1,6 +1,7 @@
 package main.utils;
 
 import main.Practice;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static main.utils.Initializer.playerData;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Languages.SECOND_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
@@ -60,9 +62,16 @@ public class Utils {
 
     public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
+        String pn = p.getName();
+        CustomPlayerDataHolder D = playerData.get(pn);
 
-        Practice.config.set("r." + p.getName() + ".c", toset == -1 ? null : toset);
-        Initializer.p.saveCustomConfig();
+        if (toset == -1 && D != null)
+            playerData.get(pn).setC(-1);
+        else if (D == null)
+            playerData.put(pn, new CustomPlayerDataHolder(0, 0, toset, 0, 0));
+        else
+            playerData.get(pn).setC(toset);
+
         p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
                 "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
     }

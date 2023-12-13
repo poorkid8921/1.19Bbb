@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.Deflater;
 
 import static main.expansions.arenas.ArenaIO.KEY_SPLIT;
@@ -142,8 +145,8 @@ public class Arena {
             x = !x;
         }
 
-        List<Location> sectionStarts = new ArrayList<>();
-        List<Location> sectionEnds = new ArrayList<>();
+        List<Location> sectionStarts = new ObjectArrayList<>();
+        List<Location> sectionEnds = new ObjectArrayList<>();
 
         for (int sx = 0; sx < sectionsX; sx++) {
             for (int zx = 0; zx < sectionsZ; zx++) {
@@ -170,7 +173,7 @@ public class Arena {
         data.arena = arena;
         data.sectionStarts = sectionStarts;
         data.sectionEnds = sectionEnds;
-        data.sections = new ArrayList<>();
+        data.sections = new ObjectArrayList<>();
         data.maxBlocks = width * length * height;
         data.lastUpdate = System.currentTimeMillis() - 5000;
 
@@ -257,7 +260,7 @@ public class Arena {
         int width = end.getBlockX() - start.getBlockX() + 1;
         int height = end.getBlockY() - start.getBlockY() + 1;
         int length = end.getBlockZ() - start.getBlockZ() + 1;
-        List<Material> keyList = new ArrayList<>(Arrays.asList(data.arena.keys));
+        List<Material> keyList = new ObjectArrayList<>(Arrays.asList(data.arena.keys));
 
         for (int i = 0; i < amount; i++) {
             Location loc;
@@ -429,7 +432,7 @@ public class Arena {
 
     public static class ResetLoopinData {
         public Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
-        public List<Integer> sectionIDs = new ArrayList<>();
+        public List<Integer> sectionIDs = new ObjectArrayList<>();
         public int speed;
     }
 }

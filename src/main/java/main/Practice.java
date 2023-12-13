@@ -1,5 +1,6 @@
 package main;
 
+import com.google.common.collect.ImmutableList;
 import main.commands.*;
 import main.commands.chat.Msg;
 import main.commands.chat.MsgLock;
@@ -15,6 +16,7 @@ import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
 import main.utils.Initializer;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.LocationHolder;
 import main.utils.Languages;
 import main.utils.TabTPA;
@@ -36,10 +38,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 import static main.utils.Initializer.*;
 import static main.utils.Languages.MAIN_COLOR;
-import static org.bukkit.Bukkit.getMessenger;
 
 @SuppressWarnings("deprecation")
 public class Practice extends JavaPlugin implements TabExecutor {
@@ -50,14 +52,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
-    java.util.List<Material> blacklist = java.util.List.of(Material.AIR, Material.LAVA, Material.WATER);
-
-    public void saveCustomConfig() {
-        try {
-            config.save(cf);
-        } catch (IOException ignored) {
-        }
-    }
+    ImmutableList<Material> blacklist = ImmutableList.of(Material.AIR, Material.LAVA, Material.WATER);
 
     @Override
     public void onDisable() {
@@ -95,7 +90,24 @@ public class Practice extends JavaPlugin implements TabExecutor {
         }
 
         Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
-        getMessenger().unregisterOutgoingPluginChannel(this);
+
+        config.set("r", null);
+        if (!playerData.isEmpty()) {
+            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
+                String key = entry.getKey();
+                CustomPlayerDataHolder value = entry.getValue();
+                config.set("r." + key + ".w", value.getWins());
+                config.set("r." + key + ".l", value.getLosses());
+                config.set("r." + key + ".c", value.getC());
+                config.set("r." + key + ".m", value.getM());
+                config.set("r." + key + ".t", value.getT());
+            }
+        }
+
+        try {
+            config.save(cf);
+        } catch (IOException ignored) {
+        }
     }
 
     LocationHolder getRandomLoc(World w) {
@@ -119,7 +131,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
     void setupHolos() {
         // Test
-        Location loc = new Location(d, 0, 0, 0);
+        Location loc = new Location(d, 0, 300, 0);
         for (int i = 0; i < 3; i++) {
             loc.setY(loc.getY() - 0.3);
             Utils.createHologram(i,
@@ -180,7 +192,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 ffaup_data.sectionIDs.add(s.getID());
             }
 
-            //setupHolos();
+            setupHolos();
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 if (Bukkit.getOnlinePlayers().size() > 0) {
                     d.getEntities().stream()
@@ -303,7 +315,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
         });
         Languages.init();
         main.expansions.guis.Utils.init();
-        main.expansions.combat.Utils.init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         d = Bukkit.getWorld("world");
@@ -326,6 +337,27 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Initializer.flat.setYaw(
                 90F
         );
-        getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+
+        if (config.contains("r")) {
+            int dataLoaded = 0;
+            for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
+                    int wins = 0;
+                    int losses = 0;
+                    int c = -1;
+                    int m = 0;
+                    int t = 0;
+                    switch (key2) {
+                        case "w" -> wins = config.getInt("r." + key + "." + key2);
+                        case "l" -> losses = config.getInt("r." + key + "." + key2);
+                        case "c" -> c = config.getInt("r." + key + "." + key2);
+                        case "m" -> m = config.getInt("r." + key + "." + key2);
+                        case "t" -> t = config.getInt("r." + key + "." + key2);
+                    }
+                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t));
+                }
+            }
+            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
     }
 }

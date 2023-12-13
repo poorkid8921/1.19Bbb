@@ -1,6 +1,5 @@
 package main.commands.chat;
 
-import main.Practice;
 import main.utils.Initializer;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
@@ -32,7 +31,7 @@ public class Msg implements CommandExecutor, TabCompleter {
         }
 
         String tn = target.getName();
-        if (Practice.config.get("r." + tn + ".m") != null && !sender.hasPermission("has.staff")) {
+        if (!Initializer.msg.contains(tn) && !sender.hasPermission("has.staff")) {
             sender.sendMessage("§7You can't send messages to this player since they've locked their messages.");
             return true;
         }

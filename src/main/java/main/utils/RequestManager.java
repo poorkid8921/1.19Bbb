@@ -1,5 +1,7 @@
 package main.utils;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.TpaRequest;
 import net.md_5.bungee.api.ChatColor;
@@ -14,8 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static main.utils.DuelUtils.formattedtype;
@@ -23,8 +23,8 @@ import static main.utils.Languages.MAIN_COLOR;
 
 @SuppressWarnings("deprecation")
 public class RequestManager {
-    public static ArrayList<TpaRequest> tpa = new ArrayList<>();
-    public static Map<String, Integer> bukkitTasks = new HashMap<>();
+    public static ObjectArrayList<TpaRequest> tpa = new ObjectArrayList<>();
+    public static Map<String, Integer> bukkitTasks = new Object2ObjectOpenHashMap<>();
     static TextComponent space = new TextComponent("  ");
     static TextComponent duelType2 = new TextComponent(" §7with ");
     static TextComponent tc = new TextComponent(" §7has requested that you duel them in ");

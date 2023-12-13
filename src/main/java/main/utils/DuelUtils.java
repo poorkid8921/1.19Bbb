@@ -1,14 +1,12 @@
 package main.utils;
 
 import main.Practice;
+import main.utils.Instances.CustomPlayerDataHolder;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.SimpleDateFormat;
@@ -16,6 +14,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import static main.expansions.duels.KitOverrider.*;
+import static main.utils.Initializer.playerData;
 import static main.utils.Languages.*;
 
 public class DuelUtils {
@@ -40,7 +39,7 @@ public class DuelUtils {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + pl.getName() + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
         Initializer.valid.add(rd);
         pl.sendMessage(TELEPORTING_BACK);
         pl.sendMessage(hi);
@@ -55,17 +54,28 @@ public class DuelUtils {
         }
 
         Bukkit.broadcastMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
-        Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
-        Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
+        CustomPlayerDataHolder D = playerData.get(rd);
+        if (D == null) {
+            playerData.put(rd, new CustomPlayerDataHolder(1, 0, 0, 0, 0));
+        } else if (D.getWins() == 0)
+            playerData.get(rd).setWins(1);
+        else
+            playerData.get(rd).incrementWins();
 
-        Initializer.p.saveCustomConfig();
+        D = playerData.get(ad);
+        if (D == null) {
+            playerData.put(ad, new CustomPlayerDataHolder(0, 1, 0, 0, 0));
+        } else if (D.getLosses() == 0)
+            playerData.get(rd).setLosses(1);
+        else
+            playerData.get(rd).incrementLosses();
     }
 
     public static void resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + rd + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + pl.getName() + ".wins") + " " + Practice.config.getInt("r." + pl.getName() + ".losses")));
+        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(p.getHealth() / 2) + " " + p.getStatistic(Statistic.PLAYER_KILLS) + " " + p.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
         Initializer.valid.add(rd);
         pl.sendMessage(TELEPORTING_BACK);
         pl.sendMessage(hi);
@@ -79,11 +89,22 @@ public class DuelUtils {
             p.getInventory().clear();
         }
 
-        e.setDeathMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
-        Practice.config.set("r." + rd + ".wins", Practice.config.getInt("r." + rd + ".wins") + 1);
-        Practice.config.set("r." + ad + ".losses", Practice.config.getInt("r." + ad + ".losses") + 1);
+        e.setDeathMessage(SECOND_COLOR + "⚔ " + ad + " §7won in a duel against " + SECOND_COLOR + rd);
+        CustomPlayerDataHolder D = playerData.get(rd);
+        if (D == null) {
+            playerData.put(rd, new CustomPlayerDataHolder(1, 0, 0, 0, 0));
+        } else if (D.getWins() == 0)
+            playerData.get(rd).setWins(1);
+        else
+            playerData.get(rd).incrementWins();
 
-        Initializer.p.saveCustomConfig();
+        D = playerData.get(ad);
+        if (D == null) {
+            playerData.put(ad, new CustomPlayerDataHolder(0, 1, 0, 0, 0));
+        } else if (D.getLosses() == 0)
+            playerData.get(rd).setLosses(1);
+        else
+            playerData.get(rd).incrementLosses();
     }
 
     public static void start(Player user, Player recipient, int type, int round, int maxi, int arena) {
@@ -382,14 +403,5 @@ public class DuelUtils {
             case 2 -> Material.DIAMOND_SWORD;
             default -> null;
         };
-    }
-
-    public static void spawnFireworks(Location loc, World w) {
-        Firework fw = (Firework) w.spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Color.WHITE).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-        fw.detonate();
     }
 }

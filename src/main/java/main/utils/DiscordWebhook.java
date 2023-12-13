@@ -1,6 +1,7 @@
 package main.utils;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
@@ -9,14 +10,13 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class DiscordWebhook {
     private final String url;
-    private final List<EmbedObject> embeds = new ArrayList<>();
+    private final List<EmbedObject> embeds = new ObjectArrayList<>();
     private String username;
     private String avatarUrl;
 
@@ -44,7 +44,7 @@ public class DiscordWebhook {
         json.put("avatar_url", this.avatarUrl);
         json.put("tts", false);
 
-        List<JSONObject> embedObjects = new ArrayList<>();
+        List<JSONObject> embedObjects = new ObjectArrayList<>();
 
         for (EmbedObject embed : this.embeds) {
             JSONObject jsonEmbed = new JSONObject();
@@ -72,7 +72,7 @@ public class DiscordWebhook {
                 jsonEmbed.put("thumbnail", jsonThumbnail);
             }
 
-            List<JSONObject> jsonFields = new ArrayList<>();
+            List<JSONObject> jsonFields = new ObjectArrayList<>();
             for (EmbedObject.Field field : fields) {
                 JSONObject jsonField = new JSONObject();
 
@@ -106,7 +106,7 @@ public class DiscordWebhook {
     }
 
     public static class EmbedObject {
-        private final List<Field> fields = new ArrayList<>();
+        private final List<Field> fields = new ObjectArrayList<>();
         private String title;
         private Color color;
         private Thumbnail thumbnail;
