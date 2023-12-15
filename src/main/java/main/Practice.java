@@ -192,55 +192,56 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 ffaup_data.sectionIDs.add(s.getID());
             }
 
-            setupHolos();
+            // Entity method <<< -\\\Packets///-
+            //setupHolos();
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                if (Bukkit.getOnlinePlayers().size() > 0) {
-                    d.getEntities().stream()
-                            .filter(r -> r instanceof EnderCrystal)
-                            .forEach(Entity::remove);
+                //if (Bukkit.getOnlinePlayers().size() > 0) {
+                d.getEntities().stream()
+                        .filter(r -> r instanceof EnderCrystal)
+                        .forEach(Entity::remove);
 
-                    if (ticked++ == 3) {
-                        if (flatstr++ == 6)
-                            flatstr = 1;
+                if (ticked++ == 3) {
+                    if (flatstr++ == 6)
+                        flatstr = 1;
 
-                        Arena.arenas.get("p_f" + flatstr).reset(10000);
-                        bannedFromflat.clear();
-                        if (ticked == 6) {
-                            ticked = 0;
+                    Arena.arenas.get("p_f" + flatstr).reset(10000);
+                    bannedFromflat.clear();
+                    if (ticked == 6) {
+                        ticked = 0;
 
-                            boolean flatresetted;
-                            boolean ffaresetted;
-                            boolean ffaupresetted;
+                        boolean flatresetted;
+                        boolean ffaresetted;
+                        boolean ffaupresetted;
+                        do {
+                            flatresetted = true;
+
                             do {
-                                flatresetted = true;
+                                ffaresetted = true;
 
                                 do {
-                                    ffaresetted = true;
+                                    ffaupresetted = true;
+                                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                        Location location = player.getLocation();
+                                        location.setY(200);
+                                        Block b = d.getBlockAt(location);
+                                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
 
-                                    do {
-                                        ffaupresetted = true;
-                                        inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                            Location location = player.getLocation();
-                                            location.setY(200);
-                                            Block b = d.getBlockAt(location);
-                                            Block b2 = d.getBlockAt(location.add(0, 1, 0));
-
-                                            b2.setType(Material.AIR, false);
-                                            b.setType(Material.AIR, false);
-                                            location.setY(d.getHighestBlockYAt(location) + 1);
-                                            player.teleportAsync(location).thenAccept(reason -> {
-                                                b.setType(Material.BARRIER, false);
-                                                b2.setType(Material.BARRIER, false);
-                                            });
+                                        b2.setType(Material.AIR, false);
+                                        b.setType(Material.AIR, false);
+                                        location.setY(d.getHighestBlockYAt(location) + 1);
+                                        player.teleportAsync(location).thenAccept(reason -> {
+                                            b.setType(Material.BARRIER, false);
+                                            b2.setType(Material.BARRIER, false);
                                         });
-                                    } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
-                                } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
-                            } while (!flat.loopyReset(flat_data) && !flatresetted);
-                        } else
-                            Arena.arenas.get("flat").reset(10000);
+                                    });
+                                } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
+                            } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
+                        } while (!flat.loopyReset(flat_data) && !flatresetted);
                     } else
                         Arena.arenas.get("flat").reset(10000);
-                }
+                } else
+                    Arena.arenas.get("flat").reset(10000);
+                //}
             }, 0L, 2400L);
         }, 240L);
 
@@ -270,7 +271,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("irename").setExecutor(new ItemRename());
-        this.getCommand("kickall").setExecutor(new Kickall());
         this.getCommand("clear").setExecutor(new Clear());
 
         this.getCommand("spawn").setExecutor(new Spawn());
@@ -354,6 +354,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         case "m" -> m = config.getInt("r." + key + "." + key2);
                         case "t" -> t = config.getInt("r." + key + "." + key2);
                     }
+
                     playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t));
                 }
             }

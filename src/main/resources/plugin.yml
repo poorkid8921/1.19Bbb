@@ -88,8 +88,6 @@ commands:
   irename:
     usage: /<command>
     aliases: [ name, iname, itemname, itemrename ]
-  kickall:
-    usage: /<command>
   clear:
     usage: /<command>
 permissions:

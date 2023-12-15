@@ -25,7 +25,7 @@ public class Initializer {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, BackHolder> back = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
-    public static Map<Integer, ArmorStand> hologramsCreated = new Object2ObjectOpenHashMap<>();
+    //public static Map<Integer, ArmorStand> hologramsCreated = new Object2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();

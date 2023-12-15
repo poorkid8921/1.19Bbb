@@ -19,7 +19,11 @@ public class MsgLock implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String p = sender.getName();
         CustomPlayerDataHolder M = playerData.get(p);
-        if (M == null || M.getM() == 0) {
+        if (M == null) {
+            sender.sendMessage(MSGLOCK1);
+            playerData.put(p, new CustomPlayerDataHolder(0, 0, 0, 1, 0));
+            msg.remove(p);
+        } else if (M.getM() == 0) {
             sender.sendMessage(MSGLOCK1);
             playerData.get(p).setM(1);
             msg.remove(p);

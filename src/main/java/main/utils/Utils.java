@@ -37,7 +37,7 @@ public class Utils {
         holo.setCustomName(text);
         holo.setCustomNameVisible(true);
         holo.setVisible(false);
-        Initializer.hologramsCreated.put(id, holo);
+        //Initializer.hologramsCreated.put(id, holo);
     }
 
     public static String translate(String text) {
@@ -98,7 +98,7 @@ public class Utils {
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Initializer.THREAD.submit(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
             DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1163543558398156871/XigQ8rIWMLG2Nh0-j-XjQdourDcvsskcehRBTXRHJMfX63_9cqD5aiDQyvg-s58uVPNj");
             webhook.setAvatarUrl(avturl);

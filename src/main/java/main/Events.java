@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.expansions.duels.Matchmaking;
 import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
 import main.utils.Languages;
 import main.utils.RequestManager;
@@ -82,16 +83,14 @@ public class Events implements Listener {
             }, 60L);
         }
 
-        Initializer.THREAD.submit(() -> {
-            RequestManager.tpa.remove(getTPArequest(playerName));
-            duel.remove(getDUELrequest(playerName));
+        RequestManager.tpa.remove(getTPArequest(playerName));
+        duel.remove(getDUELrequest(playerName));
 
-            Initializer.back.remove(playerName);
-            Initializer.lastReceived.remove(playerName);
-            Initializer.msg.remove(playerName);
-            Initializer.tpa.remove(playerName);
-            Initializer.inFFA.remove(p);
-        });
+        Initializer.back.remove(playerName);
+        Initializer.lastReceived.remove(playerName);
+        Initializer.msg.remove(playerName);
+        Initializer.tpa.remove(playerName);
+        Initializer.inFFA.remove(p);
         e.setQuitMessage(MAIN_COLOR + "← " + playerName);
     }
 
@@ -312,6 +311,7 @@ public class Events implements Listener {
         } else back.setBack(l);
 
         p.sendMessage(Languages.BACK);
+        String kp;
 
         if (killer == null || killer == p) {
             e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
@@ -324,7 +324,8 @@ public class Events implements Listener {
             });
             return;
         } else {
-            e.setDeathMessage(SECOND_COLOR + "☠ " + killer.getName() + " §7" + switch (p.getLastDamageCause().getCause()) {
+            kp = killer.getName();
+            e.setDeathMessage(SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
@@ -335,7 +336,11 @@ public class Events implements Listener {
             });
         }
 
-        switch (Practice.config.getInt("r." + killer + ".c", -1)) {
+        CustomPlayerDataHolder D = playerData.get(kp);
+        if (D == null)
+            return;
+
+        switch (D.getC()) {
             case 0 -> {
                 Location loc = l.add(0, 1, 0);
                 for (double y = 0; y <= 10; y += 0.05) {
@@ -357,11 +362,25 @@ public class Events implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
-
-        if (Practice.config.get("r." + name + ".t") == null) Initializer.tpa.add(name);
-        if (Practice.config.get("r." + name + ".m") == null) Initializer.msg.add(name);
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleportAsync(spawn);
+
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+            if (!p.isOnline())
+                return;
+
+            CustomPlayerDataHolder D = playerData.get(name);
+            if (D == null) {
+                Initializer.tpa.add(name);
+                Initializer.msg.add(name);
+            } else {
+                if (D.getT() == 0)
+                    Initializer.tpa.add(name);
+
+                if (D.getM() == 0)
+                    Initializer.msg.add(name);
+            }
+        }, 200L);
     }
 
     @EventHandler
