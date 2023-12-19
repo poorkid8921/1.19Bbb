@@ -27,8 +27,7 @@ public class TpaLock implements CommandExecutor, TabExecutor {
             sender.sendMessage(TPALOCK1);
             playerData.get(p).setT(1);
             tpa.remove(p);
-        }
-        else {
+        } else {
             sender.sendMessage(TPALOCK);
             playerData.get(p).setT(0);
             tpa.add(p);

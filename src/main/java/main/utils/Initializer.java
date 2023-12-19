@@ -5,14 +5,10 @@ import io.netty.util.internal.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.Practice;
-import main.utils.Instances.BackHolder;
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.DuelHolder;
-import main.utils.Instances.LocationHolder;
+import main.utils.Instances.*;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -25,8 +21,10 @@ public class Initializer {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, BackHolder> back = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
+    public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
     //public static Map<Integer, ArmorStand> hologramsCreated = new Object2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
+    public static Map<String, OptimizerEntry> optimizerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
@@ -41,8 +39,8 @@ public class Initializer {
     public static Location ffa;
     public static Location flat;
     public static Location spawn;
+    public static Location nethpot;
     public static Practice p;
     public static Chat chat;
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
-    public static ExecutorService THREAD = Executors.newFixedThreadPool(1);
 }

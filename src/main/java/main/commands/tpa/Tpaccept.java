@@ -60,7 +60,8 @@ public class Tpaccept implements CommandExecutor {
         }
 
         Bukkit.getScheduler().cancelTask(bukkitTasks.get(request.getSenderF()));
-        tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> tpa.remove(request));
+        tempuser.teleport(temprecipient.getLocation());
+        tpa.remove(request);
         return true;
     }
 }

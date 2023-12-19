@@ -90,6 +90,12 @@ commands:
     aliases: [ name, iname, itemname, itemrename ]
   clear:
     usage: /<command>
+  nethpot:
+    usage: /<command>
+    aliases: np
+  stats:
+    usage: /<command>
+    aliases: statistics
 permissions:
   has.staff:
     description: Is a staff member

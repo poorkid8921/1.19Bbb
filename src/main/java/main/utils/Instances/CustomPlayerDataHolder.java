@@ -1,5 +1,10 @@
 package main.utils.Instances;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class CustomPlayerDataHolder {
     private int wins;
     private int losses;
@@ -19,51 +24,11 @@ public class CustomPlayerDataHolder {
         this.t = t;
     }
 
-    public int getWins() {
-        return wins;
-    }
-
-    public void setWins(int wins) {
-        this.wins = wins;
-    }
-
     public void incrementWins() {
         this.wins++;
     }
 
-    public int getLosses() {
-        return losses;
-    }
-
-    public void setLosses(int losses) {
-        this.losses = losses;
-    }
-
     public void incrementLosses() {
         this.losses++;
-    }
-
-    public int getC() {
-        return c;
-    }
-
-    public void setC(int c) {
-        this.c = c;
-    }
-
-    public int getM() {
-        return m;
-    }
-
-    public void setM(int m) {
-        this.m = m;
-    }
-
-    public int getT() {
-        return t;
-    }
-
-    public void setT(int t) {
-        this.t = t;
     }
 }

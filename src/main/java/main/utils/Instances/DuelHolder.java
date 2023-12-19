@@ -1,21 +1,34 @@
 package main.utils.Instances;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class DuelHolder {
     private final String sender;
     private final String receiver;
+    @Getter
     private final int type;
+    @Getter
     private final int maxrounds;
-    private final long starttime;
+    @Getter
+    private final long start;
+    @Getter
     private final int arena;
+    @Getter
     private final int maxPlayers;
+    @Getter
+    @Setter
     private int rounds;
+    @Getter
+    @Setter
     private int red;
+    @Getter
+    @Setter
     private int blue;
 
-    public DuelHolder(String sender, String reciever, int type, int maxrounds, int rounds, int sr, int sb, long starttime, int arena, int maxPlayers) {
+    public DuelHolder(String sender, String reciever, int type, int maxrounds, int rounds, int sr, int sb, long start, int arena, int maxPlayers) {
         this.sender = sender;
         this.receiver = reciever;
         this.type = type;
@@ -23,7 +36,7 @@ public class DuelHolder {
         this.red = sr;
         this.blue = sb;
         this.maxrounds = maxrounds;
-        this.starttime = starttime;
+        this.start = start;
         this.arena = arena;
         this.maxPlayers = maxPlayers;
     }
@@ -38,49 +51,5 @@ public class DuelHolder {
 
     public String getReceiver() {
         return receiver;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public int getRounds() {
-        return rounds;
-    }
-
-    public void setRounds(int i) {
-        this.rounds = i;
-    }
-
-    public int getRed() {
-        return red;
-    }
-
-    public void setRed(int i) {
-        this.red = i;
-    }
-
-    public int getBlue() {
-        return blue;
-    }
-
-    public void setBlue(int i) {
-        this.blue = i;
-    }
-
-    public int getMaxrounds() {
-        return maxrounds;
-    }
-
-    public long getStart() {
-        return starttime;
-    }
-
-    public int getArena() {
-        return arena;
-    }
-
-    public int getMaxPlayers() {
-        return maxPlayers;
     }
 }

@@ -1,6 +1,8 @@
 package main;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.google.common.collect.ImmutableList;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
 import main.commands.chat.Msg;
 import main.commands.chat.MsgLock;
@@ -15,6 +17,9 @@ import main.expansions.duels.commands.Duel;
 import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
+import main.expansions.optimizer.crystal.AnimationEvent;
+import main.expansions.optimizer.crystal.InteractionEvent;
+import main.expansions.optimizer.crystal.LastPacketEvent;
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.LocationHolder;
@@ -43,7 +48,6 @@ import java.util.Map;
 import static main.utils.Initializer.*;
 import static main.utils.Languages.MAIN_COLOR;
 
-@SuppressWarnings("deprecation")
 public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
@@ -53,62 +57,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
     int flatstr = 1;
     int ticked = 0;
     ImmutableList<Material> blacklist = ImmutableList.of(Material.AIR, Material.LAVA, Material.WATER);
-
-    @Override
-    public void onDisable() {
-        long d = new Date().getTime();
-        int x = 0;
-        int y = 0;
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/stats/").listFiles()) {
-            if (d - p.lastModified() > 6.048e+8) {
-                x++;
-                p.delete();
-            }
-        }
-
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/region/").listFiles()) {
-            if (d - p.lastModified() > 6.048e+8) {
-                y++;
-                p.delete();
-            }
-        }
-
-        for (File p : new File(Bukkit.getWorld("world_the_end")
-                .getWorldFolder()
-                .getAbsolutePath() + "/DIM1/").listFiles()) {
-            p.delete();
-        }
-
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/entities/").listFiles()) {
-            p.delete();
-        }
-
-        Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
-
-        config.set("r", null);
-        if (!playerData.isEmpty()) {
-            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
-                String key = entry.getKey();
-                CustomPlayerDataHolder value = entry.getValue();
-                config.set("r." + key + ".w", value.getWins());
-                config.set("r." + key + ".l", value.getLosses());
-                config.set("r." + key + ".c", value.getC());
-                config.set("r." + key + ".m", value.getM());
-                config.set("r." + key + ".t", value.getT());
-            }
-        }
-
-        try {
-            config.save(cf);
-        } catch (IOException ignored) {
-        }
-    }
 
     LocationHolder getRandomLoc(World w) {
         LocationHolder loc = null;
@@ -141,6 +89,15 @@ public class Practice extends JavaPlugin implements TabExecutor {
     }
 
     @Override
+    public void onLoad() {
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().getSettings()
+                .checkForUpdates(false)
+                .reEncodeByDefault(false);
+        PacketEvents.getAPI().load();
+    }
+
+    @Override
     public void onEnable() {
         df = getDataFolder();
         cf = new File(df, "data.yml");
@@ -149,18 +106,23 @@ public class Practice extends JavaPlugin implements TabExecutor {
         p = this;
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            Bukkit.getLogger().warning("Started population thread of Overworld's RTP");
+            Bukkit.getLogger().warning("Started population of RTPs...");
             for (int i = 0; i < 100; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> overworldRTP.add(getRandomLoc(d)),
                         5L);
             }
-            Bukkit.getLogger().warning("Started population thread of End's RTP");
+
             for (int i = 0; i < 100; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> endRTP.add(getRandomLoc(d)),
                         5L);
             }
+
+            PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
+            PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
+            PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
+            PacketEvents.getAPI().init();
 
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
@@ -273,9 +235,12 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("irename").setExecutor(new ItemRename());
         this.getCommand("clear").setExecutor(new Clear());
 
+        this.getCommand("stats").setExecutor(new Stats());
+
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("ffa").setExecutor(new Ffa());
         this.getCommand("flat").setExecutor(new Flat());
+        this.getCommand("nethpot").setExecutor(new Nethpot());
 
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
@@ -331,6 +296,10 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 0.5,
                 86,
                 0.5);
+        Initializer.nethpot = new Location(d,
+                0.5,
+                86,
+                0.5);
         Initializer.spawn.setYaw(
                 90F
         );
@@ -359,6 +328,68 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 }
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        PacketEvents.getAPI().terminate();
+
+        long d = new Date().getTime();
+        int x = 0;
+        int y = 0;
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/stats/").listFiles()) {
+            if (d - p.lastModified() > 6.048e+8) {
+                x++;
+                p.delete();
+            }
+        }
+
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/region/").listFiles()) {
+            if (d - p.lastModified() > 6.048e+8) {
+                y++;
+                p.delete();
+            }
+        }
+
+        for (File p : new File(Bukkit.getWorld("world_the_end")
+                .getWorldFolder()
+                .getAbsolutePath() + "/DIM1/").listFiles()) {
+            p.delete();
+        }
+
+        for (File p : new File(Bukkit.getWorld("world")
+                .getWorldFolder()
+                .getAbsolutePath() + "/entities/").listFiles()) {
+            p.delete();
+        }
+
+        Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
+
+        config.set("r", null);
+        if (!playerData.isEmpty()) {
+            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
+                CustomPlayerDataHolder value = entry.getValue();
+
+                if (value.getWins() == 0 && value.getLosses() == 0 && value.getC() == 0 && value.getM() == 0 && value.getT() == 0)
+                    continue;
+
+                String key = entry.getKey();
+                config.set("r." + key + ".w", value.getWins());
+                config.set("r." + key + ".l", value.getLosses());
+                config.set("r." + key + ".c", value.getC());
+                config.set("r." + key + ".m", value.getM());
+                config.set("r." + key + ".t", value.getT());
+            }
+        }
+
+        try {
+            config.save(cf);
+        } catch (IOException ignored) {
         }
     }
 }

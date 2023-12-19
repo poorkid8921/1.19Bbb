@@ -1,5 +1,6 @@
 package main;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.expansions.duels.Matchmaking;
@@ -7,17 +8,20 @@ import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
+import main.utils.Instances.OptimizerEntry;
 import main.utils.Languages;
 import main.utils.RequestManager;
 import main.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -41,6 +45,19 @@ public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
 
     @EventHandler
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
+            crystalsToBeOptimized.put(event.getEntity().getEntityId(),
+                    event.getEntity().getLocation());
+    }
+
+    @EventHandler
+    public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+    }
+
+    @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
         e.setCancelled(teams.containsKey(e.getPlayer().getName()));
     }
@@ -62,6 +79,7 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String playerName = p.getName();
 
+        optimizerData.remove(playerName);
         if (Initializer.teams.containsKey(playerName)) {
             DuelHolder tpr = getPlayerDuel(playerName);
             ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
@@ -82,7 +100,6 @@ public class Events implements Listener {
                 pw.teleportAsync(Initializer.spawn);
             }, 60L);
         }
-
         RequestManager.tpa.remove(getTPArequest(playerName));
         duel.remove(getDUELrequest(playerName));
 
@@ -365,22 +382,18 @@ public class Events implements Listener {
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleportAsync(spawn);
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-            if (!p.isOnline())
-                return;
-
-            CustomPlayerDataHolder D = playerData.get(name);
-            if (D == null) {
+        optimizerData.put(name, new OptimizerEntry());
+        CustomPlayerDataHolder D = playerData.get(name);
+        if (D == null) {
+            Initializer.tpa.add(name);
+            Initializer.msg.add(name);
+        } else {
+            if (D.getT() == 0)
                 Initializer.tpa.add(name);
-                Initializer.msg.add(name);
-            } else {
-                if (D.getT() == 0)
-                    Initializer.tpa.add(name);
 
-                if (D.getM() == 0)
-                    Initializer.msg.add(name);
-            }
-        }, 200L);
+            if (D.getM() == 0)
+                Initializer.msg.add(name);
+        }
     }
 
     @EventHandler
