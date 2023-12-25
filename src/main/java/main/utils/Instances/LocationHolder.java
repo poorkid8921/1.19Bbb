@@ -1,21 +1,18 @@
 package main.utils.Instances;
 
+import lombok.Getter;
+
+@Getter
 public class LocationHolder {
-    private final int[] xyz;
+    private final int x;
+    private final int y;
+    private final int z;
 
-    public LocationHolder(int[] xyz) {
-        this.xyz = xyz;
-    }
-
-    public int getX() {
-        return xyz[0];
-    }
-
-    public int getY() {
-        return xyz[1];
-    }
-
-    public int getZ() {
-        return xyz[2];
+    public LocationHolder(int x,
+                          int y,
+                          int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 }

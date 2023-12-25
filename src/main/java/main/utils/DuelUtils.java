@@ -55,20 +55,16 @@ public class DuelUtils {
 
         Bukkit.broadcastMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
         CustomPlayerDataHolder D = playerData.get(rd);
-        if (D == null) {
-            playerData.put(rd, new CustomPlayerDataHolder(1, 0, 0, 0, 0));
-        } else if (D.getWins() == 0)
-            playerData.get(rd).setWins(1);
+        if (D.getWins() == 0)
+            D.setWins(1);
         else
-            playerData.get(rd).incrementWins();
+            D.incrementWins();
 
         D = playerData.get(ad);
-        if (D == null) {
-            playerData.put(ad, new CustomPlayerDataHolder(0, 1, 0, 0, 0));
-        } else if (D.getLosses() == 0)
-            playerData.get(rd).setLosses(1);
+        if (D.getLosses() == 0)
+            D.setLosses(1);
         else
-            playerData.get(rd).incrementLosses();
+            D.incrementLosses();
     }
 
     public static void resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
@@ -91,20 +87,16 @@ public class DuelUtils {
 
         e.setDeathMessage(SECOND_COLOR + "⚔ " + ad + " §7won in a duel against " + SECOND_COLOR + rd);
         CustomPlayerDataHolder D = playerData.get(rd);
-        if (D == null) {
-            playerData.put(rd, new CustomPlayerDataHolder(1, 0, 0, 0, 0));
-        } else if (D.getWins() == 0)
-            playerData.get(rd).setWins(1);
+        if (D.getWins() == 0)
+            D.setWins(1);
         else
-            playerData.get(rd).incrementWins();
+            D.incrementWins();
 
         D = playerData.get(ad);
-        if (D == null) {
-            playerData.put(ad, new CustomPlayerDataHolder(0, 1, 0, 0, 0));
-        } else if (D.getLosses() == 0)
-            playerData.get(rd).setLosses(1);
+        if (D.getLosses() == 0)
+            D.setLosses(1);
         else
-            playerData.get(rd).incrementLosses();
+            D.incrementLosses();
     }
 
     public static void start(Player user, Player recipient, int type, int round, int maxi, int arena) {

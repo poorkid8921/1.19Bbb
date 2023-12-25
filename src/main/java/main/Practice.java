@@ -9,6 +9,7 @@ import main.commands.chat.MsgLock;
 import main.commands.chat.Reply;
 import main.commands.ess.*;
 import main.commands.tpa.*;
+import main.expansions.AntiCheat;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
 import main.expansions.arenas.Section;
@@ -17,15 +18,14 @@ import main.expansions.duels.commands.Duel;
 import main.expansions.duels.commands.DuelAccept;
 import main.expansions.duels.commands.DuelDeny;
 import main.expansions.duels.commands.Event;
-import main.expansions.optimizer.crystal.AnimationEvent;
-import main.expansions.optimizer.crystal.InteractionEvent;
-import main.expansions.optimizer.crystal.LastPacketEvent;
+import main.expansions.optimizer.AnimationEvent;
+import main.expansions.optimizer.InteractionEvent;
+import main.expansions.optimizer.LastPacketEvent;
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.LocationHolder;
 import main.utils.Languages;
 import main.utils.TabTPA;
-import main.utils.Utils;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -41,18 +41,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
-import static main.utils.Languages.MAIN_COLOR;
 
 public class Practice extends JavaPlugin implements TabExecutor {
     public static File df;
     public static FileConfiguration config;
     public static World d;
     public static World d0;
+    public static int teamIndex = 0;
     private static File cf;
     int flatstr = 1;
     int ticked = 0;
@@ -69,23 +70,13 @@ public class Practice extends JavaPlugin implements TabExecutor {
             if (boundZ > 5000)
                 boundZ = -boundZ;
 
+            w.getChunkAt(boundX, boundZ).load(true);
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid() && !blacklist.contains(b.getType()))
-                loc = new LocationHolder(new int[]{boundX, b.getY() + 1, boundZ});
+                loc = new LocationHolder(boundX, b.getY() + 1, boundZ);
         }
 
         return loc;
-    }
-
-    void setupHolos() {
-        // Test
-        Location loc = new Location(d, 0, 300, 0);
-        for (int i = 0; i < 3; i++) {
-            loc.setY(loc.getY() - 0.3);
-            Utils.createHologram(i,
-                    MAIN_COLOR + "Test",
-                    loc);
-        }
     }
 
     @Override
@@ -99,30 +90,50 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onEnable() {
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update((System.getenv("COMPUTERNAME") +
+                    System.getProperty("user.name") +
+                    System.getenv("PROCESSOR_IDENTIFIER") +
+                    System.getenv("PROCESSOR_LEVEL"))
+                    .getBytes());
+            StringBuilder sb = new StringBuilder();
+            byte[] md5Digested = md5.digest();
+
+            for (byte b : md5Digested) {
+                String hex = Integer.toHexString(0xff & b);
+                sb.append(hex.length() == 1 ? '0' : hex);
+            }
+
+            String hwid = sb.toString();
+            Bukkit.getLogger().info("Your HWID is: " + hwid);
+            if (!hwid.equals("a547c78589be23b1c33acb5244e0c6fd")) {
+                this.setEnabled(false);
+                return;
+            }
+        } catch (Exception e) {
+            this.setEnabled(false);
+            return;
+        }
+
         df = getDataFolder();
         cf = new File(df, "data.yml");
         config = YamlConfiguration.loadConfiguration(cf);
-        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         p = this;
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
             Bukkit.getLogger().warning("Started population of RTPs...");
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 16; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> overworldRTP.add(getRandomLoc(d)),
                         5L);
             }
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 16; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> endRTP.add(getRandomLoc(d)),
                         5L);
             }
-
-            PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
-            PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
-            PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-            PacketEvents.getAPI().init();
 
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
@@ -154,8 +165,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 ffaup_data.sectionIDs.add(s.getID());
             }
 
-            // Entity method <<< -\\\Packets///-
-            //setupHolos();
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 //if (Bukkit.getOnlinePlayers().size() > 0) {
                 d.getEntities().stream()
@@ -205,7 +214,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     Arena.arenas.get("flat").reset(10000);
                 //}
             }, 0L, 2400L);
-        }, 240L);
+        }, 2400L);
 
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
@@ -257,6 +266,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("tpall").setExecutor(new TeleportAll());
 
+        this.getCommand("setrole").setExecutor(new SetRole());
+
         this.getCommand("msg").setTabCompleter(new TabMSG());
         this.getCommand("tpa").setTabCompleter(new TabTPA());
         this.getCommand("tpaccept").setTabCompleter(new TabTPA());
@@ -280,6 +291,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
         });
         Languages.init();
         main.expansions.guis.Utils.init();
+        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         d = Bukkit.getWorld("world");
@@ -310,21 +326,24 @@ public class Practice extends JavaPlugin implements TabExecutor {
         if (config.contains("r")) {
             int dataLoaded = 0;
             for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                String k = String.valueOf(teamIndex++);
                 for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
                     int wins = 0;
                     int losses = 0;
                     int c = -1;
                     int m = 0;
                     int t = 0;
+                    int r = 0;
                     switch (key2) {
                         case "w" -> wins = config.getInt("r." + key + "." + key2);
                         case "l" -> losses = config.getInt("r." + key + "." + key2);
                         case "c" -> c = config.getInt("r." + key + "." + key2);
                         case "m" -> m = config.getInt("r." + key + "." + key2);
                         case "t" -> t = config.getInt("r." + key + "." + key2);
+                        case "r" -> r = config.getInt("r." + key + "." + key2);
                     }
 
-                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t));
+                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, k, r));
                 }
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");

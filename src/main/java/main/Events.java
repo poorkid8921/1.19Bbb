@@ -1,20 +1,26 @@
 package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.expansions.bungee.HandShake;
 import main.expansions.duels.Matchmaking;
+import main.expansions.scoreboard.protocol.ChannelInjector;
+import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
+import main.expansions.scoreboard.util.buffer.NetOutput;
 import main.utils.Initializer;
 import main.utils.Instances.BackHolder;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
-import main.utils.Instances.OptimizerEntry;
+import main.utils.Instances.WorldLocationHolder;
 import main.utils.Languages;
 import main.utils.RequestManager;
 import main.utils.Utils;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -36,19 +42,40 @@ import org.bukkit.persistence.PersistentDataType;
 import static main.expansions.guis.Utils.*;
 import static main.utils.DuelUtils.*;
 import static main.utils.Initializer.*;
-import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.Languages.SECOND_COLOR;
+import static main.utils.Languages.*;
 import static main.utils.RequestManager.*;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
 
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onHandshake(PlayerHandshakeEvent e) {
+        HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
+
+        if (decoded == null) {
+            String ip = e.getOriginalSocketAddressHostname() + " - ";
+            e.setFailMessage("Server closed");
+            HandShake.Success data = (HandShake.Success) decoded;
+            Bukkit.getLogger().warning("ip = " + ip + "; serverHost = " + data.serverHostname() + "; socketAddress = " + data.socketAddressHostname());
+            e.setFailed(true);
+            return;
+        }
+
+        HandShake.Success data = (HandShake.Success) decoded;
+        e.setServerHostname(data.serverHostname());
+        e.setSocketAddressHostname(data.socketAddressHostname());
+        e.setUniqueId(data.uniqueId());
+        e.setPropertiesJson(data.propertiesJson());
+    }
+
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            crystalsToBeOptimized.put(event.getEntity().getEntityId(),
-                    event.getEntity().getLocation());
+            crystalsToBeOptimized.put(event.getEntity()
+                            .getEntityId(),
+                    event.getEntity()
+                            .getLocation());
     }
 
     @EventHandler
@@ -64,8 +91,7 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
-        Player p = e.getPlayer();
-        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") + p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
+        e.setFormat(e.getPlayer().getDisplayName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -79,7 +105,6 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String playerName = p.getName();
 
-        optimizerData.remove(playerName);
         if (Initializer.teams.containsKey(playerName)) {
             DuelHolder tpr = getPlayerDuel(playerName);
             ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
@@ -209,7 +234,6 @@ public class Events implements Listener {
         } else e.getDrops().clear();
 
         Player killer = p.getKiller();
-
         World w = p.getWorld();
         if (Initializer.teams.containsKey(name)) {
             e.setCancelled(true);
@@ -324,8 +348,26 @@ public class Events implements Listener {
 
         BackHolder back = Initializer.back.getOrDefault(name, null);
         if (back == null) {
-            Initializer.back.put(name, new BackHolder(l));
-        } else back.setBack(l);
+            Initializer.back.put(name, new BackHolder(
+                    new WorldLocationHolder(
+                            (int) l.getX(),
+                            (int) l.getY(),
+                            (int) l.getZ(),
+                            l.getWorld())
+                    )
+            );
+        } else back.setBack(
+                new WorldLocationHolder(
+                (int) l.getX(),
+                (int) l.getY(),
+                (int) l.getZ(),
+                l.getWorld()
+                )
+        );
+
+        Utils.sendPacket(p, Utils.createTeamPacket(2, 3, playerData.get(name).getK(), p, GSON.serialize(MiniMessage.miniMessage()
+                .deserialize("<#f54254>☠ <reset>ᴅᴇᴀᴛʜs <#f54254>" + p.getStatistic(Statistic.DEATHS))
+        )));
 
         p.sendMessage(Languages.BACK);
         String kp;
@@ -351,6 +393,9 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
                 default -> "suicided";
             });
+            Utils.sendPacket(p, Utils.createTeamPacket(2, 2, playerData.get(kp).getK(), killer, GSON.serialize(MiniMessage.miniMessage()
+                    .deserialize("<#f54254>⚔ <reset>ᴋɪʟʟs  <#f54254>" + killer.getStatistic(Statistic.PLAYER_KILLS))
+            )));
         }
 
         CustomPlayerDataHolder D = playerData.get(kp);
@@ -380,19 +425,66 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String name = p.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
-        p.teleportAsync(spawn);
+        p.teleport(spawn);
 
-        optimizerData.put(name, new OptimizerEntry());
+        String teamName = String.valueOf(Practice.teamIndex++);
+        // #create
+        Utils.sendPacket(p, Utils.getPacket(p, 0, teamName));
+
+        // #addTeam
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 0, teamName, p, Languages.BLANK));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 0));
+
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 1, teamName, p, GSON.serialize(MiniMessage.miniMessage()
+                .deserialize("<gradient:#f54254:#d4335b>" + name + "</gradient>"))));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 1));
+
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 2, teamName, p, GSON.serialize(MiniMessage.miniMessage()
+                .deserialize("<#f54254>⚔ <reset>ᴋɪʟʟs  <#f54254>" + p.getStatistic(Statistic.PLAYER_KILLS))
+        )));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 2));
+
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 3, teamName, p, GSON.serialize(MiniMessage.miniMessage()
+                .deserialize("<#f54254>☠ <reset>ᴅᴇᴀᴛʜs <#f54254>" + p.getStatistic(Statistic.DEATHS))
+        )));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 3));
+
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 4, teamName, p, Languages.BLANK));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 4));
+
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 5, teamName, p, Languages.SUBTITLE));
+        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 5));
+
+        // #display
+        ByteBuf buf = ChannelInjector.IMP.getChannel(p).alloc().buffer();
+        NetOutput output = new ByteBufNetOutput(buf);
+        output.writeVarInt(0x51);
+        output.writeByte(1);
+        output.writeString(teamName);
+        Utils.sendPacket(p, buf);
+
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, teamName, 0));
         } else {
             if (D.getT() == 0)
                 Initializer.tpa.add(name);
-
             if (D.getM() == 0)
                 Initializer.msg.add(name);
+
+            switch (D.getR()) {
+                case 1 -> p.setDisplayName(PREFIX_MEDIA + name);
+                case 2 -> p.setDisplayName(PREFIX_BOOSTER + name);
+                case 3 -> p.setDisplayName(PREFIX_OWNER + name);
+                case 4 -> p.setDisplayName(PREFIX_MANAGER + name);
+                case 5 -> p.setDisplayName(PREFIX_ADMIN + name);
+                case 6 -> p.setDisplayName(PREFIX_MOD + name);
+                case 7 -> p.setDisplayName(PREFIX_JRMOD + name);
+                case 8 -> p.setDisplayName(PREFIX_HELPER + name);
+                case 9 -> p.setDisplayName(PREFIX_THELPER + name);
+            }
         }
     }
 

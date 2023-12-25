@@ -1,6 +1,5 @@
 package main.commands;
 
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.Command;

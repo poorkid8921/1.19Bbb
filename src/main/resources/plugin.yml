@@ -2,6 +2,9 @@ name: AestheticNetwork
 version: '${project.version}'
 main: main.Practice
 api-version: 1.18
+softdepend:
+  - ViaVersion
+  - ViaBackwards
 
 commands:
   spawn:
@@ -96,6 +99,8 @@ commands:
   stats:
     usage: /<command>
     aliases: statistics
+  setrole:
+    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

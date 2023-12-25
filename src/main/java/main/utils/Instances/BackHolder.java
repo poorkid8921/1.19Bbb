@@ -2,14 +2,13 @@ package main.utils.Instances;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Location;
 
 public class BackHolder {
     @Setter
     @Getter
-    private Location back;
+    private WorldLocationHolder back;
 
-    public BackHolder(Location back) {
+    public BackHolder(WorldLocationHolder back) {
         this.back = back;
     }
 }

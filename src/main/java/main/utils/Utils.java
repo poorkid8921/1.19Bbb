@@ -1,13 +1,14 @@
 package main.utils;
 
-import main.Practice;
-import main.utils.Instances.CustomPlayerDataHolder;
+import io.netty.buffer.ByteBuf;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import main.expansions.scoreboard.protocol.ChannelInjector;
+import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
+import main.expansions.scoreboard.util.buffer.NetOutput;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -20,25 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static main.utils.Initializer.playerData;
-import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.Languages.SECOND_COLOR;
+import static main.utils.Languages.*;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-
-    public static void createHologram(int id,
-                                      String text,
-                                      Location loc) {
-        ArmorStand holo = (ArmorStand) Practice.d.spawnEntity(loc, EntityType.ARMOR_STAND);
-        holo.setGravity(false);
-        holo.setCanPickupItems(false);
-        holo.setCustomName(text);
-        holo.setCustomNameVisible(true);
-        holo.setVisible(false);
-        //Initializer.hologramsCreated.put(id, holo);
-    }
 
     public static String translate(String text) {
         Matcher matcher = HEX_PATTERN.matcher(text);
@@ -63,40 +51,16 @@ public class Utils {
     public static void killeffect(Player p, int toset, String fancy) {
         p.closeInventory();
         String pn = p.getName();
-        CustomPlayerDataHolder D = playerData.get(pn);
-
-        if (toset == -1 && D != null)
-            playerData.get(pn).setC(-1);
-        else if (D == null)
-            playerData.put(pn, new CustomPlayerDataHolder(0, 0, toset, 0, 0));
-        else
-            playerData.get(pn).setC(toset);
+        playerData.get(pn).setC(toset);
 
         p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
                 "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
     }
 
-    public static ItemStack createItemStack(Material mat, String display, List<String> lore) {
-        ItemStack ie = new ItemStack(mat, 1);
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
-    }
-
-    public static ItemStack createItemStack(ItemStack ie, String display, List<String> lore) {
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
-    }
-
     public static void report(Player pp, String report, String reason) {
-        String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
-                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
+        //String d = pp.getDisplayName();
+        //Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
+        //        report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
@@ -117,6 +81,23 @@ public class Utils {
         pp.sendMessage("§7Successfully submitted the report.");
     }
 
+    public static ItemStack createItemStack(Material mat, String display, List<String> lore) {
+        ItemStack ie = new ItemStack(mat, 1);
+        ItemMeta iem = ie.getItemMeta();
+        iem.setDisplayName(display);
+        iem.setLore(lore);
+        ie.setItemMeta(iem);
+        return ie;
+    }
+
+    public static ItemStack createItemStack(ItemStack ie, String display, List<String> lore) {
+        ItemMeta iem = ie.getItemMeta();
+        iem.setDisplayName(display);
+        iem.setLore(lore);
+        ie.setItemMeta(iem);
+        return ie;
+    }
+
     public static ItemStack getHead(String player) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
         SkullMeta skull = (SkullMeta) item.getItemMeta();
@@ -124,5 +105,68 @@ public class Utils {
         skull.setOwner(player);
         item.setItemMeta(skull);
         return item;
+    }
+
+    public static ByteBuf getPacket(Player player,
+                                    int mode,
+                                    String a) {
+        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+
+        NetOutput output = new ByteBufNetOutput(buf);
+        output.writeVarInt(0x58);
+        output.writeString(a);
+        output.writeByte(mode);
+
+        output.writeString(TITLE);
+        output.writeVarInt(0);
+        return buf;
+    }
+
+    @SneakyThrows
+    public static void sendPacket(Player player, ByteBuf packet) {
+        ChannelInjector.IMP.sendPacket(player, packet);
+    }
+
+    public static ByteBuf createScorePacket(@NonNull Player player, int action, String objectiveName, int index) {
+        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+        NetOutput output = new ByteBufNetOutput(buf);
+
+        output.writeVarInt(0x5B);
+        output.writeString(ChatColor.values()[index].toString());
+        output.writeVarInt(action);
+        output.writeString(objectiveName);
+
+        if (action != 1) {
+            output.writeVarInt(0);
+        }
+        return buf;
+    }
+
+    @SneakyThrows
+    public static ByteBuf createTeamPacket(int mode, int index,
+                                           @NonNull String teamName,
+                                           Player player,
+                                           String text) {
+        String teamEntry = ChatColor.values()[index].toString();
+        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+        NetOutput packet = new ByteBufNetOutput(buf);
+        packet.writeVarInt(0x5A);
+
+        packet.writeString(teamName);
+        packet.writeByte(mode);
+
+        packet.writeString("{\"text\":\"\"}");
+        packet.writeByte(10);
+        packet.writeString("always");
+        packet.writeString("always");
+        packet.writeVarInt(21);
+        packet.writeString(text);
+        packet.writeString("{\"text\":\"\"}");
+
+        if (mode == 0) {
+            packet.writeVarInt(1);
+            packet.writeString(teamEntry);
+        }
+        return buf;
     }
 }

@@ -23,7 +23,7 @@ public class Matchmaking {
             }
             Player j = Bukkit.getPlayer(op.get().getKey());
             j.sendMessage("§7You are now in a duel against " + MAIN_COLOR + n);
-            p.sendMessage("§7You are now in a duel against " + MAIN_COLOR + j.getName());
+            p.sendMessage("§7You are now in a duel against " + MAIN_COLOR + j.getDisplayName());
             start(p, j, gm, 1, 1, check + 1);
             return;
         }
