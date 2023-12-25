@@ -1,5 +1,6 @@
 package main.utils;
 
+import main.Economy;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -44,8 +45,5 @@ public class Languages {
         GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
         MAIN_COLOR = Utils.translateA("#fc282f");
         SECOND_COLOR = Utils.translateA("#d6a7eb");
-
-        Initializer.spawn = new Location(Bukkit.getWorld("world"),
-                -0.5, 142.06250, 0.5);
     }
 }

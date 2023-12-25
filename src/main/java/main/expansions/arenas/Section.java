@@ -3,7 +3,8 @@ package main.expansions.arenas;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Section {
     private final Arena parent;
@@ -39,27 +40,24 @@ public class Section {
             resetLocationIndex = 0;
         }
 
-        int count = 0;
+        AtomicInteger count = new AtomicInteger(0);
         World ww = getStart().getWorld();
 
         while (resetTypeIndex < blockTypes.length) {
             short type = this.blockTypes[this.resetTypeIndex];
             short amount = this.blockAmounts[this.resetTypeIndex];
-
             Material data = this.getParent().getKeys()[type];
 
             while (resetCurrentTypeIndex < amount) {
                 Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
-
-                Block block = getStart().add(offset).getBlock();
+                getStart().add(offset).getBlock().setType(data, false);
                 getStart().subtract(offset);
-                block.setType(data, false);
 
-                count++;
+                count.getAndIncrement();
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
 
-                if (max > 0 && count > max) return false;
+                if (max > 0 && count.get() > max) return false;
             }
 
             resetCurrentTypeIndex = 0;

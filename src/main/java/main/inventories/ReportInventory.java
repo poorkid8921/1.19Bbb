@@ -1,6 +1,6 @@
 package main.inventories;
 
-import main.utils.InventoryInstanceReport;
+import main.utils.instances.InventoryInstanceReport;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

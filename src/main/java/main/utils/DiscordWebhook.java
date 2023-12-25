@@ -124,6 +124,7 @@ public class DiscordWebhook {
             this.color = color;
             return this;
         }
+
         public Thumbnail getThumbnail() {
             return thumbnail;
         }

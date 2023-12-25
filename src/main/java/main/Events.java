@@ -1,33 +1,35 @@
 package main;
 
-import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
+import main.expansions.bungee.HandShake;
 import main.utils.Initializer;
-import main.utils.InventoryInstanceReport;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.InventoryInstanceReport;
 import main.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Wither;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.awt.*;
-
-import static main.utils.Utils.isSuspectedScanPacket;
+import static main.utils.Initializer.crystalsToBeOptimized;
+import static main.utils.Initializer.playerData;
 import static main.utils.Utils.spawnFireworks;
 
 @SuppressWarnings("deprecation")
@@ -38,7 +40,7 @@ public class Events implements Listener {
     ItemStack chestplate = new ItemStack(Material.IRON_CHESTPLATE);
     ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
     ItemStack boots = new ItemStack(Material.IRON_BOOTS);
-    ItemStack bread = new ItemStack(Material.BREAD, 16);
+    ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 16);
     ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
 
     public Events() {
@@ -68,6 +70,41 @@ public class Events implements Listener {
         boots.addEnchantment(Enchantment.MENDING, 1);
     }
 
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onHandshake(PlayerHandshakeEvent e) {
+        HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
+
+        if (decoded == null) {
+            String ip = e.getOriginalSocketAddressHostname() + " - ";
+            e.setFailMessage("Server closed");
+            HandShake.Success data = (HandShake.Success) decoded;
+            Bukkit.getLogger().warning("ip = " + ip + "; serverHost = " + data.serverHostname() + "; socketAddress = " + data.socketAddressHostname());
+            e.setFailed(true);
+            return;
+        }
+
+        HandShake.Success data = (HandShake.Success) decoded;
+        e.setServerHostname(data.serverHostname());
+        e.setSocketAddressHostname(data.socketAddressHostname());
+        e.setUniqueId(data.uniqueId());
+        e.setPropertiesJson(data.propertiesJson());
+    }
+
+    @EventHandler
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
+            crystalsToBeOptimized.put(event.getEntity()
+                            .getEntityId(),
+                    event.getEntity()
+                            .getLocation());
+    }
+
+    @EventHandler
+    public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+    }
+
     @EventHandler
     private void onInteract(PlayerInteractEvent e) {
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) ||
@@ -87,20 +124,6 @@ public class Events implements Listener {
         Initializer.lastReceived.remove(name);
         Initializer.msg.remove(name);
         Initializer.tpa.remove(name);
-    }
-
-    @EventHandler
-    private void onAsyncCommandTabComplete(AsyncTabCompleteEvent event) {
-        event.setCancelled(isSuspectedScanPacket(event.getBuffer()));
-    }
-
-    @EventHandler
-    public void onChat(AsyncPlayerChatEvent e) {
-        Player p = e.getPlayer();
-
-        String name = p.getName();
-        if (Initializer.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis()) e.setCancelled(true);
-        else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500);
     }
 
     @EventHandler
@@ -163,7 +186,7 @@ public class Events implements Listener {
         if (!p.hasPlayedBefore()) {
             p.getInventory().addItem(sword);
             p.getInventory().addItem(pick);
-            p.getInventory().addItem(bread);
+            p.getInventory().addItem(gap);
             p.getInventory().setHelmet(helmet);
             p.getInventory().setChestplate(chestplate);
             p.getInventory().setLeggings(leggings);
@@ -173,7 +196,22 @@ public class Events implements Listener {
         }
 
         String name = p.getName();
-        if (Economy.cc.get("r." + name + ".t") == null) Initializer.tpa.add(name);
-        if (Economy.cc.get("r." + name + ".m") == null) Initializer.msg.add(name);
+        CustomPlayerDataHolder D = playerData.get(name);
+        if (D == null) {
+            Initializer.tpa.add(name);
+            Initializer.msg.add(name);
+            playerData.put(name, new CustomPlayerDataHolder(0, 0));
+        } else {
+            if (D.getT() == 0)
+                Initializer.tpa.add(name);
+
+            if (D.getM() == 0)
+                Initializer.msg.add(name);
+        }
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent e) {
+        e.setRespawnLocation(Initializer.spawn);
     }
 }

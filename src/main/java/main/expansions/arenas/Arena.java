@@ -122,7 +122,6 @@ public class Arena {
             else sectionsZ++;
 
             sectionArea = (width / sectionsX) * (length / sectionsZ);
-
             x = !x;
         }
 
@@ -149,7 +148,6 @@ public class Arena {
         }
 
         Arena arena = new Arena(name, c1, c2);
-
         CreationLoopinData data = new CreationLoopinData();
 
         data.arena = arena;
@@ -165,7 +163,7 @@ public class Arena {
                 arena.getSections().addAll(data.sections);
                 Arena.arenas.put(arena.name, arena);
 
-                File file = new File(Initializer.p.getDataFolder(), "/Arenas/" + name + ".json");
+                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.getc1();
@@ -343,6 +341,19 @@ public class Arena {
         this.keys = keyList.toArray(new Material[keyList.size()]);
     }
 
+    public void reset(int speed) {
+        ResetLoopinData data = new ResetLoopinData();
+        data.speed = speed;
+        for (Section s : getSections()) {
+            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
+            if (sectionAmount <= 0) sectionAmount = 1;
+            data.sections.put(s.getID(), sectionAmount);
+            data.sectionIDs.add(s.getID());
+        }
+
+        loopyReset(data);
+    }
+
     public boolean loopyReset(ResetLoopinData data) {
         data.blocksThisTick = 0;
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
@@ -369,7 +380,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return true;
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 4L);
         return false;
     }
 
