@@ -1,0 +1,104 @@
+name: AestheticNetwork
+version: '${project.version}'
+main: main.Practice
+api-version: 1.18
+softdepend:
+  - ViaVersion
+  - ViaBackwards
+
+commands:
+  spawn:
+    usage: /<command>
+  discord:
+    usage: /<command>
+    aliases: dc
+  ffa:
+    usage: /<command>
+    aliases: [ hole, field ]
+  flat:
+    usage: /<command>
+  tpa:
+    usage: /<command>
+    aliases: tpr
+  tpahere:
+    usage: /<command>
+  tpdeny:
+    usage: /<command>
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
+  tpall:
+    usage: /<command>
+  duel:
+    usage: /<command>
+    aliases: 1v1
+  dueldeny:
+    usage: /<command>
+  duelaccept:
+    usage: /<command>
+  event:
+    usage: /<command>
+  msg:
+    usage: /<command>
+    aliases: [ tell, whisper, w, t ]
+  reply:
+    usage: /<command>
+    aliases: r
+  report:
+    usage: /<command>
+  killeffect:
+    aliases: shop
+    usage: /<command>
+  msglock:
+    usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  back:
+    usage: /<command>
+  help:
+    usage: /<command>
+  acreate:
+    usage: /<command>
+  rtp:
+    usage: /<command>
+  gmc:
+    usage: /<command>
+  gms:
+    usage: /<command>
+    aliases: [ s, survival ]
+  gmsp:
+    usage: /<command>
+    aliases: [ sp, spectator ]
+  playtime:
+    usage: /<command>
+  list:
+    usage: /<command>
+  ban:
+    usage: /<command>
+  unban:
+    usage: /<command>
+  warp:
+    usage: /<command>
+  setwarp:
+    usage: /<command>
+  tp:
+    usage: /<command>
+  tphere:
+    usage: /<command>
+  irename:
+    usage: /<command>
+    aliases: [ name, iname, itemname, itemrename ]
+  clear:
+    usage: /<command>
+  nethpot:
+    usage: /<command>
+    aliases: np
+  stats:
+    usage: /<command>
+    aliases: statistics
+permissions:
+  has.staff:
+    description: Is a staff member
