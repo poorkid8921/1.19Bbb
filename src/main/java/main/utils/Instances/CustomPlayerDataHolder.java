@@ -13,28 +13,31 @@ public class CustomPlayerDataHolder {
     private int c;
     private int m;
     private int t;
-    private int r;
+    private int money;
+    private WorldLocationHolder back;
     private AnimPackets lastPacket = AnimPackets.MISC;
     private boolean ignoreAnim = false;
     private String k;
     private ItemStack[] k1;
     private ItemStack[] k2;
     private ItemStack[] k3;
+    private int runnableid;
+    private boolean tagged;
 
     public CustomPlayerDataHolder(int wins,
                                   int losses,
                                   int c,
                                   int m,
                                   int t,
-                                  String k,
-                                  int r) {
+                                  int money,
+                                  String k) {
         this.wins = wins;
         this.losses = losses;
+        this.money = money;
         this.c = c;
         this.m = m;
         this.t = t;
         this.k = k;
-        this.r = r;
     }
 
     public CustomPlayerDataHolder(int wins,
@@ -42,18 +45,18 @@ public class CustomPlayerDataHolder {
                                   int c,
                                   int m,
                                   int t,
+                                  int money,
                                   String k,
-                                  int r,
                                   ItemStack[] k1,
                                   ItemStack[] k2,
                                   ItemStack[] k3) {
         this.wins = wins;
         this.losses = losses;
+        this.money = money;
         this.c = c;
         this.m = m;
         this.t = t;
         this.k = k;
-        this.r = r;
         this.k1 = k1;
         this.k2 = k2;
         this.k3 = k3;
@@ -65,5 +68,13 @@ public class CustomPlayerDataHolder {
 
     public void incrementLosses() {
         this.losses++;
+    }
+
+    public void incrementMoney(int money) {
+        this.money += money;
+    }
+
+    public void decrementMoney(int money) {
+        this.money -= money;
     }
 }

@@ -1,28 +1,38 @@
 package main.commands;
 
-import main.Practice;
-import main.utils.Initializer;
-import main.utils.Languages;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.jetbrains.annotations.Nullable;
 
-public class MsgLock implements CommandExecutor {
+import java.util.List;
+
+import static main.utils.Initializer.msg;
+import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.MSGLOCK;
+import static main.utils.Initializer.MSGLOCK1;
+
+public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String p = sender.getName();
-        if (Practice.cc1.get("r." + p + ".m") != null) {
-            sender.sendMessage(Languages.MSGLOCK);
-            Practice.cc1.set("r." + p +
-                    (Practice.cc1.get("r." + p + ".t") == null ? "" : ".m"), null);
-            Initializer.p.saveCustomConfig1();
-            Initializer.msg.add(p);
+        CustomPlayerDataHolder M = playerData.get(p);
+        if (M.getM() == 0) {
+            sender.sendMessage(MSGLOCK1);
+            M.setM(1);
+            msg.remove(p);
         } else {
-            sender.sendMessage(Languages.MSGLOCK1);
-            Practice.cc1.set("r." + p + ".m", "");
-            Initializer.p.saveCustomConfig1();
-            Initializer.msg.remove(p);
+            sender.sendMessage(MSGLOCK);
+            M.setM(0);
+            msg.add(p);
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }

@@ -4,9 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 public class Utils {
     public static boolean isMatch(byte[] pattern, byte[] input, int pos) {
@@ -46,24 +44,5 @@ public class Utils {
         }
         compresser.end();
         return outputStream.toByteArray();
-    }
-
-    public static byte[] decompress(byte[] bytes) {
-        Inflater decompresser = new Inflater();
-        decompresser.setInput(bytes);
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
-            decompresser.setInput(bytes);
-            byte[] buffer = new byte[1024];
-            while (!decompresser.finished()) {
-                int count = decompresser.inflate(buffer);
-                outputStream.write(buffer, 0, count);
-            }
-            return outputStream.toByteArray();
-        } catch (DataFormatException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

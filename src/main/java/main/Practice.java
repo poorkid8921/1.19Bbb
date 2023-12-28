@@ -4,11 +4,6 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.google.common.collect.ImmutableList;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
-import main.commands.chat.Msg;
-import main.commands.chat.MsgLock;
-import main.commands.chat.Reply;
-import main.commands.ess.*;
-import main.commands.tpa.*;
 import main.expansions.AntiCheat;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
@@ -24,7 +19,7 @@ import main.expansions.optimizer.LastPacketEvent;
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.LocationHolder;
-import main.utils.Languages;
+import main.utils.Initializer;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
@@ -49,12 +44,12 @@ import java.util.Map;
 import static main.utils.Initializer.*;
 
 public class Practice extends JavaPlugin implements TabExecutor {
-    public static File df;
     public static FileConfiguration config;
+    public static File dataFolder;
     public static World d;
     public static World d0;
     public static int teamIndex = 0;
-    private static File cf;
+    private static File dataFile;
     int flatstr = 1;
     int ticked = 0;
     ImmutableList<Material> blacklist = ImmutableList.of(Material.AIR, Material.LAVA, Material.WATER);
@@ -99,7 +94,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     .getBytes());
             StringBuilder sb = new StringBuilder();
             byte[] md5Digested = md5.digest();
-
             for (byte b : md5Digested) {
                 String hex = Integer.toHexString(0xff & b);
                 sb.append(hex.length() == 1 ? '0' : hex);
@@ -107,7 +101,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             String hwid = sb.toString();
             Bukkit.getLogger().info("Your HWID is: " + hwid);
-            if (!hwid.equals("a547c78589be23b1c33acb5244e0c6fd")) {
+            if (!hwid.equals("ce3093d8c20cb217bd3890dd8f4446")) {
                 this.setEnabled(false);
                 return;
             }
@@ -116,13 +110,14 @@ public class Practice extends JavaPlugin implements TabExecutor {
             return;
         }
 
-        df = getDataFolder();
-        cf = new File(df, "data.yml");
-        config = YamlConfiguration.loadConfiguration(cf);
+        dataFolder = getDataFolder();
+        dataFile = new File(dataFolder, "data.yml");
+        config = YamlConfiguration.loadConfiguration(dataFile);
+        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         p = this;
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            Bukkit.getLogger().warning("Started population of RTPs...");
+            /*Bukkit.getLogger().warning("Started population of RTPs...");
             for (int i = 0; i < 16; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> overworldRTP.add(getRandomLoc(d)),
@@ -133,7 +128,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> endRTP.add(getRandomLoc(d)),
                         5L);
-            }
+            }*/
 
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
@@ -166,7 +161,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
             }
 
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                //if (Bukkit.getOnlinePlayers().size() > 0) {
                 d.getEntities().stream()
                         .filter(r -> r instanceof EnderCrystal)
                         .forEach(Entity::remove);
@@ -185,10 +179,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         boolean ffaupresetted;
                         do {
                             flatresetted = true;
-
                             do {
                                 ffaresetted = true;
-
                                 do {
                                     ffaupresetted = true;
                                     inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
@@ -212,48 +204,36 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         Arena.arenas.get("flat").reset(10000);
                 } else
                     Arena.arenas.get("flat").reset(10000);
-                //}
             }, 0L, 2400L);
         }, 2400L);
 
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
-
         this.getCommand("discord").setExecutor(new Discord());
-
         this.getCommand("back").setExecutor(new Back());
         this.getCommand("help").setExecutor(new Help());
-
         this.getCommand("tpa").setExecutor(new Tpa());
         this.getCommand("tpaccept").setExecutor(new Tpaccept());
         this.getCommand("tpahere").setExecutor(new Tpahere());
         this.getCommand("tpdeny").setExecutor(new Tpdeny());
-
         this.getCommand("msg").setExecutor(new Msg());
         this.getCommand("reply").setExecutor(new Reply());
-
         this.getCommand("duel").setExecutor(new Duel());
         this.getCommand("duelaccept").setExecutor(new DuelAccept());
         this.getCommand("dueldeny").setExecutor(new DuelDeny());
         this.getCommand("event").setExecutor(new Event());
-
         this.getCommand("msglock").setExecutor(new MsgLock());
         this.getCommand("tpalock").setExecutor(new TpaLock());
-
         this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("irename").setExecutor(new ItemRename());
         this.getCommand("clear").setExecutor(new Clear());
-
         this.getCommand("stats").setExecutor(new Stats());
-
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("ffa").setExecutor(new Ffa());
         this.getCommand("flat").setExecutor(new Flat());
         this.getCommand("nethpot").setExecutor(new Nethpot());
-
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
-
         this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
@@ -265,22 +245,15 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("tp").setExecutor(new Teleport());
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("tpall").setExecutor(new TeleportAll());
-
-        this.getCommand("setrole").setExecutor(new SetRole());
-
         this.getCommand("msg").setTabCompleter(new TabMSG());
         this.getCommand("tpa").setTabCompleter(new TabTPA());
         this.getCommand("tpaccept").setTabCompleter(new TabTPA());
         this.getCommand("tpahere").setTabCompleter(new TabTPA());
 
-        File arenaF = new File(df, "arenas");
-        if (!arenaF.exists()) arenaF.mkdirs();
-
-        File wF = new File(df, "warps");
-        if (!wF.exists()) wF.mkdirs();
-
+        File arenasFolder = new File(dataFolder, "arenas");
+        if (!arenasFolder.exists()) arenasFolder.mkdirs();
         Arena.arenas.clear();
-        Arrays.stream(arenaF.listFiles()).parallel().forEach(r -> {
+        Arrays.stream(arenasFolder.listFiles()).parallel().forEach(r -> {
             try {
                 Arena arena = ArenaIO.loadArena(r);
                 if (arena == null)
@@ -289,7 +262,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
             } catch (Exception ignored) {
             }
         });
-        Languages.init();
+
+        File warpsFolder = new File(dataFolder, "warps");
+        if (!warpsFolder.exists()) warpsFolder.mkdirs();
         main.expansions.guis.Utils.init();
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
@@ -298,6 +273,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         PacketEvents.getAPI().init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
 
+        Initializer.init();
         d = Bukkit.getWorld("world");
         d0 = Bukkit.getWorld("world_the_end");
         Initializer.ffa = new Location(d,
@@ -333,17 +309,17 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     int c = -1;
                     int m = 0;
                     int t = 0;
-                    int r = 0;
+                    int money = 0;
                     switch (key2) {
                         case "w" -> wins = config.getInt("r." + key + "." + key2);
                         case "l" -> losses = config.getInt("r." + key + "." + key2);
                         case "c" -> c = config.getInt("r." + key + "." + key2);
                         case "m" -> m = config.getInt("r." + key + "." + key2);
                         case "t" -> t = config.getInt("r." + key + "." + key2);
-                        case "r" -> r = config.getInt("r." + key + "." + key2);
+                        case "z" -> money = config.getInt("r." + key + "." + key2);
                     }
 
-                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, k, r));
+                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, k));
                 }
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
@@ -353,48 +329,55 @@ public class Practice extends JavaPlugin implements TabExecutor {
     @Override
     public void onDisable() {
         PacketEvents.getAPI().terminate();
-
-        long d = new Date().getTime();
-        int x = 0;
-        int y = 0;
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/stats/").listFiles()) {
-            if (d - p.lastModified() > 6.048e+8) {
-                x++;
-                p.delete();
-            }
-        }
-
-        for (File p : new File(Bukkit.getWorld("world")
-                .getWorldFolder()
-                .getAbsolutePath() + "/region/").listFiles()) {
-            if (d - p.lastModified() > 6.048e+8) {
-                y++;
-                p.delete();
-            }
-        }
-
-        for (File p : new File(Bukkit.getWorld("world_the_end")
-                .getWorldFolder()
-                .getAbsolutePath() + "/DIM1/").listFiles()) {
-            p.delete();
-        }
-
-        for (File p : new File(Bukkit.getWorld("world")
+        for (File file : new File(d
                 .getWorldFolder()
                 .getAbsolutePath() + "/entities/").listFiles()) {
-            p.delete();
+            file.delete();
         }
 
-        Bukkit.getLogger().warning("Successfully purged " + x + " accounts & " + y + " regions.");
+        for (File file : new File(d0
+                .getWorldFolder()
+                .getAbsolutePath() + "/DIM1/").listFiles()) {
+            file.delete();
+        }
+
+        long curTime = new Date().getTime();
+        int accountsRemoved = 0;
+
+        for (File file : new File(d
+                .getWorldFolder()
+                .getAbsolutePath() + "/stats/").listFiles()) {
+            if (curTime - file.lastModified() > 6.048e+8) {
+                accountsRemoved++;
+                file.delete();
+            }
+        }
+
+        int regionsRemoved = 0;
+        for (File file : new File(d
+                .getWorldFolder()
+                .getAbsolutePath() + "/region/").listFiles()) {
+            if (curTime - file.lastModified() > 6.048e+8) {
+                regionsRemoved++;
+                file.delete();
+            }
+        }
+        Bukkit.getLogger().warning("Successfully purged " + accountsRemoved + " accounts & " + regionsRemoved + " regions.");
 
         config.set("r", null);
         if (!playerData.isEmpty()) {
             for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
                 CustomPlayerDataHolder value = entry.getValue();
 
-                if (value.getWins() == 0 && value.getLosses() == 0 && value.getC() == 0 && value.getM() == 0 && value.getT() == 0)
+                if (value.getWins() == 0 &&
+                        value.getLosses() == 0 &&
+                        value.getC() == 0 &&
+                        value.getM() == 0 &&
+                        value.getT() == 0 &&
+                        value.getK1() == null &&
+                        value.getK2() == null &&
+                        value.getK3() == null &&
+                        value.getMoney() == 0)
                     continue;
 
                 String key = entry.getKey();
@@ -403,11 +386,15 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 config.set("r." + key + ".c", value.getC());
                 config.set("r." + key + ".m", value.getM());
                 config.set("r." + key + ".t", value.getT());
+                config.set("r." + key + ".z", value.getMoney());
+                config.set("r." + key + ".a", value.getK1());
+                config.set("r." + key + ".b", value.getK2());
+                config.set("r." + key + ".c", value.getK3());
             }
         }
 
         try {
-            config.save(cf);
+            config.save(dataFile);
         } catch (IOException ignored) {
         }
     }

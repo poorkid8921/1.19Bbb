@@ -3,7 +3,7 @@ package main.expansions.duels.commands;
 import main.expansions.guis.Utils;
 import main.utils.Initializer;
 import main.utils.Instances.DuelHolder;
-import main.utils.Languages;
+import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -64,32 +64,32 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = duelsavailable(d);
 
         if (check == 32) {
-            sender.sendMessage(Languages.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage(Initializer.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            sender.sendMessage(Languages.EXCEPTION_DUEL_TARGET_OFF);
+            sender.sendMessage(Initializer.EXCEPTION_DUEL_TARGET_OFF);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            sender.sendMessage(Languages.EXCEPTION_DUEL_SELF);
+            sender.sendMessage(Initializer.EXCEPTION_DUEL_SELF);
             return true;
         }
 
         DuelHolder tpr = getDUELrequest(recipient.getName());
 
         if (Initializer.teams.containsKey(recipient.getName())) {
-            sender.sendMessage(Languages.EXCEPTION_ALREADY_IN_DUEL);
+            sender.sendMessage(Initializer.EXCEPTION_ALREADY_IN_DUEL);
             return true;
         }
 
         if (tpr != null) {
             if (tpr.getSender().equals(sender)) {
-                sender.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage(Initializer.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }

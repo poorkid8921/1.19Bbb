@@ -1,30 +1,38 @@
 package main.commands;
 
-import main.utils.Initializer;
-import main.utils.Instances.BackHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.Instances.WorldLocationHolder;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
-public class Back implements CommandExecutor {
+import java.util.List;
+
+import static main.utils.Initializer.playerData;
+
+public class Back implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        BackHolder u = Initializer.back.getOrDefault(sender.getName(), null);
-        if (u == null) {
+        CustomPlayerDataHolder D = playerData.get(sender.getName());
+        if (D.getBack() == null) {
             sender.sendMessage("§7You got no back location.");
             return true;
         }
 
-        if (u.getBack() == null) {
-            sender.sendMessage("§7You got no back location.");
-            return true;
-        }
-
-        ((Player) sender).teleportAsync(u.getBack()).thenAccept(r -> {
+        WorldLocationHolder back = D.getBack();
+        ((Player) sender).teleportAsync(new Location(back.getWorld(), back.getX(), back.getY(), back.getZ())).thenAccept(r -> {
             sender.sendMessage("§7Teleported you to your previous location.");
-            u.setBack(null);
+            D.setBack(null);
         });
         return true;
+    }
+
+    @Override
+    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }

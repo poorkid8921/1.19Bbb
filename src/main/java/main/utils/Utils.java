@@ -3,9 +3,10 @@ package main.utils;
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import main.expansions.scoreboard.protocol.ChannelInjector;
+import main.expansions.scoreboard.ChannelInjector;
 import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
 import main.expansions.scoreboard.util.buffer.NetOutput;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -21,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static main.utils.Initializer.playerData;
-import static main.utils.Languages.*;
+import static main.utils.Initializer.*;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -48,29 +49,33 @@ public class Utils {
         return matcher.appendTail(buffer).toString();
     }
 
-    public static void killeffect(Player p, int toset, String fancy) {
+    public static void killeffect(Player p, int toset, String fancy, int money) {
         p.closeInventory();
         String pn = p.getName();
-        playerData.get(pn).setC(toset);
-
-        p.sendMessage(SECOND_COLOR + "sᴇᴛᴛɪɴɢs §7» §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
-                "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ᴄʜᴀɴɢᴇᴅ ᴛᴏ " + MAIN_COLOR + fancy));
+        CustomPlayerDataHolder D = playerData.get(pn);
+        if (money > D.getMoney()) {
+            p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » " + MAIN_COLOR + "ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ");
+            return;
+        }
+        D.decrementMoney(money);
+        D.setC(toset);
+        p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » §f" + (toset == -1 ? "ʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ" :
+                "ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ " + MAIN_COLOR + fancy + " §fꜰᴏʀ " + SECOND_COLOR + "$" + money));
     }
 
     public static void report(Player pp, String report, String reason) {
-        //String d = pp.getDisplayName();
-        //Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
-        //        report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
+        String d = pp.getDisplayName();
+        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
+                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
-            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1163543558398156871/XigQ8rIWMLG2Nh0-j-XjQdourDcvsskcehRBTXRHJMfX63_9cqD5aiDQyvg-s58uVPNj");
+            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
             webhook.setAvatarUrl(avturl);
             webhook.setUsername("Report");
-            if (reason == null)
-                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Reason", report, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
-            else
-                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Target", report, true).addField("Reason", reason, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
+            webhook.addEmbed(reason == null ?
+                    new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Reason", report, true) :
+                    new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Target", report, true).addField("Reason", reason, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
 
             try {
                 webhook.execute();
@@ -110,7 +115,7 @@ public class Utils {
     public static ByteBuf getPacket(Player player,
                                     int mode,
                                     String a) {
-        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
 
         NetOutput output = new ByteBufNetOutput(buf);
         output.writeVarInt(0x58);
@@ -124,11 +129,11 @@ public class Utils {
 
     @SneakyThrows
     public static void sendPacket(Player player, ByteBuf packet) {
-        ChannelInjector.IMP.sendPacket(player, packet);
+        ChannelInjector.sendPacket(player, packet);
     }
 
     public static ByteBuf createScorePacket(@NonNull Player player, int action, String objectiveName, int index) {
-        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
         NetOutput output = new ByteBufNetOutput(buf);
 
         output.writeVarInt(0x5B);
@@ -148,7 +153,7 @@ public class Utils {
                                            Player player,
                                            String text) {
         String teamEntry = ChatColor.values()[index].toString();
-        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
+        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
         NetOutput packet = new ByteBufNetOutput(buf);
         packet.writeVarInt(0x5A);
 

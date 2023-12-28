@@ -9,13 +9,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class KitOverrider {
-    static ItemStack t = new ItemStack(Material.TOTEM_OF_UNDYING, 1);
+    static ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING, 1);
 
     public static void Duels_Kit_Field(Player p) {
-        p.getInventory().setItemInOffHand(t);
+        p.getInventory().setItemInOffHand(totem);
 
         for (int i = 10; i <= p.getInventory().getSize(); i++) {
-            p.getInventory().setItem(i, t);
+            p.getInventory().setItem(i, totem);
         }
 
         ItemStack shield = new ItemStack(Material.SHIELD, 1);
@@ -76,7 +76,7 @@ public class KitOverrider {
         p.getInventory().setItem(2, new ItemStack(Material.GOLDEN_APPLE, 64));
         p.getInventory().setItem(3, new ItemStack(Material.ENDER_PEARL, 16));
         p.getInventory().setItem(4, new ItemStack(Material.OBSIDIAN, 64));
-        p.getInventory().setItem(8, t);
+        p.getInventory().setItem(8, totem);
 
         ItemStack c = new ItemStack(Material.END_CRYSTAL, 64);
         for (int i = 0; i <= 3; i++) {
@@ -96,10 +96,10 @@ public class KitOverrider {
     }
 
     public static void Duels_Kit_Flat(Player p) {
-        p.getInventory().setItemInOffHand(t);
+        p.getInventory().setItemInOffHand(totem);
 
         for (int i = 10; i <= p.getInventory().getSize(); i++) {
-            p.getInventory().setItem(i, t);
+            p.getInventory().setItem(i, totem);
         }
 
         // utils
@@ -150,7 +150,7 @@ public class KitOverrider {
         p.getInventory().setItem(2, new ItemStack(Material.GOLDEN_APPLE, 64));
         p.getInventory().setItem(3, new ItemStack(Material.ENDER_PEARL, 16));
         p.getInventory().setItem(4, new ItemStack(Material.OBSIDIAN, 64));
-        p.getInventory().setItem(8, t);
+        p.getInventory().setItem(8, totem);
 
         for (int i = 0; i <= 3; i++) {
             p.getInventory().setItem(5 + (9 * i), new ItemStack(Material.END_CRYSTAL, 64));
@@ -238,9 +238,9 @@ public class KitOverrider {
 
         // totems
         for (int i = 11; i <= 12; i++) {
-            p.getInventory().setItem(i, t);
+            p.getInventory().setItem(i, totem);
         }
-        p.getInventory().setItem(8, t);
+        p.getInventory().setItem(8, totem);
         p.getInventory().setHelmet(helmet);
         p.getInventory().setChestplate(chestplate);
         p.getInventory().setLeggings(leggings);

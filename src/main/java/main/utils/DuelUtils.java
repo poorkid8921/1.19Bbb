@@ -15,7 +15,7 @@ import java.util.Locale;
 
 import static main.expansions.duels.KitOverrider.*;
 import static main.utils.Initializer.playerData;
-import static main.utils.Languages.*;
+import static main.utils.Initializer.*;
 
 public class DuelUtils {
     public static NamespacedKey spectateHead = new NamespacedKey(Initializer.p, "against");

@@ -36,6 +36,9 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return;
         String pn = player.getName();
         CustomPlayerDataHolder user = playerData.get(pn);
+        if (user == null)
+            return;
+
         Bukkit.getScheduler().runTask(Initializer.p, () -> {
             if (user.getLastPacket() == AnimPackets.IGNORE) return;
             if (user.isIgnoreAnim()) return;

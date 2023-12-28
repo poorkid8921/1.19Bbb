@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 import static main.utils.Initializer.*;
-import static main.utils.Languages.SECOND_COLOR;
+import static main.utils.Initializer.SECOND_COLOR;
 
 public class RTP implements CommandExecutor, TabExecutor {
     @Override

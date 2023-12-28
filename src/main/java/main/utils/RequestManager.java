@@ -19,7 +19,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.Map;
 
 import static main.utils.DuelUtils.formattedtype;
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 @SuppressWarnings("deprecation")
 public class RequestManager {

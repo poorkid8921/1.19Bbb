@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 public class Flat implements CommandExecutor, TabExecutor {
     @Override

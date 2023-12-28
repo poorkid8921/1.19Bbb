@@ -99,8 +99,6 @@ commands:
   stats:
     usage: /<command>
     aliases: statistics
-  setrole:
-    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

@@ -7,15 +7,14 @@ import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.expansions.bungee.HandShake;
 import main.expansions.duels.Matchmaking;
-import main.expansions.scoreboard.protocol.ChannelInjector;
+import main.expansions.scoreboard.ChannelInjector;
 import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
 import main.expansions.scoreboard.util.buffer.NetOutput;
 import main.utils.Initializer;
-import main.utils.Instances.BackHolder;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.WorldLocationHolder;
-import main.utils.Languages;
+import main.utils.Initializer;
 import main.utils.RequestManager;
 import main.utils.Utils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -27,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -38,11 +38,13 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import static main.expansions.guis.Utils.*;
 import static main.utils.DuelUtils.*;
 import static main.utils.Initializer.*;
-import static main.utils.Languages.*;
+import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.SECOND_COLOR;
 import static main.utils.RequestManager.*;
 
 @SuppressWarnings("deprecation")
@@ -50,7 +52,7 @@ public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onHandshake(PlayerHandshakeEvent e) {
+    private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
 
         if (decoded == null) {
@@ -70,28 +72,30 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntitySpawn(EntitySpawnEvent event) {
+    private void onEntitySpawn(EntitySpawnEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            crystalsToBeOptimized.put(event.getEntity()
-                            .getEntityId(),
-                    event.getEntity()
-                            .getLocation());
+            crystalsToBeOptimized.put(
+                    event.getEntity().getEntityId(),
+                    event.getEntity().getLocation()
+            );
     }
 
     @EventHandler
-    public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
+    private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
             Bukkit.getScheduler().runTaskLater(Initializer.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
 
     @EventHandler
-    public void onCommand(PlayerCommandPreprocessEvent e) {
-        e.setCancelled(teams.containsKey(e.getPlayer().getName()));
+    private void onCommand(PlayerCommandPreprocessEvent e) {
+        String pn = e.getPlayer().getName();
+        e.setCancelled(playerData.get(pn).isTagged() || teams.containsKey(pn));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onChat(AsyncPlayerChatEvent e) {
-        e.setFormat(e.getPlayer().getDisplayName() + SECOND_COLOR + " » §r" + e.getMessage());
+    private void onChat(AsyncPlayerChatEvent e) {
+        Player p = e.getPlayer();
+        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") + p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -128,7 +132,6 @@ public class Events implements Listener {
         RequestManager.tpa.remove(getTPArequest(playerName));
         duel.remove(getDUELrequest(playerName));
 
-        Initializer.back.remove(playerName);
         Initializer.lastReceived.remove(playerName);
         Initializer.msg.remove(playerName);
         Initializer.tpa.remove(playerName);
@@ -137,7 +140,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
+    private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
         if (c instanceof PlayerInventory)
             return;
@@ -155,10 +158,10 @@ public class Events implements Listener {
                 if (!e.getCurrentItem().getItemMeta().hasLore()) return;
 
                 switch (slot) {
-                    case 10 -> Utils.killeffect(p, -1, null);
-                    case 12 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
-                    case 13 -> Utils.killeffect(p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
-                    case 14 -> Utils.killeffect(p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ");
+                    case 12 -> Utils.killeffect(p, -1, null, 0);
+                    case 13 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
+                    case 14 -> Utils.killeffect(p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 425);
+                    case 15 -> Utils.killeffect(p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 750);
                 }
             } // settings: killeffect
             case 1 -> {
@@ -219,9 +222,57 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onGUIClose(InventoryCloseEvent e) {
+    private void onGUIClose(InventoryCloseEvent e) {
         if (e.getInventory() instanceof PlayerInventory) return;
         inInventory.remove(e.getPlayer().getName());
+    }
+
+    @EventHandler
+    private void onPlayerDamage(EntityDamageByEntityEvent e) {
+        if (!(e.getEntity() instanceof Player p))
+            return;
+
+        if (!(e.getDamager() instanceof Player attacker))
+            return;
+
+        CustomPlayerDataHolder D0 = playerData.get(p.getName());
+        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
+        if (D0.isTagged())
+            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+
+        if (D1.isTagged())
+            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+
+        BukkitRunnable runnable = new BukkitRunnable() {
+            int time = 5;
+
+            @Override
+            public void run() {
+                p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
+                time--;
+
+                if (time == 0)
+                    this.cancel();
+            }
+        };
+
+        BukkitRunnable runnable2 = new BukkitRunnable() {
+            int time = 5;
+
+            @Override
+            public void run() {
+                attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
+                time--;
+
+                if (time == 0)
+                    this.cancel();
+            }
+        };
+
+        runnable.runTaskTimer(Initializer.p, 0L, 20L);
+        runnable2.runTaskTimer(Initializer.p, 0L, 20L);
+        D0.setRunnableid(runnable.getTaskId());
+        D1.setRunnableid(runnable2.getTaskId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -342,34 +393,23 @@ public class Events implements Listener {
                 tpr.setBlue(blue);
                 start(kp, p, type, newrounds, tpr.getMaxrounds(), arena);
             }, 60L);
-            Initializer.back.remove(name);
+            playerData.get(name).setBack(null);
             return;
         }
-
-        BackHolder back = Initializer.back.getOrDefault(name, null);
-        if (back == null) {
-            Initializer.back.put(name, new BackHolder(
-                    new WorldLocationHolder(
-                            (int) l.getX(),
-                            (int) l.getY(),
-                            (int) l.getZ(),
-                            l.getWorld())
-                    )
-            );
-        } else back.setBack(
-                new WorldLocationHolder(
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        if (D0.isTagged())
+            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+        D0.setBack(new WorldLocationHolder(
                 (int) l.getX(),
                 (int) l.getY(),
                 (int) l.getZ(),
-                l.getWorld()
-                )
-        );
+                l.getWorld()));
 
-        Utils.sendPacket(p, Utils.createTeamPacket(2, 3, playerData.get(name).getK(), p, GSON.serialize(MiniMessage.miniMessage()
+        Utils.sendPacket(p, Utils.createTeamPacket(2, 3, D0.getK(), p, GSON.serialize(MiniMessage.miniMessage()
                 .deserialize("<#f54254>☠ <reset>ᴅᴇᴀᴛʜs <#f54254>" + p.getStatistic(Statistic.DEATHS))
         )));
 
-        p.sendMessage(Languages.BACK);
+        p.sendMessage(Initializer.BACK);
         String kp;
 
         if (killer == null || killer == p) {
@@ -384,6 +424,9 @@ public class Events implements Listener {
             return;
         } else {
             kp = killer.getName();
+            CustomPlayerDataHolder D1 = playerData.get(name);
+            if (D1.isTagged())
+                Bukkit.getScheduler().cancelTask(D1.getRunnableid());
             e.setDeathMessage(SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -393,15 +436,13 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
                 default -> "suicided";
             });
-            Utils.sendPacket(p, Utils.createTeamPacket(2, 2, playerData.get(kp).getK(), killer, GSON.serialize(MiniMessage.miniMessage()
+            Utils.sendPacket(p, Utils.createTeamPacket(2, 2, D1.getK(), killer, GSON.serialize(MiniMessage.miniMessage()
                     .deserialize("<#f54254>⚔ <reset>ᴋɪʟʟs  <#f54254>" + killer.getStatistic(Statistic.PLAYER_KILLS))
             )));
         }
 
         CustomPlayerDataHolder D = playerData.get(kp);
-        if (D == null)
-            return;
-
+        D.incrementMoney(500);
         switch (D.getC()) {
             case 0 -> {
                 Location loc = l.add(0, 1, 0);
@@ -421,7 +462,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
+    private void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
@@ -432,7 +473,7 @@ public class Events implements Listener {
         Utils.sendPacket(p, Utils.getPacket(p, 0, teamName));
 
         // #addTeam
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 0, teamName, p, Languages.BLANK));
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 0, teamName, p, Initializer.BLANK));
         Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 0));
 
         Utils.sendPacket(p, Utils.createTeamPacket(0, 1, teamName, p, GSON.serialize(MiniMessage.miniMessage()
@@ -449,14 +490,14 @@ public class Events implements Listener {
         )));
         Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 3));
 
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 4, teamName, p, Languages.BLANK));
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 4, teamName, p, Initializer.BLANK));
         Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 4));
 
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 5, teamName, p, Languages.SUBTITLE));
+        Utils.sendPacket(p, Utils.createTeamPacket(0, 5, teamName, p, Initializer.SUBTITLE));
         Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 5));
 
         // #display
-        ByteBuf buf = ChannelInjector.IMP.getChannel(p).alloc().buffer();
+        ByteBuf buf = ChannelInjector.getChannel(p).alloc().buffer();
         NetOutput output = new ByteBufNetOutput(buf);
         output.writeVarInt(0x51);
         output.writeByte(1);
@@ -467,29 +508,17 @@ public class Events implements Listener {
         if (D == null) {
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, teamName, 0));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, 0, teamName));
         } else {
             if (D.getT() == 0)
                 Initializer.tpa.add(name);
             if (D.getM() == 0)
                 Initializer.msg.add(name);
-
-            switch (D.getR()) {
-                case 1 -> p.setDisplayName(PREFIX_MEDIA + name);
-                case 2 -> p.setDisplayName(PREFIX_BOOSTER + name);
-                case 3 -> p.setDisplayName(PREFIX_OWNER + name);
-                case 4 -> p.setDisplayName(PREFIX_MANAGER + name);
-                case 5 -> p.setDisplayName(PREFIX_ADMIN + name);
-                case 6 -> p.setDisplayName(PREFIX_MOD + name);
-                case 7 -> p.setDisplayName(PREFIX_JRMOD + name);
-                case 8 -> p.setDisplayName(PREFIX_HELPER + name);
-                case 9 -> p.setDisplayName(PREFIX_THELPER + name);
-            }
         }
     }
 
     @EventHandler
-    public void onRespawn(PlayerRespawnEvent e) {
+    private void onRespawn(PlayerRespawnEvent e) {
         e.setRespawnLocation(spawn);
     }
 }

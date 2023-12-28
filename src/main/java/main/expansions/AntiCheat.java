@@ -10,7 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 public class AntiCheat extends SimplePacketListenerAbstract {
     void flag(Player p,
@@ -26,16 +26,11 @@ public class AntiCheat extends SimplePacketListenerAbstract {
         Player player = (Player) event.getPlayer();
         WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
         ItemStack clickedItem = player.getOpenInventory().getItem(packet.getSlot());
-        if (clickedItem != null && clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
-            final ItemStack oldOffHandItem = player.getOpenInventory().getItem(45);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(Initializer.p, () -> {
-                ItemStack newOffHandItem = player.getOpenInventory().getItem(45);
-                if (newOffHandItem != null &&
-                        newOffHandItem.getType() == Material.TOTEM_OF_UNDYING &&
-                        oldOffHandItem.getType() == Material.AIR) {
+        Bukkit.getLogger().warning(packet.getWindowClickType().name() + " " + packet.getSlot() + " " + packet.getPacketId() + " " + packet.getButton());
+        if (clickedItem != null && clickedItem.getType() == Material.TOTEM_OF_UNDYING && packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP) {
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                if (player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING)
                     flag(player, "Auto Totem");
-                    event.setCancelled(true);
-                }
             }, 5L);
         }
     }

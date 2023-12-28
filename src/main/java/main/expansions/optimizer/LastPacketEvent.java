@@ -26,6 +26,9 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
             return;
 
         CustomPlayerDataHolder user = playerData.get(p.getName());
+        if (user == null)
+            return;
+
         AnimPackets animPacket = getAnimPacket(event);
 
         if (user.getLastPacket() == AnimPackets.ANIMATION)

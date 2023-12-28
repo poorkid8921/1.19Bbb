@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static main.utils.DuelUtils.*;
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 public class Matchmaking {
     public static void start_unranked(Player p, int gm) {

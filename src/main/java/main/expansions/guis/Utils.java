@@ -16,8 +16,9 @@ import java.util.List;
 import java.util.Map;
 
 import static main.utils.DuelUtils.*;
-import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.Languages.SECOND_COLOR;
+import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.SECOND_COLOR;
 import static main.utils.Utils.createItemStack;
 
 public class Utils {
@@ -46,11 +47,11 @@ public class Utils {
         inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", List.of("§aUsing too many anchors in flat")));
         report = inv.getContents();
 
-        List<String> s = List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fsᴇᴛ");
-        inv.setItem(10, createItemStack(Material.BARRIER, "None", s));
-        inv.setItem(12, createItemStack(Material.BONE, "Lightning Bolt", s));
-        inv.setItem(13, createItemStack(Material.TNT, "Explosion", s));
-        inv.setItem(14, createItemStack(Material.FIREWORK_STAR, "Firework Explosion", s));
+        List<String> s = List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʙᴜʏ");
+        inv.setItem(12, createItemStack(Material.GUNPOWDER, "None", List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʀᴇᴍᴏᴠᴇ")));
+        inv.setItem(13, createItemStack(Material.BONE, "Lightning Bolt", s));
+        inv.setItem(14, createItemStack(Material.TNT, "Explosion", s));
+        inv.setItem(15, createItemStack(Material.FIREWORK_STAR, "Firework Explosion", s));
 
         inv.setItem(11, glass);
         inv.setItem(15, glass);
@@ -105,9 +106,11 @@ public class Utils {
     }
 
     public static void openKilleffect(Player p) {
-        inInventory.put(p.getName(), Pair.of(0, null));
-        Inventory inv = Bukkit.createInventory(p, 27, "sᴇᴛᴛɪɴɢs | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
+        String pn = p.getName();
+        inInventory.put(pn, Pair.of(0, null));
+        Inventory inv = Bukkit.createInventory(p, 27, "ᴀᴇꜱᴛʜᴇᴛɪᴄꜱʜᴏᴘ | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
         inv.setContents(killeffect);
+        inv.setItem(10, createItemStack(Material.BONE, "Balance", List.of("§a" + playerData.get(pn).getMoney())));
         p.openInventory(inv);
     }
 

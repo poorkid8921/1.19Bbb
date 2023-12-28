@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Languages.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 @SuppressWarnings("deprecation")
 public class Stats implements CommandExecutor {
@@ -40,7 +40,7 @@ public class Stats implements CommandExecutor {
 
     private void showstats(Player pp, Player t) {
         pp.sendMessage(
-                (t.isOnline() ? "§a" : "§c") + "◆ " + MAIN_COLOR +
+                (t.isOnline() ? "§a◆ " : "§c◆ ") + MAIN_COLOR +
                         t.getDisplayName() + "§7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
                 "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.PLAYER_KILLS),
                 "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DEATHS),
