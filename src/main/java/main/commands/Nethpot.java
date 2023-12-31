@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.nethpot;
+import static main.utils.Constants.nethpot;
 
 public class Nethpot implements CommandExecutor, TabExecutor {
     @Override

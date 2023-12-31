@@ -9,10 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.tpa;
-import static main.utils.Initializer.TPALOCK;
-import static main.utils.Initializer.TPALOCK1;
+import static main.utils.Constants.*;
 
 public class TpaLock implements CommandExecutor, TabExecutor {
     @Override

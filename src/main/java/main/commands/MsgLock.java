@@ -9,10 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.msg;
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.MSGLOCK;
-import static main.utils.Initializer.MSGLOCK1;
+import static main.utils.Constants.*;
 
 public class MsgLock implements CommandExecutor, TabExecutor {
     @Override

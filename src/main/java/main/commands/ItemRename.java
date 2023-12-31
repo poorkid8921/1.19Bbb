@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 
 public class ItemRename implements CommandExecutor {
     @Override

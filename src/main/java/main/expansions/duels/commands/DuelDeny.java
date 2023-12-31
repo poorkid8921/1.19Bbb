@@ -1,22 +1,22 @@
 package main.expansions.duels.commands;
 
+import main.utils.Constants;
 import main.utils.Instances.DuelHolder;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.duel;
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Constants.duel;
 import static main.utils.RequestManager.getDUELrequest;
 import static main.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public class DuelDeny implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String msg = Initializer.EXCEPTION_NO_DUEL_REQ;
+        String msg = Constants.EXCEPTION_NO_DUEL_REQ;
         DuelHolder request;
 
         if (args.length == 0) {
@@ -25,7 +25,7 @@ public class DuelDeny implements CommandExecutor {
             String n = args[0];
             Player p = Bukkit.getPlayer(n);
             if (p == null) {
-                sender.sendMessage(Initializer.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".");
+                sender.sendMessage(Constants.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".");
                 return true;
             } else n = p.getName();
             request = getDUELrequest(sender.getName(), n);

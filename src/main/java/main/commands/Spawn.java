@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.spawn;
+import static main.utils.Constants.spawn;
 
 public class Spawn implements CommandExecutor, TabExecutor {
     @Override

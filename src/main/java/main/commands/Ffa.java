@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,12 +16,12 @@ public class Ffa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
-            Location l = Initializer.ffa;
+            Location l = Constants.ffa;
             Location pl = pp.getLocation();
             l.setYaw(pl.getYaw());
             l.setYaw(pl.getPitch());
             pp.teleportAsync(l, PlayerTeleportEvent.TeleportCause.COMMAND);
-            Initializer.inFFA.add(pp);
+            Constants.inFFA.add(pp);
         }
 
         return true;

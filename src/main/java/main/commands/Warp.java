@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.Practice;
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -16,18 +16,18 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 
 public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Initializer.EXCEPTION_NO_ARGS_WARP);
+            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP);
             return true;
         }
 
         File f = new File(Practice.dataFolder + "/warps/" + args[0] + ".json");
         if (!f.exists()) {
-            sender.sendMessage(Initializer.EXCEPTION_DOESNT_EXIST_WARP);
+            sender.sendMessage(Constants.EXCEPTION_DOESNT_EXIST_WARP);
             return true;
         }
 
@@ -39,7 +39,7 @@ public class Warp implements CommandExecutor, TabExecutor {
                 cf.getDouble("d"),
                 (float) cf.getDouble("e"),
                 (float) cf.getDouble("f"))
-        ).thenAccept(r -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0]));
+        ).thenAccept(result -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0]));
         return true;
     }
 

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.playerData;
+import static main.utils.Constants.playerData;
 
 public class Back implements CommandExecutor, TabExecutor {
     @Override
@@ -24,7 +24,7 @@ public class Back implements CommandExecutor, TabExecutor {
         }
 
         WorldLocationHolder back = D.getBack();
-        ((Player) sender).teleportAsync(new Location(back.getWorld(), back.getX(), back.getY(), back.getZ())).thenAccept(r -> {
+        ((Player) sender).teleportAsync(new Location(back.getWorld(), back.getX(), back.getY(), back.getZ())).thenAccept(result -> {
             sender.sendMessage("§7Teleported you to your previous location.");
             D.setBack(null);
         });

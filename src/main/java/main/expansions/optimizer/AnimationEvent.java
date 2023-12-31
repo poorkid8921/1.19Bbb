@@ -3,7 +3,7 @@ package main.expansions.optimizer;
 import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,7 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import static main.utils.Initializer.playerData;
+import static main.utils.Constants.playerData;
 
 public class AnimationEvent extends SimplePacketListenerAbstract {
     Holder<DamageType> cachedHolder = Holder.a(new DamageType("player", 0.1f));
@@ -39,7 +39,7 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
         String pn = player.getName();
         CustomPlayerDataHolder user = playerData.get(pn);
         user.incrementCPS(System.currentTimeMillis());
-        Bukkit.getScheduler().runTask(Initializer.p, () -> {
+        Bukkit.getScheduler().runTask(Constants.p, () -> {
             if (user.getLastPacket() == AnimPackets.IGNORE) return;
             if (user.isIgnoreAnim()) return;
 

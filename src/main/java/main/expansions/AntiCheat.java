@@ -4,18 +4,20 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 
 public class AntiCheat extends SimplePacketListenerAbstract {
     void flag(Player p,
               String reason) {
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + p.getDisplayName() + " §7has been flagged for " + MAIN_COLOR + reason));
+        Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + p.getDisplayName() + " §7has been flagged for " + MAIN_COLOR + reason));
         Bukkit.getLogger().warning("AntiCheat: " + p.getName() + " has been flagged for " + reason);
     }
 
@@ -27,11 +29,14 @@ public class AntiCheat extends SimplePacketListenerAbstract {
         WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
         ItemStack clickedItem = player.getOpenInventory().getItem(packet.getSlot());
         Bukkit.getLogger().warning(packet.getWindowClickType().name() + " " + packet.getSlot() + " " + packet.getPacketId() + " " + packet.getButton());
-        if (clickedItem != null && clickedItem.getType() == Material.TOTEM_OF_UNDYING && packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP) {
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                if (player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING)
-                    flag(player, "Auto Totem");
-            }, 5L);
+        if (clickedItem != null && clickedItem.getType() == Material.TOTEM_OF_UNDYING &&
+                packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP) {
+            PlayerInventory inv = player.getInventory();
+            if (inv.getItemInOffHand().getType() != Material.AIR)
+                return;
+            Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                if (inv.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING) flag(player, "Auto Totem");
+            }, 2L);
         }
     }
 }

@@ -1,13 +1,13 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.spawn;
+import static main.utils.Constants.spawn;
 
 public class Ban implements CommandExecutor {
     @Override
@@ -24,9 +24,9 @@ public class Ban implements CommandExecutor {
                 return true;
             }
             String d = args.length > 1 ? args[1] : null;
-            Initializer.bannedFromflat.add(pp.getName());
+            Constants.bannedFromflat.add(pp.getName());
             sender.sendMessage("§7Successfully banned " + args[0] + ".");
-            pp.teleportAsync(spawn).thenAccept(r -> pp.sendMessage("§7You are now banned in flat for " + (d == null ? "breaking rules." : d + ".")));
+            pp.teleportAsync(spawn).thenAccept(result -> pp.sendMessage("§7You are now banned in flat for " + (d == null ? "breaking rules." : d + ".")));
         }
         return true;
     }

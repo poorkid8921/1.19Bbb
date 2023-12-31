@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.RequestManager.getTPArequest;
 import static main.utils.RequestManager.tpa;
 import static main.utils.Utils.translate;

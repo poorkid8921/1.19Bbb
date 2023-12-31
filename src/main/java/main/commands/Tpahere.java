@@ -1,8 +1,8 @@
 package main.commands;
 
 import main.Practice;
+import main.utils.Constants;
 import main.utils.Instances.TpaRequest;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,21 +16,21 @@ public class Tpahere implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Initializer.WHO_TPA);
+            sender.sendMessage(Constants.WHO_TPA);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            sender.sendMessage(Initializer.EXCEPTION_PLAYER_OFFLINETPA);
+            sender.sendMessage(Constants.EXCEPTION_PLAYER_OFFLINETPA);
             return true;
         }
 
         String ren = recipient.getName();
         String sn = sender.getName();
         if (ren.equals(sn)) {
-            sender.sendMessage(Initializer.EXCEPTION_PLAYER_TPSELF);
+            sender.sendMessage(Constants.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 
@@ -38,7 +38,7 @@ public class Tpahere implements CommandExecutor {
 
         if (tpr != null) {
             if (tpr.getSenderF().equals(sn)) {
-                sender.sendMessage(Initializer.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage(Constants.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }

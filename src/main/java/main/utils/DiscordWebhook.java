@@ -2,26 +2,24 @@ package main.utils;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.bukkit.Bukkit;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class DiscordWebhook {
-    private final String url;
     private final List<EmbedObject> embeds = new ObjectArrayList<>();
     private String username;
     private String avatarUrl;
 
-    public DiscordWebhook(String url) {
-        this.url = url;
+    public DiscordWebhook() {
     }
 
     public void setUsername(String username) {
@@ -58,7 +56,6 @@ public class DiscordWebhook {
                 int rgb = color.getRed();
                 rgb = (rgb << 8) + color.getGreen();
                 rgb = (rgb << 8) + color.getBlue();
-
                 jsonEmbed.put("color", rgb);
             }
 
@@ -67,7 +64,6 @@ public class DiscordWebhook {
 
             if (thumbnail != null) {
                 JSONObject jsonThumbnail = new JSONObject();
-
                 jsonThumbnail.put("url", thumbnail.getUrl());
                 jsonEmbed.put("thumbnail", jsonThumbnail);
             }
@@ -75,28 +71,24 @@ public class DiscordWebhook {
             List<JSONObject> jsonFields = new ObjectArrayList<>();
             for (EmbedObject.Field field : fields) {
                 JSONObject jsonField = new JSONObject();
-
                 jsonField.put("name", field.getName());
                 jsonField.put("value", field.getValue());
                 jsonField.put("inline", field.isInline());
-
                 jsonFields.add(jsonField);
             }
-
             jsonEmbed.put("fields", jsonFields.toArray());
             embedObjects.add(jsonEmbed);
         }
-
         json.put("embeds", embedObjects.toArray());
 
-        URL url = new URL(this.url);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) Constants.CACHED_WEBHOOK.openConnection();
         connection.addRequestProperty("Content-Type", "application/json");
         connection.addRequestProperty("User-Agent", "Webhook");
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
 
         OutputStream stream = connection.getOutputStream();
+        Bukkit.getLogger().warning(json.toString());
         stream.write(json.toString().getBytes(StandardCharsets.UTF_8));
         stream.flush();
         stream.close();

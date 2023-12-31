@@ -8,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.D_LINK;
-import static main.utils.Initializer.D_USING;
+import static main.utils.Constants.D_LINK;
+import static main.utils.Constants.D_USING;
 
 @SuppressWarnings("deprecation")
 public class Discord implements CommandExecutor, TabExecutor {

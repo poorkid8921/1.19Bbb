@@ -1,6 +1,6 @@
 package main.expansions.duels;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -8,15 +8,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Map;
 import java.util.Optional;
 
+import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.DuelUtils.*;
-import static main.utils.Initializer.MAIN_COLOR;
 
 public class Matchmaking {
     public static void start_unranked(Player p, int gm) {
         String n = p.getName();
-        Optional<Map.Entry<String, Integer>> op = Initializer.inMatchmaking.entrySet().stream().filter(r -> r.getValue() == gm && !r.getKey().equals(n)).findFirst();
+        Optional<Map.Entry<String, Integer>> op = Constants.inMatchmaking.entrySet().stream().filter(result -> result.getValue() == gm && !result.getKey().equals(n)).findFirst();
         if (op.isPresent()) {
-            int check = duelsavailable(gm);
+            int check = getDuelsAvailable(gm);
             if (check >= 32) {
                 p.sendActionBar("§aCouldn't find any open arena.");
                 return;
@@ -28,8 +28,8 @@ public class Matchmaking {
             return;
         }
 
-        p.sendActionBar("§aYou have been placed into the " + formattedtype(gm) + " queue.");
-        Initializer.inMatchmaking.put(n, gm);
+        p.sendActionBar("§aYou have been placed into the " + getDuelFormatted(gm) + " queue.");
+        Constants.inMatchmaking.put(n, gm);
         new BukkitRunnable() {
             int timeout = 0;
 
@@ -40,10 +40,10 @@ public class Matchmaking {
                     return;
                 }
 
-                Optional<Map.Entry<String, Integer>> op = Initializer.inMatchmaking.entrySet().stream().filter(r -> r.getValue() == gm && !r.getKey().equals(n)).findFirst();
+                Optional<Map.Entry<String, Integer>> op = Constants.inMatchmaking.entrySet().stream().filter(result -> result.getValue() == gm && !result.getKey().equals(n)).findFirst();
                 if (op.isPresent()) {
-                    Initializer.inMatchmaking.remove(n);
-                    int check = duelsavailable(gm);
+                    Constants.inMatchmaking.remove(n);
+                    int check = getDuelsAvailable(gm);
                     if (check >= 32) {
                         p.sendActionBar("§aCouldn't find any open arena.");
                         this.cancel();
@@ -59,10 +59,10 @@ public class Matchmaking {
 
                 if (++timeout == 10) {
                     p.sendActionBar("§aCouldn't find any available duels.");
-                    Initializer.inMatchmaking.remove(n);
+                    Constants.inMatchmaking.remove(n);
                     this.cancel();
                 }
             }
-        }.runTaskTimer(Initializer.p, 0L, 60L);
+        }.runTaskTimer(Constants.p, 0L, 60L);
     }
 }

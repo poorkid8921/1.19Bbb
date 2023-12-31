@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -21,10 +20,6 @@ public class CustomPlayerDataHolder {
     private WorldLocationHolder back;
     private AnimPackets lastPacket = AnimPackets.MISC;
     private boolean ignoreAnim = false;
-    private String k;
-    private ItemStack[] k1;
-    private ItemStack[] k2;
-    private ItemStack[] k3;
     private int runnableid;
     private boolean tagged;
 
@@ -36,37 +31,13 @@ public class CustomPlayerDataHolder {
                                   int c,
                                   int m,
                                   int t,
-                                  int money,
-                                  String k) {
+                                  int money) {
         this.wins = wins;
         this.losses = losses;
         this.money = money;
         this.c = c;
         this.m = m;
         this.t = t;
-        this.k = k;
-    }
-
-    public CustomPlayerDataHolder(int wins,
-                                  int losses,
-                                  int c,
-                                  int m,
-                                  int t,
-                                  int money,
-                                  String k,
-                                  ItemStack[] k1,
-                                  ItemStack[] k2,
-                                  ItemStack[] k3) {
-        this.wins = wins;
-        this.losses = losses;
-        this.money = money;
-        this.c = c;
-        this.m = m;
-        this.t = t;
-        this.k = k;
-        this.k1 = k1;
-        this.k2 = k2;
-        this.k3 = k3;
     }
 
     public void incrementWins() {

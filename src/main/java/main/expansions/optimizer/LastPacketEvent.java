@@ -11,7 +11,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.playerData;
+import static main.utils.Constants.playerData;
 
 public class LastPacketEvent extends SimplePacketListenerAbstract {
     public LastPacketEvent() {

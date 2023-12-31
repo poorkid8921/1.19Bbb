@@ -1,20 +1,20 @@
 package main.commands;
 
+import main.utils.Constants;
 import main.utils.Instances.TpaRequest;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.RequestManager.*;
 import static main.utils.Utils.translate;
 
 public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String msg = Initializer.EXCEPTION_NO_ACTIVE_TPAREQ;
+        String msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ;
         TpaRequest request;
         String n = "";
         String un = sender.getName();
@@ -30,7 +30,7 @@ public class Tpaccept implements CommandExecutor {
             } else
                 n = p.getName();
             request = getTPArequest(un, n);
-            msg = Initializer.EXCEPTION_NO_ACTIVE_TPAREQ1 +
+            msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ1 +
                     MAIN_COLOR + args[0] + ".";
         }
 
@@ -38,7 +38,7 @@ public class Tpaccept implements CommandExecutor {
             sender.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            sender.sendMessage(Initializer.EXCEPTION_PLAYER_TPSELF);
+            sender.sendMessage(Constants.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 

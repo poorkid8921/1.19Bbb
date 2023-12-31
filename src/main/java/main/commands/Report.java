@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,7 +11,7 @@ public class Report implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Initializer.EXCEPTION_REPORT_SPECIFY_PLAYER);
+            sender.sendMessage(Constants.EXCEPTION_REPORT_SPECIFY_PLAYER);
             return true;
         }
 
@@ -21,7 +21,7 @@ public class Report implements CommandExecutor {
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");
 
-            Utils.report((Player) sender, msgargs.toString(), null);
+            Utils.submitReport((Player) sender, msgargs.toString(), null);
         }
         return true;
     }

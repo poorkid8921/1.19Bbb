@@ -2,24 +2,20 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.expansions.bungee.HandShake;
 import main.expansions.duels.Matchmaking;
-import main.expansions.scoreboard.ChannelInjector;
-import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
-import main.expansions.scoreboard.util.buffer.NetOutput;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.WorldLocationHolder;
-import main.utils.Initializer;
 import main.utils.RequestManager;
 import main.utils.Utils;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -29,6 +25,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
@@ -41,25 +38,28 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import static main.expansions.guis.Utils.*;
+import static main.utils.Constants.*;
 import static main.utils.DuelUtils.*;
-import static main.utils.Initializer.*;
-import static main.utils.Initializer.MAIN_COLOR;
-import static main.utils.Initializer.SECOND_COLOR;
 import static main.utils.RequestManager.*;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
 
+    @EventHandler
+    public void onProjectileLaunchEvent(ProjectileLaunchEvent e) {
+        if (!(e.getEntity() instanceof EnderPearl pearl))
+            return;
+        Bukkit.getScheduler().runTaskLater(Constants.p, () -> ((Player) pearl.getShooter())
+                .setCooldown(Material.ENDER_PEARL, 100),
+                1L);
+    }
+
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
-
         if (decoded == null) {
-            String ip = e.getOriginalSocketAddressHostname() + " - ";
             e.setFailMessage("Server closed");
-            HandShake.Success data = (HandShake.Success) decoded;
-            Bukkit.getLogger().warning("ip = " + ip + "; serverHost = " + data.serverHostname() + "; socketAddress = " + data.socketAddressHostname());
             e.setFailed(true);
             return;
         }
@@ -83,7 +83,7 @@ public class Events implements Listener {
     @EventHandler
     private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+            Bukkit.getScheduler().runTaskLater(Constants.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
 
     @EventHandler
@@ -101,7 +101,7 @@ public class Events implements Listener {
     @EventHandler
     private void onTeleport(PlayerTeleportEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN)
-            Initializer.inFFA.remove(e.getPlayer());
+            Constants.inFFA.remove(e.getPlayer());
     }
 
     @EventHandler
@@ -109,24 +109,24 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String playerName = p.getName();
 
-        if (Initializer.teams.containsKey(playerName)) {
+        if (Constants.teams.containsKey(playerName)) {
             DuelHolder tpr = getPlayerDuel(playerName);
             ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player pw = plist.get(1);
             int red = tpr.getRed();
             int blue = tpr.getBlue();
             String pwn = pw.getName();
-            int t1 = Initializer.teams.get(pwn);
+            int t1 = Constants.teams.get(pwn);
 
             if (t1 == 1) red += 1;
             else blue += 1;
-            resume(pw, p, false, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
+            showDuelResume(pw, p, false, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
-            Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> {
-                Initializer.teams.remove(playerName);
-                Initializer.teams.remove(pwn);
-                Initializer.duel.remove(tpr);
-                pw.teleportAsync(Initializer.spawn);
+            Bukkit.getScheduler().scheduleAsyncDelayedTask(Constants.p, () -> {
+                Constants.teams.remove(playerName);
+                Constants.teams.remove(pwn);
+                Constants.duel.remove(tpr);
+                pw.teleportAsync(Constants.spawn);
             }, 60L);
         }
         CustomPlayerDataHolder D = playerData.get(playerName);
@@ -136,10 +136,10 @@ public class Events implements Listener {
         RequestManager.tpa.remove(getTPArequest(playerName));
         duel.remove(getDUELrequest(playerName));
 
-        Initializer.lastReceived.remove(playerName);
-        Initializer.msg.remove(playerName);
-        Initializer.tpa.remove(playerName);
-        Initializer.inFFA.remove(p);
+        Constants.lastReceived.remove(playerName);
+        Constants.msg.remove(playerName);
+        Constants.tpa.remove(playerName);
+        Constants.inFFA.remove(p);
         e.setQuitMessage(MAIN_COLOR + "← " + playerName);
     }
 
@@ -172,7 +172,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
                 if (!e.getCurrentItem().getItemMeta().hasLore()) return;
 
-                Utils.report(p, inv.second(), switch (slot) {
+                Utils.submitReport(p, inv.second(), switch (slot) {
                     case 10 -> "Cheating";
                     case 11 -> "Doxxing";
                     case 12 -> "Ban Evading";
@@ -211,7 +211,7 @@ public class Events implements Listener {
                     case "0" -> { // spectate
                         ItemStack item = e.getCurrentItem();
                         if (item.getType() == Material.PLAYER_HEAD) {
-                            Initializer.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer().get(spectateHead, PersistentDataType.STRING));
+                            Constants.spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer().get(spectateHead, PersistentDataType.STRING));
                             p.getInventory().close();
                         }
                     }
@@ -227,16 +227,14 @@ public class Events implements Listener {
 
     @EventHandler
     private void onGUIClose(InventoryCloseEvent e) {
-        if (e.getInventory() instanceof PlayerInventory) return;
-        inInventory.remove(e.getPlayer().getName());
+        if (!(e.getInventory() instanceof PlayerInventory))
+            inInventory.remove(e.getPlayer().getName());
     }
 
     @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (!(e.getEntity() instanceof Player p))
-            return;
-
-        if (!(e.getDamager() instanceof Player attacker))
+        if (!(e.getEntity() instanceof Player p) ||
+                !(e.getDamager() instanceof Player attacker))
             return;
 
         CustomPlayerDataHolder D0 = playerData.get(p.getName());
@@ -280,8 +278,8 @@ public class Events implements Listener {
             }
         };
 
-        runnable.runTaskTimer(Initializer.p, 0L, 20L);
-        runnable2.runTaskTimer(Initializer.p, 0L, 20L);
+        runnable.runTaskTimer(Constants.p, 0L, 20L);
+        runnable2.runTaskTimer(Constants.p, 0L, 20L);
         D0.setRunnableid(runnable.getTaskId());
         D1.setRunnableid(runnable2.getTaskId());
     }
@@ -291,13 +289,13 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String name = p.getName();
         Location l = p.getLocation();
-        if (Initializer.inFFA.contains(p)) {
-            Initializer.inFFA.remove(p);
+        if (Constants.inFFA.contains(p)) {
+            Constants.inFFA.remove(p);
         } else e.getDrops().clear();
 
         Player killer = p.getKiller();
         World w = p.getWorld();
-        if (Initializer.teams.containsKey(name)) {
+        if (Constants.teams.containsKey(name)) {
             e.setCancelled(true);
             p.setNoDamageTicks(100);
             p.setFoodLevel(20);
@@ -323,11 +321,11 @@ public class Events implements Listener {
             fw.detonate();
 
             String kuid = kp.getName();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Constants.p, () -> {
                 int newrounds = tpr.getRounds() + 1;
                 int red = tpr.getRed();
                 int blue = tpr.getBlue();
-                int t1 = Initializer.teams.get(kuid);
+                int t1 = Constants.teams.get(kuid);
                 Player redp, bluep;
 
                 if (t1 == 1) {
@@ -354,24 +352,24 @@ public class Events implements Listener {
 
                 if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(kuid) == null) {
                     if (red > blue) {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
+                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
                     } else if (blue > red) {
-                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
+                        showDuelResume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
                     } else {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
+                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
                     }
 
-                    Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                        Initializer.teams.remove(kuid);
-                        Initializer.teams.remove(name);
-                        kp.teleportAsync(Initializer.spawn);
-                        p.teleportAsync(Initializer.spawn);
+                    Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                        Constants.teams.remove(kuid);
+                        Constants.teams.remove(name);
+                        kp.teleportAsync(Constants.spawn);
+                        p.teleportAsync(Constants.spawn);
                     }, 60L);
                     //boolean resetted;
                     //do {
                     //resetted = true;
 
-                    Initializer.inDuel.remove(tpr);
+                    Constants.inDuel.remove(tpr);
                     updateDuels();
                     updateSpectate();
                     //} while (!ffa.loopyReset(data) && !resetted);
@@ -380,19 +378,19 @@ public class Events implements Listener {
 
                 if (newrounds == tpr.getMaxrounds()) {
                     if (red > blue) {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
+                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
                     } else if (blue > red) {
-                        resume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
+                        showDuelResume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
                     } else {
-                        resume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
+                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
                     }
 
-                    Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                        Initializer.teams.remove(kuid);
-                        Initializer.teams.remove(name);
-                        Initializer.inDuel.remove(tpr);
-                        kp.teleportAsync(Initializer.spawn);
-                        p.teleportAsync(Initializer.spawn);
+                    Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                        Constants.teams.remove(kuid);
+                        Constants.teams.remove(name);
+                        Constants.inDuel.remove(tpr);
+                        kp.teleportAsync(Constants.spawn);
+                        p.teleportAsync(Constants.spawn);
                         updateDuels();
                         updateSpectate();
                     }, 60L);
@@ -418,11 +416,7 @@ public class Events implements Listener {
                 (int) l.getZ(),
                 l.getWorld()));
 
-        Utils.sendPacket(p, Utils.createTeamPacket(2, 3, D0.getK(), p, GSON.serialize(MiniMessage.miniMessage()
-                .deserialize("<#f54254>☠ <reset>ᴅᴇᴀᴛʜs <#f54254>" + p.getStatistic(Statistic.DEATHS))
-        )));
-
-        p.sendMessage(Initializer.BACK);
+        p.sendMessage(Constants.BACK);
         String kp;
 
         if (killer == null || killer == p) {
@@ -451,9 +445,6 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
                 default -> "suicided";
             });
-            Utils.sendPacket(p, Utils.createTeamPacket(2, 2, D1.getK(), killer, GSON.serialize(MiniMessage.miniMessage()
-                    .deserialize("<#f54254>⚔ <reset>ᴋɪʟʟs  <#f54254>" + killer.getStatistic(Statistic.PLAYER_KILLS))
-            )));
         }
 
         CustomPlayerDataHolder D = playerData.get(kp);
@@ -469,7 +460,7 @@ public class Events implements Listener {
                 Firework fw = (Firework) w.spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
                 FireworkMeta fwm = fw.getFireworkMeta();
                 fwm.setPower(2);
-                fwm.addEffect(FireworkEffect.builder().withColor(color.get(Initializer.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+                fwm.addEffect(FireworkEffect.builder().withColor(color.get(Constants.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
                 fw.setFireworkMeta(fwm);
             }
             case 2 -> w.strikeLightningEffect(l.add(0, 1, 0));
@@ -483,52 +474,16 @@ public class Events implements Listener {
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleport(spawn);
 
-        String teamName = String.valueOf(Practice.teamIndex++);
-        /*// #create
-        Utils.sendPacket(p, Utils.getPacket(p, 0, teamName));
-
-        // #addTeam
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 0, teamName, p, Initializer.BLANK));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 0));
-
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 1, teamName, p, GSON.serialize(MiniMessage.miniMessage()
-                .deserialize("<gradient:#f54254:#d4335b>" + name + "</gradient>"))));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 1));
-
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 2, teamName, p, GSON.serialize(MiniMessage.miniMessage()
-                .deserialize("<#f54254>⚔ <reset>ᴋɪʟʟs  <#f54254>" + p.getStatistic(Statistic.PLAYER_KILLS))
-        )));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 2));
-
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 3, teamName, p, GSON.serialize(MiniMessage.miniMessage()
-                .deserialize("<#f54254>☠ <reset>ᴅᴇᴀᴛʜs <#f54254>" + p.getStatistic(Statistic.DEATHS))
-        )));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 3));
-
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 4, teamName, p, Initializer.BLANK));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 4));
-
-        Utils.sendPacket(p, Utils.createTeamPacket(0, 5, teamName, p, Initializer.SUBTITLE));
-        Utils.sendPacket(p, Utils.createScorePacket(p, 0, teamName, 5));
-
-        // #display
-        ByteBuf buf = ChannelInjector.getChannel(p).alloc().buffer();
-        NetOutput output = new ByteBufNetOutput(buf);
-        output.writeVarInt(0x51);
-        output.writeByte(1);
-        output.writeString(teamName);
-        Utils.sendPacket(p, buf);*/
-
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
-            Initializer.tpa.add(name);
-            Initializer.msg.add(name);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, 0, teamName));
+            Constants.tpa.add(name);
+            Constants.msg.add(name);
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, 0));
         } else {
             if (D.getT() == 0)
-                Initializer.tpa.add(name);
+                Constants.tpa.add(name);
             if (D.getM() == 0)
-                Initializer.msg.add(name);
+                Constants.msg.add(name);
         }
     }
 

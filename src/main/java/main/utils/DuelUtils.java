@@ -14,19 +14,20 @@ import java.util.Date;
 import java.util.Locale;
 
 import static main.expansions.duels.KitOverrider.*;
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.*;
+import static main.utils.Constants.*;
 
 public class DuelUtils {
-    public static NamespacedKey spectateHead = new NamespacedKey(Initializer.p, "against");
+    public static NamespacedKey spectateHead = new NamespacedKey(Constants.p, "against");
     static SimpleDateFormat MM_HH = new SimpleDateFormat("mm:ss", Locale.ENGLISH);
-    static TextComponent hi = new TextComponent("§7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ");
 
-    public static int duelsavailable(int gm) {
-        return Initializer.duel.stream().filter(r -> r.getType() == gm && r.getRounds() > 0).toList().size();
+    public static int getDuelsAvailable(int gamemode) {
+        return Constants.duel.stream().filter(result -> result.getType() == gamemode &&
+                        result.getRounds() > 0)
+                .toList()
+                .size();
     }
 
-    public static String formattedtype(int i) {
+    public static String getDuelFormatted(int i) {
         return switch (i) {
             case 0 -> "Field";
             case 1 -> "Flat";
@@ -35,20 +36,21 @@ public class DuelUtils {
         };
     }
 
-    public static void resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
+    public static void showDuelResume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
-        Initializer.valid.add(rd);
+        TextComponent duelresults = new TextComponent("§7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ");
+        duelresults.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(pl.getHealth() / 2) + " " + pl.getStatistic(Statistic.PLAYER_KILLS) + " " + pl.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
+        Constants.valid.add(rd);
         pl.sendMessage(TELEPORTING_BACK);
-        pl.sendMessage(hi);
+        pl.sendMessage(duelresults);
         pl.sendTitle(ff, null, 1, 100, 1);
         pl.getInventory().clear();
         if (i) {
-            Initializer.valid.add(ad);
+            Constants.valid.add(ad);
             p.sendMessage(TELEPORTING_BACK);
-            p.sendMessage(hi);
+            p.sendMessage(duelresults);
             p.sendTitle(f, null, 1, 100, 1);
             p.getInventory().clear();
         }
@@ -67,20 +69,21 @@ public class DuelUtils {
             D.incrementLosses();
     }
 
-    public static void resume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
+    public static void showDuelResume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
         String rd = pl.getName();
         String ad = p.getName();
 
-        hi.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(p.getHealth() / 2) + " " + p.getStatistic(Statistic.PLAYER_KILLS) + " " + p.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
-        Initializer.valid.add(rd);
+        TextComponent duelresults = new TextComponent("§7ᴄʟɪᴄᴋ ᴛᴏ ꜱʜᴏᴡ ᴛʜᴇ ᴅᴜᴇʟ ʀᴇꜱᴜʟᴛꜱ");
+        duelresults.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/event " + rw + " " + r + " " + b + " " + MM_HH.format(new Date(n - o)) + t + ad + " " + Math.round(p.getHealth() / 2) + " " + p.getStatistic(Statistic.PLAYER_KILLS) + " " + p.getStatistic(Statistic.DEATHS) + " " + Practice.config.getInt("r." + rd + ".wins") + " " + Practice.config.getInt("r." + rd + ".losses")));
+        Constants.valid.add(rd);
         pl.sendMessage(TELEPORTING_BACK);
-        pl.sendMessage(hi);
+        pl.sendMessage(duelresults);
         pl.sendTitle(ff, null, 1, 100, 1);
         pl.getInventory().clear();
         if (i) {
-            Initializer.valid.add(ad);
+            Constants.valid.add(ad);
             p.sendMessage(TELEPORTING_BACK);
-            p.sendMessage(hi);
+            p.sendMessage(duelresults);
             p.sendTitle(f, null, 1, 100, 1);
             p.getInventory().clear();
         }
@@ -330,17 +333,16 @@ public class DuelUtils {
                 };
             }
         }
-
         loc1.setYaw(-45.0F);
         loc2.setYaw(45.0F);
 
-        user.teleportAsync(loc1).thenAccept(r -> {
+        user.teleportAsync(loc1).thenAccept(result -> {
             user.setNoDamageTicks(100);
             user.setFoodLevel(20);
             user.setHealth(20);
         });
 
-        recipient.teleportAsync(loc2).thenAccept(r -> {
+        recipient.teleportAsync(loc2).thenAccept(result -> {
             recipient.setNoDamageTicks(100);
             recipient.setFoodLevel(20);
             recipient.setHealth(20);
@@ -364,8 +366,8 @@ public class DuelUtils {
                     user.sendTitle(MAIN_COLOR + "Fight!", "", 1, 30, 1);
                     recipient.sendTitle(MAIN_COLOR + "Fight!", "", 1, 30, 1);
 
-                    user.teleportAsync(finalLoc1).thenAccept(r -> w.setType(finalLoc1.subtract(0, 1, 0), Material.GOLD_BLOCK));
-                    recipient.teleportAsync(finalLoc2).thenAccept(r -> w.setType(finalLoc2.subtract(0, 1, 0), Material.GOLD_BLOCK));
+                    user.teleportAsync(finalLoc1).thenAccept(result -> w.setType(finalLoc1.subtract(0, 1, 0), Material.GOLD_BLOCK));
+                    recipient.teleportAsync(finalLoc2).thenAccept(result -> w.setType(finalLoc2.subtract(0, 1, 0), Material.GOLD_BLOCK));
 
                     this.cancel();
                     return;
@@ -381,19 +383,6 @@ public class DuelUtils {
                 user.sendMessage(msg);
                 recipient.sendMessage(msg);
             }
-        }.runTaskTimer(Initializer.p, 0L, 20L);
-    }
-
-    public static String getLengthofDuel(int i) {
-        return "§7" + i + "V" + i;
-    }
-
-    public static Material formattedtype_Material(int i) {
-        return switch (i) {
-            case 0 -> Material.RESPAWN_ANCHOR;
-            case 1 -> Material.END_CRYSTAL;
-            case 2 -> Material.DIAMOND_SWORD;
-            default -> null;
-        };
+        }.runTaskTimer(Constants.p, 0L, 20L);
     }
 }

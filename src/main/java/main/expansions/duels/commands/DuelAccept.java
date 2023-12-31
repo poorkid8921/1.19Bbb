@@ -1,8 +1,7 @@
 package main.expansions.duels.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.DuelHolder;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,15 +12,15 @@ import java.util.Map;
 
 import static main.expansions.guis.Utils.updateDuels;
 import static main.expansions.guis.Utils.updateSpectate;
-import static main.utils.DuelUtils.duelsavailable;
+import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Constants.teams;
+import static main.utils.DuelUtils.getDuelsAvailable;
 import static main.utils.DuelUtils.start;
-import static main.utils.Initializer.teams;
-import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.RequestManager.getDUELrequest;
 
 public class DuelAccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String msg = Initializer.EXCEPTION_NO_DUEL_REQ;
+        String msg = Constants.EXCEPTION_NO_DUEL_REQ;
         DuelHolder request;
         String n = "";
         String un = sender.getName();
@@ -37,7 +36,7 @@ public class DuelAccept implements CommandExecutor {
             } else
                 n = p.getName();
             request = getDUELrequest(un, n);
-            msg = Initializer.EXCEPTION_NO_ACTIVE_DUELREQ +
+            msg = Constants.EXCEPTION_NO_ACTIVE_DUELREQ +
                     MAIN_COLOR +
                     args[0] +
                     ".";
@@ -47,22 +46,22 @@ public class DuelAccept implements CommandExecutor {
             sender.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            sender.sendMessage(Initializer.EXCEPTION_PLAYER_DUELSELF);
+            sender.sendMessage(Constants.EXCEPTION_PLAYER_DUELSELF);
             return true;
         }
 
         teams.putAll(Map.of(n, 0,
                 un, 1));
 
-        int check = duelsavailable(request.getType());
+        int check = getDuelsAvailable(request.getType());
         if (check == 32) {
-            Initializer.duel.remove(request);
-            sender.sendMessage(Initializer.EXCEPTION_NO_ARENAS_OPEN);
+            Constants.duel.remove(request);
+            sender.sendMessage(Constants.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
-        Initializer.duel.remove(request);
-        Initializer.inDuel.add(request);
+        Constants.duel.remove(request);
+        Constants.inDuel.add(request);
         start((Player) sender, request.getSender(), request.getType(), 1, request.getMaxrounds(), check + 1);
         updateDuels();
         updateSpectate();

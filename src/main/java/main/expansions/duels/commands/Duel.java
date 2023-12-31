@@ -1,9 +1,8 @@
 package main.expansions.duels.commands;
 
 import main.expansions.guis.Utils;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.DuelHolder;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.utils.DuelUtils.duelsavailable;
+import static main.utils.DuelUtils.getDuelsAvailable;
 import static main.utils.RequestManager.addDUELrequest;
 import static main.utils.RequestManager.getDUELrequest;
 
@@ -61,35 +60,35 @@ public class Duel implements CommandExecutor, TabExecutor {
         }
 
         int d = getGM(gm);
-        int check = duelsavailable(d);
+        int check = getDuelsAvailable(d);
 
         if (check == 32) {
-            sender.sendMessage(Initializer.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage(Constants.EXCEPTION_NO_ARENAS_OPEN);
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            sender.sendMessage(Initializer.EXCEPTION_DUEL_TARGET_OFF);
+            sender.sendMessage(Constants.EXCEPTION_DUEL_TARGET_OFF);
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            sender.sendMessage(Initializer.EXCEPTION_DUEL_SELF);
+            sender.sendMessage(Constants.EXCEPTION_DUEL_SELF);
             return true;
         }
 
         DuelHolder tpr = getDUELrequest(recipient.getName());
 
-        if (Initializer.teams.containsKey(recipient.getName())) {
-            sender.sendMessage(Initializer.EXCEPTION_ALREADY_IN_DUEL);
+        if (Constants.teams.containsKey(recipient.getName())) {
+            sender.sendMessage(Constants.EXCEPTION_ALREADY_IN_DUEL);
             return true;
         }
 
         if (tpr != null) {
             if (tpr.getSender().equals(sender)) {
-                sender.sendMessage(Initializer.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage(Constants.GLOBAL_EXCEPTION_ALREADY_REQ);
                 return true;
             }
         }

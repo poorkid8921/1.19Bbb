@@ -16,10 +16,9 @@ import main.expansions.duels.commands.Event;
 import main.expansions.optimizer.AnimationEvent;
 import main.expansions.optimizer.InteractionEvent;
 import main.expansions.optimizer.LastPacketEvent;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.LocationHolder;
-import main.utils.Initializer;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
@@ -41,14 +40,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
-import static main.utils.Initializer.*;
+import static main.utils.Constants.*;
 
 public class Practice extends JavaPlugin implements TabExecutor {
     public static FileConfiguration config;
     public static File dataFolder;
     public static World d;
     public static World d0;
-    public static int teamIndex = 0;
     private static File dataFile;
     int flatstr = 1;
     int ticked = 0;
@@ -57,8 +55,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
     LocationHolder getRandomLoc(World w) {
         LocationHolder loc = null;
         while (loc == null) {
-            int boundX = Initializer.RANDOM.nextInt(10000);
-            int boundZ = Initializer.RANDOM.nextInt(10000);
+            int boundX = Constants.RANDOM.nextInt(10000);
+            int boundZ = Constants.RANDOM.nextInt(10000);
 
             if (boundX > 5000)
                 boundX = -boundX;
@@ -162,7 +160,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 d.getEntities().stream()
-                        .filter(r -> r instanceof EnderCrystal)
+                        .filter(result -> result instanceof EnderCrystal)
                         .forEach(Entity::remove);
 
                 if (ticked++ == 3) {
@@ -206,7 +204,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     Arena.arenas.get("flat").reset(10000);
             }, 0L, 2400L);
         }, 2400L);
-
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
         this.getCommand("discord").setExecutor(new Discord());
@@ -253,9 +250,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
         File arenasFolder = new File(dataFolder, "arenas");
         if (!arenasFolder.exists()) arenasFolder.mkdirs();
         Arena.arenas.clear();
-        Arrays.stream(arenasFolder.listFiles()).parallel().forEach(r -> {
+        Arrays.stream(arenasFolder.listFiles()).parallel().forEach(result -> {
             try {
-                Arena arena = ArenaIO.loadArena(r);
+                Arena arena = ArenaIO.loadArena(result);
                 if (arena == null)
                     return;
                 Arena.arenas.put(arena.getName(), arena);
@@ -272,37 +269,36 @@ public class Practice extends JavaPlugin implements TabExecutor {
         PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
         PacketEvents.getAPI().init();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
+        Constants.init();
 
-        Initializer.init();
         d = Bukkit.getWorld("world");
         d0 = Bukkit.getWorld("world_the_end");
-        Initializer.ffa = new Location(d,
+        Constants.ffa = new Location(d,
                 -243.5,
                 156,
                 -580.5);
-        Initializer.flat = new Location(d,
+        Constants.flat = new Location(d,
                 -2.5,
                 131.0625,
                 363.5);
-        Initializer.spawn = new Location(d,
+        Constants.spawn = new Location(d,
                 0.5,
                 86,
                 0.5);
-        Initializer.nethpot = new Location(d,
+        Constants.nethpot = new Location(d,
                 0.5,
                 86,
                 0.5);
-        Initializer.spawn.setYaw(
+        Constants.spawn.setYaw(
                 90F
         );
-        Initializer.flat.setYaw(
+        Constants.flat.setYaw(
                 90F
         );
 
         if (config.contains("r")) {
             int dataLoaded = 0;
             for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                String k = String.valueOf(teamIndex++);
                 for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
                     int wins = 0;
                     int losses = 0;
@@ -319,7 +315,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         case "z" -> money = config.getInt("r." + key + "." + key2);
                     }
 
-                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, k));
+                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money));
                 }
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
@@ -374,9 +370,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         value.getC() == 0 &&
                         value.getM() == 0 &&
                         value.getT() == 0 &&
-                        value.getK1() == null &&
-                        value.getK2() == null &&
-                        value.getK3() == null &&
                         value.getMoney() == 0)
                     continue;
 
@@ -387,9 +380,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 config.set("r." + key + ".m", value.getM());
                 config.set("r." + key + ".t", value.getT());
                 config.set("r." + key + ".z", value.getMoney());
-                config.set("r." + key + ".a", value.getK1());
-                config.set("r." + key + ".b", value.getK2());
-                config.set("r." + key + ".c", value.getK3());
             }
         }
 

@@ -18,8 +18,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
 
-import static main.utils.DuelUtils.formattedtype;
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.DuelUtils.getDuelFormatted;
 
 @SuppressWarnings("deprecation")
 public class RequestManager {
@@ -33,7 +33,6 @@ public class RequestManager {
         for (TpaRequest r : tpa) {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
-
         return null;
     }
 
@@ -42,9 +41,11 @@ public class RequestManager {
             if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
-
         return null;
     }
+
+    static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
+    static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
 
     public static void addTPArequest(Player sender, Player receiver, boolean tpahere) {
         String sn = sender.getName();
@@ -53,8 +54,8 @@ public class RequestManager {
         TextComponent b = new TextComponent("§7[§cX§7]");
         b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sn));
 
-        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
-        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ACCEPT_TEXT));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, DENY_TEXT));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage("§7Request sent to " + MAIN_COLOR + Utils.translate(receiver.getDisplayName()));
@@ -74,33 +75,30 @@ public class RequestManager {
             public void run() {
                 tpa.remove(tpaRequest);
             }
-        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
+        }.runTaskLaterAsynchronously(Constants.p, 2400L);
 
         bukkitTasks.put(sn, br.getTaskId());
     }
 
     public static DuelHolder getDUELrequest(String user) {
-        for (DuelHolder r : Initializer.duel) {
+        for (DuelHolder r : Constants.duel) {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
-
         return null;
     }
 
     public static DuelHolder getPlayerDuel(String user) {
-        for (DuelHolder r : Initializer.inDuel) {
+        for (DuelHolder r : Constants.inDuel) {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
         }
-
         return null;
     }
 
     public static DuelHolder getDUELrequest(String user, String lookup) {
-        for (DuelHolder r : Initializer.duel) {
+        for (DuelHolder r : Constants.duel) {
             if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
         }
-
         return null;
     }
 
@@ -108,7 +106,7 @@ public class RequestManager {
         String sn = sender.getName();
         String rn = receiver.getName();
         DuelHolder duelRequest = new DuelHolder(sn, rn, t, rounds, 0, sr, sb, System.currentTimeMillis(), arena, length);
-        Initializer.duel.add(duelRequest);
+        Constants.duel.add(duelRequest);
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
         sender.sendMessage("§7Request sent to " + MAIN_COLOR + main.utils.Utils.translate(receiver.getDisplayName()));
 
@@ -117,10 +115,10 @@ public class RequestManager {
         TextComponent b = new TextComponent("§7[§cX§7]");
         b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dueldeny " + sn));
 
-        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to accept the teleportation request")));
-        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to deny the teleportation request")));
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ACCEPT_TEXT));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, DENY_TEXT));
 
-        TextComponent duelType = new TextComponent(formattedtype(t));
+        TextComponent duelType = new TextComponent(getDuelFormatted(t));
         duelType.setColor(ChatColor.of("#fc282f"));
 
         TextComponent duelType3 = new TextComponent(rounds == 1 ? " a round" : rounds + " rounds");
@@ -130,6 +128,6 @@ public class RequestManager {
         e.setColor(ChatColor.of("#fc282f"));
 
         receiver.sendMessage(e, tc, duelType, duelType2, duelType3, a, space, b);
-        Bukkit.getScheduler().scheduleAsyncDelayedTask(Initializer.p, () -> Initializer.duel.remove(duelRequest), 2400L);
+        Bukkit.getScheduler().scheduleAsyncDelayedTask(Constants.p, () -> Constants.duel.remove(duelRequest), 2400L);
     }
 }

@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.Practice;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.LocationHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,8 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.*;
-import static main.utils.Initializer.SECOND_COLOR;
+import static main.utils.Constants.*;
 
 public class RTP implements CommandExecutor, TabExecutor {
     @Override
@@ -37,7 +36,7 @@ public class RTP implements CommandExecutor, TabExecutor {
 
                     LocationHolder locH = endRTP.get(RANDOM.nextInt(100));
                     Location locC = new Location(Practice.d0, locH.getX(), locH.getY(), locH.getZ());
-                    p.teleportAsync(locC).thenAccept(r -> {
+                    p.teleportAsync(locC).thenAccept(result -> {
                         p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
                         p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
                         p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
@@ -65,7 +64,7 @@ public class RTP implements CommandExecutor, TabExecutor {
             if (playersRTPing.size() > 0) {
                 LocationHolder locH = overworldRTP.get(RANDOM.nextInt(100));
                 Location locC = new Location(Practice.d, locH.getX(), locH.getY(), locH.getZ());
-                p.teleportAsync(locC).thenAccept(r -> {
+                p.teleportAsync(locC).thenAccept(result -> {
                     playersRTPing.remove(sn);
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
                     p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
@@ -84,7 +83,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                     }
                 });
 
-                Bukkit.getPlayer(playersRTPing.get(Initializer.RANDOM.nextInt(playersRTPing.size()))).teleportAsync(locC).thenAccept(r -> {
+                Bukkit.getPlayer(playersRTPing.get(Constants.RANDOM.nextInt(playersRTPing.size()))).teleportAsync(locC).thenAccept(result -> {
                     playersRTPing.remove(sn);
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
                     p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
@@ -109,7 +108,7 @@ public class RTP implements CommandExecutor, TabExecutor {
 
         LocationHolder locH = overworldRTP.get(RANDOM.nextInt(100));
         Location locC = new Location(Practice.d, locH.getX(), locH.getY(), locH.getZ());
-        p.teleportAsync(locC).thenAccept(r -> {
+        p.teleportAsync(locC).thenAccept(result -> {
             playersRTPing.remove(sn);
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());

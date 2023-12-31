@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -31,7 +31,7 @@ public class Msg implements CommandExecutor, TabCompleter {
         }
 
         String tn = target.getName();
-        if (!Initializer.msg.contains(tn) && !sender.hasPermission("has.staff")) {
+        if (!Constants.msg.contains(tn) && !sender.hasPermission("has.staff")) {
             sender.sendMessage("§7You can't send messages to this player since they've locked their messages.");
             return true;
         }
@@ -44,18 +44,18 @@ public class Msg implements CommandExecutor, TabCompleter {
         sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
         target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
         String pn = sender.getName();
-        Initializer.lastReceived.put(pn, tn);
-        Initializer.lastReceived.put(tn, pn);
+        Constants.lastReceived.put(pn, tn);
+        Constants.lastReceived.put(tn, pn);
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ? Initializer.msg
+        return args.length < 1 ? Constants.msg
                 .stream()
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList()) :
-                Initializer.msg
+                Constants.msg
                         .stream()
                         .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
                         .sorted(String::compareToIgnoreCase)

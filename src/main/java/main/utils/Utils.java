@@ -1,11 +1,5 @@
 package main.utils;
 
-import io.netty.buffer.ByteBuf;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import main.expansions.scoreboard.ChannelInjector;
-import main.expansions.scoreboard.util.buffer.ByteBufNetOutput;
-import main.expansions.scoreboard.util.buffer.NetOutput;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,8 +15,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.*;
+import static main.utils.Constants.*;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -63,14 +56,14 @@ public class Utils {
                 "ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ " + MAIN_COLOR + fancy + " §fꜰᴏʀ " + SECOND_COLOR + "$" + money));
     }
 
-    public static void report(Player pp, String report, String reason) {
+    public static void submitReport(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
+        Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
             String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
-            DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
+            DiscordWebhook webhook = new DiscordWebhook();
             webhook.setAvatarUrl(avturl);
             webhook.setUsername("Report");
             webhook.addEmbed(reason == null ?
@@ -110,68 +103,5 @@ public class Utils {
         skull.setOwner(player);
         item.setItemMeta(skull);
         return item;
-    }
-
-    public static ByteBuf getPacket(Player player,
-                                    int mode,
-                                    String a) {
-        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
-
-        NetOutput output = new ByteBufNetOutput(buf);
-        output.writeVarInt(0x58);
-        output.writeString(a);
-        output.writeByte(mode);
-
-        output.writeString(TITLE);
-        output.writeVarInt(0);
-        return buf;
-    }
-
-    @SneakyThrows
-    public static void sendPacket(Player player, ByteBuf packet) {
-        ChannelInjector.sendPacket(player, packet);
-    }
-
-    public static ByteBuf createScorePacket(@NonNull Player player, int action, String objectiveName, int index) {
-        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
-        NetOutput output = new ByteBufNetOutput(buf);
-
-        output.writeVarInt(0x5B);
-        output.writeString(ChatColor.values()[index].toString());
-        output.writeVarInt(action);
-        output.writeString(objectiveName);
-
-        if (action != 1) {
-            output.writeVarInt(0);
-        }
-        return buf;
-    }
-
-    @SneakyThrows
-    public static ByteBuf createTeamPacket(int mode, int index,
-                                           @NonNull String teamName,
-                                           Player player,
-                                           String text) {
-        String teamEntry = ChatColor.values()[index].toString();
-        ByteBuf buf = ChannelInjector.getChannel(player).alloc().buffer();
-        NetOutput packet = new ByteBufNetOutput(buf);
-        packet.writeVarInt(0x5A);
-
-        packet.writeString(teamName);
-        packet.writeByte(mode);
-
-        packet.writeString("{\"text\":\"\"}");
-        packet.writeByte(10);
-        packet.writeString("always");
-        packet.writeString("always");
-        packet.writeVarInt(21);
-        packet.writeString(text);
-        packet.writeString("{\"text\":\"\"}");
-
-        if (mode == 0) {
-            packet.writeVarInt(1);
-            packet.writeString(teamEntry);
-        }
-        return buf;
     }
 }

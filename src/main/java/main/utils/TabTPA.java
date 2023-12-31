@@ -7,7 +7,7 @@ import org.bukkit.command.TabCompleter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.utils.Initializer.tpa;
+import static main.utils.Constants.tpa;
 
 public class TabTPA implements TabCompleter {
     @Override

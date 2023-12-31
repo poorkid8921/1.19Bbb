@@ -2,7 +2,7 @@ package main.expansions.guis;
 
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Instances.DuelHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -15,10 +15,9 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
-import static main.utils.DuelUtils.*;
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.MAIN_COLOR;
-import static main.utils.Initializer.SECOND_COLOR;
+import static main.utils.Constants.*;
+import static main.utils.DuelUtils.getDuelsAvailable;
+import static main.utils.DuelUtils.spectateHead;
 import static main.utils.Utils.createItemStack;
 
 public class Utils {
@@ -74,7 +73,7 @@ public class Utils {
         inInventory.put(p.getName(), Pair.of(2, "-"));
         Inventory inv = Bukkit.createInventory(p, 54, "ᴅᴜᴇʟs");
         inv.setContents(duel1);
-        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(1, duelsavailable(0)));
+        ItemStack i = new ItemStack(Material.RESPAWN_ANCHOR, Math.min(1, getDuelsAvailable(0)));
         ItemMeta meta = i.getItemMeta();
         meta.setDisplayName(MAIN_COLOR + "ꜰɪᴇʟᴅ");
         meta.setLore(List.of("1V1"));
@@ -117,18 +116,27 @@ public class Utils {
     public static void updateSpectate() {
         Inventory sp = Bukkit.createInventory(null, 54);
         int added = 9;
-        for (DuelHolder r : Initializer.duel.stream().filter(r -> r.getRounds() > 0).toList()) {
+        for (DuelHolder r : Constants.duel.stream().filter(result -> result.getRounds() > 0).toList()) {
             if (added++ >= 44) break;
-            ItemStack i = new ItemStack(formattedtype_Material(r.getType()));
+            ItemStack i = new ItemStack(switch (r.getType()) {
+                case 0 -> Material.RESPAWN_ANCHOR;
+                case 1 -> Material.END_CRYSTAL;
+                case 2 -> Material.DIAMOND_SWORD;
+                default -> Material.BARRIER;
+            });
+            String pn = r.getSender().getName();
             ItemMeta im = i.getItemMeta();
-            im.setLore(List.of(getLengthofDuel(r.getMaxPlayers()), MAIN_COLOR + r.getSender().getName() + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver()));
-            im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, r.getSender().getName());
+            im.setLore(List.of(
+                    "§7" + r.getMaxPlayers() + "V" + r.getMaxPlayers(),
+                    MAIN_COLOR + pn + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver()
+            ));
+            im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, pn);
             i.setItemMeta(im);
             sp.setItem(added, i);
         }
 
         ItemStack[] s = sp.getContents();
-        inInventory.entrySet().stream().filter(r -> r.getValue().second().equals("0")).forEach(r -> Bukkit.getPlayer(r.getKey()).getInventory().setContents(s));
+        inInventory.entrySet().stream().filter(result -> result.getValue().second().equals("0")).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(s));
         duel2 = s;
     }
 
@@ -136,9 +144,9 @@ public class Utils {
         Inventory sp = Bukkit.createInventory(null, 54);
         sp.setContents(duel1);
         ItemStack i = sp.getItem(10);
-        i.setAmount(Math.min(duelsavailable(0), 1));
+        i.setAmount(Math.min(getDuelsAvailable(0), 1));
         sp.setItem(10, i);
         ItemStack[] s = sp.getContents();
-        inInventory.entrySet().stream().filter(r -> r.getValue().second() == null).forEach(r -> Bukkit.getPlayer(r.getKey()).getInventory().setContents(s));
+        inInventory.entrySet().stream().filter(result -> result.getValue().second() == null).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(s));
     }
 }

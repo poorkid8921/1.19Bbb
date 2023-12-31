@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 public class DuelHolder {
     private final String sender;
+    @Getter
     private final String receiver;
     @Getter
     private final int type;
@@ -47,9 +48,5 @@ public class DuelHolder {
 
     public String getSenderF() {
         return sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
     }
 }

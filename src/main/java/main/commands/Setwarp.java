@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.Practice;
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,18 +13,18 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.IOException;
 
-import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Constants.MAIN_COLOR;
 
 public class Setwarp implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Initializer.EXCEPTION_NO_ARGS_WARP);
+            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP);
             return true;
         }
 
         File file = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
         if (file.exists()) {
-            sender.sendMessage(Initializer.EXCEPTION_NO_ARGS_WARP + " that doesn't already exist");
+            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP + " that doesn't already exist");
             return true;
         }
 

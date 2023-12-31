@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 public class TabMSG implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ? Initializer.msg
+        return args.length < 1 ? Constants.msg
                 .stream()
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList()) :
-                Initializer.msg
+                Constants.msg
                         .stream()
                         .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
                         .sorted(String::compareToIgnoreCase)

@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,7 +21,7 @@ public class Unban implements CommandExecutor {
                 sender.sendMessage("§7Failed to unban " + args[0] + ".");
                 return true;
             }
-            Initializer.bannedFromflat.remove(pp.getName());
+            Constants.bannedFromflat.remove(pp.getName());
             sender.sendMessage("§7Successfully unbanned " + args[0] + ".");
         }
         return true;

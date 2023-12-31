@@ -1,6 +1,6 @@
 package main.expansions.arenas;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -163,7 +163,7 @@ public class Arena {
                 arena.getSections().addAll(data.sections);
                 Arena.arenas.put(arena.name, arena);
 
-                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
+                File file = new File(Constants.p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.getc1();
@@ -375,7 +375,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return true;
 
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 4L);
+        Bukkit.getScheduler().runTaskLater(Constants.p, () -> loopyReset(data), 4L);
         return false;
     }
 
