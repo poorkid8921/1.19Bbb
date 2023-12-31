@@ -21,7 +21,6 @@ public class Event implements CommandExecutor {
 
         TextComponent winner = new TextComponent("» " + (args[4].equals("y") ? "ɴᴏʙᴏᴅʏ" : args[5]));
         winner.setColor(ChatColor.of("#fc282f"));
-
         sender.sendMessage(Initializer.DUELS_RESULTS, Initializer.DUELS_DELIM);
         sender.sendMessage(Initializer.DUELS_WINNER, winner);
         sender.sendMessage("§7sᴄᴏʀᴇ " + MAIN_COLOR + "» " + Integer.parseInt(args[1]) + " §7- " + DUELS_BLUE_COLOR + Integer.parseInt(args[2]), Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» " + args[3]), Initializer.DUELS_DELIM);

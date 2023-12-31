@@ -186,7 +186,6 @@ public class Arena {
 
                     ByteBuffer sb = ByteBuffer.allocate(2);
                     sb.putShort(sections);
-
                     byteStream.write(sb.array());
 
                     for (int s = 0; s < arena.getSections().size(); s++) {
@@ -200,7 +199,6 @@ public class Arena {
                         ib.putInt(section.getEnd().getBlockX());
                         ib.putInt(section.getEnd().getBlockY());
                         ib.putInt(section.getEnd().getBlockZ());
-
                         ib.putInt(section.getBlockTypes().length * 2);
 
                         for (int i = 0; i < section.getBlockAmounts().length; i++) {
@@ -219,7 +217,6 @@ public class Arena {
                     totalBytes = ArrayUtils.addAll(totalBytes, keyBytes);
                     totalBytes = ArrayUtils.add(totalBytes, SECTION_SPLIT);
                     totalBytes = Utils.compress(ArrayUtils.addAll(totalBytes, blockBytes));
-
                     stream.write(totalBytes);
                     stream.close();
                 } catch (IOException e) {
@@ -277,7 +274,6 @@ public class Arena {
 
             Material t = loc.getBlock().getType();
             if (!keyList.contains(t)) keyList.add(t);
-
             short blockKeyIndex = (short) keyList.indexOf(t);
 
             if (data.blockTypes.length == 0) {
@@ -350,7 +346,6 @@ public class Arena {
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
         }
-
         loopyReset(data);
     }
 

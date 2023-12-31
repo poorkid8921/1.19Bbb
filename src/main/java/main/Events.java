@@ -129,6 +129,10 @@ public class Events implements Listener {
                 pw.teleportAsync(Initializer.spawn);
             }, 60L);
         }
+        CustomPlayerDataHolder D = playerData.get(playerName);
+        Bukkit.getScheduler().cancelTask(D.getRunnableid());
+        D.setTagged(false);
+
         RequestManager.tpa.remove(getTPArequest(playerName));
         duel.remove(getDUELrequest(playerName));
 
@@ -239,9 +243,12 @@ public class Events implements Listener {
         CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D0.isTagged())
             Bukkit.getScheduler().cancelTask(D0.getRunnableid());
-
+        else
+            D0.setTagged(true);
         if (D1.isTagged())
             Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+        else
+            D1.setTagged(true);
 
         BukkitRunnable runnable = new BukkitRunnable() {
             int time = 5;
@@ -251,8 +258,10 @@ public class Events implements Listener {
                 p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
                 time--;
 
-                if (time == 0)
+                if (time == 0) {
+                    D0.setTagged(false);
                     this.cancel();
+                }
             }
         };
 
@@ -264,8 +273,10 @@ public class Events implements Listener {
                 attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
                 time--;
 
-                if (time == 0)
+                if (time == 0) {
+                    D1.setTagged(false);
                     this.cancel();
+                }
             }
         };
 
@@ -397,8 +408,10 @@ public class Events implements Listener {
             return;
         }
         CustomPlayerDataHolder D0 = playerData.get(name);
-        if (D0.isTagged())
+        if (D0.isTagged()) {
+            D0.setTagged(false);
             Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+        }
         D0.setBack(new WorldLocationHolder(
                 (int) l.getX(),
                 (int) l.getY(),
@@ -425,8 +438,10 @@ public class Events implements Listener {
         } else {
             kp = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(name);
-            if (D1.isTagged())
+            if (D1.isTagged()) {
                 Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+                D1.setTagged(false);
+            }
             e.setDeathMessage(SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -469,7 +484,7 @@ public class Events implements Listener {
         p.teleport(spawn);
 
         String teamName = String.valueOf(Practice.teamIndex++);
-        // #create
+        /*// #create
         Utils.sendPacket(p, Utils.getPacket(p, 0, teamName));
 
         // #addTeam
@@ -502,7 +517,7 @@ public class Events implements Listener {
         output.writeVarInt(0x51);
         output.writeByte(1);
         output.writeString(teamName);
-        Utils.sendPacket(p, buf);
+        Utils.sendPacket(p, buf);*/
 
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {

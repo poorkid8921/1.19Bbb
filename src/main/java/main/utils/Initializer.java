@@ -20,6 +20,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Initializer {
@@ -29,7 +30,7 @@ public class Initializer {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
-    public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
+    public static Map<String, CustomPlayerDataHolder> playerData = new HashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();

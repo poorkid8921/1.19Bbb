@@ -1,4 +1,4 @@
-name: AestheticNetwork
+name: CatSMP
 version: '${project.version}'
 main: main.Practice
 api-version: 1.18

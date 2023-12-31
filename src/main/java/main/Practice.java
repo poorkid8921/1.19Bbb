@@ -101,7 +101,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             String hwid = sb.toString();
             Bukkit.getLogger().info("Your HWID is: " + hwid);
-            if (!hwid.equals("ce3093d8c20cb217bd3890dd8f4446")) {
+            if (!hwid.equals("b0ee2826632a5c2d6a779b02262e064")) {
                 this.setEnabled(false);
                 return;
             }

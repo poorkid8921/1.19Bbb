@@ -3,7 +3,11 @@ package main.utils.Instances;
 import lombok.Getter;
 import lombok.Setter;
 import main.expansions.optimizer.AnimPackets;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -23,6 +27,9 @@ public class CustomPlayerDataHolder {
     private ItemStack[] k3;
     private int runnableid;
     private boolean tagged;
+
+    // Anti-cheat data
+    private ArrayList<Long> cps;
 
     public CustomPlayerDataHolder(int wins,
                                   int losses,
@@ -76,5 +83,15 @@ public class CustomPlayerDataHolder {
 
     public void decrementMoney(int money) {
         this.money -= money;
+    }
+
+    public void incrementCPS(long time) {
+        this.cps.add(time);
+        long calc = 0L;
+        for (long i : this.cps) {
+            calc += i;
+        }
+        calc /= this.cps.size();
+        Bukkit.getLogger().warning("Calculated CPS:" + calc);
     }
 }
