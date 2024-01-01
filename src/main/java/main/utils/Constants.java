@@ -9,6 +9,7 @@ import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.LocationHolder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
@@ -30,7 +31,7 @@ public class Constants {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
-    public static Map<String, CustomPlayerDataHolder> playerData = new HashMap<>();
+    public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
@@ -94,7 +95,7 @@ public class Constants {
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/catsmp"));
 
-        BACK = Component.text("§7Use " + MAIN_COLOR + "/back §7to return to your death location");
+        BACK = MiniMessage.miniMessage().deserialize("<gray>Use <color:#fc282f>/back<color:#fc282f> <gray>to return to your death location");
         startED = " started! " + MAIN_COLOR + "Fight!";
         TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
     }

@@ -16,12 +16,13 @@ public class Ffa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
-            Location l = Constants.ffa;
+            sender.sendMessage("§7This warp has been closed till a fix!");
+            /*Location l = Constants.ffa;
             Location pl = pp.getLocation();
             l.setYaw(pl.getYaw());
             l.setYaw(pl.getPitch());
             pp.teleportAsync(l, PlayerTeleportEvent.TeleportCause.COMMAND);
-            Constants.inFFA.add(pp);
+            Constants.inFFA.add(pp);*/
         }
 
         return true;

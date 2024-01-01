@@ -30,15 +30,12 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
         if (event.getPacketType() != PacketType.Play.Client.ANIMATION) return;
 
         Player player = (Player) event.getPlayer();
-        if (player.getPing() < 50) {
-            playerData.get(player.getName()).incrementCPS(System.currentTimeMillis());
+        if (player.getPing() < 50)
             return;
-        }
 
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return;
         String pn = player.getName();
         CustomPlayerDataHolder user = playerData.get(pn);
-        user.incrementCPS(System.currentTimeMillis());
         Bukkit.getScheduler().runTask(Constants.p, () -> {
             if (user.getLastPacket() == AnimPackets.IGNORE) return;
             if (user.isIgnoreAnim()) return;

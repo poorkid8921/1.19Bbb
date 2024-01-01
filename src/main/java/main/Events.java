@@ -431,11 +431,10 @@ public class Events implements Listener {
             return;
         } else {
             kp = killer.getName();
-            CustomPlayerDataHolder D1 = playerData.get(name);
-            if (D1.isTagged()) {
-                Bukkit.getScheduler().cancelTask(D1.getRunnableid());
-                D1.setTagged(false);
-            }
+            CustomPlayerDataHolder D1 = playerData.get(kp);
+            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+            D1.setTagged(false);
+            D1.incrementMoney(500);
             e.setDeathMessage(SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -445,25 +444,23 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
                 default -> "suicided";
             });
-        }
 
-        CustomPlayerDataHolder D = playerData.get(kp);
-        D.incrementMoney(500);
-        switch (D.getC()) {
-            case 0 -> {
-                Location loc = l.add(0, 1, 0);
-                for (double y = 0; y <= 10; y += 0.05) {
-                    w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
+            switch (D1.getC()) {
+                case 0 -> {
+                    Location loc = l.add(0, 1, 0);
+                    for (double y = 0; y <= 10; y += 0.05) {
+                        w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
+                    }
                 }
+                case 1 -> {
+                    Firework fw = (Firework) w.spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
+                    FireworkMeta fwm = fw.getFireworkMeta();
+                    fwm.setPower(2);
+                    fwm.addEffect(FireworkEffect.builder().withColor(color.get(Constants.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+                    fw.setFireworkMeta(fwm);
+                }
+                case 2 -> w.strikeLightningEffect(l.add(0, 1, 0));
             }
-            case 1 -> {
-                Firework fw = (Firework) w.spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
-                FireworkMeta fwm = fw.getFireworkMeta();
-                fwm.setPower(2);
-                fwm.addEffect(FireworkEffect.builder().withColor(color.get(Constants.RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-                fw.setFireworkMeta(fwm);
-            }
-            case 2 -> w.strikeLightningEffect(l.add(0, 1, 0));
         }
     }
 

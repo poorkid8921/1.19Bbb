@@ -10,7 +10,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,18 +66,22 @@ public class Utils {
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
-            String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
-            DiscordWebhook webhook = new DiscordWebhook();
-            webhook.setAvatarUrl(avturl);
-            webhook.setUsername("Report");
-            webhook.addEmbed(reason == null ?
-                    new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Reason", report, true) :
-                    new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Practice", true).addField("Sender", pp.getName(), true).addField("Target", report, true).addField("Reason", reason, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
-
+            String pn = pp.getName();
             try {
-                webhook.execute();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
+                connection.setDoOutput(true);
+                try (final OutputStream outputStream = connection.getOutputStream()) {
+                    outputStream.write((reason == null ?
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\"}]}" :
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + pn + "/100\"}}]}")
+                            .getBytes(StandardCharsets.UTF_8));
+                }
+                connection.getInputStream();
+            } catch (final IOException e) {
+                e.printStackTrace();
             }
         });
         pp.sendMessage("§7Successfully submitted the report.");

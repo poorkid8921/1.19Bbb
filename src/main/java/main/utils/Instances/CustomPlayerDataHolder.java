@@ -23,9 +23,6 @@ public class CustomPlayerDataHolder {
     private int runnableid;
     private boolean tagged;
 
-    // Anti-cheat data
-    private ArrayList<Long> cps;
-
     public CustomPlayerDataHolder(int wins,
                                   int losses,
                                   int c,
@@ -54,15 +51,5 @@ public class CustomPlayerDataHolder {
 
     public void decrementMoney(int money) {
         this.money -= money;
-    }
-
-    public void incrementCPS(long time) {
-        this.cps.add(time);
-        long calc = 0L;
-        for (long i : this.cps) {
-            calc += i;
-        }
-        calc /= this.cps.size();
-        Bukkit.getLogger().warning("Calculated CPS:" + calc);
     }
 }

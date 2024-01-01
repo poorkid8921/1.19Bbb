@@ -50,7 +50,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
     private static File dataFile;
     int flatstr = 1;
     int ticked = 0;
-    ImmutableList<Material> blacklist = ImmutableList.of(Material.AIR, Material.LAVA, Material.WATER);
 
     LocationHolder getRandomLoc(World w) {
         LocationHolder loc = null;
@@ -65,10 +64,9 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             w.getChunkAt(boundX, boundZ).load(true);
             Block b = w.getHighestBlockAt(boundX, boundZ);
-            if (b.isSolid() && !blacklist.contains(b.getType()))
+            if (b.isSolid())
                 loc = new LocationHolder(boundX, b.getY() + 1, boundZ);
         }
-
         return loc;
     }
 
@@ -99,7 +97,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
             String hwid = sb.toString();
             Bukkit.getLogger().info("Your HWID is: " + hwid);
-            if (!hwid.equals("b0ee2826632a5c2d6a779b02262e064")) {
+            if (!hwid.equals("a547c78589be23b1c33acb5244e0c6fd")) {
                 this.setEnabled(false);
                 return;
             }
@@ -115,19 +113,18 @@ public class Practice extends JavaPlugin implements TabExecutor {
         p = this;
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            /*Bukkit.getLogger().warning("Started population of RTPs...");
-            for (int i = 0; i < 16; i++) {
+            Bukkit.getLogger().warning("Started population of RTPs...");
+            /*for (int i = 0; i < 100; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> overworldRTP.add(getRandomLoc(d)),
                         5L);
             }
 
-            for (int i = 0; i < 16; i++) {
+            for (int i = 0; i < 100; i++) {
                 Bukkit.getScheduler().runTaskLater(this,
                         () -> endRTP.add(getRandomLoc(d)),
                         5L);
             }*/
-
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
             flat_data.speed = 10000;
@@ -137,7 +134,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 flat_data.sections.put(s.getID(), sectionAmount);
                 flat_data.sectionIDs.add(s.getID());
             }
-
             Arena ffa = Arena.arenas.get("ffa");
             Arena.ResetLoopinData ffa_data = new Arena.ResetLoopinData();
             ffa_data.speed = 1000000;
@@ -331,11 +327,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
             file.delete();
         }
 
-        for (File file : new File(d0
+        /*for (File file : new File(d0
                 .getWorldFolder()
                 .getAbsolutePath() + "/DIM1/").listFiles()) {
             file.delete();
-        }
+        }*/
 
         long curTime = new Date().getTime();
         int accountsRemoved = 0;

@@ -59,7 +59,6 @@ public class ChannelInjector {
             Object manager = GET_MANAGER.invoke(connection);
             channelLookup.put(player.getName(), channel = (Channel) GET_CHANNEL.invoke(manager));
         }
-
         return channel;
     }
 

@@ -34,7 +34,6 @@ public class Utils {
         ItemMeta meta = glass.getItemMeta();
         meta.setDisplayName("");
         glass.setItemMeta(meta);
-
         for (int i = 0; i < inv.getSize(); i++) {
             inv.setItem(i, glass);
         }
