@@ -3,10 +3,6 @@ package main.utils.Instances;
 import lombok.Getter;
 import lombok.Setter;
 import main.expansions.optimizer.AnimPackets;
-import org.bukkit.Bukkit;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.ArrayList;
 
 @Getter
 @Setter

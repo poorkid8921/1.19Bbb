@@ -28,6 +28,8 @@ public class RequestManager {
     static TextComponent space = new TextComponent("  ");
     static TextComponent duelType2 = new TextComponent(" §7with ");
     static TextComponent tc = new TextComponent(" §7has requested that you duel them in ");
+    static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
+    static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
 
     public static TpaRequest getTPArequest(String user) {
         for (TpaRequest r : tpa) {
@@ -43,9 +45,6 @@ public class RequestManager {
         }
         return null;
     }
-
-    static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
-    static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
 
     public static void addTPArequest(Player sender, Player receiver, boolean tpahere) {
         String sn = sender.getName();

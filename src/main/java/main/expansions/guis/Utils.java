@@ -108,7 +108,7 @@ public class Utils {
         inInventory.put(pn, Pair.of(0, null));
         Inventory inv = Bukkit.createInventory(p, 27, "ᴀᴇꜱᴛʜᴇᴛɪᴄꜱʜᴏᴘ | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
         inv.setContents(killeffect);
-        inv.setItem(10, createItemStack(Material.BONE, "Balance", List.of("§a" + playerData.get(pn).getMoney())));
+        inv.setItem(10, createItemStack(Material.GREEN_DYE, "§aBalance", List.of("§a$" + playerData.get(pn).getMoney())));
         p.openInventory(inv);
     }
 

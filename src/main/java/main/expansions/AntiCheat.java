@@ -2,13 +2,17 @@ package main.expansions;
 
 import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPosition;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
+import com.google.common.collect.ImmutableList;
 import main.utils.Constants;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -33,15 +37,14 @@ public class AntiCheat extends SimplePacketListenerAbstract {
                 clickedItem.getType() == Material.TOTEM_OF_UNDYING &&
                 packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP) {
             PlayerInventory inv = player.getInventory();
-            if (inv.getItemInOffHand().getType() != Material.AIR)
-                return;
-            Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
-                ItemStack offhandItem = inv.getItemInOffHand();
-                if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
-                    offhandItem.setAmount(0);
-                    flag(player, "Auto Totem");
-                }
-            }, 2L);
+            if (inv.getItemInOffHand().getType() == Material.AIR)
+                Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                    ItemStack offhandItem = inv.getItemInOffHand();
+                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
+                        offhandItem.setAmount(0);
+                        flag(player, "Auto Totem");
+                    }
+                }, 2L);
         }
     }
 }

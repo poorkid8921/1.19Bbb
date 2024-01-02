@@ -1,7 +1,6 @@
 package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.google.common.collect.ImmutableList;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
 import main.expansions.AntiCheat;
@@ -32,6 +31,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,17 +114,31 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
             Bukkit.getLogger().warning("Started population of RTPs...");
-            /*for (int i = 0; i < 100; i++) {
-                Bukkit.getScheduler().runTaskLater(this,
-                        () -> overworldRTP.add(getRandomLoc(d)),
-                        5L);
-            }
+            new BukkitRunnable() {
+                int i = 0;
 
-            for (int i = 0; i < 100; i++) {
-                Bukkit.getScheduler().runTaskLater(this,
-                        () -> endRTP.add(getRandomLoc(d)),
-                        5L);
-            }*/
+                public void run() {
+                    if (i++ == 101) {
+                        this.cancel();
+                        return;
+                    }
+
+                    overworldRTP.add(getRandomLoc(d));
+                }
+            }.runTaskTimer(this, 0L, 20L);
+
+            new BukkitRunnable() {
+                int i = 0;
+
+                public void run() {
+                    if (i++ == 101) {
+                        this.cancel();
+                        return;
+                    }
+
+                    endRTP.add(getRandomLoc(d0));
+                }
+            }.runTaskTimer(this, 0L, 20L);
             Arena flat = Arena.arenas.get("flat");
             Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
             flat_data.speed = 10000;
@@ -144,16 +158,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 ffa_data.sectionIDs.add(s.getID());
             }
 
-            Arena ffaup = Arena.arenas.get("ffaup");
-            Arena.ResetLoopinData ffaup_data = new Arena.ResetLoopinData();
-            ffaup_data.speed = 200000;
-            for (Section s : ffaup.getSections()) {
-                int sectionAmount = (int) ((double) 200000 / (double) (ffaup.getc2().getBlockX() - ffaup.getc1().getBlockX() + 1) * (ffaup.getc2().getBlockY() - ffaup.getc1().getBlockY() + 1) * (ffaup.getc2().getBlockZ() - ffaup.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                if (sectionAmount <= 0) sectionAmount = 1;
-                ffaup_data.sections.put(s.getID(), sectionAmount);
-                ffaup_data.sectionIDs.add(s.getID());
-            }
-
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 d.getEntities().stream()
                         .filter(result -> result instanceof EnderCrystal)
@@ -170,28 +174,24 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                         boolean flatresetted;
                         boolean ffaresetted;
-                        boolean ffaupresetted;
                         do {
                             flatresetted = true;
                             do {
                                 ffaresetted = true;
-                                do {
-                                    ffaupresetted = true;
-                                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                        Location location = player.getLocation();
-                                        location.setY(200);
-                                        Block b = d.getBlockAt(location);
-                                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
+                                inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                                    Location location = player.getLocation();
+                                    location.setY(200);
+                                    Block b = d.getBlockAt(location);
+                                    Block b2 = d.getBlockAt(location.add(0, 1, 0));
 
-                                        b2.setType(Material.AIR, false);
-                                        b.setType(Material.AIR, false);
-                                        location.setY(d.getHighestBlockYAt(location) + 1);
-                                        player.teleportAsync(location).thenAccept(reason -> {
-                                            b.setType(Material.BARRIER, false);
-                                            b2.setType(Material.BARRIER, false);
-                                        });
+                                    b2.setType(Material.AIR, false);
+                                    b.setType(Material.AIR, false);
+                                    location.setY(d.getHighestBlockYAt(location) + 1);
+                                    player.teleportAsync(location).thenAccept(reason -> {
+                                        b.setType(Material.BARRIER, false);
+                                        b2.setType(Material.BARRIER, false);
                                     });
-                                } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
+                                });
                             } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
                         } while (!flat.loopyReset(flat_data) && !flatresetted);
                     } else
@@ -249,37 +249,37 @@ public class Practice extends JavaPlugin implements TabExecutor {
         Arrays.stream(arenasFolder.listFiles()).parallel().forEach(result -> {
             try {
                 Arena arena = ArenaIO.loadArena(result);
-                if (arena == null)
-                    return;
-                Arena.arenas.put(arena.getName(), arena);
+                if (arena != null)
+                    Arena.arenas.put(arena.getName(), arena);
             } catch (Exception ignored) {
             }
         });
-
         File warpsFolder = new File(dataFolder, "warps");
         if (!warpsFolder.exists()) warpsFolder.mkdirs();
+
         main.expansions.guis.Utils.init();
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
         PacketEvents.getAPI().init();
+
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Constants.init();
 
         d = Bukkit.getWorld("world");
         d0 = Bukkit.getWorld("world_the_end");
         Constants.ffa = new Location(d,
-                -243.5,
-                156,
-                -580.5);
+                -56.5,
+                110,
+                -237.5);
         Constants.flat = new Location(d,
                 -2.5,
-                131.0625,
+                131,
                 363.5);
         Constants.spawn = new Location(d,
                 0.5,
-                86,
+                86.06250,
                 0.5);
         Constants.nethpot = new Location(d,
                 0.5,
@@ -313,6 +313,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                     playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money));
                 }
+                dataLoaded++;
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
         }

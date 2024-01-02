@@ -12,7 +12,6 @@ import main.utils.Instances.DuelHolder;
 import main.utils.Instances.WorldLocationHolder;
 import main.utils.RequestManager;
 import main.utils.Utils;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderPearl;
@@ -50,9 +49,7 @@ public class Events implements Listener {
     public void onProjectileLaunchEvent(ProjectileLaunchEvent e) {
         if (!(e.getEntity() instanceof EnderPearl pearl))
             return;
-        Bukkit.getScheduler().runTaskLater(Constants.p, () -> ((Player) pearl.getShooter())
-                .setCooldown(Material.ENDER_PEARL, 100),
-                1L);
+        ((Player) pearl.getShooter()).setCooldown(Material.ENDER_PEARL, 5);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -88,8 +85,12 @@ public class Events implements Listener {
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
-        String pn = e.getPlayer().getName();
-        e.setCancelled(playerData.get(pn).isTagged() || teams.containsKey(pn));
+        Player p = e.getPlayer();
+        String pn = p.getName();
+        boolean tagged = playerData.get(pn).isTagged();
+        if (tagged)
+            p.sendMessage(Constants.EXCEPTION_TAGGED);
+        e.setCancelled(tagged || teams.containsKey(pn));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -204,7 +205,8 @@ public class Events implements Listener {
                             case 53 -> {
                                 openDuelsSpectate(p);
                                 updateSpectate();
-                                inv.second("0");
+                                inInventory.remove(pn);
+                                inInventory.put(pn, Pair.of(2, "0"));
                             }
                         }
                     }
@@ -231,8 +233,11 @@ public class Events implements Listener {
             inInventory.remove(e.getPlayer().getName());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
+        if (e.isCancelled())
+            return;
+
         if (!(e.getEntity() instanceof Player p) ||
                 !(e.getDamager() instanceof Player attacker))
             return;
@@ -253,7 +258,7 @@ public class Events implements Listener {
 
             @Override
             public void run() {
-                p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
+                p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
                 time--;
 
                 if (time == 0) {
@@ -268,7 +273,7 @@ public class Events implements Listener {
 
             @Override
             public void run() {
-                attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: " + MAIN_COLOR + time);
+                attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
                 time--;
 
                 if (time == 0) {
@@ -428,7 +433,6 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "burnt into ashes";
                 default -> "suicided";
             });
-            return;
         } else {
             kp = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(kp);

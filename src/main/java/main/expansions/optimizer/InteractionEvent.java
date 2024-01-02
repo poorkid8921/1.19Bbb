@@ -48,7 +48,7 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
 
                 clonedLoc.add(0.5, 1.0, 0.5);
                 if (clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5).isEmpty()) {
-                    loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class);
+                    loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
 
                     if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR)
                         item.setAmount(item.getAmount() - 1);

@@ -19,7 +19,6 @@ public class ItemRename implements CommandExecutor {
             return true;
         }
         Player p = (Player) sender;
-
         ItemStack hand = p.getItemInHand();
         if (hand.getType() == Material.AIR) {
             sender.sendMessage("§7You must hold an item in order to use this command.");

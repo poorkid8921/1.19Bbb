@@ -10,8 +10,6 @@ import main.utils.Instances.DuelHolder;
 import main.utils.Instances.LocationHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -31,7 +29,7 @@ public class Constants {
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
-    public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
+    public static Map<String, CustomPlayerDataHolder> playerData = new HashMap<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
@@ -61,6 +59,7 @@ public class Constants {
     public static String TPALOCK = "§7You can receive tp requests again.";
     public static String MSGLOCK1 = "§7You will no longer receive messages from players.";
     public static String TPALOCK1 = "§7You will no longer receive tp requests from players.";
+    public static String EXCEPTION_TAGGED;
     public static String EXCEPTION_ALREADY_IN_DUEL = "§7You can't duel yourself.";
     public static String EXCEPTION_NO_ARENAS_OPEN = "§7There are no open arenas yet.";
     public static String EXCEPTION_DUEL_TARGET_OFF = "§7You can't send duel requests to offline players.";
@@ -88,10 +87,10 @@ public class Constants {
     public static void init() {
         try {
             CACHED_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+        } catch (MalformedURLException ignored) {
         }
 
+        EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ.";
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/catsmp"));
 

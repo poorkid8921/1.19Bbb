@@ -28,18 +28,15 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
         if (event.getPacketType() != PacketType.Play.Client.ANIMATION) return;
-
         Player player = (Player) event.getPlayer();
         if (player.getPing() < 50)
             return;
-
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return;
         String pn = player.getName();
         CustomPlayerDataHolder user = playerData.get(pn);
         Bukkit.getScheduler().runTask(Constants.p, () -> {
             if (user.getLastPacket() == AnimPackets.IGNORE) return;
             if (user.isIgnoreAnim()) return;
-
             Location eyeLoc = player.getEyeLocation();
             RayTraceResult result = player.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0, entity -> {
                 if (entity.getType() != EntityType.PLAYER) return true;
@@ -47,12 +44,9 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
                 return !player.getUniqueId().equals(p.getUniqueId()) && player.canSee(p);
             });
             if (result == null) return;
-
             Entity entity = result.getHitEntity();
-            if (entity == null ||
-                    entity.getType() != EntityType.ENDER_CRYSTAL) return;
+            if (entity == null || entity.getType() != EntityType.ENDER_CRYSTAL) return;
             if (entity.getTicksLived() == 0) return;
-
             if (!entity.getBoundingBox().contains(eyeLoc.toVector())) {
                 RayTraceResult bResult = player.rayTraceBlocks(4.5);
                 if (bResult != null) {
@@ -64,7 +58,6 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
                         return;
                 }
             }
-
             ((CraftEnderCrystal) entity)
                     .getHandle()
                     .a(new DamageSource(cachedHolder, ((CraftPlayer) player).getHandle()), 1);
