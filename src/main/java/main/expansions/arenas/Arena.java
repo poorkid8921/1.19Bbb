@@ -375,7 +375,7 @@ public class Arena {
         if (data.sections.size() == 0)
             return true;
 
-        Bukkit.getScheduler().runTaskLater(Constants.p, () -> loopyReset(data), 4L);
+        Bukkit.getScheduler().runTaskLater(Constants.p, () -> loopyReset(data), 1L);
         return false;
     }
 

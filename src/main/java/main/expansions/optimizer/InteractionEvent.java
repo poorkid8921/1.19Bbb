@@ -54,17 +54,6 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
                         item.setAmount(item.getAmount() - 1);
                 }
             });
-        } else if (type == Material.GLOWSTONE) {
-            RayTraceResult result = player.rayTraceBlocks(4.5,
-                    FluidCollisionMode.NEVER);
-
-            Block b = result.getHitBlock();
-            if (b == null || b.getType() != Material.RESPAWN_ANCHOR) return;
-            RespawnAnchor anchor = ((RespawnAnchor) b.getState());
-            Bukkit.getScheduler().runTask(Constants.p, () -> {
-                Bukkit.getLogger().warning("Anchor optimized");
-                anchor.setCharges(anchor.getCharges() + 1);
-            });
         }
     }
 }

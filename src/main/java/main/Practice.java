@@ -2,6 +2,7 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import io.papermc.lib.PaperLib;
 import main.commands.*;
 import main.expansions.AntiCheat;
 import main.expansions.arenas.Arena;
@@ -54,15 +55,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
     LocationHolder getRandomLoc(World w) {
         LocationHolder loc = null;
         while (loc == null) {
-            int boundX = Constants.RANDOM.nextInt(10000);
-            int boundZ = Constants.RANDOM.nextInt(10000);
-
-            if (boundX > 5000)
-                boundX = -boundX;
-            if (boundZ > 5000)
-                boundZ = -boundZ;
-
-            w.getChunkAt(boundX, boundZ).load(true);
+            int boundX = Constants.RANDOM.nextInt(-10000,10000);
+            int boundZ = Constants.RANDOM.nextInt(-10000,10000);
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid())
                 loc = new LocationHolder(boundX, b.getY() + 1, boundZ);
@@ -140,24 +134,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 }
             }.runTaskTimer(this, 0L, 20L);
             Arena flat = Arena.arenas.get("flat");
-            Arena.ResetLoopinData flat_data = new Arena.ResetLoopinData();
-            flat_data.speed = 10000;
-            for (Section s : flat.getSections()) {
-                int sectionAmount = (int) ((double) 10000 / (double) (flat.getc2().getBlockX() - flat.getc1().getBlockX() + 1) * (flat.getc2().getBlockY() - flat.getc1().getBlockY() + 1) * (flat.getc2().getBlockZ() - flat.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                if (sectionAmount <= 0) sectionAmount = 1;
-                flat_data.sections.put(s.getID(), sectionAmount);
-                flat_data.sectionIDs.add(s.getID());
-            }
             Arena ffa = Arena.arenas.get("ffa");
-            Arena.ResetLoopinData ffa_data = new Arena.ResetLoopinData();
-            ffa_data.speed = 1000000;
-            for (Section s : ffa.getSections()) {
-                int sectionAmount = (int) ((double) 1000000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                if (sectionAmount <= 0) sectionAmount = 1;
-                ffa_data.sections.put(s.getID(), sectionAmount);
-                ffa_data.sectionIDs.add(s.getID());
-            }
-
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 d.getEntities().stream()
                         .filter(result -> result instanceof EnderCrystal)
@@ -172,28 +149,22 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     if (ticked == 6) {
                         ticked = 0;
 
-                        boolean flatresetted;
-                        boolean ffaresetted;
-                        do {
-                            flatresetted = true;
-                            do {
-                                ffaresetted = true;
-                                inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                                    Location location = player.getLocation();
-                                    location.setY(200);
-                                    Block b = d.getBlockAt(location);
-                                    Block b2 = d.getBlockAt(location.add(0, 1, 0));
+                        flat.reset(10000);
+                        ffa.reset(1000000);
+                        inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                            Location location = player.getLocation();
+                            location.setY(200);
+                            Block b = d.getBlockAt(location);
+                            Block b2 = d.getBlockAt(location.add(0, 1, 0));
 
-                                    b2.setType(Material.AIR, false);
-                                    b.setType(Material.AIR, false);
-                                    location.setY(d.getHighestBlockYAt(location) + 1);
-                                    player.teleportAsync(location).thenAccept(reason -> {
-                                        b.setType(Material.BARRIER, false);
-                                        b2.setType(Material.BARRIER, false);
-                                    });
-                                });
-                            } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
-                        } while (!flat.loopyReset(flat_data) && !flatresetted);
+                            b2.setType(Material.AIR, false);
+                            b.setType(Material.AIR, false);
+                            location.setY(d.getHighestBlockYAt(location) + 1);
+                            player.teleportAsync(location).thenAccept(reason -> {
+                                b.setType(Material.BARRIER, false);
+                                b2.setType(Material.BARRIER, false);
+                            });
+                        });
                     } else
                         Arena.arenas.get("flat").reset(10000);
                 } else
