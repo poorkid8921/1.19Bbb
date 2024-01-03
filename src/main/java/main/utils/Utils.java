@@ -1,20 +1,15 @@
 package main.utils;
 
-import main.Economy;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
-import org.bukkit.block.Chest;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,13 +18,16 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Initializer.*;
+import static main.utils.Constants.*;
 import static main.utils.Languages.MAIN_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
@@ -39,227 +37,11 @@ public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
     static TextComponent space = new TextComponent("  ");
 
-    static ItemStack getArmor(Material mat, int prot, boolean leggings) {
-        ItemStack is = new ItemStack(mat);
-        ItemMeta im = is.getItemMeta();
-        im.addEnchant(Enchantment.MENDING, 1, false);
-        im.addEnchant(leggings ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, prot, false);
-        im.addEnchant(Enchantment.DURABILITY, 3, true);
-        im.setDisplayName(MAIN_COLOR + "ʟᴏᴏᴛᴅʀᴏᴘ");
-        is.setItemMeta(im);
-        return is;
-    }
-
-    static ItemStack getTool(Material mat, boolean lvl, boolean pick) {
-        ItemStack is = new ItemStack(mat);
-        ItemMeta im = is.getItemMeta();
-        im.addEnchant(Enchantment.MENDING, 1, false);
-        im.addEnchant(pick ? Enchantment.DIG_SPEED : Enchantment.DAMAGE_ALL, lvl ? 5 : 4, false);
-        im.addEnchant(Enchantment.DURABILITY, 3, true);
-        im.setDisplayName(MAIN_COLOR + "ʟᴏᴏᴛᴅʀᴏᴘ");
-        is.setItemMeta(im);
-        return is;
-    }
-
-    public static void lootDrop() {
-        Location loc = null;
-        while (loc == null) {
-            int x = Initializer.RANDOM.nextInt(128);
-            int z = Initializer.RANDOM.nextInt(128);
-
-            if (Initializer.RANDOM.nextInt() == 0)
-                x = -x;
-
-            if (Initializer.RANDOM.nextInt() == 0)
-                z = -z;
-
-            if (new Point(x, z)
-                    .distance(point) > 62)
-                loc = new Location(Economy.d, x, 124, z);
-        }
-
-        Economy.d.getBlockAt(loc).setType(Material.CHEST);
-        Chest sm = (Chest) Economy.d.getBlockAt(loc).getState();
-        Inventory inv = sm.getBlockInventory();
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                Material.END_CRYSTAL :
-                Material.OBSIDIAN,
-                Initializer.RANDOM.nextInt(32) +
-                        32));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                Material.END_CRYSTAL :
-                Material.OBSIDIAN,
-                Initializer.RANDOM.nextInt(32) +
-                        32));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                Material.NETHERITE_INGOT :
-                Material.DIAMOND,
-                Initializer.RANDOM.nextInt(21) +
-                        7));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                Material.COBWEB :
-                Material.TNT,
-                Initializer.RANDOM.nextInt(21) +
-                        7));
-
-        // GAP
-        inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Material.GOLDEN_APPLE,
-                Initializer.RANDOM.nextInt(32) +
-                        32));
-
-        // GEAR
-        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_HELMET :
-                        Material.NETHERITE_HELMET,
-                Initializer.RANDOM.nextInt(4) + 1,
-                false));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_CHESTPLATE :
-                        Material.NETHERITE_CHESTPLATE,
-                Initializer.RANDOM.nextInt(4) + 1,
-                false));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_LEGGINGS :
-                        Material.NETHERITE_LEGGINGS,
-                Initializer.RANDOM.nextInt(4) + 1,
-                true));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_BOOTS :
-                        Material.NETHERITE_BOOTS,
-                Initializer.RANDOM.nextInt(4) + 1,
-                false));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_PICKAXE :
-                        Material.NETHERITE_PICKAXE,
-                Initializer.RANDOM.nextInt() == 1,
-                true));
-
-        inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
-                        Material.DIAMOND_SWORD :
-                        Material.NETHERITE_SWORD,
-                Initializer.RANDOM.nextInt() == 1,
-                false));
-
-        loc.setY(139);
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
-        Bukkit.broadcastMessage(MAIN_COLOR + "ᴀ ʟᴏᴏᴛ ᴅʀᴏᴘ ʜᴀs sᴘᴀᴡɴᴇᴅ");
-    }
-
-    public static void lootDrop(int i) {
-        Location loc = null;
-        for (int a = 0; a < i; a++) {
-            while (loc == null) {
-                int x = Initializer.RANDOM.nextInt(127);
-                int z = Initializer.RANDOM.nextInt(127);
-
-                if (Initializer.RANDOM.nextInt() == 0)
-                    x = -x;
-
-                if (Initializer.RANDOM.nextInt() == 0)
-                    z = -z;
-
-                if (new Point(x, z)
-                        .distance(point) > 52)
-                    loc = new Location(Economy.d, x, 175, z);
-            }
-
-            StorageMinecart sm = (StorageMinecart) Economy.d.spawnEntity(loc, EntityType.MINECART_CHEST);
-            Inventory inv = sm.getInventory();
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                    Material.END_CRYSTAL :
-                    Material.OBSIDIAN,
-                    Initializer.RANDOM.nextInt(32) +
-                            32));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                    Material.END_CRYSTAL :
-                    Material.OBSIDIAN,
-                    Initializer.RANDOM.nextInt(32) +
-                            32));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                    Material.NETHERITE_INGOT :
-                    Material.DIAMOND,
-                    Initializer.RANDOM.nextInt(21) +
-                            7));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Initializer.RANDOM.nextInt() == 0 ?
-                    Material.COBWEB :
-                    Material.TNT,
-                    Initializer.RANDOM.nextInt(21) +
-                            7));
-
-            // GAP
-            inv.setItem(Initializer.RANDOM.nextInt(27), new ItemStack(Material.GOLDEN_APPLE,
-                    Initializer.RANDOM.nextInt(32) +
-                            32));
-
-            // GEAR
-            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_HELMET :
-                            Material.NETHERITE_HELMET,
-                    Initializer.RANDOM.nextInt(4) + 1,
-                    false));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_CHESTPLATE :
-                            Material.NETHERITE_CHESTPLATE,
-                    Initializer.RANDOM.nextInt(4) + 1,
-                    false));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_LEGGINGS :
-                            Material.NETHERITE_LEGGINGS,
-                    Initializer.RANDOM.nextInt(4) + 1,
-                    true));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), getArmor(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_BOOTS :
-                            Material.NETHERITE_BOOTS,
-                    Initializer.RANDOM.nextInt(4) + 1,
-                    false));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_PICKAXE :
-                            Material.NETHERITE_PICKAXE,
-                    Initializer.RANDOM.nextInt() == 1,
-                    true));
-
-            inv.setItem(Initializer.RANDOM.nextInt(27), getTool(Initializer.RANDOM.nextInt() == 1 ?
-                            Material.DIAMOND_SWORD :
-                            Material.NETHERITE_SWORD,
-                    Initializer.RANDOM.nextInt() == 1,
-                    false));
-            loc.setY(141);
-            Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-            FireworkMeta fwm = fw.getFireworkMeta();
-            fwm.setPower(2);
-            fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-            fw.setFireworkMeta(fwm);
-            loc = null;
-        }
-
-        Bukkit.broadcastMessage(MAIN_COLOR + i + " ʟᴏᴏᴛ ᴅʀᴏᴘs ʜᴀs sᴘᴀᴡɴᴇᴅ");
-    }
-
     public static void spawnFireworks(Location loc) {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        fwm.addEffect(FireworkEffect.builder().withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         fw.setFireworkMeta(fwm);
     }
 
@@ -288,7 +70,7 @@ public class Utils {
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
-        NamespacedKey key2 = new NamespacedKey(Initializer.p, "reported");
+        NamespacedKey key2 = new NamespacedKey(Constants.p, "reported");
         iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
         ie.setItemMeta(iem);
 
@@ -299,7 +81,7 @@ public class Utils {
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
-        NamespacedKey key2 = new NamespacedKey(Initializer.p, "reported");
+        NamespacedKey key2 = new NamespacedKey(Constants.p, "reported");
         iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
         ie.setItemMeta(iem);
 
@@ -311,19 +93,23 @@ public class Utils {
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-            String avturl = "https://mc-heads.net/avatar/" + pp.getName() + "/100";
-            DiscordWebhook webhook = new DiscordWebhook("            DiscordWebhook webhook = new DiscordWebhook(\"https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip\");\n");
-            webhook.setAvatarUrl(avturl);
-            webhook.setUsername("Report");
-            if (reason == null)
-                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Economy", true).addField("Sender", pp.getName(), true).addField("Reason", report, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
-            else
-                webhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Report").addField("Server", "Economy", true).addField("Sender", pp.getName(), true).addField("Target", report, true).addField("Reason", reason, true).setThumbnail(avturl).setColor(java.awt.Color.ORANGE));
+        Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
+            String pn = pp.getName();
             try {
-                webhook.execute();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
+                connection.setDoOutput(true);
+                try (final OutputStream outputStream = connection.getOutputStream()) {
+                    outputStream.write((reason == null ?
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\"}]}" :
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + pn + "/100\"}}]}")
+                            .getBytes(StandardCharsets.UTF_8));
+                }
+                connection.getInputStream();
+            } catch (final IOException e) {
+                e.printStackTrace();
             }
         });
         pp.sendMessage("§7Successfully submitted the report.");
@@ -372,7 +158,7 @@ public class Utils {
             public void run() {
                 requests.remove(tpaRequest);
             }
-        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
+        }.runTaskLaterAsynchronously(Constants.p, 2400L);
 
         bukkitTasks.put(sn, br.getTaskId());
     }

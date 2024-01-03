@@ -5,14 +5,14 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.*;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 
-import static main.utils.Initializer.crystalsToBeOptimized;
+import static main.utils.Constants.crystalsToBeOptimized;
 
 public class InteractionEvent extends SimplePacketListenerAbstract {
     @Override
@@ -39,7 +39,7 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
         if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
         if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
 
-        Bukkit.getScheduler().runTask(Initializer.p, () -> {
+        Bukkit.getScheduler().runTask(Constants.p, () -> {
             Location clonedLoc = loc.clone().subtract(0.5, 0.0, 0.5);
             if (clonedLoc.getBlock().getType() != Material.AIR) return;
 

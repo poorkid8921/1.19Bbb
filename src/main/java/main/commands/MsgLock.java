@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.msg;
-import static main.utils.Initializer.playerData;
+import static main.utils.Constants.msg;
+import static main.utils.Constants.playerData;
 import static main.utils.Languages.MSGLOCK;
 import static main.utils.Languages.MSGLOCK1;
 

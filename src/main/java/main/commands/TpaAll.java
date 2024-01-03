@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.TpaRequest;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
@@ -26,7 +26,7 @@ public class TpaAll implements CommandExecutor {
             String in = i.getName();
             TpaRequest tpr = getRequest(in);
 
-            if ((tpr != null && tpr.getSender().equals(sender)) || !Initializer.tpa.contains(in))
+            if ((tpr != null && tpr.getSender().equals(sender)) || !Constants.tpa.contains(in))
                 continue;
 
             Utils.addRequest(user, i, true, false);

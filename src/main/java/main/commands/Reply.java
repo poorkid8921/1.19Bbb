@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -18,14 +18,14 @@ public class Reply implements CommandExecutor {
         }
 
         String pn = player.getName();
-        if (!Initializer.lastReceived.containsKey(pn)) {
+        if (!Constants.lastReceived.containsKey(pn)) {
             sender.sendMessage("§7You have no one to reply to.");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(Initializer.lastReceived.get(pn));
+        Player target = Bukkit.getPlayer(Constants.lastReceived.get(pn));
         if (target == null) {
-            Initializer.lastReceived.remove(pn);
+            Constants.lastReceived.remove(pn);
             sender.sendMessage("§7You have no one to reply to.");
             return true;
         }
@@ -36,7 +36,7 @@ public class Reply implements CommandExecutor {
         sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
         target.sendMessage("§6[§c" + Utils.translate(player.getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
         String tn = target.getName();
-        Initializer.lastReceived.put(tn, pn);
+        Constants.lastReceived.put(tn, pn);
         return true;
     }
 }

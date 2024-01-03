@@ -2,10 +2,7 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import main.commands.*;
-import main.commands.Msg;
-import main.commands.MsgLock;
-import main.commands.Reply;
-import main.expansions.AntiCheat;
+import main.expansions.Anticheat;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
 import main.expansions.arenas.Section;
@@ -13,7 +10,7 @@ import main.expansions.arenas.commands.CreateCommand;
 import main.expansions.optimizer.AnimationEvent;
 import main.expansions.optimizer.InteractionEvent;
 import main.expansions.optimizer.LastPacketEvent;
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Languages;
 import main.utils.instances.CustomPlayerDataHolder;
 import net.luckperms.api.LuckPerms;
@@ -35,24 +32,21 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static main.utils.Initializer.economy;
-import static main.utils.Initializer.playerData;
-import static main.utils.Utils.lootDrop;
+import static main.utils.Constants.economy;
+import static main.utils.Constants.playerData;
 
 public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor {
     public static FileConfiguration config;
-    public File cf = new File(getDataFolder(), "data.yml");
     public static World d;
+    public File cf = new File(getDataFolder(), "data.yml");
 
     @Override
     public void onEnable() {
         config = YamlConfiguration.loadConfiguration(cf);
-        Initializer.p = this;
+        Constants.p = this;
         saveConfig();
-
-        Initializer.lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
+        Constants.lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
         economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
-        Bukkit.getPluginManager().registerEvents(new Events(), this);
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
             File folder = new File(getDataFolder(), "Arenas");
@@ -70,7 +64,7 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
                 }
             });
 
-            Initializer.spawn = new Location(Economy.d,
+            Constants.spawn = new Location(Economy.d,
                     -0.5, 142.06250, 0.5);
 
             Arena ffa = Arena.arenas.get("ffa");
@@ -113,12 +107,11 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
                 do {
                     ffaresetted = true;
 
-                    boolean i = Initializer.RANDOM.nextInt() == 1;
+                    boolean i = Constants.RANDOM.nextInt() == 1;
                     Arena.ResetLoopinData ffaup_data = i ? ffaup_data1 : ffaup_data2;
                     Arena ffaup = Arena.arenas.get(i ? "ffa1" : "ffa2");
                     do {
                         ffaupresetted = true;
-                        //Collection<? extends Player> p = Bukkit.getOnlinePlayers();
                         for (Player a : Bukkit.getOnlinePlayers()) {
                             if (a.isGliding())
                                 continue;
@@ -131,20 +124,10 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
                             c.setY(135);
                             a.teleportAsync(c);
                         }
-
-                        /*int size = p.size();
-                        if (p.size() >= 10) {
-                            int divided = size / 10;
-                            if (divided == 1) {
-                                lootDrop();
-                            } else
-                                lootDrop(divided);
-                        }*/
                     } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
                 } while (!ffa.loopyReset(ffa_data) && !ffaresetted);
             }, 0L, 24000L);
         }, 240L);
-
         this.getCommand("msg").setExecutor(new Msg());
         this.getCommand("reply").setExecutor(new Reply());
         this.getCommand("tpa").setExecutor(new Tpa());
@@ -162,12 +145,14 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
         this.getCommand("tpa").setTabCompleter(new TabTPA());
         this.getCommand("tpaccept").setTabCompleter(new TabTPA());
         this.getCommand("tpahere").setTabCompleter(new TabTPA());
-        Languages.init();
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().getEventManager().registerListener(new Anticheat());
         PacketEvents.getAPI().init();
+        Bukkit.getPluginManager().registerEvents(new Events(), this);
+        Languages.init();
+        Constants.init();
 
         if (config.contains("r")) {
             int dataLoaded = 0;
@@ -203,7 +188,6 @@ public class Economy extends JavaPlugin implements CommandExecutor, TabExecutor 
                 config.set("r." + key + ".t", value.getT());
             }
         }
-
         try {
             config.save(cf);
         } catch (IOException ignored) {

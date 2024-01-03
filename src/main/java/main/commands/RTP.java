@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -33,8 +33,8 @@ public class RTP implements CommandExecutor, TabExecutor {
         int az = 0;
         int x2 = 0;
         while (loc == null) {
-            ax = Initializer.RANDOM.nextInt(10000);
-            az = Initializer.RANDOM.nextInt(10000);
+            ax = Constants.RANDOM.nextInt(10000);
+            az = Constants.RANDOM.nextInt(10000);
             if (ax > 5000) ax = -ax;
             if (az > 5000) az = -az;
 

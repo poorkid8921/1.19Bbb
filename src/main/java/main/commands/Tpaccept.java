@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.Languages;
 import main.utils.TpaRequest;
 import org.bukkit.Bukkit;
@@ -9,7 +9,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.bukkitTasks;
+import static main.utils.Constants.bukkitTasks;
 import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.translate;
@@ -67,7 +67,7 @@ public class Tpaccept implements CommandExecutor {
         }
 
         Bukkit.getScheduler().cancelTask(bukkitTasks.get(request.getSenderF()));
-        tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> Initializer.requests.remove(request));
+        tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> Constants.requests.remove(request));
         return true;
     }
 }

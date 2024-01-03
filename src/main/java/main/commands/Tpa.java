@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -44,7 +44,7 @@ public class Tpa implements CommandExecutor {
             }
         }
 
-        if (!Initializer.tpa.contains(ren)) {
+        if (!Constants.tpa.contains(ren)) {
             sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }

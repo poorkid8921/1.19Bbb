@@ -11,6 +11,8 @@ public class CustomPlayerDataHolder {
     private int t;
     private AnimPackets lastPacket = AnimPackets.MISC;
     private boolean ignoreAnim = false;
+    private int runnableid;
+    private boolean tagged;
 
     public CustomPlayerDataHolder(int m,
                                   int t) {

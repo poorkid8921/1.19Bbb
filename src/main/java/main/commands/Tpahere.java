@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.TpaRequest;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
@@ -44,12 +44,12 @@ public class Tpahere implements CommandExecutor {
             }
         }
 
-        if (!Initializer.tpa.contains(ren)) {
+        if (!Constants.tpa.contains(ren)) {
             user.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
-        Initializer.requests.remove(tpr);
+        Constants.requests.remove(tpr);
         Utils.addRequest(user, recipient, true, true);
         return true;
     }

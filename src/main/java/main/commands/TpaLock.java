@@ -9,8 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.tpa;
+import static main.utils.Constants.playerData;
+import static main.utils.Constants.tpa;
+
 public class TpaLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

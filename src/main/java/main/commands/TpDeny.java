@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Initializer;
+import main.utils.Constants;
 import main.utils.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -42,7 +42,7 @@ public class TpDeny implements CommandExecutor {
         Player recipient = request.getSender();
         recipient.sendMessage(MAIN_COLOR + user.getDisplayName() + " §7denied your teleportation request.");
         sender.sendMessage("§7You have successfully deny " + MAIN_COLOR + translate(recipient.getDisplayName()) + "§7's request.");
-        Initializer.requests.remove(request);
+        Constants.requests.remove(request);
         return true;
     }
 }
