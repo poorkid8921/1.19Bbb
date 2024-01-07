@@ -2,7 +2,6 @@ package main.commands;
 
 import main.Practice;
 import main.utils.Constants;
-import main.utils.Instances.LocationHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -110,12 +109,10 @@ public class RTP implements CommandExecutor, TabExecutor {
             for (int index = 1; index < 16; index++) {
                 double p1 = (index * Math.PI) / 8;
                 double p2 = (index - 1) * Math.PI / 8;
-
-                int radius = 3;
-                double x1 = Math.cos(p1) * radius;
-                double xx2 = Math.cos(p2) * radius;
-                double z1 = Math.sin(p1) * radius;
-                double z2 = Math.sin(p2) * radius;
+                double x1 = Math.cos(p1) * 3;
+                double xx2 = Math.cos(p2) * 3;
+                double z1 = Math.sin(p1) * 3;
+                double z2 = Math.sin(p2) * 3;
                 Practice.d.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
             }
         });

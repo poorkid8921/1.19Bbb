@@ -51,19 +51,27 @@ public class Playtime implements CommandExecutor {
         StringBuilder strb = new StringBuilder();
         long stat = ((Player) sender).getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
 
+        int i = 0;
         int days = (int) TimeUnit.SECONDS.toDays(stat);
-        if (days != 0)
+        if (days != 0) {
+            i++;
             strb.append(days).append(" ").append(days > 1 ? "days" : "day");
+        }
 
         long hours = TimeUnit.SECONDS.toHours(stat) - (days * 24L);
-        if (hours != 0)
+        if (hours != 0) {
+            i++;
             strb.append(strb.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
                     " " + hours + " " + (hours > 1 ? "hours " : "hour "));
+        }
 
         long minutes = stat -
                 (TimeUnit.SECONDS.toMinutes(stat) * 60);
-        if (minutes != 0)
+        if (minutes != 0) {
+            if (i > 1)
+                strb.append(" ");
             strb.append(minutes).append(" ").append(minutes > 1 ? "minutes" : "minute");
+        }
         sender.sendMessage("§7Your playtime is" + MAIN_COLOR + strb);
         return true;
     }

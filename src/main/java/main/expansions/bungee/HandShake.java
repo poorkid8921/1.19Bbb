@@ -27,7 +27,6 @@ public class HandShake {
             String serverHostname = split[0];
             String socketAddressHostname = split[1];
             UUID uniqueId = UUID.fromString(split[2].replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5"));
-
             if (split.length == 3)
                 return null;
 
@@ -47,16 +46,11 @@ public class HandShake {
                 }
             }
 
-            if (bungeeGuardToken == null)
+            if (bungeeGuardToken == null || !bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8"))
                 return null;
-
-            if (!bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8")) {
-                return null;
-            }
 
             return new Success(serverHostname, socketAddressHostname, uniqueId, GSON.toJson(properties, PROPERTY_LIST_TYPE));
         } catch (Exception e) {
-            new Exception("Failed to decode handshake", e).printStackTrace();
             return null;
         }
     }

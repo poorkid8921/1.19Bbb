@@ -140,12 +140,10 @@ public class Utils {
     }
 
     public static void updateDuels() {
-        Inventory sp = Bukkit.createInventory(null, 54);
-        sp.setContents(duel1);
-        ItemStack i = sp.getItem(10);
+        ItemStack i = duel1[10];
         i.setAmount(Math.min(getDuelsAvailable(0), 1));
-        sp.setItem(10, i);
-        ItemStack[] s = sp.getContents();
-        inInventory.entrySet().stream().filter(result -> result.getValue().second() == null).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(s));
+        duel1[10] = i;
+        if (inInventory.size() != 0)
+            inInventory.entrySet().stream().filter(result -> result.getValue().second() == null).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(duel1));
     }
 }

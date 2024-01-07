@@ -16,7 +16,6 @@ import main.expansions.optimizer.InteractionEvent;
 import main.expansions.optimizer.LastPacketEvent;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.LocationHolder;
 import main.utils.TabTPA;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
@@ -34,7 +33,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
@@ -73,31 +71,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onEnable() {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update((System.getenv("COMPUTERNAME") +
-                    System.getProperty("user.name") +
-                    System.getenv("PROCESSOR_IDENTIFIER") +
-                    System.getenv("PROCESSOR_LEVEL"))
-                    .getBytes());
-            StringBuilder sb = new StringBuilder();
-            byte[] md5Digested = md5.digest();
-            for (byte b : md5Digested) {
-                String hex = Integer.toHexString(0xff & b);
-                sb.append(hex.length() == 1 ? '0' : hex);
-            }
-
-            String hwid = sb.toString();
-            Bukkit.getLogger().info("Your HWID is: " + hwid);
-            if (!hwid.equals("a547c78589be23b1c33acb5244e0c6fd")) {
-                this.setEnabled(false);
-                return;
-            }
-        } catch (Exception e) {
-            this.setEnabled(false);
-            return;
-        }
-
         dataFolder = getDataFolder();
         dataFile = new File(dataFolder, "data.yml");
         config = YamlConfiguration.loadConfiguration(dataFile);
@@ -260,6 +233,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
                     int m = 0;
                     int t = 0;
                     int money = 0;
+                    int elo = 0;
                     switch (key2) {
                         case "w" -> wins = config.getInt("r." + key + "." + key2);
                         case "l" -> losses = config.getInt("r." + key + "." + key2);
@@ -267,9 +241,10 @@ public class Practice extends JavaPlugin implements TabExecutor {
                         case "m" -> m = config.getInt("r." + key + "." + key2);
                         case "t" -> t = config.getInt("r." + key + "." + key2);
                         case "z" -> money = config.getInt("r." + key + "." + key2);
+                        case "e" -> elo = config.getInt("r." + key + "." + key2);
                     }
 
-                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money));
+                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo));
                 }
                 dataLoaded++;
             }
@@ -286,11 +261,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
             file.delete();
         }
 
-        /*for (File file : new File(d0
+        for (File file : new File(d0
                 .getWorldFolder()
                 .getAbsolutePath() + "/DIM1/").listFiles()) {
             file.delete();
-        }*/
+        }
 
         long curTime = new Date().getTime();
         int accountsRemoved = 0;
@@ -322,19 +297,21 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                 if (value.getWins() == 0 &&
                         value.getLosses() == 0 &&
-                        value.getC() == 0 &&
+                        value.getKilleffect() == -1 &&
                         value.getM() == 0 &&
                         value.getT() == 0 &&
-                        value.getMoney() == 0)
+                        value.getMoney() == 0 &&
+                        value.getElo() == 0)
                     continue;
 
                 String key = entry.getKey();
                 config.set("r." + key + ".w", value.getWins());
                 config.set("r." + key + ".l", value.getLosses());
-                config.set("r." + key + ".c", value.getC());
+                config.set("r." + key + ".c", value.getKilleffect());
                 config.set("r." + key + ".m", value.getM());
                 config.set("r." + key + ".t", value.getT());
                 config.set("r." + key + ".z", value.getMoney());
+                config.set("r." + key + ".e", value.getElo());
             }
         }
 

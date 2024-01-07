@@ -36,7 +36,7 @@ public class DuelUtils {
         };
     }
 
-    public static void showDuelResume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
+    public static void finishDuel(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff) {
         String rd = pl.getName();
         String ad = p.getName();
 
@@ -57,19 +57,18 @@ public class DuelUtils {
 
         Bukkit.broadcastMessage(SECOND_COLOR + "⚔ " + rd + " §7won in a duel against " + SECOND_COLOR + ad);
         CustomPlayerDataHolder D = playerData.get(rd);
-        if (D.getWins() == 0)
-            D.setWins(1);
-        else
-            D.incrementWins();
+        D.incrementWins();
+        D.incrementElo(50);
 
         D = playerData.get(ad);
-        if (D.getLosses() == 0)
-            D.setLosses(1);
+        D.incrementLosses();
+        if (D.getElo() >= 50)
+            D.decrementElo(50);
         else
-            D.incrementLosses();
+            D.setElo(0);
     }
 
-    public static void showDuelResume(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
+    public static void finishDuel(Player pl, Player p, boolean i, int r, int b, long o, long n, String t, boolean rw, String f, String ff, PlayerDeathEvent e) {
         String rd = pl.getName();
         String ad = p.getName();
 
@@ -90,16 +89,16 @@ public class DuelUtils {
 
         e.setDeathMessage(SECOND_COLOR + "⚔ " + ad + " §7won in a duel against " + SECOND_COLOR + rd);
         CustomPlayerDataHolder D = playerData.get(rd);
-        if (D.getWins() == 0)
-            D.setWins(1);
-        else
-            D.incrementWins();
+        D.incrementWins();
+        D.incrementElo(50);
 
         D = playerData.get(ad);
-        if (D.getLosses() == 0)
-            D.setLosses(1);
+        D.incrementLosses();
+        if (D.getElo() >= 50)
+            D.decrementElo(50);
         else
-            D.incrementLosses();
+            D.setElo(0);
+        D.setBack(null);
     }
 
     public static void start(Player user, Player recipient, int type, int round, int maxi, int arena) {
@@ -341,7 +340,6 @@ public class DuelUtils {
             user.setFoodLevel(20);
             user.setHealth(20);
         });
-
         recipient.teleportAsync(loc2).thenAccept(result -> {
             recipient.setNoDamageTicks(100);
             recipient.setFoodLevel(20);

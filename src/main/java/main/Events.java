@@ -96,9 +96,12 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String pn = p.getName();
         boolean tagged = playerData.get(pn).isTagged();
-        if (tagged)
+        if (tagged) {
             p.sendMessage(EXCEPTION_TAGGED);
-        e.setCancelled(tagged || teams.containsKey(pn));
+            e.setCancelled(true);
+            return;
+        }
+        e.setCancelled(teams.containsKey(pn));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -119,21 +122,21 @@ public class Events implements Listener {
         String playerName = p.getName();
 
         if (teams.containsKey(playerName)) {
-            DuelHolder tpr = getPlayerDuel(playerName);
+            DuelHolder request = getPlayerDuel(playerName);
             ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player pw = plist.get(1);
-            int red = tpr.getRed();
-            int blue = tpr.getBlue();
+            int red = request.getRed();
+            int blue = request.getBlue();
             String pwn = pw.getName();
             int t1 = teams.get(pwn);
             if (t1 == 1) red += 1;
             else blue += 1;
-            showDuelResume(pw, p, false, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
+            finishDuel(pw, p, false, red, blue, request.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
             Bukkit.getScheduler().scheduleAsyncDelayedTask(Constants.p, () -> {
                 teams.remove(playerName);
                 teams.remove(pwn);
-                duel.remove(tpr);
+                duel.remove(request);
                 pw.teleportAsync(spawn);
             }, 60L);
         }
@@ -300,122 +303,105 @@ public class Events implements Listener {
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
+
+        if (teams.containsKey(name)) {
+            Location location = p.getLocation();
+            World world = p.getWorld();
+            Player killer = p.getKiller();
+
+            e.setCancelled(true);
+            p.setNoDamageTicks(100);
+            p.setFoodLevel(20);
+            p.setHealth(20);
+
+            DuelHolder request = getPlayerDuel(name);
+            killer = (killer == p || killer == null) ? world.getNearbyPlayers(location, 100).stream().toList().get(1) : killer;
+            killer.setNoDamageTicks(100);
+            killer.setFoodLevel(20);
+            killer.setHealth(20);
+
+            Firework firework = (Firework) world.spawnEntity(location.clone().add(0, 1, 0), EntityType.FIREWORK);
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.setPower(2);
+            meta.addEffect(FireworkEffect.builder()
+                    .withColor(Color.WHITE)
+                    .withColor(Color.RED)
+                    .with(FireworkEffect.Type.BALL_LARGE)
+                    .flicker(true)
+                    .build());
+            firework.setFireworkMeta(meta);
+            firework.detonate();
+
+            String killerName = killer.getName();
+            Player finalKiller = killer;
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Constants.p, () -> {
+                int newrounds = request.getRounds() + 1;
+                int red = request.getRed();
+                int blue = request.getBlue();
+                int t1 = teams.get(killerName);
+                Player redp, bluep;
+
+                if (t1 == 1) {
+                    redp = finalKiller;
+                    bluep = p;
+                    red += 1;
+                } else {
+                    bluep = finalKiller;
+                    redp = p;
+                    blue += 1;
+                }
+
+                int arena = request.getArena();
+                int type = request.getType();
+                if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(killerName) == null) {
+                    if (red > blue)
+                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
+                    else if (blue > red)
+                        finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
+                    else
+                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
+
+                    teams.remove(killerName);
+                    teams.remove(name);
+                    finalKiller.teleportAsync(spawn);
+                    p.teleportAsync(spawn);
+
+                    inDuel.remove(request);
+                    updateDuels();
+                    updateSpectate();
+                    return;
+                }
+
+                if (newrounds == request.getMaxrounds()) {
+                    if (red > blue) {
+                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
+                    } else if (blue > red) {
+                        finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
+                    } else
+                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
+
+                    teams.remove(killerName);
+                    teams.remove(name);
+                    inDuel.remove(request);
+                    finalKiller.teleportAsync(spawn);
+                    p.teleportAsync(spawn);
+                    updateDuels();
+                    updateSpectate();
+                    return;
+                }
+                request.setRounds(newrounds);
+                request.setRed(red);
+                request.setBlue(blue);
+                start(finalKiller, p, type, newrounds, request.getMaxrounds(), arena);
+            }, 60L);
+            return;
+        }
         Location l = p.getLocation();
         if (inFFA.contains(p))
             inFFA.remove(p);
         else e.getDrops().clear();
 
         Player killer = p.getKiller();
-        World w = p.getWorld();
-        if (teams.containsKey(name)) {
-            e.setCancelled(true);
-            p.setNoDamageTicks(100);
-            p.setFoodLevel(20);
-            p.setHealth(20);
-
-            DuelHolder tpr = getPlayerDuel(name);
-            Player kp = (killer == p || killer == null) ? w.getNearbyPlayers(l, 100).stream().toList().get(1) : killer;
-
-            kp.setNoDamageTicks(100);
-            kp.setFoodLevel(20);
-            kp.setHealth(20);
-
-            Firework fw = (Firework) w.spawnEntity(l.clone().add(0, 1, 0), EntityType.FIREWORK);
-            FireworkMeta fwm = fw.getFireworkMeta();
-            fwm.setPower(2);
-            fwm.addEffect(FireworkEffect.builder()
-                    .withColor(Color.WHITE)
-                    .withColor(Color.RED)
-                    .with(FireworkEffect.Type.BALL_LARGE)
-                    .flicker(true)
-                    .build());
-            fw.setFireworkMeta(fwm);
-            fw.detonate();
-
-            String kuid = kp.getName();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Constants.p, () -> {
-                int newrounds = tpr.getRounds() + 1;
-                int red = tpr.getRed();
-                int blue = tpr.getBlue();
-                int t1 = teams.get(kuid);
-                Player redp, bluep;
-
-                if (t1 == 1) {
-                    redp = kp;
-                    bluep = p;
-                    red += 1;
-                } else {
-                    bluep = kp;
-                    redp = p;
-                    blue += 1;
-                }
-
-                int arena = tpr.getArena();
-                int type = tpr.getType();
-                /*Arena ffa = Arena.arenas.get("d_" + type + arena);
-                Arena.ResetLoopinData data = new Arena.ResetLoopinData();
-                data.speed = 10000;
-                for (Section s : ffa.getSections()) {
-                    int sectionAmount = (int) ((double) 10000 / (double) (ffa.getc2().getBlockX() - ffa.getc1().getBlockX() + 1) * (ffa.getc2().getBlockY() - ffa.getc1().getBlockY() + 1) * (ffa.getc2().getBlockZ() - ffa.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                    if (sectionAmount <= 0) sectionAmount = 1;
-                    data.sections.put(s.getID(), sectionAmount);
-                    data.sectionIDs.add(s.getID());
-                }*/
-
-                if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(kuid) == null) {
-                    if (red > blue)
-                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
-                    else if (blue > red)
-                        showDuelResume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
-                    else
-                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-
-                    Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
-                        teams.remove(kuid);
-                        teams.remove(name);
-                        kp.teleportAsync(spawn);
-                        p.teleportAsync(spawn);
-                    }, 60L);
-                    //boolean resetted;
-                    //do {
-                    //resetted = true;
-
-                    inDuel.remove(tpr);
-                    updateDuels();
-                    updateSpectate();
-                    //} while (!ffa.loopyReset(data) && !resetted);
-                    return;
-                }
-
-                if (newrounds == tpr.getMaxrounds()) {
-                    if (red > blue) {
-                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
-                    } else if (blue > red) {
-                        showDuelResume(bluep, redp, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
-                    } else {
-                        showDuelResume(redp, bluep, true, red, blue, tpr.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-                    }
-
-                    Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
-                        teams.remove(kuid);
-                        teams.remove(name);
-                        inDuel.remove(tpr);
-                        kp.teleportAsync(spawn);
-                        p.teleportAsync(spawn);
-                        updateDuels();
-                        updateSpectate();
-                    }, 60L);
-                    return;
-                }
-
-                tpr.setRounds(newrounds);
-                tpr.setRed(red);
-                tpr.setBlue(blue);
-                start(kp, p, type, newrounds, tpr.getMaxrounds(), arena);
-            }, 60L);
-            playerData.get(name).setBack(null);
-            return;
-        }
         CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.isTagged()) {
             D0.setTagged(false);
@@ -428,8 +414,6 @@ public class Events implements Listener {
                 l.getWorld()));
 
         p.sendMessage(BACK);
-        String kp;
-
         if (killer == null || killer == p) {
             String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
@@ -441,12 +425,13 @@ public class Events implements Listener {
             };
             e.setDeathMessage(death);
         } else {
-            kp = killer.getName();
-            CustomPlayerDataHolder D1 = playerData.get(kp);
+            World w = p.getWorld();
+            String killerName = killer.getName();
+            CustomPlayerDataHolder D1 = playerData.get(killerName);
             Bukkit.getScheduler().cancelTask(D1.getRunnableid());
             D1.setTagged(false);
             D1.incrementMoney(500);
-            String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
+            String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
@@ -456,8 +441,7 @@ public class Events implements Listener {
                 default -> "suicided";
             };
             e.setDeathMessage(death);
-
-            switch (D1.getC()) {
+            switch (D1.getKilleffect()) {
                 case 0 -> {
                     Location loc = l.add(0, 1, 0);
                     for (double y = 0; y <= 10; y += 0.05) {
@@ -488,6 +472,7 @@ public class Events implements Listener {
             tpa.add(name);
             msg.add(name);
             playerData.put(name, new CustomPlayerDataHolder(
+                    0,
                     0,
                     0,
                     0,

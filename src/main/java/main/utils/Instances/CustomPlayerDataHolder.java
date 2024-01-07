@@ -9,10 +9,11 @@ import main.expansions.optimizer.AnimPackets;
 public class CustomPlayerDataHolder {
     private int wins;
     private int losses;
-    private int c;
+    private int killeffect;
     private int m;
     private int t;
     private int money;
+    private int elo;
     private WorldLocationHolder back;
     private AnimPackets lastPacket = AnimPackets.MISC;
     private boolean ignoreAnim = false;
@@ -24,13 +25,23 @@ public class CustomPlayerDataHolder {
                                   int c,
                                   int m,
                                   int t,
-                                  int money) {
+                                  int z,
+                                  int elo) {
         this.wins = wins;
         this.losses = losses;
-        this.money = money;
-        this.c = c;
+        this.money = z;
+        this.killeffect = c;
         this.m = m;
         this.t = t;
+        this.elo = elo;
+    }
+
+    public void incrementElo(int elo) {
+        this.elo += elo;
+    }
+
+    public void decrementElo(int elo) {
+        this.elo -= elo;
     }
 
     public void incrementWins() {
