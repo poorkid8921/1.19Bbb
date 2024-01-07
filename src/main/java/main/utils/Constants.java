@@ -38,8 +38,8 @@ public class Constants {
     public static ObjectArrayList<DuelHolder> duel = new ObjectArrayList<>();
     public static ObjectArrayList<String> valid = new ObjectArrayList<>();
     public static ObjectArrayList<String> playersRTPing = new ObjectArrayList<>();
-    public static ObjectArrayList<LocationHolder> overworldRTP = new ObjectArrayList<>();
-    public static ObjectArrayList<LocationHolder> endRTP = new ObjectArrayList<>();
+    public static ObjectArrayList<Location> overworldRTP = new ObjectArrayList<>();
+    public static ObjectArrayList<Location> endRTP = new ObjectArrayList<>();
     public static ImmutableList<Color> color = ImmutableList.of(org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW);
     public static Location ffa;
     public static Location flat;
@@ -50,6 +50,7 @@ public class Constants {
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     public static URL CACHED_WEBHOOK;
+    public static URL CACHED_TOKEN_WEBHOOK;
     public static TextComponent D_USING = new TextComponent("§7ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
     public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴄᴀᴛsᴍᴘ");
     public static Component BACK;
@@ -87,10 +88,11 @@ public class Constants {
     public static void init() {
         try {
             CACHED_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
+            CACHED_TOKEN_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919761007018045/fs81ovFWMXtO6LB4JnRyZ59c188dGZSQElkYr1vNju7fV0qeuRLlrWA-QhtHdfyIoyzd");
         } catch (MalformedURLException ignored) {
         }
 
-        EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ.";
+        EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ";
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/catsmp"));
 

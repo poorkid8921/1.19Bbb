@@ -50,8 +50,9 @@ public class HandShake {
             if (bungeeGuardToken == null)
                 return null;
 
-            if (!bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8"))
+            if (!bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8")) {
                 return null;
+            }
 
             return new Success(serverHostname, socketAddressHostname, uniqueId, GSON.toJson(properties, PROPERTY_LIST_TYPE));
         } catch (Exception e) {

@@ -31,7 +31,6 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
         AnimPackets animPacket = getAnimPacket(event);
         if (user.getLastPacket() == AnimPackets.ANIMATION)
             user.setIgnoreAnim(animPacket == AnimPackets.INV_DROP);
-
         user.setLastPacket(animPacket);
     }
 

@@ -1,5 +1,6 @@
 package main.expansions.guis;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import main.utils.Constants;
@@ -38,18 +39,17 @@ public class Utils {
             inv.setItem(i, glass);
         }
 
-        inv.setItem(10, createItemStack(Material.END_CRYSTAL, "Cheating", List.of("§aUse of a hacked client", "§aUse of an illegal client modification")));
-        inv.setItem(11, createItemStack(Material.PAPER, "Doxxing", List.of("§aSaying private info of a player in the chat")));
-        inv.setItem(13, createItemStack(Material.RED_BED, "Spamming", List.of("§aSaying more than 5 messages on the same topic")));
-        inv.setItem(14, createItemStack(Material.DIAMOND_SWORD, "Interrupting", List.of("§aInterrupting fights in flat")));
-        inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", List.of("§aUsing too many anchors in flat")));
+        inv.setItem(10, createItemStack(Material.END_CRYSTAL, "Cheating", ImmutableList.of("§aUse of a hacked client", "§aUse of an illegal client modification")));
+        inv.setItem(11, createItemStack(Material.PAPER, "Doxxing", ImmutableList.of("§aSaying private info of a player in the chat")));
+        inv.setItem(13, createItemStack(Material.RED_BED, "Spamming", ImmutableList.of("§aSaying more than 5 messages on the same topic")));
+        inv.setItem(14, createItemStack(Material.DIAMOND_SWORD, "Interrupting", ImmutableList.of("§aInterrupting fights in flat")));
+        inv.setItem(15, createItemStack(Material.RESPAWN_ANCHOR, "Anchor Spamming", ImmutableList.of("§aUsing too many anchors in flat")));
         report = inv.getContents();
 
-        List<String> s = List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʙᴜʏ");
-        inv.setItem(12, createItemStack(Material.GUNPOWDER, "None", List.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʀᴇᴍᴏᴠᴇ")));
-        inv.setItem(13, createItemStack(Material.BONE, "Lightning Bolt", s));
-        inv.setItem(14, createItemStack(Material.TNT, "Explosion", s));
-        inv.setItem(15, createItemStack(Material.FIREWORK_STAR, "Firework Explosion", s));
+        inv.setItem(12, createItemStack(Material.GUNPOWDER, "None", ImmutableList.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʀᴇᴍᴏᴠᴇ")));
+        inv.setItem(13, createItemStack(Material.BONE, "Lightning Bolt", ImmutableList.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʙᴜʏ", "§a$250")));
+        inv.setItem(14, createItemStack(Material.TNT, "Explosion", ImmutableList.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʙᴜʏ", "§a$425")));
+        inv.setItem(15, createItemStack(Material.FIREWORK_STAR, "Firework Explosion", ImmutableList.of("§7▪ " + SECOND_COLOR + "ᴄʟɪᴄᴋ: §fʙᴜʏ", "§a$750")));
 
         inv.setItem(11, glass);
         inv.setItem(15, glass);
@@ -99,7 +99,7 @@ public class Utils {
         inInventory.put(p.getName(), Pair.of(1, arg));
         Inventory inv = Bukkit.createInventory(p, 27, "ʀᴇᴘᴏʀᴛ");
         inv.setContents(report);
-        inv.setItem(12, createItemStack(main.utils.Utils.getHead(arg), "Ban Evading", List.of("§aUsing an alt to play after being banned")));
+        inv.setItem(12, createItemStack(main.utils.Utils.getHead(arg), "Ban Evading", ImmutableList.of("§aUsing an alt to play after being banned")));
         p.openInventory(inv);
     }
 
@@ -108,7 +108,7 @@ public class Utils {
         inInventory.put(pn, Pair.of(0, null));
         Inventory inv = Bukkit.createInventory(p, 27, "ᴀᴇꜱᴛʜᴇᴛɪᴄꜱʜᴏᴘ | ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛꜱ");
         inv.setContents(killeffect);
-        inv.setItem(10, createItemStack(Material.GREEN_DYE, "§aBalance", List.of("§a$" + playerData.get(pn).getMoney())));
+        inv.setItem(10, createItemStack(Material.GREEN_DYE, "§aBalance", ImmutableList.of("§a$" + playerData.get(pn).getMoney())));
         p.openInventory(inv);
     }
 

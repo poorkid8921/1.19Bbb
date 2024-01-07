@@ -7,8 +7,6 @@ import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import main.utils.Constants;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.type.RespawnAnchor;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

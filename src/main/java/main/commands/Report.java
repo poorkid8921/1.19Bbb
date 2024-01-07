@@ -5,9 +5,13 @@ import main.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-public class Report implements CommandExecutor {
+import javax.annotation.Nullable;
+import java.util.List;
+
+public class Report implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
@@ -24,5 +28,10 @@ public class Report implements CommandExecutor {
             Utils.submitReport((Player) sender, msgargs.toString(), null);
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return null;
     }
 }

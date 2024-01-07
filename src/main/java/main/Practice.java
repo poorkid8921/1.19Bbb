@@ -2,12 +2,10 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import io.papermc.lib.PaperLib;
 import main.commands.*;
 import main.expansions.AntiCheat;
 import main.expansions.arenas.Arena;
 import main.expansions.arenas.ArenaIO;
-import main.expansions.arenas.Section;
 import main.expansions.arenas.commands.CreateCommand;
 import main.expansions.duels.commands.Duel;
 import main.expansions.duels.commands.DuelAccept;
@@ -52,14 +50,14 @@ public class Practice extends JavaPlugin implements TabExecutor {
     int flatstr = 1;
     int ticked = 0;
 
-    LocationHolder getRandomLoc(World w) {
-        LocationHolder loc = null;
+    Location getRandomLoc(World w) {
+        Location loc = null;
         while (loc == null) {
-            int boundX = Constants.RANDOM.nextInt(-10000,10000);
-            int boundZ = Constants.RANDOM.nextInt(-10000,10000);
+            int boundX = Constants.RANDOM.nextInt(-10000, 10000);
+            int boundZ = Constants.RANDOM.nextInt(-10000, 10000);
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid())
-                loc = new LocationHolder(boundX, b.getY() + 1, boundZ);
+                loc = new Location(w, boundX, b.getY() + 1, boundZ);
         }
         return loc;
     }
@@ -113,23 +111,11 @@ public class Practice extends JavaPlugin implements TabExecutor {
 
                 public void run() {
                     if (i++ == 101) {
+                        Bukkit.getLogger().warning("Finished RTP population.");
                         this.cancel();
                         return;
                     }
-
                     overworldRTP.add(getRandomLoc(d));
-                }
-            }.runTaskTimer(this, 0L, 20L);
-
-            new BukkitRunnable() {
-                int i = 0;
-
-                public void run() {
-                    if (i++ == 101) {
-                        this.cancel();
-                        return;
-                    }
-
                     endRTP.add(getRandomLoc(d0));
                 }
             }.runTaskTimer(this, 0L, 20L);
@@ -209,6 +195,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("tp").setExecutor(new Teleport());
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("tpall").setExecutor(new TeleportAll());
+
         this.getCommand("msg").setTabCompleter(new TabMSG());
         this.getCommand("tpa").setTabCompleter(new TabTPA());
         this.getCommand("tpaccept").setTabCompleter(new TabTPA());

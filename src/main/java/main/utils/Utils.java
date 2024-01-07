@@ -1,5 +1,6 @@
 package main.utils;
 
+import com.google.common.collect.ImmutableList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,7 +15,6 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,14 +79,13 @@ public class Utils {
                             .getBytes(StandardCharsets.UTF_8));
                 }
                 connection.getInputStream();
-            } catch (final IOException e) {
-                e.printStackTrace();
+            } catch (final IOException ignored) {
             }
         });
         pp.sendMessage("§7Successfully submitted the report.");
     }
 
-    public static ItemStack createItemStack(Material mat, String display, List<String> lore) {
+    public static ItemStack createItemStack(Material mat, String display, ImmutableList<String> lore) {
         ItemStack ie = new ItemStack(mat, 1);
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
@@ -95,7 +94,7 @@ public class Utils {
         return ie;
     }
 
-    public static ItemStack createItemStack(ItemStack ie, String display, List<String> lore) {
+    public static ItemStack createItemStack(ItemStack ie, String display, ImmutableList<String> lore) {
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
