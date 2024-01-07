@@ -10,8 +10,8 @@ public class CustomPlayerDataHolder {
     private int wins;
     private int losses;
     private int killeffect;
-    private int m;
-    private int t;
+    private int mtoggle;
+    private int tptoggle;
     private int money;
     private int elo;
     private WorldLocationHolder back;
@@ -31,8 +31,8 @@ public class CustomPlayerDataHolder {
         this.losses = losses;
         this.money = z;
         this.killeffect = c;
-        this.m = m;
-        this.t = t;
+        this.mtoggle = m;
+        this.tptoggle = t;
         this.elo = elo;
     }
 

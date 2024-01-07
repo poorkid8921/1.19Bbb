@@ -16,13 +16,13 @@ public class MsgLock implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String p = sender.getName();
         CustomPlayerDataHolder M = playerData.get(p);
-        if (M.getM() == 0) {
+        if (M.getMtoggle() == 0) {
             sender.sendMessage(MSGLOCK1);
-            M.setM(1);
+            M.setMtoggle(1);
             msg.remove(p);
         } else {
             sender.sendMessage(MSGLOCK);
-            M.setM(0);
+            M.setMtoggle(0);
             msg.add(p);
         }
         return true;

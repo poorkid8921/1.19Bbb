@@ -298,8 +298,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 if (value.getWins() == 0 &&
                         value.getLosses() == 0 &&
                         value.getKilleffect() == -1 &&
-                        value.getM() == 0 &&
-                        value.getT() == 0 &&
+                        value.getMtoggle() == 0 &&
+                        value.getTptoggle() == 0 &&
                         value.getMoney() == 0 &&
                         value.getElo() == 0)
                     continue;
@@ -308,8 +308,8 @@ public class Practice extends JavaPlugin implements TabExecutor {
                 config.set("r." + key + ".w", value.getWins());
                 config.set("r." + key + ".l", value.getLosses());
                 config.set("r." + key + ".c", value.getKilleffect());
-                config.set("r." + key + ".m", value.getM());
-                config.set("r." + key + ".t", value.getT());
+                config.set("r." + key + ".m", value.getMtoggle());
+                config.set("r." + key + ".t", value.getTptoggle());
                 config.set("r." + key + ".z", value.getMoney());
                 config.set("r." + key + ".e", value.getElo());
             }

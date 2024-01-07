@@ -16,13 +16,13 @@ public class TpaLock implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String p = sender.getName();
         CustomPlayerDataHolder T = playerData.get(p);
-        if (T.getT() == 0) {
+        if (T.getTptoggle() == 0) {
             sender.sendMessage(TPALOCK1);
-            T.setT(1);
+            T.setTptoggle(1);
             tpa.remove(p);
         } else {
             sender.sendMessage(TPALOCK);
-            T.setT(0);
+            T.setTptoggle(0);
             tpa.add(p);
         }
         return true;

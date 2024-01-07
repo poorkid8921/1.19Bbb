@@ -56,7 +56,6 @@ public class Utils {
         killeffect = inv.getContents();
 
         inv = Bukkit.createInventory(null, 54);
-
         ItemStack i2 = new ItemStack(Material.FEATHER);
         meta = i2.getItemMeta();
         meta.setDisplayName("§7Spectate");
@@ -113,7 +112,6 @@ public class Utils {
     }
 
     public static void updateSpectate() {
-        Inventory sp = Bukkit.createInventory(null, 54);
         int added = 9;
         for (DuelHolder r : Constants.duel.stream().filter(result -> result.getRounds() > 0).toList()) {
             if (added++ >= 44) break;
@@ -123,20 +121,18 @@ public class Utils {
                 case 2 -> Material.DIAMOND_SWORD;
                 default -> Material.BARRIER;
             });
-            String pn = r.getSender().getName();
             ItemMeta im = i.getItemMeta();
-            im.setLore(List.of(
+            im.setLore(ImmutableList.of(
                     "§7" + r.getMaxPlayers() + "V" + r.getMaxPlayers(),
-                    MAIN_COLOR + pn + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver()
+                    MAIN_COLOR + r.getSenderF() + " §7ᴀɢᴀɪɴsᴛ " + MAIN_COLOR + r.getReceiver()
             ));
-            im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, pn);
+            im.getPersistentDataContainer().set(spectateHead, PersistentDataType.STRING, r.getSenderF());
             i.setItemMeta(im);
-            sp.setItem(added, i);
+            duel2[added] = i;
         }
 
-        ItemStack[] s = sp.getContents();
-        inInventory.entrySet().stream().filter(result -> result.getValue().second().equals("0")).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(s));
-        duel2 = s;
+        if (inInventory.size() != 0)
+            inInventory.entrySet().stream().filter(result -> result.getValue().second().equals("0")).forEach(result -> Bukkit.getPlayer(result.getKey()).getInventory().setContents(duel2));
     }
 
     public static void updateDuels() {

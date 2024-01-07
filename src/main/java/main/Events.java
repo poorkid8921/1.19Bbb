@@ -332,8 +332,8 @@ public class Events implements Listener {
             firework.setFireworkMeta(meta);
             firework.detonate();
 
-            String killerName = killer.getName();
-            Player finalKiller = killer;
+            final String killerName = killer.getName();
+            final Player finalKiller = killer;
             Bukkit.getScheduler().scheduleSyncDelayedTask(Constants.p, () -> {
                 int newrounds = request.getRounds() + 1;
                 int red = request.getRed();
@@ -351,8 +351,6 @@ public class Events implements Listener {
                     blue += 1;
                 }
 
-                int arena = request.getArena();
-                int type = request.getType();
                 if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(killerName) == null) {
                     if (red > blue)
                         finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
@@ -360,7 +358,6 @@ public class Events implements Listener {
                         finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
                     else
                         finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-
                     teams.remove(killerName);
                     teams.remove(name);
                     finalKiller.teleportAsync(spawn);
@@ -373,13 +370,12 @@ public class Events implements Listener {
                 }
 
                 if (newrounds == request.getMaxrounds()) {
-                    if (red > blue) {
+                    if (red > blue)
                         finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
-                    } else if (blue > red) {
+                    else if (blue > red)
                         finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
-                    } else
+                    else
                         finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-
                     teams.remove(killerName);
                     teams.remove(name);
                     inDuel.remove(request);
@@ -392,7 +388,7 @@ public class Events implements Listener {
                 request.setRounds(newrounds);
                 request.setRed(red);
                 request.setBlue(blue);
-                start(finalKiller, p, type, newrounds, request.getMaxrounds(), arena);
+                start(finalKiller, p, request.getType(), newrounds, request.getMaxrounds(), request.getArena());
             }, 60L);
             return;
         }
@@ -425,7 +421,6 @@ public class Events implements Listener {
             };
             e.setDeathMessage(death);
         } else {
-            World w = p.getWorld();
             String killerName = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(killerName);
             Bukkit.getScheduler().cancelTask(D1.getRunnableid());
@@ -443,19 +438,24 @@ public class Events implements Listener {
             e.setDeathMessage(death);
             switch (D1.getKilleffect()) {
                 case 0 -> {
+                    World world = p.getWorld();
                     Location loc = l.add(0, 1, 0);
                     for (double y = 0; y <= 10; y += 0.05) {
-                        w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
+                        world.spawnParticle(Particle.TOTEM, new Location(world, (float) (loc.getX() + 2 * Math.cos(y)), (float) (loc.getY() + y), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                     }
                 }
                 case 1 -> {
-                    Firework fw = (Firework) w.spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
+                    World world = p.getWorld();
+                    Firework fw = (Firework) world.spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
                     FireworkMeta fwm = fw.getFireworkMeta();
                     fwm.setPower(2);
                     fwm.addEffect(FireworkEffect.builder().withColor(color.get(RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
                     fw.setFireworkMeta(fwm);
                 }
-                case 2 -> w.strikeLightningEffect(l.add(0, 1, 0));
+                case 2 -> {
+                    World world = p.getWorld();
+                    world.strikeLightningEffect(l.add(0, 1, 0));
+                }
             }
         }
     }
@@ -480,9 +480,9 @@ public class Events implements Listener {
                     0,
                     0));
         } else {
-            if (D.getT() == 0)
+            if (D.getTptoggle() == 0)
                 tpa.add(name);
-            if (D.getM() == 0)
+            if (D.getMtoggle() == 0)
                 msg.add(name);
         }
     }
