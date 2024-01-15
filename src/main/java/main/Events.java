@@ -4,8 +4,8 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.expansions.bungee.HandShake;
-import main.expansions.duels.Matchmaking;
+import expansions.bungee.HandShake;
+import expansions.duels.Matchmaking;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
@@ -32,14 +32,13 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-import static main.expansions.guis.Utils.*;
+import static expansions.guis.Utils.*;
 import static main.utils.Constants.tpa;
 import static main.utils.Constants.*;
 import static main.utils.DuelUtils.*;
@@ -65,6 +64,7 @@ public class Events implements Listener {
                 connection.getInputStream();
             } catch (final IOException ignored) {
             }
+            e.setFailMessage(MAIN_COLOR + "Unauthorized access.");
             e.setFailed(true);
             return;
         }
@@ -99,9 +99,8 @@ public class Events implements Listener {
         if (tagged) {
             p.sendMessage(EXCEPTION_TAGGED);
             e.setCancelled(true);
-            return;
-        }
-        e.setCancelled(teams.containsKey(pn));
+        } else
+            e.setCancelled(teams.containsKey(pn));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -112,17 +111,21 @@ public class Events implements Listener {
 
     @EventHandler
     private void onTeleport(PlayerTeleportEvent e) {
-        if (e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN)
-            inFFA.remove(e.getPlayer());
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
+            Player p = e.getPlayer();
+            String pn = p.getName();
+            inFlat.remove(pn);
+            inFFA.remove(p);
+        }
     }
 
     @EventHandler
     private void onPlayerLeave(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        String playerName = p.getName();
+        String name = p.getName();
 
-        if (teams.containsKey(playerName)) {
-            DuelHolder request = getPlayerDuel(playerName);
+        if (teams.containsKey(name)) {
+            DuelHolder request = getPlayerDuel(name);
             ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
             Player pw = plist.get(1);
             int red = request.getRed();
@@ -134,24 +137,28 @@ public class Events implements Listener {
             finishDuel(pw, p, false, red, blue, request.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
             plist.clear();
             Bukkit.getScheduler().scheduleAsyncDelayedTask(Constants.p, () -> {
-                teams.remove(playerName);
+                teams.remove(name);
                 teams.remove(pwn);
                 duel.remove(request);
                 pw.teleportAsync(spawn);
             }, 60L);
         }
-        CustomPlayerDataHolder D = playerData.get(playerName);
-        Bukkit.getScheduler().cancelTask(D.getRunnableid());
-        D.setTagged(false);
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        if (D0.isTagged()) {
+            D0.setTagged(false);
+            D0.untag();
+            e.setQuitMessage(SECOND_COLOR + "☠ " + name + " §7has combat logged");
+        } else
+            e.setQuitMessage(MAIN_COLOR + "← " + name);
 
-        RequestManager.tpa.remove(getTPArequest(playerName));
-        duel.remove(getDUELrequest(playerName));
+        RequestManager.tpa.remove(getTPArequest(name));
+        duel.remove(getDUELrequest(name));
 
-        lastReceived.remove(playerName);
-        msg.remove(playerName);
-        tpa.remove(playerName);
+        lastReceived.remove(name);
+        msg.remove(name);
+        tpa.remove(name);
+        inFlat.remove(name);
         inFFA.remove(p);
-        e.setQuitMessage(MAIN_COLOR + "← " + playerName);
     }
 
     @EventHandler
@@ -253,50 +260,16 @@ public class Events implements Listener {
             return;
 
         CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D0.isTagged())
-            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+            D0.setTagTime(p);
         else
-            D0.setTagged(true);
+            D0.setupCombatRunnable(p);
+
+        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D1.isTagged())
-            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+            D1.setTagTime(attacker);
         else
-            D1.setTagged(true);
-
-        BukkitRunnable runnable = new BukkitRunnable() {
-            int time = 5;
-
-            @Override
-            public void run() {
-                p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
-                time--;
-
-                if (time == 0) {
-                    D0.setTagged(false);
-                    this.cancel();
-                }
-            }
-        };
-
-        BukkitRunnable runnable2 = new BukkitRunnable() {
-            int time = 5;
-
-            @Override
-            public void run() {
-                attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
-                time--;
-
-                if (time == 0) {
-                    D1.setTagged(false);
-                    this.cancel();
-                }
-            }
-        };
-
-        runnable.runTaskTimer(Constants.p, 0L, 20L);
-        runnable2.runTaskTimer(Constants.p, 0L, 20L);
-        D0.setRunnableid(runnable.getTaskId());
-        D1.setRunnableid(runnable2.getTaskId());
+            D1.setupCombatRunnable(attacker);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -399,16 +372,12 @@ public class Events implements Listener {
 
         Player killer = p.getKiller();
         CustomPlayerDataHolder D0 = playerData.get(name);
-        if (D0.isTagged()) {
-            D0.setTagged(false);
-            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
-        }
+        D0.incrementDeaths();
         D0.setBack(new WorldLocationHolder(
                 (int) l.getX(),
                 (int) l.getY(),
                 (int) l.getZ(),
                 l.getWorld()));
-
         p.sendMessage(BACK);
         if (killer == null || killer == p) {
             String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
@@ -421,11 +390,16 @@ public class Events implements Listener {
             };
             e.setDeathMessage(death);
         } else {
+            D0.setTagged(false);
+            D0.untag();
+
             String killerName = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(killerName);
-            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
             D1.setTagged(false);
+            D1.untag();
             D1.incrementMoney(500);
+            D1.incrementKills();
+
             String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -473,6 +447,8 @@ public class Events implements Listener {
             msg.add(name);
             playerData.put(name, new CustomPlayerDataHolder(
                     0,
+                    0,
+                    -1,
                     0,
                     0,
                     0,

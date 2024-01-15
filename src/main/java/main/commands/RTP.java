@@ -62,7 +62,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                 p.teleportAsync(locH).thenAccept(result -> {
                     playersRTPing.remove(sn);
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locH.getX() + " " + (int) locH.getY() + " " + (int) locH.getZ());
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
                     p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
                     for (int index = 1; index < 16; index++) {
@@ -79,7 +79,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                 Bukkit.getPlayer(playersRTPing.get(Constants.RANDOM.nextInt(playersRTPing.size()))).teleportAsync(locH).thenAccept(result -> {
                     playersRTPing.remove(sn);
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getX() + " " + locH.getY() + " " + locH.getZ());
+                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locH.getX() + " " + (int) locH.getY() + " " + (int) locH.getZ());
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
                     p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
                     for (int index = 1; index < 16; index++) {
@@ -103,7 +103,7 @@ public class RTP implements CommandExecutor, TabExecutor {
         p.teleportAsync(locC).thenAccept(result -> {
             playersRTPing.remove(sn);
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-            p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locC.getX() + " " + locC.getY() + " " + locC.getZ());
+            p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locC.getX() + " " + (int) locC.getY() + " " + (int) locC.getZ());
             p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
             p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
             for (int index = 1; index < 16; index++) {

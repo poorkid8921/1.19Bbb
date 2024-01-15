@@ -41,7 +41,7 @@ public class Playtime implements CommandExecutor {
             long minutes = TimeUnit.SECONDS.toSeconds(stat) -
                     (TimeUnit.SECONDS.toMinutes(stat) * 60);
             if (minutes != 0) {
-                if (i > 1)
+                if (i > 0)
                     strb.append(" ");
                 strb.append(minutes).append(" ").append(minutes > 1 ? "minutes" : "minute");
             }
@@ -65,10 +65,10 @@ public class Playtime implements CommandExecutor {
                     " " + hours + " " + (hours > 1 ? "hours " : "hour "));
         }
 
-        long minutes = stat -
+        long minutes = TimeUnit.SECONDS.toSeconds(stat) -
                 (TimeUnit.SECONDS.toMinutes(stat) * 60);
         if (minutes != 0) {
-            if (i > 1)
+            if (i > 0)
                 strb.append(" ");
             strb.append(minutes).append(" ").append(minutes > 1 ? "minutes" : "minute");
         }

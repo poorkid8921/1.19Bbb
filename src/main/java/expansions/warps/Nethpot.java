@@ -1,19 +1,21 @@
-package main.commands;
+package expansions.warps;
 
-import expansions.guis.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class Killeffect implements CommandExecutor, TabExecutor {
+import static main.utils.Constants.nethpot;
+
+public class Nethpot implements CommandExecutor, TabExecutor {
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] strings) {
-        Utils.openKilleffect((Player) sender);
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        ((Player) sender).teleportAsync(nethpot, PlayerTeleportEvent.TeleportCause.COMMAND);
         return true;
     }
 

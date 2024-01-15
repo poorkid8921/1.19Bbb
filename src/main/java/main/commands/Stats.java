@@ -42,9 +42,9 @@ public class Stats implements CommandExecutor {
         pp.sendMessage(
                 (t.isOnline() ? "§a◆ " : "§c◆ ") + MAIN_COLOR +
                         t.getDisplayName() + "§7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
-                "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.PLAYER_KILLS),
-                "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DEATHS),
-                "  §7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_DEALT),
-                "  §7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ " + MAIN_COLOR + "» " + pp.getStatistic(Statistic.DAMAGE_TAKEN));
+                "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + t.getStatistic(Statistic.PLAYER_KILLS),
+                "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + t.getStatistic(Statistic.DEATHS),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴅᴇᴀʟᴛ " + MAIN_COLOR + "» " + t.getStatistic(Statistic.DAMAGE_DEALT),
+                "  §7ᴅᴀᴍᴀɢᴇ ᴛᴀᴋᴇɴ " + MAIN_COLOR + "» " + t.getStatistic(Statistic.DAMAGE_TAKEN));
     }
 }

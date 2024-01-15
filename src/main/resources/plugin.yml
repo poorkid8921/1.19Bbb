@@ -99,6 +99,14 @@ commands:
   stats:
     usage: /<command>
     aliases: statistics
+  kt:
+    usage: /<command>
+  kt1:
+    usage: /<command>
+  kt2:
+    usage: /<command>
+  kt3:
+    usage: /<command>
 permissions:
   has.staff:
     description: Is a staff member

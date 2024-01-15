@@ -13,6 +13,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.chat.Chat;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -21,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import static main.Practice.config;
 
 public class Constants {
     public static Map<String, Integer> teams = new Object2ObjectOpenHashMap<>();
@@ -34,6 +37,7 @@ public class Constants {
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
     public static ObjectArrayList<String> msg = new ObjectArrayList<>();
     public static ObjectArrayList<Player> inFFA = new ObjectArrayList<>();
+    public static ObjectArrayList<String> inFlat = new ObjectArrayList<>();
     public static ObjectArrayList<DuelHolder> duel = new ObjectArrayList<>();
     public static ObjectArrayList<String> valid = new ObjectArrayList<>();
     public static ObjectArrayList<String> playersRTPing = new ObjectArrayList<>();
@@ -98,5 +102,72 @@ public class Constants {
         BACK = MiniMessage.miniMessage().deserialize("<gray>Use <color:#fc282f>/back<color:#fc282f> <gray>to return to your death location");
         startED = " started! " + MAIN_COLOR + "Fight!";
         TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
+
+        Practice.d = Bukkit.getWorld("world");
+        Practice.d0 = Bukkit.getWorld("world_the_end");
+        Constants.ffa = new Location(Practice.d,
+                -56.5,
+                110,
+                -237.5);
+        Constants.flat = new Location(Practice.d,
+                -2.5,
+                131,
+                363.5);
+        Constants.spawn = new Location(Practice.d,
+                0.5,
+                86.06250,
+                0.5);
+        Constants.nethpot = new Location(Practice.d,
+                0.5,
+                86,
+                0.5);
+        Constants.spawn.setYaw(
+                90F
+        );
+        Constants.flat.setYaw(
+                90F
+        );
+
+        if (config.contains("r")) {
+            int dataLoaded = 0;
+            for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                int i = 0;
+                int wins = 0;
+                int losses = 0;
+                int c = -1;
+                int m = 0;
+                int t = 0;
+                int money = 0;
+                int elo = 0;
+                int deaths = 0;
+                int kills = 0;
+                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
+                    switch (i++) {
+                        case 1 -> wins = config.getInt("r." + key + "." + key2);
+                        case 2 -> losses = config.getInt("r." + key + "." + key2);
+                        case 3 -> c = config.getInt("r." + key + "." + key2);
+                        case 4 -> m = config.getInt("r." + key + "." + key2);
+                        case 5 -> t = config.getInt("r." + key + "." + key2);
+                        case 6 -> money = config.getInt("r." + key + "." + key2);
+                        case 7 -> elo = config.getInt("r." + key + "." + key2);
+                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
+                        case 9 -> kills = config.getInt("r." + key + "." + key2);
+                    }
+                }
+                if (wins == 0 &&
+                        losses == 0 &&
+                        c == -1 &&
+                        m == 0 &&
+                        t == 0 &&
+                        money == 0 &&
+                        elo == 0 &&
+                        deaths == 0 &&
+                        kills == 0)
+                    continue;
+                playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo, deaths, kills));
+                dataLoaded++;
+            }
+            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
     }
 }

@@ -1,19 +1,21 @@
 package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import expansions.moderation.*;
+import expansions.warps.*;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
-import main.expansions.AntiCheat;
-import main.expansions.arenas.Arena;
-import main.expansions.arenas.ArenaIO;
-import main.expansions.arenas.commands.CreateCommand;
-import main.expansions.duels.commands.Duel;
-import main.expansions.duels.commands.DuelAccept;
-import main.expansions.duels.commands.DuelDeny;
-import main.expansions.duels.commands.Event;
-import main.expansions.optimizer.AnimationEvent;
-import main.expansions.optimizer.InteractionEvent;
-import main.expansions.optimizer.LastPacketEvent;
+import expansions.AntiCheat;
+import expansions.arenas.Arena;
+import expansions.arenas.ArenaIO;
+import expansions.arenas.commands.CreateCommand;
+import expansions.duels.commands.Duel;
+import expansions.duels.commands.DuelAccept;
+import expansions.duels.commands.DuelDeny;
+import expansions.duels.commands.Event;
+import expansions.optimizer.AnimationEvent;
+import expansions.optimizer.InteractionEvent;
+import expansions.optimizer.LastPacketEvent;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.TabTPA;
@@ -23,7 +25,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
@@ -39,7 +40,7 @@ import java.util.Map;
 
 import static main.utils.Constants.*;
 
-public class Practice extends JavaPlugin implements TabExecutor {
+public class Practice extends JavaPlugin {
     public static FileConfiguration config;
     public static File dataFolder;
     public static World d;
@@ -47,6 +48,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
     private static File dataFile;
     int flatstr = 1;
     int ticked = 0;
+    boolean alreadySavingData = false;
 
     Location getRandomLoc(World w) {
         Location loc = null;
@@ -69,67 +71,7 @@ public class Practice extends JavaPlugin implements TabExecutor {
         PacketEvents.getAPI().load();
     }
 
-    @Override
-    public void onEnable() {
-        dataFolder = getDataFolder();
-        dataFile = new File(dataFolder, "data.yml");
-        config = YamlConfiguration.loadConfiguration(dataFile);
-        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        p = this;
-
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            Bukkit.getLogger().warning("Started population of RTPs...");
-            new BukkitRunnable() {
-                int i = 0;
-
-                public void run() {
-                    if (i++ == 101) {
-                        Bukkit.getLogger().warning("Finished RTP population.");
-                        this.cancel();
-                        return;
-                    }
-                    overworldRTP.add(getRandomLoc(d));
-                    endRTP.add(getRandomLoc(d0));
-                }
-            }.runTaskTimer(this, 0L, 20L);
-            Arena flat = Arena.arenas.get("flat");
-            Arena ffa = Arena.arenas.get("ffa");
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                d.getEntities().stream()
-                        .filter(result -> result instanceof EnderCrystal)
-                        .forEach(Entity::remove);
-
-                if (ticked++ == 3) {
-                    if (flatstr++ == 6)
-                        flatstr = 1;
-
-                    Arena.arenas.get("p_f" + flatstr).reset(10000);
-                    bannedFromflat.clear();
-                    if (ticked == 6) {
-                        ticked = 0;
-
-                        flat.reset(10000);
-                        ffa.reset(1000000);
-                        inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
-                            Location location = player.getLocation();
-                            location.setY(200);
-                            Block b = d.getBlockAt(location);
-                            Block b2 = d.getBlockAt(location.add(0, 1, 0));
-
-                            b2.setType(Material.AIR, false);
-                            b.setType(Material.AIR, false);
-                            location.setY(d.getHighestBlockYAt(location) + 1);
-                            player.teleportAsync(location).thenAccept(reason -> {
-                                b.setType(Material.BARRIER, false);
-                                b2.setType(Material.BARRIER, false);
-                            });
-                        });
-                    } else
-                        Arena.arenas.get("flat").reset(10000);
-                } else
-                    Arena.arenas.get("flat").reset(10000);
-            }, 0L, 2400L);
-        }, 2400L);
+    public void registerCommands() {
         this.getCommand("report").setExecutor(new Report());
         this.getCommand("killeffect").setExecutor(new Killeffect());
         this.getCommand("discord").setExecutor(new Discord());
@@ -173,7 +115,17 @@ public class Practice extends JavaPlugin implements TabExecutor {
         this.getCommand("tpa").setTabCompleter(new TabTPA());
         this.getCommand("tpaccept").setTabCompleter(new TabTPA());
         this.getCommand("tpahere").setTabCompleter(new TabTPA());
+    }
 
+    public void registerPacketListeners() {
+        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().init();
+    }
+
+    public void setupWarps() {
         File arenasFolder = new File(dataFolder, "arenas");
         if (!arenasFolder.exists()) arenasFolder.mkdirs();
         Arena.arenas.clear();
@@ -187,69 +139,105 @@ public class Practice extends JavaPlugin implements TabExecutor {
         });
         File warpsFolder = new File(dataFolder, "warps");
         if (!warpsFolder.exists()) warpsFolder.mkdirs();
+    }
 
-        main.expansions.guis.Utils.init();
-        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
-        PacketEvents.getAPI().init();
+    void saveData() {
+        if (alreadySavingData)
+            return;
 
+        alreadySavingData = true;
+        config.set("r", null);
+        if (!playerData.isEmpty()) {
+            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
+                CustomPlayerDataHolder value = entry.getValue();
+                String key = entry.getKey();
+                config.set("r." + key + ".0", value.getWins());
+                config.set("r." + key + ".1", value.getLosses());
+                config.set("r." + key + ".2", value.getKilleffect());
+                config.set("r." + key + ".3", value.getMtoggle());
+                config.set("r." + key + ".4", value.getTptoggle());
+                config.set("r." + key + ".5", value.getMoney());
+                config.set("r." + key + ".6", value.getElo());
+                config.set("r." + key + ".7", value.getDeaths());
+                config.set("r." + key + ".8", value.getKills());
+            }
+        }
+
+        try {
+            config.save(dataFile);
+        } catch (IOException ignored) {
+        }
+        alreadySavingData = false;
+    }
+
+    @Override
+    public void onEnable() {
+        dataFolder = getDataFolder();
+        dataFile = new File(dataFolder, "data.yml");
+        config = YamlConfiguration.loadConfiguration(dataFile);
+        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
+        p = this;
+
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            Bukkit.getLogger().warning("Started population of RTPs...");
+            new BukkitRunnable() {
+                int i = 0;
+
+                public void run() {
+                    if (i++ == 101) {
+                        Bukkit.getLogger().warning("Finished RTP population.");
+                        this.cancel();
+                        return;
+                    }
+                    overworldRTP.add(getRandomLoc(d));
+                    endRTP.add(getRandomLoc(d0));
+                }
+            }.runTaskTimer(this, 0L, 20L);
+            Arena flat = Arena.arenas.get("flat");
+            Arena ffa = Arena.arenas.get("ffa");
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+                d.getEntities().stream()
+                        .filter(result -> result instanceof EnderCrystal)
+                        .forEach(Entity::remove);
+
+                ticked++;
+                if (ticked == 3) {
+                    if (flatstr++ == 6)
+                        flatstr = 1;
+
+                    Arena.arenas.get("p_f" + flatstr).reset(10000);
+                    bannedFromflat.clear();
+                }
+                else if (ticked == 6) {
+                    ticked = 0;
+
+                    flat.reset(100000);
+                    ffa.reset(10000000);
+                    inFFA.stream().filter(s -> !s.isGliding()).forEach(player -> {
+                        Location location = player.getLocation();
+                        location.setY(318);
+                        Block b = d.getBlockAt(location);
+                        Block b2 = d.getBlockAt(location.add(0, 1, 0));
+
+                        b.setType(Material.AIR, false);
+                        b2.setType(Material.AIR, false);
+                        location.setY(d.getHighestBlockYAt(location) + 1);
+                        player.teleportAsync(location).thenAccept(reason -> {
+                            b.setType(Material.BARRIER, false);
+                            b2.setType(Material.BARRIER, false);
+                        });
+                    });
+                    saveData();
+                } else
+                    Arena.arenas.get("flat").reset(100000);
+            }, 0L, 2400L);
+        }, 2400L);
+        registerCommands();
+        setupWarps();
+        expansions.guis.Utils.init();
+        registerPacketListeners();
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Constants.init();
-
-        d = Bukkit.getWorld("world");
-        d0 = Bukkit.getWorld("world_the_end");
-        Constants.ffa = new Location(d,
-                -56.5,
-                110,
-                -237.5);
-        Constants.flat = new Location(d,
-                -2.5,
-                131,
-                363.5);
-        Constants.spawn = new Location(d,
-                0.5,
-                86.06250,
-                0.5);
-        Constants.nethpot = new Location(d,
-                0.5,
-                86,
-                0.5);
-        Constants.spawn.setYaw(
-                90F
-        );
-        Constants.flat.setYaw(
-                90F
-        );
-
-        if (config.contains("r")) {
-            int dataLoaded = 0;
-            for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
-                    int wins = 0;
-                    int losses = 0;
-                    int c = -1;
-                    int m = 0;
-                    int t = 0;
-                    int money = 0;
-                    int elo = 0;
-                    switch (key2) {
-                        case "w" -> wins = config.getInt("r." + key + "." + key2);
-                        case "l" -> losses = config.getInt("r." + key + "." + key2);
-                        case "c" -> c = config.getInt("r." + key + "." + key2);
-                        case "m" -> m = config.getInt("r." + key + "." + key2);
-                        case "t" -> t = config.getInt("r." + key + "." + key2);
-                        case "z" -> money = config.getInt("r." + key + "." + key2);
-                        case "e" -> elo = config.getInt("r." + key + "." + key2);
-                    }
-
-                    playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo));
-                }
-                dataLoaded++;
-            }
-            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
-        }
     }
 
     @Override
@@ -289,35 +277,6 @@ public class Practice extends JavaPlugin implements TabExecutor {
             }
         }
         Bukkit.getLogger().warning("Successfully purged " + accountsRemoved + " accounts & " + regionsRemoved + " regions.");
-
-        config.set("r", null);
-        if (!playerData.isEmpty()) {
-            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
-                CustomPlayerDataHolder value = entry.getValue();
-
-                if (value.getWins() == 0 &&
-                        value.getLosses() == 0 &&
-                        value.getKilleffect() == -1 &&
-                        value.getMtoggle() == 0 &&
-                        value.getTptoggle() == 0 &&
-                        value.getMoney() == 0 &&
-                        value.getElo() == 0)
-                    continue;
-
-                String key = entry.getKey();
-                config.set("r." + key + ".w", value.getWins());
-                config.set("r." + key + ".l", value.getLosses());
-                config.set("r." + key + ".c", value.getKilleffect());
-                config.set("r." + key + ".m", value.getMtoggle());
-                config.set("r." + key + ".t", value.getTptoggle());
-                config.set("r." + key + ".z", value.getMoney());
-                config.set("r." + key + ".e", value.getElo());
-            }
-        }
-
-        try {
-            config.save(dataFile);
-        } catch (IOException ignored) {
-        }
+        saveData();
     }
 }

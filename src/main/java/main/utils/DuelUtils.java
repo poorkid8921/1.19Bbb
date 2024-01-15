@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static main.expansions.duels.KitOverrider.*;
+import static expansions.duels.KitOverrider.*;
 import static main.utils.Constants.*;
 
 public class DuelUtils {
@@ -62,7 +62,7 @@ public class DuelUtils {
 
         D = playerData.get(ad);
         D.incrementLosses();
-        if (D.getElo() >= 50)
+        if (D.getElo() > 50)
             D.decrementElo(50);
         else
             D.setElo(0);
