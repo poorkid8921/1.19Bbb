@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.Events;
 import main.Practice;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
@@ -52,6 +53,20 @@ public class Constants {
     public static Chat chat;
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
+    public static String CATTO_LOVES = "§dᴄᴀᴛᴛᴏ ʟᴏᴠᴇs §r";
+    public static String CATTO_HATES = Utils.translateA("#2e2e2e") + "ᴄᴀᴛᴛᴏ ʜᴀᴛᴇs §r";
+    public static String GAY = Utils.translateA("#fb0000ɢ&#56fa35ᴀ&#ff00deʏ") + " §r";
+    public static String MEDIA = Utils.translateA("#ffc2c2") + "ᴍᴇᴅɪᴀ §r";
+    public static String VIP = Utils.translateA("#faf739") + "ᴠɪᴘ §r";
+    public static String BOOSTER = Utils.translateA("#f37ffd") + "ʙᴏᴏꜱᴛᴇʀ §r";
+    public static String T_HELPER = Utils.translateA("#32d337") + "ᴛ. ʜᴇʟᴘᴇʀ §r";
+    public static String HELPER = Utils.translateA("#00dd0") + "ʜᴇʟᴘᴇʀ §r";
+    public static String JRMOD = Utils.translateA("#31ed1c") + "ᴊʀ. ᴍᴏᴅ §r";
+    public static String MOD = Utils.translateA("#d10000") + "ᴍᴏᴅ §r";
+    public static String ADMIN = Utils.translateA("#d13c32") + "ᴀᴅᴍɪɴ §r";
+    public static String MANAGER = Utils.translateA("#d10000") + "ᴍᴀɴᴀɢᴇʀ §r";
+    public static String EXECUTIVE = Utils.translateA("#2494fb") + "ᴏᴡɴᴇʀ §r";
+
     public static URL CACHED_WEBHOOK;
     public static URL CACHED_TOKEN_WEBHOOK;
     public static TextComponent D_USING = new TextComponent("§7ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
@@ -81,7 +96,7 @@ public class Constants {
     public static String SECOND_COLOR = Utils.translateA("#d6a7eb");
     public static String TELEPORTING_BACK;
     public static String EXCEPTION_NO_ARGS_WARP = "§7You must specify a warp";
-    public static String EXCEPTION_DOESNT_EXIST_WARP = "§7The specified warp doesn't exist";
+    public static String EXCEPTION_DOESNT_EXIST_WARP = "§7The specified warp doesn't exist.";
     public static String GLOBAL_EXCEPTION_ALREADY_REQ = "§7You already have an ongoing request to this player.";
     public static String DUELS_RESULTS = "§7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs";
     public static String DUELS_DELIM = "§7------------------------";
@@ -103,6 +118,7 @@ public class Constants {
         startED = " started! " + MAIN_COLOR + "Fight!";
         TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
 
+        Bukkit.getPluginManager().registerEvents(new Events(), p);
         Practice.d = Bukkit.getWorld("world");
         Practice.d0 = Bukkit.getWorld("world_the_end");
         Constants.ffa = new Location(Practice.d,
@@ -127,47 +143,6 @@ public class Constants {
         Constants.flat.setYaw(
                 90F
         );
-
-        if (config.contains("r")) {
-            int dataLoaded = 0;
-            for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                int i = 0;
-                int wins = 0;
-                int losses = 0;
-                int c = -1;
-                int m = 0;
-                int t = 0;
-                int money = 0;
-                int elo = 0;
-                int deaths = 0;
-                int kills = 0;
-                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
-                    switch (i++) {
-                        case 1 -> wins = config.getInt("r." + key + "." + key2);
-                        case 2 -> losses = config.getInt("r." + key + "." + key2);
-                        case 3 -> c = config.getInt("r." + key + "." + key2);
-                        case 4 -> m = config.getInt("r." + key + "." + key2);
-                        case 5 -> t = config.getInt("r." + key + "." + key2);
-                        case 6 -> money = config.getInt("r." + key + "." + key2);
-                        case 7 -> elo = config.getInt("r." + key + "." + key2);
-                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
-                        case 9 -> kills = config.getInt("r." + key + "." + key2);
-                    }
-                }
-                if (wins == 0 &&
-                        losses == 0 &&
-                        c == -1 &&
-                        m == 0 &&
-                        t == 0 &&
-                        money == 0 &&
-                        elo == 0 &&
-                        deaths == 0 &&
-                        kills == 0)
-                    continue;
-                playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo, deaths, kills));
-                dataLoaded++;
-            }
-            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
-        }
+        Practice.loadData();
     }
 }

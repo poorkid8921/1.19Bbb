@@ -1,10 +1,13 @@
 package main;
 
+import ac.events.*;
+import ac.events.worldreader.PacketWorldReaderEighteen;
+import ac.manager.TickManager;
+import ac.player.GrimPlayer;
+import ac.utils.anticheat.PlayerDataManager;
+import ac.utils.lists.HookedListWrapper;
 import com.github.retrooper.packetevents.PacketEvents;
-import expansions.moderation.*;
-import expansions.warps.*;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import main.commands.*;
+import com.github.retrooper.packetevents.util.reflection.Reflection;
 import expansions.AntiCheat;
 import expansions.arenas.Arena;
 import expansions.arenas.ArenaIO;
@@ -13,9 +16,17 @@ import expansions.duels.commands.Duel;
 import expansions.duels.commands.DuelAccept;
 import expansions.duels.commands.DuelDeny;
 import expansions.duels.commands.Event;
+import expansions.moderation.*;
 import expansions.optimizer.AnimationEvent;
 import expansions.optimizer.InteractionEvent;
 import expansions.optimizer.LastPacketEvent;
+import expansions.warps.Ffa;
+import expansions.warps.Flat;
+import expansions.warps.Nethpot;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
+import main.commands.*;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.TabTPA;
@@ -31,10 +42,13 @@ import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import sun.misc.Unsafe;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -49,6 +63,9 @@ public class Practice extends JavaPlugin {
     int flatstr = 1;
     int ticked = 0;
     boolean alreadySavingData = false;
+
+    public static final PlayerDataManager PDM = new PlayerDataManager();
+    public static final TickManager TM = new TickManager();
 
     Location getRandomLoc(World w) {
         Location loc = null;
@@ -68,7 +85,6 @@ public class Practice extends JavaPlugin {
         PacketEvents.getAPI().getSettings()
                 .checkForUpdates(false)
                 .reEncodeByDefault(false);
-        PacketEvents.getAPI().load();
     }
 
     public void registerCommands() {
@@ -117,14 +133,6 @@ public class Practice extends JavaPlugin {
         this.getCommand("tpahere").setTabCompleter(new TabTPA());
     }
 
-    public void registerPacketListeners() {
-        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
-        PacketEvents.getAPI().init();
-    }
-
     public void setupWarps() {
         File arenasFolder = new File(dataFolder, "arenas");
         if (!arenasFolder.exists()) arenasFolder.mkdirs();
@@ -139,6 +147,58 @@ public class Practice extends JavaPlugin {
         });
         File warpsFolder = new File(dataFolder, "warps");
         if (!warpsFolder.exists()) warpsFolder.mkdirs();
+    }
+
+    public static void loadData() {
+        if (config.contains("r")) {
+            int dataLoaded = 0;
+            for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                int i = 0;
+                int wins = 0;
+                int losses = 0;
+                int c = -1;
+                int m = 0;
+                int t = 0;
+                int money = 0;
+                int elo = 0;
+                int deaths = 0;
+                int kills = 0;
+                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
+                    switch (i++) {
+                        case 1 -> wins = config.getInt("r." + key + "." + key2);
+                        case 2 -> losses = config.getInt("r." + key + "." + key2);
+                        case 3 -> c = config.getInt("r." + key + "." + key2);
+                        case 4 -> m = config.getInt("r." + key + "." + key2);
+                        case 5 -> t = config.getInt("r." + key + "." + key2);
+                        case 6 -> money = config.getInt("r." + key + "." + key2);
+                        case 7 -> elo = config.getInt("r." + key + "." + key2);
+                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
+                        case 9 -> kills = config.getInt("r." + key + "." + key2);
+                    }
+                }
+                if (wins == 0 &&
+                        losses == 0 &&
+                        c == -1 &&
+                        m == 0 &&
+                        t == 0 &&
+                        money == 0 &&
+                        elo == 0 &&
+                        deaths == 0 &&
+                        kills == 0)
+                    continue;
+                playerData.put(key, new CustomPlayerDataHolder(wins,
+                        losses,
+                        c,
+                        m,
+                        t,
+                        money,
+                        elo,
+                        deaths,
+                        kills));
+                dataLoaded++;
+            }
+            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
     }
 
     void saveData() {
@@ -168,6 +228,68 @@ public class Practice extends JavaPlugin {
         } catch (IOException ignored) {
         }
         alreadySavingData = false;
+    }
+
+    private void registerPacketListeners() {
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerJoinQuit());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPingListener());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerDigging());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerAttack());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketEntityAction());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketBlockAction());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketSelfMetadataListener());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketServerTeleport());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerCooldown());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerRespawn());
+        PacketEvents.getAPI().getEventManager().registerListener(new CheckManagerListener());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketPlayerSteer());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketWorldReaderEighteen());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketSetWrapperNull());
+
+        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
+        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+    }
+
+    private static void tickRelMove() {
+        for (GrimPlayer player : PDM.getEntries()) {
+            if (player.disableGrim) continue; // If we aren't active don't spam extra transactions
+            player.checkManager.getEntityReplication().onEndOfTickEvent();
+        }
+    }
+
+    private void setupAC() {
+        System.setProperty("com.viaversion.handlePingsAsInvAcknowledgements", "true");
+        Bukkit.getScheduler().runTaskTimer(this, TM::tickSync, 0, 1);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, TM::tickAsync, 0, 1);
+
+        try {
+            Object connection = SpigotReflectionUtil.getMinecraftServerConnectionInstance();
+
+            Field connectionsList = Reflection.getField(connection.getClass(), java.util.List.class, 1);
+            java.util.List<Object> endOfTickObject = (java.util.List<Object>) connectionsList.get(connection);
+
+            java.util.List<?> wrapper = Collections.synchronizedList(new HookedListWrapper<Object>(endOfTickObject) {
+                @Override
+                public void onIterator() {
+                    tickRelMove();
+                }
+            });
+
+            Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Unsafe unsafe = (Unsafe) unsafeField.get(null);
+            unsafe.putObject(connection, unsafe.objectFieldOffset(connectionsList), wrapper);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            for (GrimPlayer player : PDM.getEntries()) {
+                player.cancelledPackets.set(0);
+            }
+        }, 1, 20);
     }
 
     @Override
@@ -207,8 +329,7 @@ public class Practice extends JavaPlugin {
 
                     Arena.arenas.get("p_f" + flatstr).reset(10000);
                     bannedFromflat.clear();
-                }
-                else if (ticked == 6) {
+                } else if (ticked == 6) {
                     ticked = 0;
 
                     flat.reset(100000);
@@ -235,8 +356,8 @@ public class Practice extends JavaPlugin {
         registerCommands();
         setupWarps();
         expansions.guis.Utils.init();
+        setupAC();
         registerPacketListeners();
-        Bukkit.getPluginManager().registerEvents(new Events(), this);
         Constants.init();
     }
 

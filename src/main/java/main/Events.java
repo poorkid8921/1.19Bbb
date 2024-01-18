@@ -2,10 +2,11 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import expansions.bungee.HandShake;
 import expansions.duels.Matchmaking;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
@@ -13,6 +14,7 @@ import main.utils.Instances.WorldLocationHolder;
 import main.utils.RequestManager;
 import main.utils.Utils;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -20,6 +22,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -37,6 +41,8 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import static expansions.guis.Utils.*;
 import static main.utils.Constants.tpa;
@@ -95,8 +101,7 @@ public class Events implements Listener {
     private void onCommand(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
         String pn = p.getName();
-        boolean tagged = playerData.get(pn).isTagged();
-        if (tagged) {
+        if (playerData.get(pn).isTagged()) {
             p.sendMessage(EXCEPTION_TAGGED);
             e.setCancelled(true);
         } else

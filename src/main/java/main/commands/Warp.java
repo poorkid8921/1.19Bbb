@@ -25,7 +25,7 @@ public class Warp implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        File f = new File(Practice.dataFolder + "/warps/" + args[0] + ".json");
+        File f = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
         if (!f.exists()) {
             sender.sendMessage(Constants.EXCEPTION_DOESNT_EXIST_WARP);
             return true;

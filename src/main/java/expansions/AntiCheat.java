@@ -25,7 +25,7 @@ public class AntiCheat extends SimplePacketListenerAbstract {
         if (event.getPacketType() != PacketType.Play.Client.CLICK_WINDOW) return;
         Player player = (Player) event.getPlayer();
         WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
-        ItemStack clickedItem = player.getOpenInventory().getItem(packet.getSlot());
+        ItemStack clickedItem = player.getInventory().getItem(packet.getSlot());
         if (clickedItem != null &&
                 clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
             if (packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP) {

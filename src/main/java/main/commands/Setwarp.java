@@ -24,14 +24,14 @@ public class Setwarp implements CommandExecutor {
 
         File file = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
         if (file.exists()) {
-            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP + " that doesn't already exist");
+            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP + " that doesn't already exist.");
             return true;
         }
 
         try {
             file.createNewFile();
         } catch (IOException e) {
-            sender.sendMessage("§7An error has occured when creating your warp");
+            sender.sendMessage("§7An error has occured when creating your warp.");
             return true;
         }
         Player p = (Player) sender;
@@ -47,7 +47,7 @@ public class Setwarp implements CommandExecutor {
         try {
             config.save(file);
         } catch (IOException e) {
-            sender.sendMessage("§7An error has occured when creating your warp");
+            sender.sendMessage("§7An error has occured when creating your warp.");
             return true;
         }
         sender.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);

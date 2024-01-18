@@ -76,8 +76,9 @@ public class RTP implements CommandExecutor, TabExecutor {
                     }
                 });
 
-                Bukkit.getPlayer(playersRTPing.get(Constants.RANDOM.nextInt(playersRTPing.size()))).teleportAsync(locH).thenAccept(result -> {
-                    playersRTPing.remove(sn);
+                Player pd = Bukkit.getPlayer(playersRTPing.get(Constants.RANDOM.nextInt(playersRTPing.size())));
+                pd.teleportAsync(locH).thenAccept(result -> {
+                    playersRTPing.remove(pd.getName());
                     p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
                     p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locH.getX() + " " + (int) locH.getY() + " " + (int) locH.getZ());
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));

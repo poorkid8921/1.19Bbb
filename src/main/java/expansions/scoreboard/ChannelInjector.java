@@ -1,9 +1,9 @@
 package expansions.scoreboard;
 
 import com.google.common.collect.MapMaker;
+import expansions.scoreboard.util.Reflection;
 import io.netty.channel.Channel;
 import lombok.SneakyThrows;
-import expansions.scoreboard.util.Reflection;
 import org.bukkit.entity.Player;
 
 import java.lang.invoke.MethodHandle;

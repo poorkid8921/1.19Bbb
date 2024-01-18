@@ -1,8 +1,8 @@
 package main.utils.Instances;
 
+import expansions.optimizer.AnimPackets;
 import lombok.Getter;
 import lombok.Setter;
-import expansions.optimizer.AnimPackets;
 import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -43,15 +43,12 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private boolean ignoreAnim = false;
-    @Getter
     @Setter
     private int runnableid;
     private int currentTagTime = 5;
     @Getter
     @Setter
-
     private boolean tagged;
-
 
     public CustomPlayerDataHolder(int wins,
                                   int losses,
@@ -77,13 +74,14 @@ public class CustomPlayerDataHolder {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + currentTagTime);
-                currentTagTime--;
-
-                if (currentTagTime == 0) {
+                if (currentTagTime-- < 1) {
+                    currentTagTime = 0;
+                    player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §40");
                     setTagged(false);
                     this.cancel();
+                    return;
                 }
+                player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + currentTagTime);
             }
         };
         runnable.runTaskTimer(Constants.p, 0L, 20L);
@@ -92,6 +90,7 @@ public class CustomPlayerDataHolder {
     }
 
     public void untag() {
+        tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
     }
 

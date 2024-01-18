@@ -6,7 +6,10 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import main.utils.Constants;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -30,7 +33,7 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
                 player.getInventory().getItemInOffHand();
         Material type = item.getType();
         if (type == Material.END_CRYSTAL) {
-            Location loc = crystalsToBeOptimized.getOrDefault(wrapper.getEntityId(), null);
+            Location loc = crystalsToBeOptimized.get(wrapper.getEntityId());
             if (loc == null) return;
 
             Location blockLoc = loc.clone().subtract(0.5, 1.0, 0.5);
@@ -47,9 +50,7 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
                 clonedLoc.add(0.5, 1.0, 0.5);
                 if (clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5).isEmpty()) {
                     loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
-
-                    if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR)
-                        item.setAmount(item.getAmount() - 1);
+                    item.setAmount(item.getAmount() - 1);
                 }
             });
         }
