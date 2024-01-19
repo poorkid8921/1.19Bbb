@@ -24,7 +24,6 @@ import expansions.warps.Ffa;
 import expansions.warps.Flat;
 import expansions.warps.Nethpot;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import main.commands.*;
 import main.utils.Constants;
@@ -55,6 +54,8 @@ import java.util.Map;
 import static main.utils.Constants.*;
 
 public class Practice extends JavaPlugin {
+    public static final PlayerDataManager PDM = new PlayerDataManager();
+    public static final TickManager TM = new TickManager();
     public static FileConfiguration config;
     public static File dataFolder;
     public static World d;
@@ -64,8 +65,48 @@ public class Practice extends JavaPlugin {
     int ticked = 0;
     boolean alreadySavingData = false;
 
-    public static final PlayerDataManager PDM = new PlayerDataManager();
-    public static final TickManager TM = new TickManager();
+    public static void loadData() {
+        if (config.contains("r")) {
+            int dataLoaded = 0;
+            for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                int i = 0;
+                int wins = 0;
+                int losses = 0;
+                int c = -1;
+                int m = 0;
+                int t = 0;
+                int money = 0;
+                int elo = 0;
+                int deaths = 0;
+                int kills = 0;
+                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
+                    switch (i++) {
+                        case 1 -> wins = config.getInt("r." + key + "." + key2);
+                        case 2 -> losses = config.getInt("r." + key + "." + key2);
+                        case 3 -> c = config.getInt("r." + key + "." + key2);
+                        case 4 -> m = config.getInt("r." + key + "." + key2);
+                        case 5 -> t = config.getInt("r." + key + "." + key2);
+                        case 6 -> money = config.getInt("r." + key + "." + key2);
+                        case 7 -> elo = config.getInt("r." + key + "." + key2);
+                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
+                        case 9 -> kills = config.getInt("r." + key + "." + key2);
+                    }
+                }
+                if (wins == 0 && losses == 0 && c == -1 && m == 0 && t == 0 && money == 0 && elo == 0 && deaths == 0 && kills == 0)
+                    continue;
+                playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo, deaths, kills));
+                dataLoaded++;
+            }
+            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
+    }
+
+    private static void tickRelMove() {
+        for (GrimPlayer player : PDM.getEntries()) {
+            if (player.disableGrim) continue;
+            player.checkManager.getEntityReplication().onEndOfTickEvent();
+        }
+    }
 
     Location getRandomLoc(World w) {
         Location loc = null;
@@ -73,8 +114,7 @@ public class Practice extends JavaPlugin {
             int boundX = Constants.RANDOM.nextInt(-10000, 10000);
             int boundZ = Constants.RANDOM.nextInt(-10000, 10000);
             Block b = w.getHighestBlockAt(boundX, boundZ);
-            if (b.isSolid())
-                loc = new Location(w, boundX, b.getY() + 1, boundZ);
+            if (b.isSolid()) loc = new Location(w, boundX, b.getY() + 1, boundZ);
         }
         return loc;
     }
@@ -82,9 +122,26 @@ public class Practice extends JavaPlugin {
     @Override
     public void onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().getSettings()
-                .checkForUpdates(false)
-                .reEncodeByDefault(false);
+        PacketEvents.getAPI().getSettings().checkForUpdates(false).reEncodeByDefault(false);
+        try {
+            Object connection = SpigotReflectionUtil.getMinecraftServerConnectionInstance();
+            Field connectionsList = Reflection.getField(connection.getClass(), java.util.List.class, 1);
+            java.util.List<Object> endOfTickObject = (java.util.List<Object>) connectionsList.get(connection);
+
+            java.util.List<?> wrapper = Collections.synchronizedList(new HookedListWrapper<>(endOfTickObject) {
+                @Override
+                public void onIterator() {
+                    tickRelMove();
+                }
+            });
+
+            Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Unsafe unsafe = (Unsafe) unsafeField.get(null);
+            unsafe.putObject(connection, unsafe.objectFieldOffset(connectionsList), wrapper);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     public void registerCommands() {
@@ -140,8 +197,7 @@ public class Practice extends JavaPlugin {
         Arrays.stream(arenasFolder.listFiles()).parallel().forEach(result -> {
             try {
                 Arena arena = ArenaIO.loadArena(result);
-                if (arena != null)
-                    Arena.arenas.put(arena.getName(), arena);
+                if (arena != null) Arena.arenas.put(arena.getName(), arena);
             } catch (Exception ignored) {
             }
         });
@@ -149,61 +205,8 @@ public class Practice extends JavaPlugin {
         if (!warpsFolder.exists()) warpsFolder.mkdirs();
     }
 
-    public static void loadData() {
-        if (config.contains("r")) {
-            int dataLoaded = 0;
-            for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                int i = 0;
-                int wins = 0;
-                int losses = 0;
-                int c = -1;
-                int m = 0;
-                int t = 0;
-                int money = 0;
-                int elo = 0;
-                int deaths = 0;
-                int kills = 0;
-                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
-                    switch (i++) {
-                        case 1 -> wins = config.getInt("r." + key + "." + key2);
-                        case 2 -> losses = config.getInt("r." + key + "." + key2);
-                        case 3 -> c = config.getInt("r." + key + "." + key2);
-                        case 4 -> m = config.getInt("r." + key + "." + key2);
-                        case 5 -> t = config.getInt("r." + key + "." + key2);
-                        case 6 -> money = config.getInt("r." + key + "." + key2);
-                        case 7 -> elo = config.getInt("r." + key + "." + key2);
-                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
-                        case 9 -> kills = config.getInt("r." + key + "." + key2);
-                    }
-                }
-                if (wins == 0 &&
-                        losses == 0 &&
-                        c == -1 &&
-                        m == 0 &&
-                        t == 0 &&
-                        money == 0 &&
-                        elo == 0 &&
-                        deaths == 0 &&
-                        kills == 0)
-                    continue;
-                playerData.put(key, new CustomPlayerDataHolder(wins,
-                        losses,
-                        c,
-                        m,
-                        t,
-                        money,
-                        elo,
-                        deaths,
-                        kills));
-                dataLoaded++;
-            }
-            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
-        }
-    }
-
     void saveData() {
-        if (alreadySavingData)
-            return;
+        if (alreadySavingData) return;
 
         alreadySavingData = true;
         config.set("r", null);
@@ -252,38 +255,10 @@ public class Practice extends JavaPlugin {
         PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
     }
 
-    private static void tickRelMove() {
-        for (GrimPlayer player : PDM.getEntries()) {
-            if (player.disableGrim) continue; // If we aren't active don't spam extra transactions
-            player.checkManager.getEntityReplication().onEndOfTickEvent();
-        }
-    }
-
     private void setupAC() {
         System.setProperty("com.viaversion.handlePingsAsInvAcknowledgements", "true");
         Bukkit.getScheduler().runTaskTimer(this, TM::tickSync, 0, 1);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, TM::tickAsync, 0, 1);
-
-        try {
-            Object connection = SpigotReflectionUtil.getMinecraftServerConnectionInstance();
-
-            Field connectionsList = Reflection.getField(connection.getClass(), java.util.List.class, 1);
-            java.util.List<Object> endOfTickObject = (java.util.List<Object>) connectionsList.get(connection);
-
-            java.util.List<?> wrapper = Collections.synchronizedList(new HookedListWrapper<Object>(endOfTickObject) {
-                @Override
-                public void onIterator() {
-                    tickRelMove();
-                }
-            });
-
-            Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-            unsafeField.setAccessible(true);
-            Unsafe unsafe = (Unsafe) unsafeField.get(null);
-            unsafe.putObject(connection, unsafe.objectFieldOffset(connectionsList), wrapper);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             for (GrimPlayer player : PDM.getEntries()) {
@@ -318,14 +293,11 @@ public class Practice extends JavaPlugin {
             Arena flat = Arena.arenas.get("flat");
             Arena ffa = Arena.arenas.get("ffa");
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                d.getEntities().stream()
-                        .filter(result -> result instanceof EnderCrystal)
-                        .forEach(Entity::remove);
+                d.getEntities().stream().filter(result -> result instanceof EnderCrystal).forEach(Entity::remove);
 
                 ticked++;
                 if (ticked == 3) {
-                    if (flatstr++ == 6)
-                        flatstr = 1;
+                    if (flatstr++ == 6) flatstr = 1;
 
                     Arena.arenas.get("p_f" + flatstr).reset(10000);
                     bannedFromflat.clear();
@@ -349,8 +321,7 @@ public class Practice extends JavaPlugin {
                         });
                     });
                     saveData();
-                } else
-                    Arena.arenas.get("flat").reset(100000);
+                } else Arena.arenas.get("flat").reset(100000);
             }, 0L, 2400L);
         }, 2400L);
         registerCommands();
@@ -364,24 +335,18 @@ public class Practice extends JavaPlugin {
     @Override
     public void onDisable() {
         PacketEvents.getAPI().terminate();
-        for (File file : new File(d
-                .getWorldFolder()
-                .getAbsolutePath() + "/entities/").listFiles()) {
+        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles()) {
             file.delete();
         }
 
-        for (File file : new File(d0
-                .getWorldFolder()
-                .getAbsolutePath() + "/DIM1/").listFiles()) {
+        for (File file : new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles()) {
             file.delete();
         }
 
         long curTime = new Date().getTime();
         int accountsRemoved = 0;
 
-        for (File file : new File(d
-                .getWorldFolder()
-                .getAbsolutePath() + "/stats/").listFiles()) {
+        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/stats/").listFiles()) {
             if (curTime - file.lastModified() > 6.048e+8) {
                 accountsRemoved++;
                 file.delete();
@@ -389,9 +354,7 @@ public class Practice extends JavaPlugin {
         }
 
         int regionsRemoved = 0;
-        for (File file : new File(d
-                .getWorldFolder()
-                .getAbsolutePath() + "/region/").listFiles()) {
+        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/region/").listFiles()) {
             if (curTime - file.lastModified() > 6.048e+8) {
                 regionsRemoved++;
                 file.delete();

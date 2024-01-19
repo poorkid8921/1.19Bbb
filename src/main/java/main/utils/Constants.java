@@ -8,6 +8,7 @@ import main.Events;
 import main.Practice;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
+import main.utils.Instances.RegionHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
@@ -24,8 +25,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static main.Practice.config;
-
 public class Constants {
     public static Map<String, Integer> teams = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> spec = new Object2ObjectOpenHashMap<>();
@@ -33,6 +32,7 @@ public class Constants {
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new HashMap<>();
+    public static ObjectArrayList<RegionHolder> regions = new ObjectArrayList<>();
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();

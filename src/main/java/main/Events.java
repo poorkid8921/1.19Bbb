@@ -2,7 +2,6 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import expansions.bungee.HandShake;
 import expansions.duels.Matchmaking;
 import it.unimi.dsi.fastutil.Pair;
@@ -13,17 +12,16 @@ import main.utils.Instances.DuelHolder;
 import main.utils.Instances.WorldLocationHolder;
 import main.utils.RequestManager;
 import main.utils.Utils;
+import org.bukkit.Color;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -38,11 +36,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import static expansions.guis.Utils.*;
 import static main.utils.Constants.tpa;
@@ -53,6 +50,7 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
+    Point ptr = new Point(128, 128);
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
@@ -84,11 +82,10 @@ public class Events implements Listener {
 
     @EventHandler
     private void onEntitySpawn(EntitySpawnEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            crystalsToBeOptimized.put(
-                    event.getEntity().getEntityId(),
-                    event.getEntity().getLocation()
-            );
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL) {
+            Entity entity = event.getEntity();
+            crystalsToBeOptimized.put(entity.getEntityId(), entity.getLocation());
+        }
     }
 
     @EventHandler
@@ -96,6 +93,22 @@ public class Events implements Listener {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
             Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
+
+    /*@EventHandler
+    private void onBlockBreak(BlockBreakEvent e) {
+        Location loc = e.getBlock().getLocation();
+        double x = loc.getX();
+        double z = loc.getZ();
+        for (RegionHolder r : regions) {
+            if (r.getMinX() >= x && r.getMinZ() >= z) {
+                if (r.getMaxX() <= x && r.getMaxZ() <= z) {
+                    e.getPlayer().sendMessage("§7You can't break this block.");
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
+    }*/
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {

@@ -9,7 +9,7 @@ public class Clear implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         ((Player) sender).getInventory().clear();
-        sender.sendMessage("§7Your inventory has been successfully cleared!");
+        sender.sendMessage("§7Your inventory has been successfully cleared.");
         return true;
     }
 }
