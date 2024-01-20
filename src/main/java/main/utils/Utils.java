@@ -1,5 +1,8 @@
 package main.utils;
 
+import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -14,12 +17,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,14 +29,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static main.utils.Constants.*;
-import static main.utils.Languages.MAIN_COLOR;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    public static Point point = new Point(0, 0);
+    public static TextComponent space = new TextComponent("  ");
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-    static TextComponent space = new TextComponent("  ");
+
+    public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
+        og.removeIf(s -> s.toLowerCase().startsWith(arg));
+        og.sort(String::compareToIgnoreCase);
+        return og;
+    }
+
+    public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og) {
+        og.sort(String::compareToIgnoreCase);
+        return og;
+    }
 
     public static void spawnFireworks(Location loc) {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
@@ -65,30 +75,24 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
     }
 
-    public static ItemStack createItemStack(Material mat, String display, List<String> lore, String str) {
+    public static ItemStack createItemStack(Material mat, String display, ImmutableList<String> lore) {
         ItemStack ie = new ItemStack(mat, 1);
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
-        NamespacedKey key2 = new NamespacedKey(Constants.p, "reported");
-        iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
         ie.setItemMeta(iem);
-
         return ie;
     }
 
-    public static ItemStack createItemStack(ItemStack ie, String display, List<String> lore, String str) {
+    public static ItemStack createItemStack(ItemStack ie, String display, ImmutableList<String> lore) {
         ItemMeta iem = ie.getItemMeta();
         iem.setDisplayName(display);
         iem.setLore(lore);
-        NamespacedKey key2 = new NamespacedKey(Constants.p, "reported");
-        iem.getPersistentDataContainer().set(key2, PersistentDataType.STRING, str);
         ie.setItemMeta(iem);
-
         return ie;
     }
 
-    public static void report(Player pp, String report, String reason) {
+    public static void submitReport(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));

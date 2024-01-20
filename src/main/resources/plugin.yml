@@ -2,7 +2,9 @@ name: CatSMP
 version: '${project.version}'
 main: main.Economy
 api-version: 1.19
-depend: [ Vault ]
+softdepend:
+  - ViaVersion
+  - ViaBackwards
 
 commands:
   spawn:
@@ -42,6 +44,17 @@ commands:
     usage: /<command>
     aliases: statistics
   acreate:
+    usage: /<command>
+  exbal:
+    uasge: /<command>
+    aliases: exbalance
+  event:
+    usage: /<command>
+  warp:
+    usage: /<command>
+  setwarp:
+    usage: /<command>
+  rtp:
     usage: /<command>
 permissions:
   has.staff:

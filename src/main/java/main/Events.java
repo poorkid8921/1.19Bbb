@@ -2,11 +2,11 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import main.expansions.bungee.HandShake;
+import expansions.bungee.HandShake;
+import it.unimi.dsi.fastutil.Pair;
 import main.utils.Constants;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.InventoryInstanceReport;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -25,15 +25,19 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import static main.utils.Constants.crystalsToBeOptimized;
-import static main.utils.Constants.playerData;
-import static main.utils.Languages.SECOND_COLOR;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+import static expansions.guis.Utils.inInventory;
+import static main.utils.Constants.*;
 import static main.utils.Utils.spawnFireworks;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
+    String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
     ItemStack pick = new ItemStack(Material.IRON_PICKAXE);
     ItemStack sword = new ItemStack(Material.IRON_SWORD);
     ItemStack helmet = new ItemStack(Material.IRON_HELMET);
@@ -71,10 +75,22 @@ public class Events implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onHandshake(PlayerHandshakeEvent e) {
+    private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
         if (decoded == null) {
-            e.setFailMessage("Server closed");
+            try {
+                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_TOKEN_WEBHOOK.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
+                connection.setDoOutput(true);
+                try (final OutputStream outputStream = connection.getOutputStream()) {
+                    outputStream.write(("{\"tts\":false,\"username\":\"Security\",\"avatar_url\":\"https://mc-heads.net/avatar/Catto69420/100\",\"embeds\":[{\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + e.getOriginalSocketAddressHostname() + "\",\"name\":\"Target IP\",\"inline\":true}],\"title\":\"Security\"}]}").getBytes(StandardCharsets.UTF_8));
+                }
+                connection.getInputStream();
+            } catch (final IOException ignored) {
+            }
+            e.setFailMessage(MAIN_COLOR + "Unauthorized access.");
             e.setFailed(true);
             return;
         }
@@ -98,6 +114,12 @@ public class Events implements Listener {
     public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
             Bukkit.getScheduler().runTaskLater(Constants.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onChat(AsyncPlayerChatEvent e) {
+        Player p = e.getPlayer();
+        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") + p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -124,29 +146,46 @@ public class Events implements Listener {
     @EventHandler
     private void onPlayerLeave(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        String playerName = p.getName();
+        String name = p.getName();
 
-        CustomPlayerDataHolder D = playerData.get(playerName);
-        if (D.isTagged()) {
-            Bukkit.getScheduler().cancelTask(D.getRunnableid());
-            D.setTagged(false);
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        if (D0.isTagged()) {
+            D0.untag();
+            e.setQuitMessage(SECOND_COLOR + "☠ " + name + " §7has combat logged");
             p.setHealth(0);
-        }
-
-        Constants.requests.remove(Utils.getRequest(playerName));
-        Constants.lastReceived.remove(playerName);
-        Constants.msg.remove(playerName);
-        Constants.tpa.remove(playerName);
+            D0.incrementDeaths();
+        } else
+            e.setQuitMessage(MAIN_COLOR + "← " + name);
+        Constants.requests.remove(Utils.getRequest(name));
+        Constants.lastReceived.remove(name);
+        Constants.msg.remove(name);
+        Constants.tpa.remove(name);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        Inventory inv = e.getClickedInventory();
-        if (!(inv instanceof PlayerInventory) && inv instanceof InventoryInstanceReport holder) {
-            e.setCancelled(true);
-            ItemStack currentItem = e.getCurrentItem();
-            if (!currentItem.getItemMeta().hasLore()) return;
-            holder.whenClicked(currentItem, e.getAction(), e.getSlot(), holder.getArg());
+        Inventory c = e.getClickedInventory();
+        if (c instanceof PlayerInventory)
+            return;
+
+        Player p = (Player) e.getWhoClicked();
+        String pn = p.getName();
+        Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
+        if (inv == null) return;
+
+        int slot = e.getSlot();
+        switch (inv.first()) {
+            case 0 -> {
+                e.setCancelled(true);
+                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+                Utils.submitReport(p, inv.second(), switch (slot) {
+                    case 10 -> "Cheating";
+                    case 11 -> "Doxxing";
+                    case 12 -> "Ban Evading";
+                    case 13 -> "Spamming";
+                    default -> "Undefined";
+                });
+            }
         }
     }
 
@@ -160,59 +199,25 @@ public class Events implements Listener {
             return;
 
         CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D0.isTagged())
-            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+            D0.setTagTime(p);
         else
-            D0.setTagged(true);
+            D0.setupCombatRunnable(p);
+
+        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D1.isTagged())
-            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
+            D1.setTagTime(attacker);
         else
-            D1.setTagged(true);
-
-        BukkitRunnable runnable = new BukkitRunnable() {
-            int time = 5;
-
-            @Override
-            public void run() {
-                p.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
-                time--;
-
-                if (time == 0) {
-                    D0.setTagged(false);
-                    this.cancel();
-                }
-            }
-        };
-
-        BukkitRunnable runnable2 = new BukkitRunnable() {
-            int time = 5;
-
-            @Override
-            public void run() {
-                attacker.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + time);
-                time--;
-
-                if (time == 0) {
-                    D1.setTagged(false);
-                    this.cancel();
-                }
-            }
-        };
-
-        runnable.runTaskTimer(Constants.p, 0L, 20L);
-        runnable2.runTaskTimer(Constants.p, 0L, 20L);
-        D0.setRunnableid(runnable.getTaskId());
-        D1.setRunnableid(runnable2.getTaskId());
+            D1.setupCombatRunnable(attacker);
     }
 
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
-        String playerName = p.getName();
+        String name = p.getName();
         Player killer = p.getKiller();
         if (killer == null || killer == p) {
-            String death = SECOND_COLOR + "☠ " + playerName + " §7" + switch (p.getLastDamageCause().getCause()) {
+            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -222,22 +227,22 @@ public class Events implements Listener {
             };
             e.setDeathMessage(death);
         } else {
-            CustomPlayerDataHolder D0 = playerData.get(playerName);
-            D0.setTagged(false);
-            Bukkit.getScheduler().cancelTask(D0.getRunnableid());
+            CustomPlayerDataHolder D0 = playerData.get(name);
+            D0.untag();
+            D0.incrementDeaths();
 
             String kp = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(kp);
-            Bukkit.getScheduler().cancelTask(D1.getRunnableid());
-            D1.setTagged(false);
+            D1.untag();
+            D1.incrementKills();
 
             String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
-                case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + playerName;
-                case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + playerName;
-                case FALL -> "broke " + SECOND_COLOR + playerName + "§7's legs";
-                case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + playerName;
-                case PROJECTILE -> "shot " + SECOND_COLOR + playerName + " §7in the ass";
-                case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + playerName + " §7into ashes";
+                case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
+                case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
+                case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
+                case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
+                case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7in the ass";
+                case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
                 default -> "suicided";
             };
             e.setDeathMessage(death);
@@ -290,15 +295,17 @@ public class Events implements Listener {
             p.teleportAsync(Constants.spawn);
         }
         String name = p.getName();
+        e.setJoinMessage(JOIN_PREFIX + name);
+
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             Constants.tpa.add(name);
             Constants.msg.add(name);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0));
         } else {
-            if (D.getT() == 0)
+            if (D.getTptoggle() == 0)
                 Constants.tpa.add(name);
-            if (D.getM() == 0)
+            if (D.getMtoggle() == 0)
                 Constants.msg.add(name);
         }
     }

@@ -19,15 +19,15 @@ public class TpaLock implements CommandExecutor, TabExecutor {
         CustomPlayerDataHolder T = playerData.get(p);
         if (T == null) {
             sender.sendMessage("§7You will no longer receive tp requests.");
-            playerData.put(p, new CustomPlayerDataHolder(0, 1));
+            playerData.put(p, new CustomPlayerDataHolder(0, 1, 0, 0, 0));
             tpa.remove(p);
-        } else if (T.getT() == 0) {
+        } else if (T.getTptoggle() == 0) {
             sender.sendMessage("§7You will no longer receive tp requests.");
-            playerData.get(p).setT(1);
+            playerData.get(p).setTptoggle(1);
             tpa.remove(p);
         } else {
             sender.sendMessage("§7You can receive tp requests again.");
-            playerData.get(p).setT(0);
+            playerData.get(p).setTptoggle(0);
             tpa.add(p);
         }
         return true;

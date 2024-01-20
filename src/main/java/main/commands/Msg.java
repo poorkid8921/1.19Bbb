@@ -10,7 +10,8 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static main.utils.Utils.tabCompleteFilter;
 
 public class Msg implements CommandExecutor, TabCompleter {
     @Override
@@ -52,14 +53,8 @@ public class Msg implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ? Constants.msg
-                .stream()
-                .sorted(String::compareToIgnoreCase)
-                .collect(Collectors.toList()) :
-                Constants.msg
-                        .stream()
-                        .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                        .sorted(String::compareToIgnoreCase)
-                        .collect(Collectors.toList());
+        return args.length < 1 ?
+                tabCompleteFilter(Constants.msg) :
+                tabCompleteFilter(Constants.msg, args[0].toLowerCase());
     }
 }

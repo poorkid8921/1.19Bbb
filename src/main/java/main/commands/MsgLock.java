@@ -9,10 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static main.utils.Constants.msg;
-import static main.utils.Constants.playerData;
-import static main.utils.Languages.MSGLOCK;
-import static main.utils.Languages.MSGLOCK1;
+import static main.utils.Constants.*;
 
 public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
@@ -21,15 +18,15 @@ public class MsgLock implements CommandExecutor, TabExecutor {
         CustomPlayerDataHolder M = playerData.get(p);
         if (M == null) {
             sender.sendMessage(MSGLOCK1);
-            playerData.put(p, new CustomPlayerDataHolder(1, 0));
+            playerData.put(p, new CustomPlayerDataHolder(1, 0, 0, 0, 0));
             msg.remove(p);
-        } else if (M.getM() == 0) {
+        } else if (M.getMtoggle() == 0) {
             sender.sendMessage(MSGLOCK1);
-            playerData.get(p).setM(1);
+            playerData.get(p).setMtoggle(1);
             msg.remove(p);
         } else {
             sender.sendMessage(MSGLOCK);
-            playerData.get(p).setM(0);
+            playerData.get(p).setMtoggle(0);
             msg.add(p);
         }
         return true;

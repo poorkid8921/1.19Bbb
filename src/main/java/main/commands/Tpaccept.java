@@ -1,16 +1,15 @@
 package main.commands;
 
 import main.utils.Constants;
-import main.utils.Languages;
-import main.utils.TpaRequest;
+import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.Constants.bukkitTasks;
-import static main.utils.Languages.MAIN_COLOR;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.translate;
 
@@ -19,7 +18,7 @@ public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
-        String msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ;
+        String msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ;
         TpaRequest request;
         String n = "";
         String un = user.getName();
@@ -35,7 +34,7 @@ public class Tpaccept implements CommandExecutor {
             } else
                 n = p.getName();
             request = getRequest(un, n);
-            msg = Languages.EXCEPTION_NO_ACTIVE_TPAREQ1 +
+            msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ1 +
                     MAIN_COLOR + args[0] + ".";
         }
 
@@ -43,7 +42,7 @@ public class Tpaccept implements CommandExecutor {
             user.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            user.sendMessage(Languages.EXCEPTION_PLAYER_TPSELF);
+            user.sendMessage(Constants.EXCEPTION_PLAYER_TPSELF);
             return true;
         }
 
@@ -53,17 +52,17 @@ public class Tpaccept implements CommandExecutor {
         if (!request.isHere()) {
             tempuser = request.getSender();
             temprecipient = user;
-            sender.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
                 tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
         } else {
             tempuser = user;
             temprecipient = request.getSender();
-            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
+            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
-                sender.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
+                temprecipient.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
         }
 
         Bukkit.getScheduler().cancelTask(bukkitTasks.get(request.getSenderF()));

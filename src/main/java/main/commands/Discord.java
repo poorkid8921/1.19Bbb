@@ -3,15 +3,24 @@ package main.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.jetbrains.annotations.Nullable;
 
-import static main.utils.Languages.D_LINK;
-import static main.utils.Languages.D_USING;
+import java.util.List;
+
+import static main.utils.Constants.D_LINK;
+import static main.utils.Constants.D_USING;
 
 @SuppressWarnings("deprecation")
-public class Discord implements CommandExecutor {
+public class Discord implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         sender.sendMessage(D_USING, D_LINK);
         return true;
+    }
+
+    @Override
+    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }
