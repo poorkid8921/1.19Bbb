@@ -11,9 +11,13 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static main.utils.Constants.crystalsToBeOptimized;
 
@@ -31,28 +35,30 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
 
         ItemStack item = wrapper.getHand() == InteractionHand.MAIN_HAND ? player.getInventory().getItemInMainHand() :
                 player.getInventory().getItemInOffHand();
-        Material type = item.getType();
-        if (type == Material.END_CRYSTAL) {
-            Location loc = crystalsToBeOptimized.get(wrapper.getEntityId());
-            if (loc == null) return;
+        if (item.getType() != Material.END_CRYSTAL)
+            return;
 
-            Location blockLoc = loc.clone().subtract(0.5, 1.0, 0.5);
-            RayTraceResult result = player.rayTraceBlocks(4.5,
-                    FluidCollisionMode.NEVER);
+        Location loc = crystalsToBeOptimized.get(wrapper.getEntityId());
+        if (loc == null) return;
 
-            if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
-            if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
+        Location blockLoc = loc.clone().subtract(0.5, 1.0, 0.5);
+        RayTraceResult result = player.rayTraceBlocks(4.5,
+                FluidCollisionMode.NEVER);
 
-            Bukkit.getScheduler().runTask(Constants.p, () -> {
-                Location clonedLoc = loc.clone().subtract(0.5, 0.0, 0.5);
-                if (clonedLoc.getBlock().getType() != Material.AIR) return;
+        if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
+        if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
 
-                clonedLoc.add(0.5, 1.0, 0.5);
-                if (clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5).isEmpty()) {
-                    loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
-                    item.setAmount(item.getAmount() - 1);
-                }
-            });
-        }
+        Bukkit.getScheduler().runTask(Constants.p, () -> {
+            Location clonedLoc = loc.clone().subtract(0.5, 0.0, 0.5);
+            if (clonedLoc.getBlock().getType() != Material.AIR) return;
+
+            clonedLoc.add(0.5, 1.0, 0.5);
+            List<Entity> nearbyEntities = new ArrayList<>(clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5));
+
+            if (nearbyEntities.isEmpty()) {
+                loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
+                item.setAmount(item.getAmount() - 1);
+            }
+        });
     }
 }

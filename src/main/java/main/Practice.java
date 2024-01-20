@@ -8,6 +8,7 @@ import ac.utils.anticheat.PlayerDataManager;
 import ac.utils.lists.HookedListWrapper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.util.reflection.Reflection;
+import com.google.common.collect.ImmutableList;
 import expansions.AntiCheat;
 import expansions.arenas.Arena;
 import expansions.arenas.ArenaIO;
@@ -28,7 +29,7 @@ import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import main.commands.*;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.TabTPA;
+import main.utils.TeleportCompleter;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -65,42 +66,6 @@ public class Practice extends JavaPlugin {
     int ticked = 0;
     boolean alreadySavingData = false;
 
-    public static void loadData() {
-        if (config.contains("r")) {
-            int dataLoaded = 0;
-            for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                int i = 0;
-                int wins = 0;
-                int losses = 0;
-                int c = -1;
-                int m = 0;
-                int t = 0;
-                int money = 0;
-                int elo = 0;
-                int deaths = 0;
-                int kills = 0;
-                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
-                    switch (i++) {
-                        case 1 -> wins = config.getInt("r." + key + "." + key2);
-                        case 2 -> losses = config.getInt("r." + key + "." + key2);
-                        case 3 -> c = config.getInt("r." + key + "." + key2);
-                        case 4 -> m = config.getInt("r." + key + "." + key2);
-                        case 5 -> t = config.getInt("r." + key + "." + key2);
-                        case 6 -> money = config.getInt("r." + key + "." + key2);
-                        case 7 -> elo = config.getInt("r." + key + "." + key2);
-                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
-                        case 9 -> kills = config.getInt("r." + key + "." + key2);
-                    }
-                }
-                if (wins == 0 && losses == 0 && c == -1 && m == 0 && t == 0 && money == 0 && elo == 0 && deaths == 0 && kills == 0)
-                    continue;
-                playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo, deaths, kills));
-                dataLoaded++;
-            }
-            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
-        }
-    }
-
     private static void tickRelMove() {
         for (GrimPlayer player : PDM.getEntries()) {
             if (player.disableGrim) continue;
@@ -123,6 +88,7 @@ public class Practice extends JavaPlugin {
     public void onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
         PacketEvents.getAPI().getSettings().checkForUpdates(false).reEncodeByDefault(false);
+        PacketEvents.getAPI().load();
         try {
             Object connection = SpigotReflectionUtil.getMinecraftServerConnectionInstance();
             Field connectionsList = Reflection.getField(connection.getClass(), java.util.List.class, 1);
@@ -184,10 +150,10 @@ public class Practice extends JavaPlugin {
         this.getCommand("tphere").setExecutor(new TeleportHere());
         this.getCommand("tpall").setExecutor(new TeleportAll());
 
-        this.getCommand("msg").setTabCompleter(new TabMSG());
-        this.getCommand("tpa").setTabCompleter(new TabTPA());
-        this.getCommand("tpaccept").setTabCompleter(new TabTPA());
-        this.getCommand("tpahere").setTabCompleter(new TabTPA());
+        TeleportCompleter tabCompleter = new TeleportCompleter();
+        this.getCommand("tpa").setTabCompleter(tabCompleter);
+        this.getCommand("tpaccept").setTabCompleter(tabCompleter);
+        this.getCommand("tpahere").setTabCompleter(tabCompleter);
     }
 
     public void setupWarps() {
@@ -253,6 +219,7 @@ public class Practice extends JavaPlugin {
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().init();
     }
 
     private void setupAC() {
@@ -335,12 +302,11 @@ public class Practice extends JavaPlugin {
     @Override
     public void onDisable() {
         PacketEvents.getAPI().terminate();
-        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles()) {
-            file.delete();
-        }
-
-        for (File file : new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles()) {
-            file.delete();
+        for (File[] file : ImmutableList.of(new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles(),
+                new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles())) {
+            for (File value : file) {
+                value.delete();
+            }
         }
 
         long curTime = new Date().getTime();

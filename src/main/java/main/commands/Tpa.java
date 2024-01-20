@@ -6,12 +6,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import static main.utils.RequestManager.addTPArequest;
 import static main.utils.RequestManager.getTPArequest;
+import static main.utils.Utils.tabCompleteFilter;
 
-public class Tpa implements CommandExecutor {
+public class Tpa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
@@ -49,5 +55,12 @@ public class Tpa implements CommandExecutor {
 
         addTPArequest((Player) sender, recipient, false);
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        return args.length < 1 ?
+                tabCompleteFilter(Constants.tpa) :
+                tabCompleteFilter(Constants.tpa, args[0].toLowerCase());
     }
 }

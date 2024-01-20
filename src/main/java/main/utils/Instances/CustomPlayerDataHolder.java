@@ -8,6 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+
 public class CustomPlayerDataHolder {
     @Getter
     @Setter
@@ -49,6 +51,8 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private boolean tagged;
+    private ArrayList<Long> windowQuitTime;
+    private ArrayList<Long> windowOpenTime;
 
     public CustomPlayerDataHolder(int wins,
                                   int losses,
@@ -68,6 +72,14 @@ public class CustomPlayerDataHolder {
         this.elo = elo;
         this.deaths = deaths;
         this.kills = kills;
+    }
+
+    public ArrayList<Long> windowQuitTime() {
+        return windowQuitTime;
+    }
+
+    public ArrayList<Long> windowOpenTime() {
+        return windowQuitTime;
     }
 
     public void setupCombatRunnable(Player player) {

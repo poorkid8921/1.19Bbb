@@ -1,5 +1,6 @@
 package main.commands;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
@@ -9,8 +10,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static main.utils.Utils.tabCompleteFilter;
 
 public class Msg implements CommandExecutor, TabCompleter {
     @Override
@@ -24,7 +28,6 @@ public class Msg implements CommandExecutor, TabCompleter {
         }
 
         Player target = Bukkit.getPlayer(args[0]);
-
         if (target == null) {
             sender.sendMessage("§7You can't send messages to offline players.");
             return true;
@@ -37,7 +40,6 @@ public class Msg implements CommandExecutor, TabCompleter {
         }
 
         StringBuilder msgargs = new StringBuilder();
-
         for (int i = 1; i < args.length; i++)
             msgargs.append(args[i]).append(" ");
 
@@ -51,14 +53,8 @@ public class Msg implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ? Constants.msg
-                .stream()
-                .sorted(String::compareToIgnoreCase)
-                .collect(Collectors.toList()) :
-                Constants.msg
-                        .stream()
-                        .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                        .sorted(String::compareToIgnoreCase)
-                        .collect(Collectors.toList());
+        return args.length < 1 ?
+                tabCompleteFilter(Constants.msg) :
+                tabCompleteFilter(Constants.msg, args[0].toLowerCase());
     }
 }

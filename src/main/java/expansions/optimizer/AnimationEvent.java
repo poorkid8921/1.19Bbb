@@ -50,9 +50,8 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
             if (!entity.getBoundingBox().contains(eyeLoc.toVector())) {
                 RayTraceResult bResult = player.rayTraceBlocks(4.5);
                 if (bResult != null) {
-                    Block block = bResult.getHitBlock();
                     Vector eyeLocV = eyeLoc.toVector();
-                    if (block != null && (eyeLocV.distanceSquared(bResult.getHitPosition()) <=
+                    if (bResult.getHitBlock() != null && (eyeLocV.distanceSquared(bResult.getHitPosition()) <=
                             eyeLocV.distanceSquared(result.getHitPosition()) ||
                             user.getLastPacket() != AnimPackets.START_DIGGING && user.getLastPacket() != AnimPackets.ATTACK))
                         return;

@@ -23,7 +23,10 @@ import org.bukkit.entity.Player;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static main.Practice.config;
 
 public class Constants {
     public static Map<String, Integer> teams = new Object2ObjectOpenHashMap<>();
@@ -32,7 +35,17 @@ public class Constants {
     public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new HashMap<>();
-    public static ObjectArrayList<RegionHolder> regions = new ObjectArrayList<>();
+    public static ObjectArrayList<RegionHolder> regions = new ObjectArrayList<>(ImmutableList.of(
+            new RegionHolder(27, 96, -27, -27, 81, 27),// spawn
+            new RegionHolder(-119, 99, -300, 5, 317, -176),// ffa
+            new RegionHolder(-120, -64, -301, 6, -64, -175),// ffa_0
+            new RegionHolder(-120, -63, -175, 6, 93, -175),// ffa_1
+            new RegionHolder(6, -63, -301, 6, 93, -176),// ffa_2
+            new RegionHolder(-120, -63, -301, 5, 93, -301),// ffa_3
+            new RegionHolder(-120, -63, -300, -120, 93, -176),// ffa_4
+            new RegionHolder(-98, 118, 268, 92, 176, 458),// flat
+            new RegionHolder(-98, 114, 268, 92, 114, 458) // flatdown
+    ));
     public static ObjectArrayList<DuelHolder> inDuel = new ObjectArrayList<>();
     public static ObjectArrayList<String> bannedFromflat = new ObjectArrayList<>();
     public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
@@ -78,6 +91,8 @@ public class Constants {
     public static String TPALOCK = "§7You can receive tp requests again.";
     public static String MSGLOCK1 = "§7You will no longer receive messages from players.";
     public static String TPALOCK1 = "§7You will no longer receive tp requests from players.";
+    public static String EXCEPTION_BLOCK_PLACE;
+    public static String EXCEPTION_BLOCK_BREAK;
     public static String EXCEPTION_TAGGED;
     public static String EXCEPTION_ALREADY_IN_DUEL = "§7You can't duel yourself.";
     public static String EXCEPTION_NO_ARENAS_OPEN = "§7There are no open arenas yet.";
@@ -117,6 +132,8 @@ public class Constants {
         BACK = MiniMessage.miniMessage().deserialize("<gray>Use <color:#fc282f>/back<color:#fc282f> <gray>to return to your death location");
         startED = " started! " + MAIN_COLOR + "Fight!";
         TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
+        EXCEPTION_BLOCK_PLACE = "§7You can't place " + MAIN_COLOR + "blocks here!";
+        EXCEPTION_BLOCK_BREAK = "§7You can't break " + MAIN_COLOR + "blocks here!";
 
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Practice.d = Bukkit.getWorld("world");
@@ -143,6 +160,38 @@ public class Constants {
         Constants.flat.setYaw(
                 90F
         );
-        Practice.loadData();
+        if (config.contains("r")) {
+            int dataLoaded = 0;
+            for (String key : config.getConfigurationSection("r").getKeys(false)) {
+                int i = 0;
+                int wins = 0;
+                int losses = 0;
+                int c = -1;
+                int m = 0;
+                int t = 0;
+                int money = 0;
+                int elo = 0;
+                int deaths = 0;
+                int kills = 0;
+                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
+                    switch (i++) {
+                        case 1 -> wins = config.getInt("r." + key + "." + key2);
+                        case 2 -> losses = config.getInt("r." + key + "." + key2);
+                        case 3 -> c = config.getInt("r." + key + "." + key2);
+                        case 4 -> m = config.getInt("r." + key + "." + key2);
+                        case 5 -> t = config.getInt("r." + key + "." + key2);
+                        case 6 -> money = config.getInt("r." + key + "." + key2);
+                        case 7 -> elo = config.getInt("r." + key + "." + key2);
+                        case 8 -> deaths = config.getInt("r." + key + "." + key2);
+                        case 9 -> kills = config.getInt("r." + key + "." + key2);
+                    }
+                }
+                if (wins == 0 && losses == 0 && c == -1 && m == 0 && t == 0 && money == 0 && elo == 0 && deaths == 0 && kills == 0)
+                    continue;
+                playerData.put(key, new CustomPlayerDataHolder(wins, losses, c, m, t, money, elo, deaths, kills));
+                dataLoaded++;
+            }
+            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
+        }
     }
 }

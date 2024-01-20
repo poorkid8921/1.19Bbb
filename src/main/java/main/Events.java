@@ -1,5 +1,6 @@
 package main;
 
+import ac.utils.anticheat.update.BlockPlace;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import expansions.bungee.HandShake;
@@ -9,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.DuelHolder;
+import main.utils.Instances.RegionHolder;
 import main.utils.Instances.WorldLocationHolder;
 import main.utils.RequestManager;
 import main.utils.Utils;
@@ -22,11 +24,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockMultiPlaceEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -50,7 +56,6 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
-    Point ptr = new Point(128, 128);
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
@@ -94,21 +99,56 @@ public class Events implements Listener {
             Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
 
-    /*@EventHandler
+    @EventHandler
     private void onBlockBreak(BlockBreakEvent e) {
         Location loc = e.getBlock().getLocation();
         double x = loc.getX();
+        double y = loc.getY();
         double z = loc.getZ();
         for (RegionHolder r : regions) {
-            if (r.getMinX() >= x && r.getMinZ() >= z) {
-                if (r.getMaxX() <= x && r.getMaxZ() <= z) {
-                    e.getPlayer().sendMessage("§7You can't break this block.");
+            if (r.isZinRegion(z)) {
+                if (r.isXinRegion(x) &&
+                        r.isYinRegion(y)) {
+                    Player p = e.getPlayer();
+                    if (p.isOp())
+                        return;
+                    p.sendMessage(EXCEPTION_BLOCK_BREAK);
                     e.setCancelled(true);
                     return;
                 }
             }
         }
-    }*/
+    }
+
+    void handleBlockPlace(BlockPlaceEvent e) {
+        Location loc = e.getBlock().getLocation();
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
+        for (RegionHolder r : regions) {
+            if (r.isZinRegion(z)) {
+                if (r.isXinRegion(x) &&
+                        r.isYinRegion(y)) {
+                    Player p = e.getPlayer();
+                    if (p.isOp())
+                        return;
+                    p.sendMessage(EXCEPTION_BLOCK_PLACE);
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    private void onBlockPlace(BlockPlaceEvent e) {
+        handleBlockPlace(e);
+    }
+
+    @EventHandler
+    private void onBlockPlace(BlockMultiPlaceEvent e) {
+        handleBlockPlace(e);
+    }
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
@@ -263,9 +303,17 @@ public class Events implements Listener {
     }
 
     @EventHandler
+    private void onGUIOpen(InventoryOpenEvent e) {
+        if (e.getInventory() instanceof PlayerInventory)
+            playerData.get(e.getPlayer().getName()).windowOpenTime().add(System.currentTimeMillis());
+    }
+
+    @EventHandler
     private void onGUIClose(InventoryCloseEvent e) {
         if (!(e.getInventory() instanceof PlayerInventory))
             inInventory.remove(e.getPlayer().getName());
+        else
+            playerData.get(e.getPlayer().getName()).windowQuitTime().add(System.currentTimeMillis());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
