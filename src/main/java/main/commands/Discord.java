@@ -1,12 +1,10 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 import static main.utils.Constants.D_LINK;
 import static main.utils.Constants.D_USING;
@@ -20,7 +18,7 @@ public class Discord implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

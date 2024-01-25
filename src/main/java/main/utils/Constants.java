@@ -20,7 +20,6 @@ import org.bukkit.Location;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static main.Economy.config;
@@ -43,18 +42,16 @@ public class Constants {
             Color.SILVER,
             Color.TEAL,
             Color.YELLOW);
-    public static Map<String, Integer> bukkitTasks = new Object2ObjectOpenHashMap<>();
-    public static Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
-    public static Map<String, String> lastReceived = new Object2ObjectOpenHashMap<>();
-    public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
-    public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
-    public static ObjectArrayList<String> playersRTPing = new ObjectArrayList<>();
-    public static ObjectArrayList<Location> overworldRTP = new ObjectArrayList<>();
-    public static ObjectArrayList<Location> netherRTP = new ObjectArrayList<>();
-    public static ObjectArrayList<Location> endRTP = new ObjectArrayList<>();
-    public static ObjectArrayList<TpaRequest> requests = new ObjectArrayList<>();
-    public static ObjectArrayList<String> tpa = new ObjectArrayList<>();
-    public static ObjectArrayList<String> msg = new ObjectArrayList<>();
+    public static Object2ObjectOpenHashMap<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
+    public static Object2ObjectOpenHashMap<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
+    public static Object2ObjectOpenHashMap<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
+    public static ObjectArrayList<String> playersRTPing = ObjectArrayList.of();
+    public static ObjectArrayList<Location> overworldRTP = ObjectArrayList.of();
+    public static ObjectArrayList<Location> netherRTP = ObjectArrayList.of();
+    public static ObjectArrayList<Location> endRTP = ObjectArrayList.of();
+    public static ObjectArrayList<TpaRequest> requests = ObjectArrayList.of();
+    public static ObjectArrayList<String> tpa = ObjectArrayList.of();
+    public static ObjectArrayList<String> msg = ObjectArrayList.of();
     public static Economy p;
     public static Chat chat;
     public static LuckPerms lp;

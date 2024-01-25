@@ -4,22 +4,22 @@ import com.github.retrooper.packetevents.PacketEvents;
 import expansions.AntiCheat;
 import expansions.arenas.Arena;
 import expansions.arenas.ArenaIO;
-import expansions.arenas.Section;
 import expansions.arenas.commands.CreateCommand;
 import expansions.economy.Balance;
 import expansions.optimizer.AnimationEvent;
 import expansions.optimizer.InteractionEvent;
 import expansions.optimizer.LastPacketEvent;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.commands.*;
 import main.utils.Constants;
 import main.utils.TeleportCompleter;
 import main.utils.instances.CustomPlayerDataHolder;
 import net.luckperms.api.LuckPerms;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.chat.Chat;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,16 +35,14 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static main.utils.Constants.*;
-import static main.utils.Utils.space;
 
 public class Economy extends JavaPlugin {
     public static File dataFolder;
     public static World d;
-    public static int vote_yes;
-    public static int vote_no;
     public static FileConfiguration config;
     private static boolean alreadySavingData;
     private File dataFile;
+    private int arena = 1;
 
     Location getRandomLoc(World w) {
         Location loc = null;
@@ -84,7 +82,6 @@ public class Economy extends JavaPlugin {
         this.getCommand("discord").setExecutor(new Discord());
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
-        this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("exbal").setExecutor(new Balance());
 
         TeleportCompleter tabCompleter = new TeleportCompleter();
@@ -96,7 +93,7 @@ public class Economy extends JavaPlugin {
     public void setupWarps() {
         File arenasFolder = new File(dataFolder, "arenas");
         if (!arenasFolder.exists()) arenasFolder.mkdirs();
-        Arrays.stream(arenasFolder.listFiles()).parallel().forEach(result -> {
+        Arrays.stream(arenasFolder.listFiles()).forEach(result -> {
             try {
                 Arena arena = ArenaIO.loadArena(result);
                 if (arena != null)
@@ -159,6 +156,7 @@ public class Economy extends JavaPlugin {
 
                 public void run() {
                     if (i++ == 101) {
+                        getCommand("rtp").setExecutor(new RTP());
                         Bukkit.getLogger().warning("Finished RTP population.");
                         this.cancel();
                         return;
@@ -169,71 +167,30 @@ public class Economy extends JavaPlugin {
                 }
             }.runTaskTimer(this, 0L, 20L);
             d = Bukkit.getWorld("world");
-
             Constants.spawn = new Location(Economy.d,
-                    -0.5, 142.06250, 0.5);
+                    -0.5, 141.06250, 0.5);
 
-            Arena ffaup1 = Arena.arenas.get("ffa1");
-            Arena.ResetLoopinData ffaup_data1 = new Arena.ResetLoopinData();
-            ffaup_data1.speed = 2000000;
-            for (Section s : ffaup1.getSections()) {
-                int sectionAmount = (int) ((double) 2000000 / (double) (ffaup1.getc2().getBlockX() - ffaup1.getc1().getBlockX() + 1) * (ffaup1.getc2().getBlockY() - ffaup1.getc1().getBlockY() + 1) * (ffaup1.getc2().getBlockZ() - ffaup1.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                if (sectionAmount <= 0) sectionAmount = 1;
-                ffaup_data1.sections.put(s.getID(), sectionAmount);
-                ffaup_data1.sectionIDs.add(s.getID());
-            }
-
-            Arena ffaup2 = Arena.arenas.get("ffa2");
-            Arena.ResetLoopinData ffaup_data2 = new Arena.ResetLoopinData();
-            ffaup_data2.speed = 2000000;
-            for (Section s : ffaup2.getSections()) {
-                int sectionAmount = (int) ((double) 2000000 / (double) (ffaup2.getc2().getBlockX() - ffaup2.getc1().getBlockX() + 1) * (ffaup2.getc2().getBlockY() - ffaup2.getc1().getBlockY() + 1) * (ffaup2.getc2().getBlockZ() - ffaup2.getc1().getBlockZ() + 1) * (double) s.getTotalBlocks());
-                if (sectionAmount <= 0) sectionAmount = 1;
-                ffaup_data2.sections.put(s.getID(), sectionAmount);
-                ffaup_data2.sectionIDs.add(s.getID());
-            }
-
-            ObjectArrayList<Player> players = new ObjectArrayList<>();
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                Economy.d.getEntities().stream()
-                        .filter(r -> r instanceof EnderCrystal)
-                        .forEach(Entity::remove);
+                for (Entity ent : d.getEntities()) {
+                    if (ent instanceof EnderCrystal)
+                        ent.remove();
+                }
 
+                if (arena++ == 2)
+                    arena = 0;
+                Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(200000);
                 for (Player a : Bukkit.getOnlinePlayers()) {
                     if (a.isGliding())
                         continue;
 
                     Location c = a.getLocation();
-                    c.setY(318);
+                    c.setY(200);
                     if (Economy.d.getBlockAt(c).getType() != Material.BARRIER)
                         continue;
-
-                    players.add(a);
-                    a.playSound(a.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-                    a.sendMessage(new TextComponent("§7Vote: Should the arena be resetted? "), VOTE_YES, space, VOTE_NO);
+                    c.setY(135);
+                    a.teleportAsync(c);
                 }
-                Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-                    Event.verified.clear();
-                    if (vote_yes > vote_no || (vote_no == 0)) {
-                        boolean ffaupresetted;
-                        boolean i = Constants.RANDOM.nextInt() == 1;
-                        Arena.ResetLoopinData ffaup_data = i ? ffaup_data1 : ffaup_data2;
-                        Arena ffaup = Arena.arenas.get(i ? "ffa1" : "ffa2");
-                        do {
-                            ffaupresetted = true;
-                            for (Player a : players) {
-                                a.sendMessage("§7The arena has been reset.");
-                                Location c = a.getLocation();
-                                c.setY(135);
-                                a.teleportAsync(c);
-                            }
-                        } while (!ffaup.loopyReset(ffaup_data) && !ffaupresetted);
-                    }
-                    vote_no = 0;
-                    vote_yes = 0;
-                    saveData();
-                }, 600L);
-            }, 0L, 6000L);
+            }, 0L, 24000L);
         }, 100L);
         registerCommands();
         setupWarps();

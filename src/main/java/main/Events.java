@@ -16,24 +16,23 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scoreboard.Team;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static expansions.guis.Utils.inInventory;
 import static main.utils.Constants.*;
-import static main.utils.Utils.spawnFireworks;
+import static main.utils.Utils.spawnFirework;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -72,6 +71,16 @@ public class Events implements Listener {
         boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
         boots.addEnchantment(Enchantment.DURABILITY, 2);
         boots.addEnchantment(Enchantment.MENDING, 1);
+    }
+
+    @EventHandler
+    private void onPlayerToggleElytra(EntityToggleGlideEvent e) {
+        Player p = (Player) e.getEntity();
+        CustomPlayerDataHolder D0 = playerData.get(p.getName());
+        if (D0.isTagged()) {
+            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -119,7 +128,12 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") + p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
+        Team team = p.getScoreboard().getPlayerTeam(p);
+        e.setFormat(team == null ?
+                chat.getPlayerPrefix("world", p).replace("&", "§") +
+                        p.getName() + SECOND_COLOR + " » §r" + e.getMessage() :
+                ("§7[" + team.getColor() + team.getDisplayName() + "§7] " + chat.getPlayerPrefix("world", p).replace("&", "§") +
+                        "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage()));
     }
 
     @EventHandler
@@ -157,7 +171,13 @@ public class Events implements Listener {
         } else
             e.setQuitMessage(MAIN_COLOR + "← " + name);
         Constants.requests.remove(Utils.getRequest(name));
-        Constants.lastReceived.remove(name);
+
+        if (D0.getLastReceived() != null) {
+            CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
+            if (Objects.equals(D1.getLastReceived(), name))
+                D1.setLastReceived(null);
+        }
+        D0.setLastReceived(null);
         Constants.msg.remove(name);
         Constants.tpa.remove(name);
     }
@@ -252,7 +272,7 @@ public class Events implements Listener {
             if (!Constants.lp.getPlayerAdapter(Player.class).getUser(killer).getPrimaryGroup().equals("default")) {
                 loc.add(0, 1, 0);
                 switch (Constants.RANDOM.nextInt(4)) {
-                    case 0 -> spawnFireworks(loc);
+                    case 0 -> spawnFirework(loc);
                     case 1 -> w.spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
                     case 2 -> w.strikeLightningEffect(loc);
                     case 3 -> {
@@ -275,7 +295,6 @@ public class Events implements Listener {
         if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
                 c != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
             return;
-
         String type = a.getItemStack().getType().name();
         e.setCancelled(type.contains("DIAMOND") || type.contains("NETHERITE"));
     }

@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static main.utils.Constants.MAIN_COLOR;
-import static main.utils.Constants.bukkitTasks;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.translate;
 
@@ -48,25 +47,25 @@ public class Tpaccept implements CommandExecutor {
 
         Player tempuser;
         Player temprecipient;
-
         if (!request.isHere()) {
             tempuser = request.getSender();
             temprecipient = user;
-            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "'s §7teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
                 tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
         } else {
             tempuser = user;
             temprecipient = request.getSender();
-            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request",
+            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "'s §7teleport request",
                     "§7Teleporting...");
             if (request.getTpaAll())
                 temprecipient.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
         }
 
-        Bukkit.getScheduler().cancelTask(bukkitTasks.get(request.getSenderF()));
-        tempuser.teleportAsync(temprecipient.getLocation()).thenAccept(reason -> Constants.requests.remove(request));
+        Bukkit.getScheduler().cancelTask(request.getRunnableid());
+        tempuser.teleport(temprecipient.getLocation());
+        Constants.requests.remove(request);
         return true;
     }
 }

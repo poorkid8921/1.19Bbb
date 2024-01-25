@@ -23,16 +23,4 @@ public class RegionHolder {
         this.maxY = maxY;
         this.maxZ = maxZ;
     }
-
-    public boolean isXinRegion(double x) {
-        return minX >= x && maxX >= x;
-    }
-
-    public boolean isYinRegion(double y) {
-        return minY >= y && maxY >= y;
-    }
-
-    public boolean isZinRegion(double z) {
-        return minZ >= z && maxZ >= z;
-    }
 }

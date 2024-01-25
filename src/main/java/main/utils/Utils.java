@@ -37,22 +37,24 @@ public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
-        og.removeIf(s -> s.toLowerCase().startsWith(arg));
-        og.sort(String::compareToIgnoreCase);
-        return og;
+        ObjectArrayList<String> og2 = og.clone();
+        og2.removeIf(s -> !s.toLowerCase().startsWith(arg));
+        og2.sort(String::compareToIgnoreCase);
+        return og2;
     }
 
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og) {
-        og.sort(String::compareToIgnoreCase);
-        return og;
+        ObjectArrayList<String> og2 = og.clone();
+        og2.sort(String::compareToIgnoreCase);
+        return og2;
     }
 
-    public static void spawnFireworks(Location loc) {
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        fwm.setPower(2);
-        fwm.addEffect(FireworkEffect.builder().withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        fw.setFireworkMeta(fwm);
+    public static void spawnFirework(Location loc) {
+        Firework firework = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
+        FireworkMeta meta = firework.getFireworkMeta();
+        meta.setPower(2);
+        meta.addEffect(FireworkEffect.builder().withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        firework.setFireworkMeta(meta);
     }
 
     public static String translateA(String text) {
@@ -138,7 +140,7 @@ public class Utils {
 
     public static void addRequest(Player sender, Player receiver, boolean tpahere, boolean showmsg) {
         String sn = sender.getName();
-        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
+        TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
         TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
 
@@ -155,16 +157,14 @@ public class Utils {
                 new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
                         " §7has requested to teleport to you. "), a, space, b);
 
-        requests.add(tpaRequest);
-
-        BukkitTask br = new BukkitRunnable() {
+        requests.add(request);
+        BukkitTask runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                requests.remove(tpaRequest);
+                requests.remove(request);
             }
         }.runTaskLaterAsynchronously(Constants.p, 2400L);
-
-        bukkitTasks.put(sn, br.getTaskId());
+        request.setRunnableid(runnable.getTaskId());
     }
 
     public static ItemStack getHead(Player player, String killed) {

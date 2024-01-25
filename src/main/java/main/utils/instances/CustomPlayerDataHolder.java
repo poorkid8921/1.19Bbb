@@ -34,8 +34,10 @@ public class CustomPlayerDataHolder {
     private int currentTagTime = 5;
     @Getter
     @Setter
-
     private boolean tagged;
+    @Getter
+    @Setter
+    private String lastReceived;
 
     public CustomPlayerDataHolder(int m,
                                   int t,

@@ -44,16 +44,12 @@ public class ArenaIO {
             int firstSectionSplit = ArrayUtils.indexOf(readBytes, SECTION_SPLIT);
             byte[] header = Arrays.copyOfRange(readBytes, 0, firstSectionSplit);
             String headerString = new String(header, StandardCharsets.US_ASCII);
-
-            String name;
-
-            name = headerString.split(",")[0];
+            String name = headerString.split(",")[0];
             int xx1 = Integer.parseInt(headerString.split(",")[1]);
             int yy1 = Integer.parseInt(headerString.split(",")[2]);
             int zz1 = Integer.parseInt(headerString.split(",")[3]);
 
             World w = Bukkit.getWorld("world");
-
             Location corner1 = new Location(w, xx1, yy1, zz1);
 
             int xx2 = Integer.parseInt(headerString.split(",")[4]);
@@ -61,15 +57,12 @@ public class ArenaIO {
             int zz2 = Integer.parseInt(headerString.split(",")[6]);
 
             Location corner2 = new Location(w, xx2, yy2, zz2);
-
             int keySectionSplit = ArrayUtils.indexOf(readBytes, SECTION_SPLIT, firstSectionSplit + 1);
             byte[] keyBytes = Arrays.copyOfRange(readBytes, firstSectionSplit + 1, keySectionSplit);
-
             List<Material> blockDataSet = new ArrayList<>();
 
             for (byte[] key : Utils.split(new byte[]{KEY_SPLIT}, keyBytes)) {
                 String blockData = new String(key, StandardCharsets.US_ASCII);
-
                 try {
                     blockDataSet.add(Material.valueOf(blockData));
                 } catch (IllegalArgumentException e) {
@@ -84,7 +77,6 @@ public class ArenaIO {
 
             Arena arena = new Arena(name, corner1, corner2);
             arena.setKeys(blockDataSet);
-
             byte[] blockBytes = Arrays.copyOfRange(readBytes, keySectionSplit + 1, readBytes.length);
 
             ByteBuffer bb = ByteBuffer.allocate(2);
@@ -92,7 +84,6 @@ public class ArenaIO {
             bb.put(blockBytes[1]);
             short sectionCount = bb.getShort(0);
             short currentSection = 0;
-
             blockBytes = Arrays.copyOfRange(blockBytes, 2, blockBytes.length);
 
             ByteBuffer buffer = ByteBuffer.allocate(blockBytes.length);
@@ -109,7 +100,6 @@ public class ArenaIO {
                 Location start = new Location(corner1.getWorld(), x1, y1, z1);
                 Location end = new Location(corner1.getWorld(), x2, y2, z2);
                 int left = buffer.getInt();
-
                 int numLeft = left / 2;
 
                 short[] amounts = new short[numLeft];
@@ -120,8 +110,7 @@ public class ArenaIO {
                     types[i] = buffer.getShort();
                 }
 
-                Section section = new Section(arena, currentSection, start, end, types, amounts);
-                arena.getSections().add(section);
+                arena.getSections().add(new Section(arena, currentSection, start, end, types, amounts));
                 currentSection++;
             }
 

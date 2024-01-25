@@ -48,8 +48,6 @@ commands:
   exbal:
     uasge: /<command>
     aliases: exbalance
-  event:
-    usage: /<command>
   warp:
     usage: /<command>
   setwarp:

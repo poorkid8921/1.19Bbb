@@ -43,6 +43,7 @@ public class TpDeny implements CommandExecutor {
         recipient.sendMessage(MAIN_COLOR + user.getDisplayName() + " §7denied your teleportation request.");
         sender.sendMessage("§7You have successfully deny " + MAIN_COLOR + translate(recipient.getDisplayName()) + "§7's request.");
         Constants.requests.remove(request);
+        Bukkit.getScheduler().cancelTask(request.getRunnableid());
         return true;
     }
 }

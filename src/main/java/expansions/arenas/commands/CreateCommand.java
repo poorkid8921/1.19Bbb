@@ -1,14 +1,16 @@
 package expansions.arenas.commands;
 
+import com.google.common.collect.ImmutableList;
 import expansions.arenas.Arena;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class CreateCommand implements CommandExecutor {
+public class CreateCommand implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.isOp()) {
@@ -24,5 +26,10 @@ public class CreateCommand implements CommandExecutor {
                     (Player) sender);
         }
         return true;
+    }
+
+    @Override
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }
