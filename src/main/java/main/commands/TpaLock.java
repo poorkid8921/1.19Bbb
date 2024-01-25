@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,11 +18,11 @@ public class TpaLock implements CommandExecutor, TabExecutor {
         String p = sender.getName();
         CustomPlayerDataHolder T = playerData.get(p);
         if (T.getTptoggle() == 0) {
-            sender.sendMessage(TPALOCK1);
+            sender.sendMessage("§7You will no longer receive tp requests from players.");
             T.setTptoggle(1);
             tpa.remove(p);
         } else {
-            sender.sendMessage(TPALOCK);
+            sender.sendMessage("§7You can receive tp requests again.");
             T.setTptoggle(0);
             tpa.add(p);
         }
@@ -29,7 +30,7 @@ public class TpaLock implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

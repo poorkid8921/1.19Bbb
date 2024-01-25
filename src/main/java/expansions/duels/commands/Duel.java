@@ -63,32 +63,32 @@ public class Duel implements CommandExecutor, TabExecutor {
         int check = getDuelsAvailable(d);
 
         if (check == 32) {
-            sender.sendMessage(Constants.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage("§7There are no open arenas yet.");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            sender.sendMessage(Constants.EXCEPTION_DUEL_TARGET_OFF);
+            sender.sendMessage("§7You can't send duel requests to offline players.");
             return true;
         }
 
         if (recipient.getName().equalsIgnoreCase(sender.getName())) {
-            sender.sendMessage(Constants.EXCEPTION_DUEL_SELF);
+            sender.sendMessage("§7You can't duel yourself.");
             return true;
         }
 
         DuelHolder tpr = getDUELrequest(recipient.getName());
 
         if (Constants.teams.containsKey(recipient.getName())) {
-            sender.sendMessage(Constants.EXCEPTION_ALREADY_IN_DUEL);
+            sender.sendMessage("§7You can't duel yourself.");
             return true;
         }
 
         if (tpr != null) {
             if (tpr.getSender().equals(sender)) {
-                sender.sendMessage(Constants.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage("§7You already have an ongoing request to this player.");
                 return true;
             }
         }

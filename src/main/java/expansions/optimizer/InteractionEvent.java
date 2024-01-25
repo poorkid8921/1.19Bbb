@@ -6,10 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import main.utils.Constants;
-import org.bukkit.Bukkit;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -28,35 +25,35 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
 
         WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
         if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.INTERACT_AT) return;
+
         Player player = (Player) event.getPlayer();
+        if (player.getGameMode() == GameMode.SPECTATOR) return;
 
-        if (player.getPing() < 50)
-            return;
+        ItemStack item;
+        if (wrapper.getHand() == InteractionHand.MAIN_HAND) item = player.getInventory().getItemInMainHand();
+        else item = player.getInventory().getItemInOffHand();
 
-        ItemStack item = wrapper.getHand() == InteractionHand.MAIN_HAND ? player.getInventory().getItemInMainHand() :
-                player.getInventory().getItemInOffHand();
-        if (item.getType() != Material.END_CRYSTAL)
-            return;
+        if (item.getType() != Material.END_CRYSTAL) return;
 
-        Location loc = crystalsToBeOptimized.get(wrapper.getEntityId());
-        if (loc == null) return;
+        int entityId = wrapper.getEntityId();
+        Location entity = crystalsToBeOptimized.get(entityId);
+        if (entity == null) return;
 
-        Location blockLoc = loc.clone().subtract(0.5, 1.0, 0.5);
-        RayTraceResult result = player.rayTraceBlocks(4.5,
+        Location blockLoc = entity.clone().subtract(0.5, 1.0, 0.5);
+        RayTraceResult result = player.rayTraceBlocks(player.getGameMode() == GameMode.CREATIVE ? 5.0 : 4.5,
                 FluidCollisionMode.NEVER);
-
         if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
         if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
 
         Bukkit.getScheduler().runTask(Constants.p, () -> {
-            Location clonedLoc = loc.clone().subtract(0.5, 0.0, 0.5);
+            Location clonedLoc = entity.clone().subtract(0.5, 0.0, 0.5);
             if (clonedLoc.getBlock().getType() != Material.AIR) return;
 
             clonedLoc.add(0.5, 1.0, 0.5);
             List<Entity> nearbyEntities = new ArrayList<>(clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5));
 
             if (nearbyEntities.isEmpty()) {
-                loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
+                entity.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, c -> c.setShowingBottom(false));
                 item.setAmount(item.getAmount() - 1);
             }
         });

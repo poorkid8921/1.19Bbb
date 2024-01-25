@@ -1,5 +1,7 @@
 package expansions.arenas;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -21,10 +23,10 @@ import static expansions.arenas.ArenaIO.KEY_SPLIT;
 import static expansions.arenas.ArenaIO.SECTION_SPLIT;
 
 public class Arena {
-    public static Map<String, Arena> arenas = new HashMap<>();
+    public static Map<String, Arena> arenas = new Object2ObjectOpenHashMap<>();
     private final Location c1;
     private final Location c2;
-    private final List<Section> sections = new ArrayList<>();
+    private final ObjectArrayList<Section> sections = ObjectArrayList.of();
     private final String name;
     private Material[] keys;
 
@@ -116,8 +118,8 @@ public class Arena {
             x = !x;
         }
 
-        List<Location> sectionStarts = new ArrayList<>();
-        List<Location> sectionEnds = new ArrayList<>();
+        ObjectArrayList<Location> sectionStarts = ObjectArrayList.of();
+        ObjectArrayList<Location> sectionEnds = ObjectArrayList.of();
 
         for (int sx = 0; sx < sectionsX; sx++) {
             for (int zx = 0; zx < sectionsZ; zx++) {
@@ -143,7 +145,7 @@ public class Arena {
         data.arena = arena;
         data.sectionStarts = sectionStarts;
         data.sectionEnds = sectionEnds;
-        data.sections = new ArrayList<>();
+        data.sections = ObjectArrayList.of();
         data.maxBlocks = width * length * height;
 
         Runnable runnable = new BukkitRunnable() {
@@ -217,7 +219,7 @@ public class Arena {
         int width = end.getBlockX() - start.getBlockX() + 1;
         int height = end.getBlockY() - start.getBlockY() + 1;
         int length = end.getBlockZ() - start.getBlockZ() + 1;
-        List<Material> keyList = new ArrayList<>(Arrays.asList(data.arena.keys));
+        ObjectArrayList<Material> keyList = ObjectArrayList.of(data.arena.keys);
 
         for (int i = 0; i < amount; i++) {
             Location loc;
@@ -248,7 +250,6 @@ public class Arena {
                 height = end.getBlockY() - start.getBlockY() + 1;
                 length = end.getBlockZ() - start.getBlockZ() + 1;
                 data.index = 0;
-
                 continue;
             }
 
@@ -292,7 +293,7 @@ public class Arena {
     }
 
     protected void addKeys(Collection<Material> keys) {
-        List<Material> keyList = new ArrayList<>(Arrays.asList(this.keys));
+        ObjectArrayList<Material> keyList = ObjectArrayList.of(this.keys);
         for (Material data : keys) {
             if (!keyList.contains(data)) keyList.add(data);
         }
@@ -312,7 +313,7 @@ public class Arena {
         loopyReset(data);
     }
 
-    public boolean loopyReset(ResetLoopinData data) {
+    public void loopyReset(ResetLoopinData data) {
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
@@ -335,10 +336,9 @@ public class Arena {
         }
 
         if (data.sections.size() == 0)
-            return true;
+            return;
 
         Bukkit.getScheduler().runTaskLater(Constants.p, () -> loopyReset(data), 1L);
-        return false;
     }
 
     public Material[] getKeys() {
@@ -361,21 +361,21 @@ public class Arena {
         return c2;
     }
 
-    public List<Section> getSections() {
+    public ObjectArrayList<Section> getSections() {
         return sections;
     }
 
     private static class CreationLoopinData {
-        List<Section> sections;
-        List<Location> sectionStarts, sectionEnds;
+        ObjectArrayList<Section> sections;
+        ObjectArrayList<Location> sectionStarts, sectionEnds;
         int index, totalBlocks, maxBlocks;
         Arena arena;
         short[] blockAmounts, blockTypes = new short[0];
     }
 
     public static class ResetLoopinData {
-        public Map<Integer, Integer> sections = new HashMap<>();
-        public List<Integer> sectionIDs = new ArrayList<>();
+        public Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
+        public ObjectArrayList<Integer> sectionIDs = ObjectArrayList.of();
         public int speed;
     }
 }

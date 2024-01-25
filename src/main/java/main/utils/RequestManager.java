@@ -24,7 +24,6 @@ import static main.utils.DuelUtils.getDuelFormatted;
 @SuppressWarnings("deprecation")
 public class RequestManager {
     public static ObjectArrayList<TpaRequest> tpa = new ObjectArrayList<>();
-    public static Map<String, Integer> bukkitTasks = new Object2ObjectOpenHashMap<>();
     static TextComponent space = new TextComponent("  ");
     static TextComponent duelType2 = new TextComponent(" §7with ");
     static TextComponent tc = new TextComponent(" §7has requested that you duel them in ");
@@ -66,17 +65,16 @@ public class RequestManager {
                 a,
                 space,
                 b);
-        TpaRequest tpaRequest = new TpaRequest(sn, receiver.getName(), tpahere);
-        tpa.add(tpaRequest);
+        TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere);
+        tpa.add(request);
 
-        BukkitTask br = new BukkitRunnable() {
+        BukkitTask runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                tpa.remove(tpaRequest);
+                tpa.remove(request);
             }
         }.runTaskLaterAsynchronously(Constants.p, 2400L);
-
-        bukkitTasks.put(sn, br.getTaskId());
+        request.setRunnableid(runnable.getTaskId());
     }
 
     public static DuelHolder getDUELrequest(String user) {

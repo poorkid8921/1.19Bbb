@@ -12,13 +12,13 @@ public class Teleport implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.hasPermission("has.staff")) {
             if (args.length < 1) {
-                sender.sendMessage(Constants.EXCEPTION_NO_ARGS_TELEPORT);
+                sender.sendMessage("§7You must specify a player");
                 return true;
             }
 
             Player p = Bukkit.getPlayer(args[0]);
             if (p == null) {
-                sender.sendMessage(Constants.EXCEPTION_NO_ARGS_TELEPORT);
+                sender.sendMessage("§7You must specify a player");
                 return true;
             }
 

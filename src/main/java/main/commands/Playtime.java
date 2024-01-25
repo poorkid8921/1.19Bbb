@@ -22,57 +22,68 @@ public class Playtime implements CommandExecutor {
             }
 
             StringBuilder strb = new StringBuilder();
-            long stat = p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
-
+            int seconds = p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
             int i = 0;
-            int days = (int) TimeUnit.SECONDS.toDays(stat);
-            if (days != 0) {
+            int days = seconds / (86400);
+            if (days > 0) {
                 i++;
                 strb.append(days).append(" ").append(days > 1 ? "days" : "day");
             }
 
-            long hours = TimeUnit.SECONDS.toHours(stat) - (days * 24L);
-            if (hours != 0) {
+            seconds %= 86400;
+            long hours = seconds / 3600;
+            if (hours > 0) {
                 i++;
                 strb.append(strb.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
                         " " + hours + " " + (hours > 1 ? "hours " : "hour "));
             }
 
-            long minutes = TimeUnit.SECONDS.toSeconds(stat) -
-                    (TimeUnit.SECONDS.toMinutes(stat) * 60);
-            if (minutes != 0) {
+            long minutes = (seconds / 60) % 60;
+            if (minutes > 0) {
+                i++;
+                strb.append(strb.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
+                        " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
+            }
+
+            seconds %= 60;
+            if (seconds > 0) {
                 if (i > 0)
                     strb.append(" ");
-                strb.append(minutes).append(" ").append(minutes > 1 ? "minutes" : "minute");
+                strb.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
             }
             sender.sendMessage(MAIN_COLOR + p.getName() + "'s §7playtime is " + MAIN_COLOR + strb);
             return true;
         }
         StringBuilder strb = new StringBuilder();
-        long stat = ((Player) sender).getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
-
+        int seconds = ((Player) sender).getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
         int i = 0;
-        int days = (int) TimeUnit.SECONDS.toDays(stat);
-        if (days != 0) {
+        int days = seconds / (86400);
+        if (days > 0) {
             i++;
             strb.append(days).append(" ").append(days > 1 ? "days" : "day");
         }
 
-        long hours = TimeUnit.SECONDS.toHours(stat) - (days * 24L);
-        if (hours != 0) {
+        seconds %= 86400;
+        long hours = seconds / 3600;
+        if (hours > 0) {
             i++;
             strb.append(strb.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
                     " " + hours + " " + (hours > 1 ? "hours " : "hour "));
         }
 
-        long minutes = TimeUnit.SECONDS.toSeconds(stat) -
-                (TimeUnit.SECONDS.toMinutes(stat) * 60);
-        if (minutes != 0) {
+        long minutes = (seconds / 60) % 60;
+        if (minutes > 0) {
+            i++;
+            strb.append(strb.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
+                    " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
+        }
+
+        seconds %= 60;
+        if (seconds > 0) {
             if (i > 0)
                 strb.append(" ");
-            strb.append(minutes).append(" ").append(minutes > 1 ? "minutes" : "minute");
-        }
-        sender.sendMessage("§7Your playtime is" + MAIN_COLOR + strb);
+            strb.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        }        sender.sendMessage("§7Your playtime is" + MAIN_COLOR + strb);
         return true;
     }
 }

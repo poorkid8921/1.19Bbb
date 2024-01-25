@@ -15,7 +15,7 @@ public class Report implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Constants.EXCEPTION_REPORT_SPECIFY_PLAYER);
+            sender.sendMessage("§7You must specify who you want to report.");
             return true;
         }
 

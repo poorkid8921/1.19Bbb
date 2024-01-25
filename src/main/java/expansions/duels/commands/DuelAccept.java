@@ -20,7 +20,7 @@ import static main.utils.RequestManager.getDUELrequest;
 
 public class DuelAccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String msg = Constants.EXCEPTION_NO_DUEL_REQ;
+        String msg = "§7You got no active duel request.";
         DuelHolder request;
         String n = "";
         String un = sender.getName();
@@ -36,8 +36,7 @@ public class DuelAccept implements CommandExecutor {
             } else
                 n = p.getName();
             request = getDUELrequest(un, n);
-            msg = Constants.EXCEPTION_NO_ACTIVE_DUELREQ +
-                    MAIN_COLOR +
+            msg = "§7You got no active duel request from " + MAIN_COLOR +
                     args[0] +
                     ".";
         }
@@ -46,7 +45,7 @@ public class DuelAccept implements CommandExecutor {
             sender.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            sender.sendMessage(Constants.EXCEPTION_PLAYER_DUELSELF);
+            sender.sendMessage("§7You can't duel yourself.");
             return true;
         }
 
@@ -56,7 +55,7 @@ public class DuelAccept implements CommandExecutor {
         int check = getDuelsAvailable(request.getType());
         if (check == 32) {
             Constants.duel.remove(request);
-            sender.sendMessage(Constants.EXCEPTION_NO_ARENAS_OPEN);
+            sender.sendMessage("§7There are no open arenas yet.");
             return true;
         }
 

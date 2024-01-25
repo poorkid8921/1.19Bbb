@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static main.utils.Constants.playerData;
 import static main.utils.Utils.tabCompleteFilter;
 
 public class Msg implements CommandExecutor, TabCompleter {
@@ -46,8 +47,8 @@ public class Msg implements CommandExecutor, TabCompleter {
         sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
         target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
         String pn = sender.getName();
-        Constants.lastReceived.put(pn, tn);
-        Constants.lastReceived.put(tn, pn);
+        playerData.get(pn).setLastReceived(tn);
+        playerData.get(tn).setLastReceived(pn);
         return true;
     }
 

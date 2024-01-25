@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import expansions.guis.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,7 +19,7 @@ public class Killeffect implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,11 +18,11 @@ public class MsgLock implements CommandExecutor, TabExecutor {
         String p = sender.getName();
         CustomPlayerDataHolder M = playerData.get(p);
         if (M.getMtoggle() == 0) {
-            sender.sendMessage(MSGLOCK1);
+            sender.sendMessage("§7You will no longer receive messages from players.");
             M.setMtoggle(1);
             msg.remove(p);
         } else {
-            sender.sendMessage(MSGLOCK);
+            sender.sendMessage("§7You can receive messages from players again.");
             M.setMtoggle(0);
             msg.add(p);
         }
@@ -29,7 +30,7 @@ public class MsgLock implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

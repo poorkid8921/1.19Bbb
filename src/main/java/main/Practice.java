@@ -9,14 +9,16 @@ import ac.utils.lists.HookedListWrapper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.util.reflection.Reflection;
 import com.google.common.collect.ImmutableList;
-import expansions.AntiCheat;
+import expansions.moderation.AntiAutoTotem;
 import expansions.arenas.Arena;
 import expansions.arenas.ArenaIO;
-import expansions.arenas.commands.CreateCommand;
+import expansions.arenas.commands.aCreate;
 import expansions.duels.commands.Duel;
 import expansions.duels.commands.DuelAccept;
 import expansions.duels.commands.DuelDeny;
 import expansions.duels.commands.Event;
+import expansions.kits.commands.Kit;
+import expansions.kits.commands.KitClaim;
 import expansions.moderation.*;
 import expansions.optimizer.AnimationEvent;
 import expansions.optimizer.InteractionEvent;
@@ -26,6 +28,7 @@ import expansions.warps.Flat;
 import expansions.warps.Nethpot;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
+import main.commands.List;
 import main.commands.*;
 import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
@@ -40,6 +43,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import sun.misc.Unsafe;
@@ -47,10 +51,7 @@ import sun.misc.Unsafe;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 import static main.utils.Constants.*;
 
@@ -58,10 +59,14 @@ public class Practice extends JavaPlugin {
     public static final PlayerDataManager PDM = new PlayerDataManager();
     public static final TickManager TM = new TickManager();
     public static FileConfiguration config;
+    public static FileConfiguration kitroomconfig;
+    public static FileConfiguration kitsconfig;
     public static File dataFolder;
     public static World d;
     public static World d0;
     private static File dataFile;
+    private static File kitsdataFile;
+    private static File kitroomdataFile;
     int flatstr = 1;
     int ticked = 0;
     boolean alreadySavingData = false;
@@ -70,6 +75,36 @@ public class Practice extends JavaPlugin {
         for (GrimPlayer player : PDM.getEntries()) {
             if (player.disableGrim) continue;
             player.checkManager.getEntityReplication().onEndOfTickEvent();
+        }
+    }
+
+    private static void restoreKitMap() {
+        try {
+            for (String key : kitsconfig.getConfigurationSection("data").getKeys(false)) {
+                kitMap.put(key, new HashMap<>());
+
+                for (String key2 : kitsconfig.getConfigurationSection("data." + key).getKeys(false)) {
+                    if (key2.equals("items"))
+                        kitMap.get(key).put(key2, (ImmutableList.of(kitsconfig.get("data." + key + "." + key2)).toArray(new ItemStack[0])));
+                    else
+                        switch (key2) {
+                            case "name", "player", "UUID", "public" ->
+                                    kitMap.get(key).put(key2, kitsconfig.get("data." + key + "." + key2).toString());
+                        }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void restoreKitRoom() {
+        for (int i = 1; i <= 5; i = i + 1) {
+            try {
+                ItemStack[] content = (ItemStack[]) ((java.util.List) kitroomconfig.get("data." + i)).toArray(new ItemStack[0]);
+                kitRoomMap.put(i, content);
+            } catch (Exception e) {
+                kitRoomMap.put(i, new ItemStack[45]);
+            }
         }
     }
 
@@ -105,8 +140,7 @@ public class Practice extends JavaPlugin {
             unsafeField.setAccessible(true);
             Unsafe unsafe = (Unsafe) unsafeField.get(null);
             unsafe.putObject(connection, unsafe.objectFieldOffset(connectionsList), wrapper);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
     }
 
@@ -128,7 +162,6 @@ public class Practice extends JavaPlugin {
         this.getCommand("event").setExecutor(new Event());
         this.getCommand("msglock").setExecutor(new MsgLock());
         this.getCommand("tpalock").setExecutor(new TpaLock());
-        this.getCommand("rtp").setExecutor(new RTP());
         this.getCommand("irename").setExecutor(new ItemRename());
         this.getCommand("clear").setExecutor(new Clear());
         this.getCommand("stats").setExecutor(new Stats());
@@ -138,7 +171,7 @@ public class Practice extends JavaPlugin {
         this.getCommand("nethpot").setExecutor(new Nethpot());
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
-        this.getCommand("acreate").setExecutor(new CreateCommand());
+        this.getCommand("acreate").setExecutor(new aCreate());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
         this.getCommand("gmsp").setExecutor(new GMsp());
@@ -154,26 +187,16 @@ public class Practice extends JavaPlugin {
         this.getCommand("tpa").setTabCompleter(tabCompleter);
         this.getCommand("tpaccept").setTabCompleter(tabCompleter);
         this.getCommand("tpahere").setTabCompleter(tabCompleter);
-    }
 
-    public void setupWarps() {
-        File arenasFolder = new File(dataFolder, "arenas");
-        if (!arenasFolder.exists()) arenasFolder.mkdirs();
-        Arena.arenas.clear();
-        Arrays.stream(arenasFolder.listFiles()).parallel().forEach(result -> {
-            try {
-                Arena arena = ArenaIO.loadArena(result);
-                if (arena != null) Arena.arenas.put(arena.getName(), arena);
-            } catch (Exception ignored) {
-            }
-        });
-        File warpsFolder = new File(dataFolder, "warps");
-        if (!warpsFolder.exists()) warpsFolder.mkdirs();
+        KitClaim claim = new KitClaim();
+        this.getCommand("ckit1").setExecutor(claim);
+        this.getCommand("ckit2").setExecutor(claim);
+        this.getCommand("ckit3").setExecutor(claim);
+        this.getCommand("ckit").setExecutor(new Kit());
     }
 
     void saveData() {
         if (alreadySavingData) return;
-
         alreadySavingData = true;
         config.set("r", null);
         if (!playerData.isEmpty()) {
@@ -191,7 +214,6 @@ public class Practice extends JavaPlugin {
                 config.set("r." + key + ".8", value.getKills());
             }
         }
-
         try {
             config.save(dataFile);
         } catch (IOException ignored) {
@@ -218,7 +240,7 @@ public class Practice extends JavaPlugin {
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().getEventManager().registerListener(new AntiAutoTotem());
         PacketEvents.getAPI().init();
     }
 
@@ -234,11 +256,55 @@ public class Practice extends JavaPlugin {
         }, 1, 20);
     }
 
+    private void saveKitMap() {
+        kitsconfig.set("data", null);
+        if (!kitMap.isEmpty()) {
+            for (Map.Entry<String, Map<String, Object>> stringHashMapEntry : kitMap.entrySet()) {
+                for (Object o : ((HashMap) ((Map.Entry<String, HashMap<String, Object>>) (Map.Entry) stringHashMapEntry).getValue()).entrySet()) {
+                    Map.Entry<String, Object> data = (Map.Entry) o;
+                    kitsconfig.set("data." + ((Map.Entry<String, HashMap<String, Object>>) (Map.Entry) stringHashMapEntry).getKey() + "." + data.getKey(), data.getValue());
+                }
+            }
+        }
+        try {
+            kitsconfig.save(kitsdataFile);
+        } catch (IOException ignored) {
+
+        }
+    }
+
+    private void saveKitRoom() {
+        if (!kitRoomMap.isEmpty()) {
+            for (Map.Entry<Integer, ItemStack[]> integerEntry : kitRoomMap.entrySet()) {
+                kitroomconfig.set("data." + integerEntry.getKey().toString(), integerEntry.getValue());
+            }
+        }
+        try {
+            kitroomconfig.save(kitroomdataFile);
+        } catch (IOException ignored) {
+
+        }
+    }
+
+    private void setupKits() {
+        if (kitsconfig.contains("data"))
+            restoreKitMap();
+        restoreKitRoom();
+    }
+
     @Override
     public void onEnable() {
         dataFolder = getDataFolder();
+
+        kitroomdataFile = new File(dataFolder, "kitroom.yml");
+        kitroomconfig = YamlConfiguration.loadConfiguration(kitroomdataFile);
+
+        kitsdataFile = new File(dataFolder, "kits.yml");
+        kitsconfig = YamlConfiguration.loadConfiguration(kitsdataFile);
+
         dataFile = new File(dataFolder, "data.yml");
         config = YamlConfiguration.loadConfiguration(dataFile);
+
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         p = this;
 
@@ -249,6 +315,7 @@ public class Practice extends JavaPlugin {
 
                 public void run() {
                     if (i++ == 101) {
+                        getCommand("rtp").setExecutor(new RTP());
                         Bukkit.getLogger().warning("Finished RTP population.");
                         this.cancel();
                         return;
@@ -260,8 +327,9 @@ public class Practice extends JavaPlugin {
             Arena flat = Arena.arenas.get("flat");
             Arena ffa = Arena.arenas.get("ffa");
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                d.getEntities().stream().filter(result -> result instanceof EnderCrystal).forEach(Entity::remove);
-
+                for (Entity ent : d.getEntities()) {
+                    if (ent instanceof EnderCrystal) ent.remove();
+                }
                 ticked++;
                 if (ticked == 3) {
                     if (flatstr++ == 6) flatstr = 1;
@@ -289,21 +357,31 @@ public class Practice extends JavaPlugin {
                     });
                     saveData();
                 } else Arena.arenas.get("flat").reset(100000);
+                for (String msg : ImmutableList.of("§7-------------- | CatSMP | --------------", Constants.BC_KITS, "§7--------------------------------------"))
+                    Bukkit.broadcastMessage(msg);
             }, 0L, 2400L);
         }, 2400L);
         registerCommands();
-        setupWarps();
+        Arrays.stream(new File(dataFolder, "arenas").listFiles()).forEach(result -> {
+            try {
+                Arena arena = ArenaIO.loadArena(result);
+                if (arena != null) Arena.arenas.put(arena.getName(), arena);
+            } catch (Exception ignored) {
+            }
+        });
+
         expansions.guis.Utils.init();
         setupAC();
+        setupKits();
         registerPacketListeners();
         Constants.init();
     }
 
     @Override
     public void onDisable() {
+        Bukkit.getLogger().warning(playerData.toString());
         PacketEvents.getAPI().terminate();
-        for (File[] file : ImmutableList.of(new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles(),
-                new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles())) {
+        for (File[] file : ImmutableList.of(new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles(), new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles())) {
             for (File value : file) {
                 value.delete();
             }
@@ -328,5 +406,7 @@ public class Practice extends JavaPlugin {
         }
         Bukkit.getLogger().warning("Successfully purged " + accountsRemoved + " accounts & " + regionsRemoved + " regions.");
         saveData();
+        saveKitRoom();
+        saveKitMap();
     }
 }

@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import main.Practice;
 import main.utils.Constants;
 import org.bukkit.Bukkit;
@@ -21,13 +22,13 @@ import static main.utils.Constants.MAIN_COLOR;
 public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Constants.EXCEPTION_NO_ARGS_WARP);
+            sender.sendMessage("§7You must specify a warp.");
             return true;
         }
 
         File f = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
         if (!f.exists()) {
-            sender.sendMessage(Constants.EXCEPTION_DOESNT_EXIST_WARP);
+            sender.sendMessage("§7The specified warp doesn't exist.");
             return true;
         }
 
@@ -44,7 +45,7 @@ public class Warp implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

@@ -21,7 +21,7 @@ public class Tpa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Constants.WHO_TPA);
+            sender.sendMessage("§7You must specify who you want to teleport to.");
             return true;
         }
 
@@ -40,10 +40,9 @@ public class Tpa implements CommandExecutor, TabExecutor {
         }
 
         TpaRequest tpr = getTPArequest(ren);
-
         if (tpr != null) {
             if (tpr.getSenderF().equals(sn)) {
-                sender.sendMessage(Constants.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage("§7You already have an ongoing request to this player.");
                 return true;
             }
         }
@@ -58,7 +57,7 @@ public class Tpa implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         return args.length < 1 ?
                 tabCompleteFilter(Constants.tpa) :
                 tabCompleteFilter(Constants.tpa, args[0].toLowerCase());

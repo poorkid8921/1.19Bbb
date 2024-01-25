@@ -16,7 +16,7 @@ import static main.utils.Utils.translate;
 @SuppressWarnings("deprecation")
 public class DuelDeny implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String msg = Constants.EXCEPTION_NO_DUEL_REQ;
+        String msg = "§7You got no active duel request.";
         DuelHolder request;
 
         if (args.length == 0) {
@@ -25,7 +25,7 @@ public class DuelDeny implements CommandExecutor {
             String n = args[0];
             Player p = Bukkit.getPlayer(n);
             if (p == null) {
-                sender.sendMessage(Constants.EXCEPTION_NO_ACTIVE_DUELREQ + MAIN_COLOR + args[0] + ".");
+                sender.sendMessage("§7You got no active duel request from " + MAIN_COLOR + args[0] + ".");
                 return true;
             } else n = p.getName();
             request = getDUELrequest(sender.getName(), n);

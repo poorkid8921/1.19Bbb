@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -100,7 +101,7 @@ public class Help implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        return List.of("1", "2", "3");
+        public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of("1", "2", "3");
     }
 }

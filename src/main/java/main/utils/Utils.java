@@ -1,6 +1,7 @@
 package main.utils;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
@@ -27,14 +28,16 @@ public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
-        og.removeIf(s -> s.toLowerCase().startsWith(arg));
-        og.sort(String::compareToIgnoreCase);
-        return og;
+        ObjectArrayList<String> og2 = og.clone();
+        og2.removeIf(s -> !s.toLowerCase().startsWith(arg));
+        og2.sort(String::compareToIgnoreCase);
+        return og2;
     }
 
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og) {
-        og.sort(String::compareToIgnoreCase);
-        return og;
+        ObjectArrayList<String> og2 = og.clone();
+        og2.sort(String::compareToIgnoreCase);
+        return og2;
     }
 
     public static String translate(String text) {

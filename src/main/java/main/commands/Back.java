@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Instances.WorldLocationHolder;
 import org.bukkit.Location;
@@ -32,7 +33,7 @@ public class Back implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

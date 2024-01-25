@@ -16,21 +16,21 @@ public class Tpahere implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(Constants.WHO_TPA);
+            sender.sendMessage("§7You must specify who you want to teleport to.");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
 
         if (recipient == null) {
-            sender.sendMessage(Constants.EXCEPTION_PLAYER_OFFLINETPA);
+            sender.sendMessage("§7You can't teleport to offline players.");
             return true;
         }
 
         String ren = recipient.getName();
         String sn = sender.getName();
         if (ren.equals(sn)) {
-            sender.sendMessage(Constants.EXCEPTION_PLAYER_TPSELF);
+            sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
@@ -38,7 +38,7 @@ public class Tpahere implements CommandExecutor {
 
         if (tpr != null) {
             if (tpr.getSenderF().equals(sn)) {
-                sender.sendMessage(Constants.GLOBAL_EXCEPTION_ALREADY_REQ);
+                sender.sendMessage("§7You already have an ongoing request to this player.");
                 return true;
             }
         }

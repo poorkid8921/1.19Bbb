@@ -51,18 +51,13 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private boolean tagged;
-    private ArrayList<Long> windowQuitTime;
-    private ArrayList<Long> windowOpenTime;
+    private final ArrayList<Long> windowQuitTime = new ArrayList<>();
+    private final ArrayList<Long> windowOpenTime = new ArrayList<>();
+    @Getter
+    @Setter
+    private String lastReceived;
 
-    public CustomPlayerDataHolder(int wins,
-                                  int losses,
-                                  int c,
-                                  int m,
-                                  int t,
-                                  int z,
-                                  int elo,
-                                  int deaths,
-                                  int kills) {
+    public CustomPlayerDataHolder(int wins, int losses, int c, int m, int t, int z, int elo, int deaths, int kills) {
         this.wins = wins;
         this.losses = losses;
         this.money = z;
@@ -79,7 +74,7 @@ public class CustomPlayerDataHolder {
     }
 
     public ArrayList<Long> windowOpenTime() {
-        return windowQuitTime;
+        return windowOpenTime;
     }
 
     public void setupCombatRunnable(Player player) {

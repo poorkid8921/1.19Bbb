@@ -20,9 +20,9 @@ public class Event implements CommandExecutor {
 
         TextComponent winner = new TextComponent("» " + (args[4].equals("y") ? "ɴᴏʙᴏᴅʏ" : args[5]));
         winner.setColor(ChatColor.of("#fc282f"));
-        sender.sendMessage(Constants.DUELS_RESULTS, Constants.DUELS_DELIM);
-        sender.sendMessage(Constants.DUELS_WINNER, winner);
-        sender.sendMessage("§7sᴄᴏʀᴇ " + MAIN_COLOR + "» " + Integer.parseInt(args[1]) + " §7- " + DUELS_BLUE_COLOR + Integer.parseInt(args[2]), Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» " + args[3]), Constants.DUELS_DELIM);
+        sender.sendMessage("§7ᴅᴜᴇʟ ʀᴇsᴜʟᴛs", "§7------------------------");
+        sender.sendMessage(new TextComponent("§7ᴡɪɴɴᴇʀ "), winner);
+        sender.sendMessage("§7sᴄᴏʀᴇ " + MAIN_COLOR + "» " + Integer.parseInt(args[1]) + " §7- " + DUELS_BLUE_COLOR + Integer.parseInt(args[2]), Utils.translate("§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» " + args[3]), "§7------------------------");
         Constants.valid.remove(pn);
         return true;
     }

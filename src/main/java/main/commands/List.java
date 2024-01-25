@@ -1,5 +1,6 @@
 package main.commands;
 
+import com.google.common.collect.ImmutableList;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -23,7 +24,7 @@ public class List implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return java.util.List.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return ImmutableList.of();
     }
 }

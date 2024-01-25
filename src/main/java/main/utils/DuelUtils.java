@@ -1,7 +1,9 @@
 package main.utils;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.Practice;
 import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.Instances.DuelHolder;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -21,10 +23,9 @@ public class DuelUtils {
     static SimpleDateFormat MM_HH = new SimpleDateFormat("mm:ss", Locale.ENGLISH);
 
     public static int getDuelsAvailable(int gamemode) {
-        return Constants.duel.stream().filter(result -> result.getType() == gamemode &&
-                        result.getRounds() > 0)
-                .toList()
-                .size();
+        ObjectArrayList<DuelHolder> clone = Constants.duel.clone();
+        clone.removeIf(s -> s.getType() == gamemode && s.getRounds() > 0);
+        return clone.size();
     }
 
     public static String getDuelFormatted(int i) {

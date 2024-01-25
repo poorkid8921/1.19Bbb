@@ -1,10 +1,12 @@
 package main;
 
-import ac.utils.anticheat.update.BlockPlace;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import expansions.bungee.HandShake;
 import expansions.duels.Matchmaking;
+import expansions.kits.ItemCreator;
+import expansions.kits.KitClaimer;
+import expansions.kits.SaveEditor;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
@@ -14,8 +16,9 @@ import main.utils.Instances.RegionHolder;
 import main.utils.Instances.WorldLocationHolder;
 import main.utils.RequestManager;
 import main.utils.Utils;
-import org.bukkit.Color;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -24,11 +27,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockMultiPlaceEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -39,13 +41,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static expansions.guis.Utils.*;
 import static main.utils.Constants.tpa;
@@ -56,6 +62,137 @@ import static main.utils.RequestManager.*;
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
+
+    @EventHandler
+    private void onPlayerToggleElytra(EntityToggleGlideEvent e) {
+        Player p = (Player) e.getEntity();
+        CustomPlayerDataHolder D0 = playerData.get(p.getName());
+        if (D0.isTagged()) {
+            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void onBlockExplosion(BlockExplodeEvent e) {
+        for (Block b : e.blockList()) {
+            int x = b.getX();
+            int y = b.getY();
+            int z = b.getZ();
+            if (y != 114 || x <= -98 || x >= 92 ||
+                    z <= 268 || z >= 458)
+                continue;
+            e.blockList().clear();
+            return;
+        }
+    }
+
+    @EventHandler
+    private void onPlayerInteract(PlayerInteractEvent e) {
+        if (e.getAction() != Action.LEFT_CLICK_BLOCK)
+            return;
+
+        if (e.getClickedBlock() instanceof TrapDoor) {
+            Player p = e.getPlayer();
+            Location loc = p.getLocation();
+            double x = loc.getX();
+            double y = loc.getY();
+            double z = loc.getZ();
+            for (RegionHolder r : regions) {
+                if (r.checkX(x) ||
+                        r.checkY(y) ||
+                        r.checkZ(z))
+                    continue;
+                if (p.isOp())
+                    return;
+                p.sendMessage(EXCEPTION_INTERACTION);
+                e.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    private void onPlayerDamage(EntityDamageByEntityEvent e) {
+        if (!(e.getEntity() instanceof Player p) ||
+                !(e.getDamager() instanceof Player attacker))
+            return;
+
+        Location loc = p.getLocation();
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
+        for (RegionHolder r : regions) {
+            if (r.checkX(x) ||
+                    r.checkY(y) ||
+                    r.checkZ(z))
+                continue;
+            p.sendMessage(EXCEPTION_DAMAGE);
+            e.setCancelled(true);
+            return;
+        }
+
+        CustomPlayerDataHolder D0 = playerData.get(p.getName());
+        if (D0.isTagged())
+            D0.setTagTime(p);
+        else
+            D0.setupCombatRunnable(p);
+
+        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
+        if (D1.isTagged())
+            D1.setTagTime(attacker);
+        else
+            D1.setupCombatRunnable(attacker);
+    }
+
+    @EventHandler
+    private void onBlockBreak(BlockBreakEvent e) {
+        Location loc = e.getBlock().getLocation();
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
+        for (RegionHolder r : regions) {
+            if (r.checkX(x) ||
+                    r.checkY(y) ||
+                    r.checkZ(z))
+                continue;
+            Player p = e.getPlayer();
+            if (p.isOp())
+                return;
+            p.sendMessage(EXCEPTION_BLOCK_BREAK);
+            e.setCancelled(true);
+            return;
+        }
+    }
+
+    void handleBlockPlace(BlockPlaceEvent e) {
+        Location loc = e.getBlock().getLocation();
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
+        for (RegionHolder r : regions) {
+            if (r.checkX(x) ||
+                    r.checkY(y) ||
+                    r.checkZ(z))
+                continue;
+            Player p = e.getPlayer();
+            if (p.isOp())
+                return;
+            p.sendMessage(EXCEPTION_BLOCK_PLACE);
+            e.setCancelled(true);
+            return;
+        }
+    }
+
+    @EventHandler
+    private void onBlockPlace(BlockPlaceEvent e) {
+        handleBlockPlace(e);
+    }
+
+    @EventHandler
+    private void onBlockPlace(BlockMultiPlaceEvent e) {
+        handleBlockPlace(e);
+    }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
@@ -97,57 +234,6 @@ public class Events implements Listener {
     private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
         if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
             Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
-    }
-
-    @EventHandler
-    private void onBlockBreak(BlockBreakEvent e) {
-        Location loc = e.getBlock().getLocation();
-        double x = loc.getX();
-        double y = loc.getY();
-        double z = loc.getZ();
-        for (RegionHolder r : regions) {
-            if (r.isZinRegion(z)) {
-                if (r.isXinRegion(x) &&
-                        r.isYinRegion(y)) {
-                    Player p = e.getPlayer();
-                    if (p.isOp())
-                        return;
-                    p.sendMessage(EXCEPTION_BLOCK_BREAK);
-                    e.setCancelled(true);
-                    return;
-                }
-            }
-        }
-    }
-
-    void handleBlockPlace(BlockPlaceEvent e) {
-        Location loc = e.getBlock().getLocation();
-        double x = loc.getX();
-        double y = loc.getY();
-        double z = loc.getZ();
-        for (RegionHolder r : regions) {
-            if (r.isZinRegion(z)) {
-                if (r.isXinRegion(x) &&
-                        r.isYinRegion(y)) {
-                    Player p = e.getPlayer();
-                    if (p.isOp())
-                        return;
-                    p.sendMessage(EXCEPTION_BLOCK_PLACE);
-                    e.setCancelled(true);
-                    return;
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    private void onBlockPlace(BlockPlaceEvent e) {
-        handleBlockPlace(e);
-    }
-
-    @EventHandler
-    private void onBlockPlace(BlockMultiPlaceEvent e) {
-        handleBlockPlace(e);
     }
 
     @EventHandler
@@ -205,14 +291,18 @@ public class Events implements Listener {
         if (D0.isTagged()) {
             D0.setTagged(false);
             D0.untag();
-            e.setQuitMessage(SECOND_COLOR + "☠ " + name + " §7has combat logged");
-        } else
-            e.setQuitMessage(MAIN_COLOR + "← " + name);
+        }
+        e.setQuitMessage(MAIN_COLOR + "← " + name);
 
         RequestManager.tpa.remove(getTPArequest(name));
         duel.remove(getDUELrequest(name));
 
-        lastReceived.remove(name);
+        if (D0.getLastReceived() != null) {
+            CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
+            if (Objects.equals(D1.getLastReceived(), name))
+                D1.setLastReceived(null);
+        }
+        D0.setLastReceived(null);
         msg.remove(name);
         tpa.remove(name);
         inFlat.remove(name);
@@ -299,6 +389,127 @@ public class Events implements Listener {
                     }
                 }
             } // duels: null\dynamic
+            case 3 -> {
+                e.setCancelled(true);
+                if (slot >= 10 && 12 >= slot) {
+                    if (e.isLeftClick()) {
+                        KitClaimer.claim(p, slot - 9, false);
+                        p.closeInventory();
+                    } else
+                        expansions.guis.Utils.openKitEditor(p, String.valueOf(slot - 9));
+                } else {
+                    if (slot == 38)
+                        expansions.guis.Utils.openKitRoom(p);
+                    else if (slot == 43)
+                        expansions.guis.Utils.openPublicKits(p, 1);
+                }
+            } // kit menu
+            case 4 -> {
+                if (slot >= 45)
+                    e.setCancelled(true);
+
+                if (e.getCurrentItem() != null && e.getCurrentItem().getType().toString().contains("SIGN") && !p.isOp())
+                    e.setCancelled(true);
+
+                if (slot >= 47 && slot <= 51) {
+                    int i = Integer.parseInt(inv.second());
+                    Inventory inventory = e.getInventory();
+                    ItemStack cleanedItem = ItemCreator.disEnchant(inventory.getItem(i + 46));
+                    inventory.setItem(i + 46, cleanedItem);
+                    int newPage = slot - 46;
+                    ItemStack enchantedItem = ItemCreator.enchant(e.getCurrentItem());
+                    inventory.setItem(slot, enchantedItem);
+                    for (i = 0; i <= 44; ++i) {
+                        inventory.setItem(i, ((ItemStack[]) kitRoomMap.get(newPage))[i]);
+                    }
+                    inInventory.put(pn, Pair.of(4, String.valueOf(newPage)));
+                } else if (slot == 53) {
+                    Inventory inventory = e.getInventory();
+                    for (int i = 0; i <= 44; ++i) {
+                        inventory.setItem(i, ((ItemStack[]) kitRoomMap.get(inv.second()))[i]);
+                    }
+                } else if (slot == 45) {
+                    if (p.isOp()) {
+                        Inventory inventory = e.getInventory();
+                        ItemStack[] items = Arrays.copyOfRange(inventory.getContents(), 0, 45);
+                        kitRoomMap.put(Integer.valueOf(inv.second()), items);
+                        p.sendMessage(ChatColor.AQUA + "Page " + inv.second() + ChatColor.LIGHT_PURPLE + " saved!");
+                    } else
+                        expansions.guis.Utils.openKitMenu(p);
+                }
+            } // kit room
+            case 5 -> {
+                if (slot >= 41)
+                    e.setCancelled(true);
+
+                if (slot == 45)
+                    expansions.guis.Utils.openKitMenu(p);
+
+                int j;
+                if (slot == 47) {
+                    Inventory inventory = e.getInventory();
+                    Inventory pInventory = p.getInventory();
+                    for (j = 0; j <= 40; ++j) {
+                        inventory.setItem(j, pInventory.getItem(j));
+                    }
+                } else {
+                    if (slot != 48 && slot != 49) {
+                        if (slot == 50) {
+                            Inventory inventory = e.getInventory();
+                            for (j = 0; j <= 40; ++j) {
+                                inventory.setItem(j, null);
+                            }
+                        } else if (slot == 51) {
+                            String key = p.getUniqueId() + "-kit" + inv.second();
+                            if (kitMap.get(key).containsKey("name")) {
+                                kitMap.get(key).remove("name");
+                                p.sendMessage("§dKit name removed.");
+                                expansions.guis.Utils.openKitEditor(p, inv.second());
+                            }
+                        } else if (slot == 53) {
+                            SaveEditor.save(p, Integer.parseInt(inv.second()), false);
+                            String key = p.getUniqueId() + "-kit" + inv.second();
+                            if (!kitMap.get(key).containsKey("public")) {
+                                if (kitMap.get(key).containsKey("items")) {
+                                    p.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
+                                    kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
+                                    e.getInventory().setItem(53, ItemCreator.getItem(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PRIVATE", Material.FIREWORK_STAR, null));
+                                } else
+                                    p.sendMessage("§cCannot publish an empty kit.");
+                            } else {
+                                kitMap.get(key).remove("public");
+                                p.sendMessage("§dKit made private.");
+                                e.getInventory().setItem(53, ItemCreator.getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos", null));
+                            }
+                        }
+                    }
+                }
+            } // kit editor
+            case 6 -> {
+                e.setCancelled(true);
+                if (10 <= e.getSlot() && e.getSlot() <= 43 && e.getCurrentItem() != null && e.getCurrentItem().getType().toString().contains("CHEST") && e.isLeftClick()) {
+                    NamespacedKey itemKey = new NamespacedKey(Constants.p, "key");
+                    ItemMeta meta = e.getCurrentItem().getItemMeta();
+                    PersistentDataContainer container = meta.getPersistentDataContainer();
+                    if (container.has(itemKey, PersistentDataType.STRING)) {
+                        String foundValue = container.get(itemKey, PersistentDataType.STRING);
+                        KitClaimer.claimPublicKit(p, foundValue);
+                        p.closeInventory();
+                    }
+                }
+
+                switch (slot) {
+                    case 48 -> {
+                        if (e.getCurrentItem().getType().equals(Material.PLAYER_HEAD))
+                            expansions.guis.Utils.openPublicKits(p, Integer.parseInt(inv.second()) - 1);
+                    }
+                    case 49 -> expansions.guis.Utils.openKitMenu(p);
+                    case 50 -> {
+                        if (e.getCurrentItem().getType().equals(Material.PLAYER_HEAD))
+                            expansions.guis.Utils.openPublicKits(p, Integer.parseInt(inv.second()) + 1);
+                    }
+                }
+            } // publickits
         }
     }
 
@@ -310,32 +521,15 @@ public class Events implements Listener {
 
     @EventHandler
     private void onGUIClose(InventoryCloseEvent e) {
-        if (!(e.getInventory() instanceof PlayerInventory))
-            inInventory.remove(e.getPlayer().getName());
-        else
+        if (!(e.getInventory() instanceof PlayerInventory)) {
+            Player p = (Player) e.getPlayer();
+            String pn = p.getName();
+            Pair<Integer, String> inv = inInventory.get(pn);
+            if (inv != null && inv.first() == 5)
+                SaveEditor.save(p, Integer.parseInt(inv.second()), true);
+            inInventory.remove(pn);
+        } else
             playerData.get(e.getPlayer().getName()).windowQuitTime().add(System.currentTimeMillis());
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (e.isCancelled())
-            return;
-
-        if (!(e.getEntity() instanceof Player p) ||
-                !(e.getDamager() instanceof Player attacker))
-            return;
-
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        if (D0.isTagged())
-            D0.setTagTime(p);
-        else
-            D0.setupCombatRunnable(p);
-
-        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
-        if (D1.isTagged())
-            D1.setTagTime(attacker);
-        else
-            D1.setupCombatRunnable(attacker);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -346,7 +540,6 @@ public class Events implements Listener {
         if (teams.containsKey(name)) {
             Location location = p.getLocation();
             World world = p.getWorld();
-            Player killer = p.getKiller();
 
             e.setCancelled(true);
             p.setNoDamageTicks(100);
@@ -354,6 +547,7 @@ public class Events implements Listener {
             p.setHealth(20);
 
             DuelHolder request = getPlayerDuel(name);
+            Player killer = p.getKiller();
             killer = (killer == p || killer == null) ? world.getNearbyPlayers(location, 100).stream().toList().get(1) : killer;
             killer.setNoDamageTicks(100);
             killer.setFoodLevel(20);
@@ -465,7 +659,6 @@ public class Events implements Listener {
             D1.untag();
             D1.incrementMoney(500);
             D1.incrementKills();
-
             String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -521,6 +714,25 @@ public class Events implements Listener {
                     0,
                     0,
                     0));
+
+            String uUID = p.getUniqueId().toString();
+            for (int i = 1; i <= 3; ++i) {
+                String key = uUID + "-kit" + i;
+                if (!kitMap.containsKey(key)) {
+                    Map<String, Object> newMap = new HashMap<>();
+                    newMap.put("player", name);
+                    newMap.put("UUID", uUID);
+                    kitMap.put(uUID + "-kit" + i, newMap);
+                }
+
+                if (!kitMap.get(key).containsKey("player") || !kitMap.get(key).get("player").equals(name)) {
+                    kitMap.get(key).put("player", name);
+                }
+
+                if (!kitMap.get(key).containsKey("UUID") || !kitMap.get(key).get("UUID").equals(uUID)) {
+                    kitMap.get(key).put("UUID", uUID);
+                }
+            }
         } else {
             if (D.getTptoggle() == 0)
                 tpa.add(name);
