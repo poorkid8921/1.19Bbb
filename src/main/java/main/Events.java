@@ -2,20 +2,23 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import expansions.bungee.HandShake;
+import expansions.HandShake;
 import it.unimi.dsi.fastutil.Pair;
 import main.utils.Constants;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Utils;
-import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
@@ -30,7 +33,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static expansions.guis.Utils.inInventory;
 import static main.utils.Constants.*;
 import static main.utils.Utils.spawnFirework;
 
@@ -44,7 +46,6 @@ public class Events implements Listener {
     ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
     ItemStack boots = new ItemStack(Material.IRON_BOOTS);
     ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 16);
-    ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
 
     public Events() {
         pick.addEnchantment(Enchantment.DIG_SPEED, 3);
@@ -83,6 +84,25 @@ public class Events implements Listener {
         }
     }
 
+    @EventHandler
+    private void onPlayerDamage(EntityDamageByEntityEvent e) {
+        if (!(e.getEntity() instanceof Player p) ||
+                !(e.getDamager() instanceof Player attacker))
+            return;
+
+        CustomPlayerDataHolder D0 = playerData.get(p.getName());
+        if (D0.isTagged())
+            D0.setTagTime(p);
+        else
+            D0.setupCombatRunnable(p);
+
+        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
+        if (D1.isTagged())
+            D1.setTagTime(attacker);
+        else
+            D1.setupCombatRunnable(attacker);
+    }
+
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
@@ -113,10 +133,12 @@ public class Events implements Listener {
 
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
+        if (event.getEntityType() == EntityType.ENDER_CRYSTAL) {
+            Entity ent = event.getEntity();
             crystalsToBeOptimized.put(
-                    event.getEntity().getEntityId(),
-                    event.getEntity().getLocation());
+                    ent.getEntityId(),
+                    ent.getLocation());
+        }
     }
 
     @EventHandler
@@ -125,15 +147,18 @@ public class Events implements Listener {
             Bukkit.getScheduler().runTaskLater(Constants.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     private void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        Team team = p.getScoreboard().getPlayerTeam(p);
-        e.setFormat(team == null ?
+        //Team team = p.getScoreboard().getPlayerTeam(p);
+        /*e.setFormat(team == null ?
                 chat.getPlayerPrefix("world", p).replace("&", "§") +
                         p.getName() + SECOND_COLOR + " » §r" + e.getMessage() :
                 ("§7[" + team.getColor() + team.getDisplayName() + "§7] " + chat.getPlayerPrefix("world", p).replace("&", "§") +
                         "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage()));
+*/
+        e.setFormat(e.getFormat() + chat.getPlayerPrefix("world", p).replace("&", "§") +
+                p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -190,7 +215,7 @@ public class Events implements Listener {
 
         Player p = (Player) e.getWhoClicked();
         String pn = p.getName();
-        Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
+        Pair<Integer, String> inv = playerData.get(pn).getInventoryInfo();
         if (inv == null) return;
 
         int slot = e.getSlot();
@@ -209,28 +234,6 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (e.isCancelled())
-            return;
-
-        if (!(e.getEntity() instanceof Player p) ||
-                !(e.getDamager() instanceof Player attacker))
-            return;
-
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        if (D0.isTagged())
-            D0.setTagTime(p);
-        else
-            D0.setupCombatRunnable(p);
-
-        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
-        if (D1.isTagged())
-            D1.setTagTime(attacker);
-        else
-            D1.setupCombatRunnable(attacker);
-    }
-
     @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
@@ -238,10 +241,9 @@ public class Events implements Listener {
         Player killer = p.getKiller();
         if (killer == null || killer == p) {
             String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
-                case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
-                case FLY_INTO_WALL -> "thought they're a fly";
+                case FLY_INTO_WALL -> "trynna bypass the law of motion";
                 case FIRE_TICK, LAVA -> "burnt into ashes";
                 default -> "suicided";
             };
@@ -295,22 +297,22 @@ public class Events implements Listener {
         if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
                 c != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
             return;
-        String type = a.getItemStack().getType().name();
-        e.setCancelled(type.contains("DIAMOND") || type.contains("NETHERITE"));
+        String name = a.getItemStack().getType().name();
+        e.setCancelled(name.contains("DIAMOND") || name.contains("NETHERITE"));
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        if (!p.hasPlayedBefore()) {
-            p.getInventory().addItem(sword);
-            p.getInventory().addItem(pick);
-            p.getInventory().addItem(gap);
-            p.getInventory().setHelmet(helmet);
-            p.getInventory().setChestplate(chestplate);
-            p.getInventory().setLeggings(leggings);
-            p.getInventory().setBoots(boots);
-            p.getInventory().setItemInOffHand(totem);
+        PlayerInventory inv = p.getInventory();
+        if (inv.getContents().length == 0) {
+            inv.addItem(sword);
+            inv.addItem(pick);
+            inv.setHelmet(helmet);
+            inv.setChestplate(chestplate);
+            inv.setLeggings(leggings);
+            inv.setBoots(boots);
+            inv.setItemInOffHand(gap);
             p.teleportAsync(Constants.spawn);
         }
         String name = p.getName();

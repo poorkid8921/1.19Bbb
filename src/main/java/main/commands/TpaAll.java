@@ -2,8 +2,8 @@ package main.commands;
 
 import com.google.common.collect.ImmutableList;
 import main.utils.Constants;
+import main.utils.Instances.TpaRequest;
 import main.utils.Utils;
-import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

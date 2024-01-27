@@ -1,21 +1,23 @@
 package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import expansions.AntiCheat;
+import expansions.AntiAutoTotem;
 import expansions.arenas.Arena;
 import expansions.arenas.ArenaIO;
 import expansions.arenas.commands.CreateCommand;
 import expansions.economy.Balance;
+import expansions.Gui;
 import expansions.optimizer.AnimationEvent;
 import expansions.optimizer.InteractionEvent;
 import expansions.optimizer.LastPacketEvent;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
 import main.utils.Constants;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.TeleportCompleter;
-import main.utils.instances.CustomPlayerDataHolder;
 import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -26,6 +28,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -90,21 +93,6 @@ public class Economy extends JavaPlugin {
         this.getCommand("tpahere").setTabCompleter(tabCompleter);
     }
 
-    public void setupWarps() {
-        File arenasFolder = new File(dataFolder, "arenas");
-        if (!arenasFolder.exists()) arenasFolder.mkdirs();
-        Arrays.stream(arenasFolder.listFiles()).forEach(result -> {
-            try {
-                Arena arena = ArenaIO.loadArena(result);
-                if (arena != null)
-                    Arena.arenas.put(arena.getName(), arena);
-            } catch (Exception ignored) {
-            }
-        });
-        File warpsFolder = new File(dataFolder, "warps");
-        if (!warpsFolder.exists()) warpsFolder.mkdirs();
-    }
-
     void saveData() {
         if (alreadySavingData)
             return;
@@ -133,7 +121,7 @@ public class Economy extends JavaPlugin {
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiCheat());
+        PacketEvents.getAPI().getEventManager().registerListener(new AntiAutoTotem());
         PacketEvents.getAPI().init();
     }
 
@@ -143,10 +131,9 @@ public class Economy extends JavaPlugin {
         dataFile = new File(dataFolder, "data.yml");
         config = YamlConfiguration.loadConfiguration(dataFile);
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        Constants.lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
+        lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
         economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
-        Constants.p = this;
-
+        p = this;
         Bukkit.getScheduler().runTaskLater(this, () -> {
             Bukkit.getLogger().warning("Started population of RTPs...");
             World d0 = Bukkit.getWorld("world_nether");
@@ -176,9 +163,9 @@ public class Economy extends JavaPlugin {
                         ent.remove();
                 }
 
-                if (arena++ == 2)
-                    arena = 0;
-                Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(200000);
+                if (arena++ == 3)
+                    arena = 1;
+                Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
                 for (Player a : Bukkit.getOnlinePlayers()) {
                     if (a.isGliding())
                         continue;
@@ -193,8 +180,15 @@ public class Economy extends JavaPlugin {
             }, 0L, 24000L);
         }, 100L);
         registerCommands();
-        setupWarps();
-        expansions.guis.Utils.init();
+        Arrays.stream(new File(dataFolder, "arenas").listFiles()).forEach(result -> {
+            try {
+                Arena arena = ArenaIO.loadArena(result);
+                if (arena != null)
+                    Arena.arenas.put(arena.getName(), arena);
+            } catch (Exception ignored) {
+            }
+        });
+        Gui.init();
         registerPacketListeners();
         Constants.init();
     }

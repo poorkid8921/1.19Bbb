@@ -1,6 +1,7 @@
 package main.commands;
 
 import com.google.common.collect.ImmutableList;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -18,19 +19,19 @@ import static main.utils.Constants.*;
 public class RTP implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player p)) return true;
-        String sn = p.getName();
-
-        if (playersRTPing.contains(sn))
+        String sn = sender.getName();
+        CustomPlayerDataHolder D0 = playerData.get(sn);
+        if (D0.isRTPing())
             return true;
         else
-            playersRTPing.add(sn);
+            D0.setRTPing(true);
 
+        Player p = (Player) sender;
         World w = p.getWorld();
         String wn = w.getName();
         Location locC = (wn.equals("world_nether") ? netherRTP : wn.equals("world_the_end") ? endRTP : overworldRTP).get(RANDOM.nextInt(100));
         p.teleportAsync(locC).thenAccept(result -> {
-            playersRTPing.remove(sn);
+            D0.setRTPing(false);
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locC.getX() + " " + (int) locC.getY() + " " + (int) locC.getZ());
             p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));

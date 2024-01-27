@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.entity.Player;
 
 import static main.utils.Constants.playerData;

@@ -1,5 +1,6 @@
 package main.commands;
 
+import expansions.Gui;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,7 +19,7 @@ public class Report implements CommandExecutor, TabExecutor {
             sender.sendMessage("§7You must specify who you want to report.");
             return true;
         }
-        if (args.length < 2) expansions.guis.Utils.openReport((Player) sender, args[0]);
+        if (args.length < 2) Gui.openReport((Player) sender, args[0]);
         else {
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");

@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.utils.Constants;
-import main.utils.instances.TpaRequest;
+import main.utils.Instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

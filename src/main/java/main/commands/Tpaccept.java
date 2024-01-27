@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.utils.Constants;
-import main.utils.instances.TpaRequest;
+import main.utils.Instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,7 +17,7 @@ public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
 
-        String msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ;
+        String msg = "§7You got no active teleport request.";
         TpaRequest request;
         String n = "";
         String un = user.getName();
@@ -33,7 +33,7 @@ public class Tpaccept implements CommandExecutor {
             } else
                 n = p.getName();
             request = getRequest(un, n);
-            msg = Constants.EXCEPTION_NO_ACTIVE_TPAREQ1 +
+            msg = "§7You got no active teleport request from " +
                     MAIN_COLOR + args[0] + ".";
         }
 
@@ -41,7 +41,7 @@ public class Tpaccept implements CommandExecutor {
             user.sendMessage(msg);
             return true;
         } else if (un.equals(n)) {
-            user.sendMessage(Constants.EXCEPTION_PLAYER_TPSELF);
+            user.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
