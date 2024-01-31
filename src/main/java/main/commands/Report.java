@@ -1,6 +1,6 @@
 package main.commands;
 
-import expansions.Gui;
+import main.utils.Gui;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

@@ -2,11 +2,13 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
-import expansions.HandShake;
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import main.utils.Constants;
-import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.HandShake;
 import main.utils.Utils;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.RegionHolder;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.TrapDoor;
@@ -84,25 +86,6 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
-    private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (!(e.getEntity() instanceof Player p) ||
-                !(e.getDamager() instanceof Player attacker))
-            return;
-
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        if (D0.isTagged())
-            D0.setTagTime(p);
-        else
-            D0.setupCombatRunnable(p);
-
-        CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
-        if (D1.isTagged())
-            D1.setTagTime(attacker);
-        else
-            D1.setupCombatRunnable(attacker);
-    }
-
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
@@ -147,18 +130,15 @@ public class Events implements Listener {
             Bukkit.getScheduler().runTaskLater(Constants.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        //Team team = p.getScoreboard().getPlayerTeam(p);
-        /*e.setFormat(team == null ?
+        Team team = p.getScoreboard().getPlayerTeam(p);
+        e.setFormat(team == null ?
                 chat.getPlayerPrefix("world", p).replace("&", "§") +
                         p.getName() + SECOND_COLOR + " » §r" + e.getMessage() :
                 ("§7[" + team.getColor() + team.getDisplayName() + "§7] " + chat.getPlayerPrefix("world", p).replace("&", "§") +
                         "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage()));
-*/
-        e.setFormat(e.getFormat() + chat.getPlayerPrefix("world", p).replace("&", "§") +
-                p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
     }
 
     @EventHandler
@@ -190,7 +170,6 @@ public class Events implements Listener {
         CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.isTagged()) {
             D0.untag();
-            e.setQuitMessage(SECOND_COLOR + "☠ " + name + " §7has combat logged");
             p.setHealth(0);
             D0.incrementDeaths();
         } else
@@ -205,6 +184,9 @@ public class Events implements Listener {
         D0.setLastReceived(null);
         Constants.msg.remove(name);
         Constants.tpa.remove(name);
+
+        Constants.msg.sort(String::compareToIgnoreCase);
+        Constants.tpa.sort(String::compareToIgnoreCase);
     }
 
     @EventHandler
@@ -241,10 +223,19 @@ public class Events implements Listener {
         Player killer = p.getKiller();
         if (killer == null || killer == p) {
             String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+                case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
-                case FLY_INTO_WALL -> "trynna bypass the law of motion";
-                case FIRE_TICK, LAVA -> "burnt into ashes";
+                case FLY_INTO_WALL -> "tried to bypass physics";
+                case FIRE_TICK, LAVA -> "melted away";
+                case DROWNING -> "forgot to breathe";
+                case STARVATION -> "forgot to eat";
+                case POISON -> "was poisoned";
+                case MAGIC -> "thought they could cook meth";
+                case FREEZE -> "belonged into the water";
+                case SUFFOCATION -> "was mashed up pretty good";
+                case HOT_FLOOR -> "was heated up pretty good";
+                case VOID -> "fell into the void";
                 default -> "suicided";
             };
             e.setDeathMessage(death);
@@ -259,12 +250,14 @@ public class Events implements Listener {
             D1.incrementKills();
 
             String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
+                case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
-                case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7in the ass";
-                case FIRE_TICK, LAVA -> "turned " + SECOND_COLOR + name + " §7into ashes";
+                case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7into the ass";
+                case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
+                case VOID -> "pushed" + SECOND_COLOR + name + " §7into the void";
                 default -> "suicided";
             };
             e.setDeathMessage(death);
@@ -322,12 +315,20 @@ public class Events implements Listener {
         if (D == null) {
             Constants.tpa.add(name);
             Constants.msg.add(name);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0));
+
+            Constants.tpa.sort(String::compareToIgnoreCase);
+            Constants.msg.sort(String::compareToIgnoreCase);
+
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, new Object2ObjectOpenHashMap<>()));
         } else {
-            if (D.getTptoggle() == 0)
+            if (D.getTptoggle() == 0) {
                 Constants.tpa.add(name);
-            if (D.getMtoggle() == 0)
+                Constants.tpa.sort(String::compareToIgnoreCase);
+            }
+            if (D.getMtoggle() == 0) {
                 Constants.msg.add(name);
+                Constants.msg.sort(String::compareToIgnoreCase);
+            }
         }
     }
 

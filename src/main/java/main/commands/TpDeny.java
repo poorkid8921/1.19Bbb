@@ -1,7 +1,7 @@
 package main.commands;
 
 import main.utils.Constants;
-import main.utils.Instances.TpaRequest;
+import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,7 +16,6 @@ import static main.utils.Utils.translate;
 public class TpDeny implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
-
         String msg = "§7You got no active teleport request.";
         TpaRequest request;
 

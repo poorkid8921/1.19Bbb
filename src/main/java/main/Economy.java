@@ -1,23 +1,19 @@
 package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import expansions.AntiAutoTotem;
-import expansions.arenas.Arena;
-import expansions.arenas.ArenaIO;
-import expansions.arenas.commands.CreateCommand;
-import expansions.economy.Balance;
-import expansions.Gui;
-import expansions.optimizer.AnimationEvent;
-import expansions.optimizer.InteractionEvent;
-import expansions.optimizer.LastPacketEvent;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import main.commands.*;
-import main.utils.Constants;
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.TeleportCompleter;
+import main.utils.*;
+import main.utils.arenas.Arena;
+import main.utils.arenas.ArenaIO;
+import main.utils.arenas.CreateCommand;
+import main.utils.economy.Balance;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.optimizer.AnimationEvent;
+import main.utils.optimizer.InteractionEvent;
+import main.utils.optimizer.LastPacketEvent;
 import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,7 +24,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -50,8 +45,8 @@ public class Economy extends JavaPlugin {
     Location getRandomLoc(World w) {
         Location loc = null;
         while (loc == null) {
-            int boundX = Constants.RANDOM.nextInt(-10000, 10000);
-            int boundZ = Constants.RANDOM.nextInt(-10000, 10000);
+            int boundX = Constants.RANDOM.nextInt(-5000, 5000);
+            int boundZ = Constants.RANDOM.nextInt(-5000, 5000);
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid())
                 loc = new Location(w, boundX, b.getY() + 1, boundZ);
@@ -85,36 +80,21 @@ public class Economy extends JavaPlugin {
         this.getCommand("discord").setExecutor(new Discord());
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
-        this.getCommand("exbal").setExecutor(new Balance());
+        this.getCommand("playtime").setExecutor(new Playtime());
+        this.getCommand("kit").setExecutor(new Kit());
+        this.getCommand("rbalance").setExecutor(new Balance());
+        this.getCommand("rsethome").setExecutor(new SetHome());
+        this.getCommand("rhome").setExecutor(new Home());
+        this.getCommand("rdelhome").setExecutor(new DelHome());
 
         TeleportCompleter tabCompleter = new TeleportCompleter();
         this.getCommand("tpa").setTabCompleter(tabCompleter);
         this.getCommand("tpaccept").setTabCompleter(tabCompleter);
         this.getCommand("tpahere").setTabCompleter(tabCompleter);
-    }
 
-    void saveData() {
-        if (alreadySavingData)
-            return;
-
-        alreadySavingData = true;
-        config.set("r", null);
-        if (!playerData.isEmpty()) {
-            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
-                CustomPlayerDataHolder value = entry.getValue();
-                String key = entry.getKey();
-                config.set("r." + key + ".0", value.getMtoggle());
-                config.set("r." + key + ".1", value.getTptoggle());
-                config.set("r." + key + ".2", value.getMoney());
-                config.set("r." + key + ".3", value.getDeaths());
-                config.set("r." + key + ".4", value.getKills());
-            }
-        }
-        try {
-            config.save(dataFile);
-        } catch (IOException ignored) {
-        }
-        alreadySavingData = false;
+        HomeCompleter homeCompleter = new HomeCompleter();
+        this.getCommand("rhome").setTabCompleter(homeCompleter);
+        this.getCommand("rdelhome").setTabCompleter(homeCompleter);
     }
 
     public void registerPacketListeners() {
@@ -188,6 +168,7 @@ public class Economy extends JavaPlugin {
             } catch (Exception ignored) {
             }
         });
+
         Gui.init();
         registerPacketListeners();
         Constants.init();
@@ -196,6 +177,37 @@ public class Economy extends JavaPlugin {
     @Override
     public void onDisable() {
         PacketEvents.getAPI().terminate();
-        saveData();
+        if (alreadySavingData)
+            return;
+
+        alreadySavingData = true;
+        config.set("r", null);
+        if (!playerData.isEmpty()) {
+            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
+                CustomPlayerDataHolder value = entry.getValue();
+                String key = entry.getKey();
+                config.set("r." + key + ".0", value.getMtoggle());
+                config.set("r." + key + ".1", value.getTptoggle());
+                config.set("r." + key + ".2", value.getMoney());
+                config.set("r." + key + ".3", value.getDeaths());
+                config.set("r." + key + ".4", value.getKills());
+                int i = 5;
+                for (Map.Entry<String, Location> var : value.getHomes().entrySet()) {
+                    Location loc = var.getValue();
+                    config.set("r." + key + "." + i++, var.getKey() + ";" +
+                            loc.getWorld().getName() + ";" +
+                            loc.getX() + ";" +
+                            loc.getY() + ";" +
+                            loc.getZ() + ";" +
+                            loc.getYaw() + ";" +
+                            loc.getPitch() + ";");
+                }
+            }
+        }
+        try {
+            config.save(dataFile);
+        } catch (IOException ignored) {
+        }
+        alreadySavingData = false;
     }
 }

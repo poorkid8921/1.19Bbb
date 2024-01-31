@@ -1,8 +1,8 @@
 package main.commands;
 
 import main.utils.Constants;
-import main.utils.Instances.TpaRequest;
 import main.utils.Utils;
+import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,7 +15,6 @@ public class Tpahere implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player user)) return true;
-
         if (args.length < 1) {
             user.sendMessage("§7You must specify who you want to teleport to.");
             return true;

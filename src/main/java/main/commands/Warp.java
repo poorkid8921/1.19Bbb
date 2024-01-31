@@ -20,13 +20,13 @@ import static main.utils.Constants.MAIN_COLOR;
 public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage("§7You must specify a warp");
+            sender.sendMessage("§7You must specify a warp.");
             return true;
         }
 
         File f = new File(Economy.dataFolder + "/warps/" + args[0] + ".yml");
         if (!f.exists()) {
-            sender.sendMessage("§7The specified warp doesn't exist");
+            sender.sendMessage("§7The specified warp doesn't exist.");
             return true;
         }
 

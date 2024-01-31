@@ -2,7 +2,7 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Instances.TpaRequest;
+import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -36,15 +36,58 @@ public class Utils {
     public static TextComponent space = new TextComponent("  ");
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
+    public static String getTime(Player p) {
+        StringBuilder builder = new StringBuilder();
+        int seconds = p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
+
+        int days = seconds / 86400;
+        if (days > 0)
+            builder.append(days).append(days > 1 ? " days" : " day");
+
+        seconds %= 86400;
+        long hours = seconds / 3600;
+        if (hours > 0)
+            builder.append(builder.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
+                    " " + hours + " " + (hours > 1 ? "hours " : "hour "));
+
+        long minutes = (seconds / 60) % 60;
+        if (minutes > 0)
+            builder.append(builder.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
+                    " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
+
+        seconds %= 60;
+        if (seconds > 0)
+            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        return builder.toString();
+    }
+
+    public static String getTime(long ms) {
+        StringBuilder builder = new StringBuilder();
+        long seconds = ms / 1000;
+        long days = seconds / 86400;
+        if (days > 0)
+            builder.append(days).append(" ").append(days > 1 ? "days" : "day");
+
+        seconds %= 86400;
+        long hours = seconds / 3600;
+        if (hours > 0)
+            builder.append(builder.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
+                    " " + hours + " " + (hours > 1 ? "hours " : "hour "));
+
+        long minutes = (seconds / 60) % 60;
+        if (minutes > 0)
+            builder.append(builder.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
+                    " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
+
+        seconds %= 60;
+        if (seconds > 0)
+            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        return builder.toString();
+    }
+
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
         ObjectArrayList<String> og2 = og.clone();
         og2.removeIf(s -> !s.toLowerCase().startsWith(arg));
-        og2.sort(String::compareToIgnoreCase);
-        return og2;
-    }
-
-    public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og) {
-        ObjectArrayList<String> og2 = og.clone();
         og2.sort(String::compareToIgnoreCase);
         return og2;
     }

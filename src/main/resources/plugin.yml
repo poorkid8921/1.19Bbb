@@ -45,14 +45,24 @@ commands:
     aliases: statistics
   acreate:
     usage: /<command>
-  exbal:
+  rbalance:
     uasge: /<command>
-    aliases: exbalance
+    aliases: rbal
   warp:
     usage: /<command>
   setwarp:
     usage: /<command>
   rtp:
+    usage: /<command>
+  rsethome:
+    usage: /<command>
+  rhome:
+    usage: /<command>
+  rdelhome:
+    usage: /<command>
+  playtime:
+    usage: /<command>
+  kit:
     usage: /<command>
 permissions:
   has.staff:

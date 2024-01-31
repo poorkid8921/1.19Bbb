@@ -1,12 +1,16 @@
 package main.utils.instances;
 
-import expansions.optimizer.AnimPackets;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import main.utils.Constants;
+import main.utils.optimizer.AnimPackets;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Map;
 
 public class CustomPlayerDataHolder {
     @Getter
@@ -17,7 +21,7 @@ public class CustomPlayerDataHolder {
     private int tptoggle;
     @Getter
     @Setter
-    private int money;
+    private double money;
     @Getter
     private int deaths;
     @Getter
@@ -31,34 +35,45 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private int runnableid;
-    private int currentTagTime = 5;
+    private int currentTagTime = 10;
     @Getter
-    @Setter
     private boolean tagged;
     @Getter
     @Setter
     private String lastReceived;
+    @Getter
+    @Setter
+    private Pair<Integer, String> inventoryInfo;
+    @Getter
+    @Setter
+    private boolean RTPing;
+    @Getter
+    @Setter
+    private Map<String, Location> homes;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
-                                  int z,
+                                  double z,
                                   int deaths,
-                                  int kills) {
+                                  int kills,
+                                  Map<String, Location> homes) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
+        this.homes = homes;
     }
 
     public void setupCombatRunnable(Player player) {
+        currentTagTime = 10;
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
                 if (currentTagTime-- < 1) {
                     currentTagTime = 0;
                     player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §40");
-                    setTagged(false);
+                    tagged = false;
                     this.cancel();
                     return;
                 }
@@ -71,7 +86,7 @@ public class CustomPlayerDataHolder {
     }
 
     public void untag() {
-        tagged = false;
+        this.tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
     }
 
@@ -92,7 +107,7 @@ public class CustomPlayerDataHolder {
     }
 
     public void setTagTime(Player player) {
-        currentTagTime = 5;
-        player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §45");
+        this.currentTagTime = 10;
+        player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §410");
     }
 }

@@ -1,6 +1,5 @@
 package main.commands;
 
-import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.Command;
@@ -9,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Constants.playerData;
 
 @SuppressWarnings("deprecation")
 public class Stats implements CommandExecutor {
@@ -18,7 +18,7 @@ public class Stats implements CommandExecutor {
             if (args.length == 0) {
                 sender.sendMessage(
                         "§7ʏᴏᴜʀ sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
-                        "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", Constants.economy.getBalance(p)),
+                        "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", playerData.get(sender.getName()).getMoney()),
                         "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.PLAYER_KILLS),
                         "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.DEATHS));
             } else {
@@ -30,7 +30,7 @@ public class Stats implements CommandExecutor {
 
                 sender.sendMessage(
                         MAIN_COLOR + p.getDisplayName() + "'s §7sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
-                        "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", Constants.economy.getBalance(p)),
+                        "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", playerData.get(p.getName()).getMoney()),
                         "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.PLAYER_KILLS),
                         "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.DEATHS));
             }
