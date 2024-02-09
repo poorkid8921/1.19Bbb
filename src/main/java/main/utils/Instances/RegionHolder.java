@@ -1,10 +1,5 @@
 package main.utils.Instances;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 public class RegionHolder {
     int minX;
     int minY;
@@ -15,24 +10,24 @@ public class RegionHolder {
     int maxZ;
 
     public RegionHolder(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        this.minX = minX;
-        this.minY = minY;
-        this.minZ = minZ;
+        this.minX = Math.min(minX, maxX);
+        this.minY = Math.min(minY, maxY);
+        this.minZ = Math.min(minZ, maxZ);
 
-        this.maxX = maxX;
-        this.maxY = maxY;
-        this.maxZ = maxZ;
+        this.maxX = Math.max(minX, maxX);
+        this.maxY = Math.max(minY, maxY);
+        this.maxZ = Math.max(minZ, maxZ);
     }
 
-    public boolean checkX(double x) {
+    public boolean checkX(int x) {
         return x <= minX || x >= maxX;
     }
 
-    public boolean checkY(double y) {
+    public boolean checkY(int y) {
         return y <= minY || y >= maxY;
     }
 
-    public boolean checkZ(double z) {
+    public boolean checkZ(int z) {
         return z <= minZ || z >= maxZ;
     }
 }

@@ -10,8 +10,8 @@ import static main.utils.Utils.tabCompleteFilter;
 public class TeleportCompleter implements org.bukkit.command.TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ?
-                tabCompleteFilter(Constants.tpa) :
+        return args.length == 0 ?
+                Constants.tpa :
                 tabCompleteFilter(Constants.tpa, args[0].toLowerCase());
     }
 }

@@ -6,16 +6,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Constants.spawn;
 
 public class Spawn implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).teleportAsync(spawn);
+        ((Player) sender).teleport(spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
         return true;
     }
 

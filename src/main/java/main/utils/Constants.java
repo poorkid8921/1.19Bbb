@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Events;
 import main.Practice;
 import main.utils.Instances.CustomPlayerDataHolder;
@@ -24,11 +23,24 @@ import org.bukkit.inventory.ItemStack;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static main.Practice.config;
 
 public class Constants {
+    public static final ImmutableList<Color> color = ImmutableList.of(org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW);
+    public static final ObjectArrayList<RegionHolder> regions = ObjectArrayList.of(
+            new RegionHolder(-27, 81, 27, 27, 96, -27),// spawn
+            new RegionHolder(-119, 96, -300, 5, 317, -176),// ffa
+            new RegionHolder(6, -64, -175, -120, -64, -301),// ffa_0
+            new RegionHolder(6, 93, -175, -120, -63, -175),// ffa_1
+            new RegionHolder(6, -63, -301, 6, 93, -176),// ffa_2
+            new RegionHolder(5, 93, -301, -120, -63, -301),// ffa_3
+            new RegionHolder(-120, -63, -300, -120, 93, -176),// ffa_4
+            new RegionHolder(92, 176, 458, -98, 117, 268),// flat
+            new RegionHolder(92, 114, 458, -98, 114, 268) // flatdown
+    );
     public static Map<String, Integer> teams = new Object2ObjectOpenHashMap<>();
     public static Map<String, String> spec = new Object2ObjectOpenHashMap<>();
     public static Map<String, Integer> inMatchmaking = new Object2ObjectOpenHashMap<>();
@@ -47,18 +59,6 @@ public class Constants {
     public static ObjectArrayList<String> playersRTPing = ObjectArrayList.of();
     public static ObjectArrayList<Location> overworldRTP = ObjectArrayList.of();
     public static ObjectArrayList<Location> endRTP = ObjectArrayList.of();
-    public static final ObjectArrayList<RegionHolder> regions = ObjectArrayList.of(
-            new RegionHolder(-27, 81, 27, 27, 96, -27),// spawn
-            new RegionHolder(-119, 97, -300, 5, 317, -176),// ffa
-            new RegionHolder(-120, -64, -301, 6, -64, -175),// ffa_0
-            new RegionHolder(-120, -63, -175, 6, 93, -175),// ffa_1
-            new RegionHolder(6, -63, -301, 6, 93, -176),// ffa_2
-            new RegionHolder(-120, -63, -301, 5, 93, -301),// ffa_3
-            new RegionHolder(-120, -63, -300, -120, 93, -176),// ffa_4
-            new RegionHolder(-98, 118, 268, 92, 176, 458),// flat
-            new RegionHolder(-98, 114, 268, 92, 114, 458) // flatdown
-    );
-    public static final ImmutableList<Color> color = ImmutableList.of(org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW);
     public static Location ffa;
     public static Location flat;
     public static Location spawn;
@@ -88,7 +88,6 @@ public class Constants {
     public static Component BACK;
     public static String startED;
     public static String BC_KITS;
-    public static String EXCEPTION_DAMAGE;
     public static String EXCEPTION_INTERACTION;
     public static String EXCEPTION_BLOCK_PLACE;
     public static String EXCEPTION_BLOCK_BREAK;
@@ -104,21 +103,20 @@ public class Constants {
             CACHED_TOKEN_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919761007018045/fs81ovFWMXtO6LB4JnRyZ59c188dGZSQElkYr1vNju7fV0qeuRLlrWA-QhtHdfyIoyzd");
         } catch (MalformedURLException ignored) {
         }
-
-        EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ";
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/catsmp"));
 
-        BC_KITS = "§7type " + MAIN_COLOR + "/kit §7or " + MAIN_COLOR + "/k §7to get started.";
-        BACK = MiniMessage.miniMessage().deserialize("<gray>Use <color:#fc282f>/back<color:#fc282f> <gray>to return to your death location");
+        EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ.";
+        BC_KITS = "§7Type " + MAIN_COLOR + "/kit §7or " + MAIN_COLOR + "/k §7to get started.";
+        BACK = MiniMessage.miniMessage().deserialize("<gray>Use <color:#fc282f>/back<color:#fc282f> <gray>to return to your death location.");
         startED = " started! " + MAIN_COLOR + "Fight!";
         TELEPORTING_BACK = "§7Teleporting back to spawn in " + MAIN_COLOR + "3 seconds...";
-        EXCEPTION_DAMAGE = "§7You can't combat here!";
         EXCEPTION_INTERACTION = MAIN_COLOR + "Sorry, §7buy you can't interact here.";
         EXCEPTION_BLOCK_PLACE = MAIN_COLOR + "Sorry, §7but you can't place blocks here.";
         EXCEPTION_BLOCK_BREAK = MAIN_COLOR + "Sorry, §7but you can't break blocks here.";
 
         Bukkit.getPluginManager().registerEvents(new Events(), p);
+        Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
         Practice.d = Bukkit.getWorld("world");
         Practice.d0 = Bukkit.getWorld("world_the_end");
         Constants.ffa = new Location(Practice.d,

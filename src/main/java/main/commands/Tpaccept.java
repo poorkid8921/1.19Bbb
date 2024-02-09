@@ -1,15 +1,16 @@
 package main.commands;
 
-import main.utils.Constants;
 import main.utils.Instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Constants.MAIN_COLOR;
-import static main.utils.RequestManager.*;
+import static main.utils.RequestManager.getTPArequest;
+import static main.utils.RequestManager.tpa;
 import static main.utils.Utils.translate;
 
 public class Tpaccept implements CommandExecutor {
@@ -46,19 +47,19 @@ public class Tpaccept implements CommandExecutor {
         if (!request.isHere()) {
             tempuser = request.getSender();
             temprecipient = (Player) sender;
-            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "'s §7teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + MAIN_COLOR + "§7's teleport request.",
                     "§7Teleporting...");
-            temprecipient.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
+            tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request.");
         } else {
             tempuser = (Player) sender;
             temprecipient = request.getSender();
-            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "'s §7teleport request",
+            temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + MAIN_COLOR + "§7's teleport request.",
                     "§7Teleporting...");
-            temprecipient.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
+            tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request.");
         }
 
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
-        tempuser.teleport(temprecipient.getLocation());
+        tempuser.teleport(temprecipient.getLocation(), PlayerTeleportEvent.TeleportCause.COMMAND);
         tpa.remove(request);
         return true;
     }

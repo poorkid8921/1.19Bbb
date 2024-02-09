@@ -1,6 +1,5 @@
 package main.utils;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Instances.DuelHolder;
 import main.utils.Instances.TpaRequest;
@@ -16,8 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Map;
-
 import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.DuelUtils.getDuelFormatted;
 
@@ -32,15 +29,21 @@ public class RequestManager {
 
     public static TpaRequest getTPArequest(String user) {
         for (TpaRequest r : tpa) {
-            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            try {
+                if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
 
     public static TpaRequest getTPArequest(String user, String lookup) {
         for (TpaRequest r : tpa) {
-            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
-                return r;
+            try {
+                if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
+                    return r;
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
@@ -79,22 +82,31 @@ public class RequestManager {
 
     public static DuelHolder getDUELrequest(String user) {
         for (DuelHolder r : Constants.duel) {
+            try {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
 
     public static DuelHolder getPlayerDuel(String user) {
         for (DuelHolder r : Constants.inDuel) {
+            try {
             if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
 
     public static DuelHolder getDUELrequest(String user, String lookup) {
         for (DuelHolder r : Constants.duel) {
+            try {
             if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
                 return r;
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }

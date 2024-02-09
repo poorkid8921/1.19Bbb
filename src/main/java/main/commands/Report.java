@@ -1,6 +1,6 @@
 package main.commands;
 
-import main.utils.Constants;
+import main.utils.Gui;
 import main.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,13 +14,13 @@ import java.util.List;
 public class Report implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
-            sender.sendMessage(Constants.EXCEPTION_REPORT_SPECIFY_PLAYER);
+        if (args.length == 0) {
+            sender.sendMessage("§7You must specify who you want to report.");
             return true;
         }
 
         if (args.length < 2)
-            main.expansions.guis.Utils.openReport((Player) sender, args[0]);
+            Gui.openReport((Player) sender, args[0]);
         else {
             StringBuilder msgargs = new StringBuilder();
             for (String arg : args) msgargs.append(arg).append(" ");

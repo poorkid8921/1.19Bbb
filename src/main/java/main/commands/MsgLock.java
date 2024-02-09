@@ -1,30 +1,31 @@
 package main.commands;
 
 import com.google.common.collect.ImmutableList;
+import main.utils.Constants;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-import static main.utils.Constants.*;
+import static main.utils.Constants.msg;
+import static main.utils.Constants.playerData;
 
 public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String p = sender.getName();
-        CustomPlayerDataHolder M = playerData.get(p);
+        String pn = sender.getName();
+        CustomPlayerDataHolder M = playerData.get(pn);
         if (M.getMtoggle() == 0) {
             sender.sendMessage("§7You will no longer receive messages from players.");
             M.setMtoggle(1);
-            msg.remove(p);
+            msg.remove(pn);
+            Constants.msg.sort(String::compareTo);
         } else {
             sender.sendMessage("§7You can receive messages from players again.");
             M.setMtoggle(0);
-            msg.add(p);
+            msg.add(pn);
+            Constants.msg.sort(String::compareToIgnoreCase);
         }
         return true;
     }

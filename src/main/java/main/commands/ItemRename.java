@@ -10,17 +10,13 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 import static main.utils.Constants.MAIN_COLOR;
 
 public class ItemRename implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify an item name.");
             return true;
         }
@@ -38,7 +34,7 @@ public class ItemRename implements CommandExecutor, TabExecutor {
         im.setDisplayName(t);
         hand.setItemMeta(im);
         p.setItemInHand(hand);
-        sender.sendMessage("§7Successfully named your item " + MAIN_COLOR + t);
+        sender.sendMessage("§7Successfully named your item " + MAIN_COLOR + t + ".");
         return true;
     }
 

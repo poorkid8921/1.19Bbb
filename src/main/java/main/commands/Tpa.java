@@ -8,25 +8,21 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
+import static main.utils.Constants.playerData;
 import static main.utils.RequestManager.addTPArequest;
 import static main.utils.RequestManager.getTPArequest;
 import static main.utils.Utils.tabCompleteFilter;
 
-public class Tpa implements CommandExecutor, TabExecutor {
+public class Tpa implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify who you want to teleport to.");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
-
         if (recipient == null) {
             sender.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
@@ -47,19 +43,12 @@ public class Tpa implements CommandExecutor, TabExecutor {
             }
         }
 
-        if (!Constants.tpa.contains(ren)) {
+        if (playerData.get(ren).getTptoggle() == 1) {
             sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
         addTPArequest((Player) sender, recipient, false);
         return true;
-    }
-
-    @Override
-    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return args.length < 1 ?
-                tabCompleteFilter(Constants.tpa) :
-                tabCompleteFilter(Constants.tpa, args[0].toLowerCase());
     }
 }

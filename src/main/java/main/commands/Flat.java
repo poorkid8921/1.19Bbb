@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -17,17 +18,15 @@ public class Flat implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player pp) {
-            if (Constants.bannedFromflat.contains(sender.getName())) {
+            String sn = sender.getName();
+            if (Constants.bannedFromflat.contains(sn)) {
                 sender.sendMessage(MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜɪs ᴍᴏᴅᴇ.");
                 return true;
             }
             Location l = Constants.flat;
-            Location pl = pp.getLocation();
-            l.setYaw(pl.getYaw());
-            l.setYaw(pl.getPitch());
-            pp.teleportAsync(l);
+            pp.teleportAsync(l, PlayerTeleportEvent.TeleportCause.COMMAND);
+            Constants.inFlat.add(sn);
         }
-
         return true;
     }
 

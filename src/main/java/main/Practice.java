@@ -9,30 +9,26 @@ import ac.utils.lists.HookedListWrapper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.util.reflection.Reflection;
 import com.google.common.collect.ImmutableList;
-import expansions.moderation.AntiAutoTotem;
-import expansions.arenas.Arena;
-import expansions.arenas.ArenaIO;
-import expansions.arenas.commands.aCreate;
-import expansions.duels.commands.Duel;
-import expansions.duels.commands.DuelAccept;
-import expansions.duels.commands.DuelDeny;
-import expansions.duels.commands.Event;
-import expansions.kits.commands.Kit;
-import expansions.kits.commands.KitClaim;
-import expansions.moderation.*;
-import expansions.optimizer.AnimationEvent;
-import expansions.optimizer.InteractionEvent;
-import expansions.optimizer.LastPacketEvent;
-import expansions.warps.Ffa;
-import expansions.warps.Flat;
-import expansions.warps.Nethpot;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
-import main.commands.List;
 import main.commands.*;
+import main.utils.AntiAutoTotem;
 import main.utils.Constants;
+import main.utils.Gui;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.TeleportCompleter;
+import main.utils.arenas.Arena;
+import main.utils.arenas.ArenaIO;
+import main.utils.arenas.CreateCommand;
+import main.utils.duels.commands.Duel;
+import main.utils.duels.commands.DuelAccept;
+import main.utils.duels.commands.DuelDeny;
+import main.utils.duels.commands.Event;
+import main.utils.kits.commands.Kit;
+import main.utils.kits.commands.KitClaim;
+import main.utils.optimizer.AnimationEvent;
+import main.utils.optimizer.InteractionEvent;
+import main.utils.optimizer.LastPacketEvent;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -51,7 +47,10 @@ import sun.misc.Unsafe;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static main.utils.Constants.*;
 
@@ -86,29 +85,17 @@ public class Practice extends JavaPlugin {
                 for (String key2 : kitsconfig.getConfigurationSection("data." + key).getKeys(false)) {
                     if (key2.equals("items"))
                         kitMap.get(key).put(key2, (ImmutableList.of(kitsconfig.get("data." + key + "." + key2)).toArray(new ItemStack[0])));
-                    else
-                        switch (key2) {
-                            case "name", "player", "UUID", "public" ->
-                                    kitMap.get(key).put(key2, kitsconfig.get("data." + key + "." + key2).toString());
-                        }
+                    else switch (key2) {
+                        case "player", "UUID", "public" ->
+                                kitMap.get(key).put(key2, kitsconfig.get("data." + key + "." + key2).toString());
+                    }
                 }
             }
         } catch (Exception ignored) {
         }
     }
 
-    private static void restoreKitRoom() {
-        for (int i = 1; i <= 5; i = i + 1) {
-            try {
-                ItemStack[] content = (ItemStack[]) ((java.util.List) kitroomconfig.get("data." + i)).toArray(new ItemStack[0]);
-                kitRoomMap.put(i, content);
-            } catch (Exception e) {
-                kitRoomMap.put(i, new ItemStack[45]);
-            }
-        }
-    }
-
-    Location getRandomLoc(World w) {
+    private Location getRandomLoc(World w) {
         Location loc = null;
         while (loc == null) {
             int boundX = Constants.RANDOM.nextInt(-10000, 10000);
@@ -128,7 +115,6 @@ public class Practice extends JavaPlugin {
             Object connection = SpigotReflectionUtil.getMinecraftServerConnectionInstance();
             Field connectionsList = Reflection.getField(connection.getClass(), java.util.List.class, 1);
             java.util.List<Object> endOfTickObject = (java.util.List<Object>) connectionsList.get(connection);
-
             java.util.List<?> wrapper = Collections.synchronizedList(new HookedListWrapper<>(endOfTickObject) {
                 @Override
                 public void onIterator() {
@@ -171,7 +157,7 @@ public class Practice extends JavaPlugin {
         this.getCommand("nethpot").setExecutor(new Nethpot());
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new Setwarp());
-        this.getCommand("acreate").setExecutor(new aCreate());
+        this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
         this.getCommand("gmsp").setExecutor(new GMsp());
@@ -195,9 +181,26 @@ public class Practice extends JavaPlugin {
         this.getCommand("ckit").setExecutor(new Kit());
     }
 
-    void saveData() {
+    void saveData() throws IOException {
         if (alreadySavingData) return;
         alreadySavingData = true;
+        if (!kitRoomMap.isEmpty()) {
+            for (Map.Entry<Integer, ItemStack[]> integerEntry : kitRoomMap.entrySet()) {
+                kitroomconfig.set("data." + integerEntry.getKey().toString(), integerEntry.getValue());
+            }
+        }
+        kitroomconfig.save(kitroomdataFile);
+
+        kitsconfig.set("data", null);
+        if (!kitMap.isEmpty()) {
+            for (Map.Entry<String, Map<String, Object>> stringHashMapEntry : kitMap.entrySet()) {
+                for (Map.Entry<String, Object> var : stringHashMapEntry.getValue().entrySet()) {
+                    kitsconfig.set("data." + stringHashMapEntry.getKey() + "." + var.getKey(), var.getValue());
+                }
+            }
+        }
+        kitsconfig.save(kitsdataFile);
+
         config.set("r", null);
         if (!playerData.isEmpty()) {
             for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
@@ -214,10 +217,7 @@ public class Practice extends JavaPlugin {
                 config.set("r." + key + ".8", value.getKills());
             }
         }
-        try {
-            config.save(dataFile);
-        } catch (IOException ignored) {
-        }
+        config.save(dataFile);
         alreadySavingData = false;
     }
 
@@ -246,8 +246,8 @@ public class Practice extends JavaPlugin {
 
     private void setupAC() {
         System.setProperty("com.viaversion.handlePingsAsInvAcknowledgements", "true");
-        Bukkit.getScheduler().runTaskTimer(this, TM::tickSync, 0, 1);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, TM::tickAsync, 0, 1);
+        Bukkit.getScheduler().runTaskTimer(this, TM::tickSync, 0, 1L);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, TM::tickAsync, 0, 1L);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             for (GrimPlayer player : PDM.getEntries()) {
@@ -256,44 +256,7 @@ public class Practice extends JavaPlugin {
         }, 1, 20);
     }
 
-    private void saveKitMap() {
-        kitsconfig.set("data", null);
-        if (!kitMap.isEmpty()) {
-            for (Map.Entry<String, Map<String, Object>> stringHashMapEntry : kitMap.entrySet()) {
-                for (Object o : ((HashMap) ((Map.Entry<String, HashMap<String, Object>>) (Map.Entry) stringHashMapEntry).getValue()).entrySet()) {
-                    Map.Entry<String, Object> data = (Map.Entry) o;
-                    kitsconfig.set("data." + ((Map.Entry<String, HashMap<String, Object>>) (Map.Entry) stringHashMapEntry).getKey() + "." + data.getKey(), data.getValue());
-                }
-            }
-        }
-        try {
-            kitsconfig.save(kitsdataFile);
-        } catch (IOException ignored) {
-
-        }
-    }
-
-    private void saveKitRoom() {
-        if (!kitRoomMap.isEmpty()) {
-            for (Map.Entry<Integer, ItemStack[]> integerEntry : kitRoomMap.entrySet()) {
-                kitroomconfig.set("data." + integerEntry.getKey().toString(), integerEntry.getValue());
-            }
-        }
-        try {
-            kitroomconfig.save(kitroomdataFile);
-        } catch (IOException ignored) {
-
-        }
-    }
-
-    private void setupKits() {
-        if (kitsconfig.contains("data"))
-            restoreKitMap();
-        restoreKitRoom();
-    }
-
-    @Override
-    public void onEnable() {
+    private void setupConfigs() {
         dataFolder = getDataFolder();
 
         kitroomdataFile = new File(dataFolder, "kitroom.yml");
@@ -304,7 +267,11 @@ public class Practice extends JavaPlugin {
 
         dataFile = new File(dataFolder, "data.yml");
         config = YamlConfiguration.loadConfiguration(dataFile);
+    }
 
+    @Override
+    public void onEnable() {
+        setupConfigs();
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         p = this;
 
@@ -323,7 +290,7 @@ public class Practice extends JavaPlugin {
                     overworldRTP.add(getRandomLoc(d));
                     endRTP.add(getRandomLoc(d0));
                 }
-            }.runTaskTimer(this, 0L, 20L);
+            }.runTaskTimer(this, 0L, 5L);
             Arena flat = Arena.arenas.get("flat");
             Arena ffa = Arena.arenas.get("ffa");
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
@@ -355,12 +322,15 @@ public class Practice extends JavaPlugin {
                             b2.setType(Material.BARRIER, false);
                         });
                     });
-                    saveData();
+                    for (String msg : ImmutableList.of("§7-------------- | CatSMP | ---------------", Constants.BC_KITS, "§7-----------------------------------------"))
+                        Bukkit.broadcastMessage(msg);
+                    try {
+                        saveData();
+                    } catch (IOException ignored) {
+                    }
                 } else Arena.arenas.get("flat").reset(100000);
-                for (String msg : ImmutableList.of("§7-------------- | CatSMP | --------------", Constants.BC_KITS, "§7--------------------------------------"))
-                    Bukkit.broadcastMessage(msg);
             }, 0L, 2400L);
-        }, 2400L);
+        }, 100L);
         registerCommands();
         Arrays.stream(new File(dataFolder, "arenas").listFiles()).forEach(result -> {
             try {
@@ -370,43 +340,27 @@ public class Practice extends JavaPlugin {
             }
         });
 
-        expansions.guis.Utils.init();
+        Gui.init();
         setupAC();
-        setupKits();
+        if (kitsconfig.contains("data"))
+            restoreKitMap();
+        for (int i = 1; i <= 5; i++) {
+            try {
+                kitRoomMap.put(i, (ItemStack[]) ((java.util.List) kitroomconfig.get("data." + i)).toArray(new ItemStack[0]));
+            } catch (Exception e) {
+                kitRoomMap.put(i, new ItemStack[45]);
+            }
+        }
         registerPacketListeners();
         Constants.init();
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getLogger().warning(playerData.toString());
         PacketEvents.getAPI().terminate();
-        for (File[] file : ImmutableList.of(new File(d.getWorldFolder().getAbsolutePath() + "/entities/").listFiles(), new File(d0.getWorldFolder().getAbsolutePath() + "/DIM1/").listFiles())) {
-            for (File value : file) {
-                value.delete();
-            }
+        try {
+            saveData();
+        } catch (IOException ignored) {
         }
-
-        long curTime = new Date().getTime();
-        int accountsRemoved = 0;
-
-        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/stats/").listFiles()) {
-            if (curTime - file.lastModified() > 6.048e+8) {
-                accountsRemoved++;
-                file.delete();
-            }
-        }
-
-        int regionsRemoved = 0;
-        for (File file : new File(d.getWorldFolder().getAbsolutePath() + "/region/").listFiles()) {
-            if (curTime - file.lastModified() > 6.048e+8) {
-                regionsRemoved++;
-                file.delete();
-            }
-        }
-        Bukkit.getLogger().warning("Successfully purged " + accountsRemoved + " accounts & " + regionsRemoved + " regions.");
-        saveData();
-        saveKitRoom();
-        saveKitMap();
     }
 }

@@ -1,12 +1,12 @@
 package main.utils;
 
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +17,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,12 +31,6 @@ public class Utils {
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
         ObjectArrayList<String> og2 = og.clone();
         og2.removeIf(s -> !s.toLowerCase().startsWith(arg));
-        og2.sort(String::compareToIgnoreCase);
-        return og2;
-    }
-
-    public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og) {
-        ObjectArrayList<String> og2 = og.clone();
         og2.sort(String::compareToIgnoreCase);
         return og2;
     }
@@ -61,8 +56,9 @@ public class Utils {
     }
 
     public static void killeffect(Player p, int toset, String fancy, int money) {
-        p.closeInventory();
         String pn = p.getName();
+        playerData.get(pn).setMultipleGUIs(true);
+        p.closeInventory();
         CustomPlayerDataHolder D = playerData.get(pn);
         if (money > D.getMoney()) {
             p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » " + MAIN_COLOR + "ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ");
@@ -78,9 +74,10 @@ public class Utils {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
+        String pn = pp.getName();
+        playerData.get(pn).setMultipleGUIs(true);
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
-            String pn = pp.getName();
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
                 connection.setRequestMethod("POST");
@@ -100,21 +97,53 @@ public class Utils {
         pp.sendMessage("§7Successfully submitted the report.");
     }
 
-    public static ItemStack createItemStack(Material mat, String display, ImmutableList<String> lore) {
-        ItemStack ie = new ItemStack(mat, 1);
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
+    public static ItemStack getHead(String name, String player, ImmutableList<String> lore) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setOwner(player);
+        meta.setDisplayName(name);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
-    public static ItemStack createItemStack(ItemStack ie, String display, ImmutableList<String> lore) {
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
+    public static ItemStack enchant(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        meta.addEnchant(Enchantment.DURABILITY, 1, true);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static ItemStack disEnchant(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        meta.removeEnchant(Enchantment.DURABILITY);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static ItemStack createItemStack(Material material, String display) {
+        ItemStack item = new ItemStack(material, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static ItemStack createItemStack(Material material, String display, List<String> lore) {
+        ItemStack item = new ItemStack(material, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static ItemStack createItemStack(ItemStack item, String display, ImmutableList<String> lore) {
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
     public static ItemStack getHead(String player) {

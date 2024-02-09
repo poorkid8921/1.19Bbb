@@ -1,6 +1,5 @@
 package main.commands;
 
-import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,18 +10,18 @@ public class Teleport implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.hasPermission("has.staff")) {
-            if (args.length < 1) {
-                sender.sendMessage(Constants.EXCEPTION_NO_ARGS_TELEPORT);
+            if (args.length == 0) {
+                sender.sendMessage("§7You must specify a player.");
                 return true;
             }
 
             Player p = Bukkit.getPlayer(args[0]);
             if (p == null) {
-                sender.sendMessage(Constants.EXCEPTION_NO_ARGS_TELEPORT);
+                sender.sendMessage("§7You must specify a player.");
                 return true;
             }
 
-            ((Player) sender).teleportAsync(p.getLocation());
+            ((Player) sender).teleport(p.getLocation());
         }
         return true;
     }

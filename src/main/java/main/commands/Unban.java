@@ -11,7 +11,7 @@ public class Unban implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.hasPermission("has.staff")) {
-            if (args.length < 1) {
+            if (args.length == 0) {
                 sender.sendMessage("§7Invalid args.");
                 return true;
             }

@@ -1,7 +1,7 @@
 package main.commands;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -10,9 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static main.utils.Constants.playerData;
 import static main.utils.Utils.tabCompleteFilter;
@@ -30,13 +28,14 @@ public class Msg implements CommandExecutor, TabCompleter {
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage("§7You can't send messages to offline players.");
+            sender.sendMessage("§7You can't message offline players.");
             return true;
         }
 
         String tn = target.getName();
-        if (!Constants.msg.contains(tn) && !sender.hasPermission("has.staff")) {
-            sender.sendMessage("§7You can't send messages to this player since they've locked their messages.");
+        CustomPlayerDataHolder D1 = playerData.get(tn);
+        if (D1.getMtoggle() == 1 && !sender.hasPermission("has.staff")) {
+            sender.sendMessage("§7You can't message this player since they've locked their messages.");
             return true;
         }
 
@@ -48,14 +47,14 @@ public class Msg implements CommandExecutor, TabCompleter {
         target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
         String pn = sender.getName();
         playerData.get(pn).setLastReceived(tn);
-        playerData.get(tn).setLastReceived(pn);
+        D1.setLastReceived(pn);
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length < 1 ?
-                tabCompleteFilter(Constants.msg) :
+        return args.length == 0 ?
+                Constants.msg :
                 tabCompleteFilter(Constants.msg, args[0].toLowerCase());
     }
 }

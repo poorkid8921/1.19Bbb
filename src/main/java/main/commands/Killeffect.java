@@ -1,20 +1,17 @@
 package main.commands;
 
 import com.google.common.collect.ImmutableList;
-import expansions.guis.Utils;
+import main.utils.Gui;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class Killeffect implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] strings) {
-        Utils.openKilleffect((Player) sender);
+        Gui.openKilleffect((Player) sender);
         return true;
     }
 

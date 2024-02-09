@@ -2,16 +2,12 @@ package main.commands;
 
 import com.google.common.collect.ImmutableList;
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.WorldLocationHolder;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Constants.playerData;
 
@@ -23,9 +19,7 @@ public class Back implements CommandExecutor, TabExecutor {
             sender.sendMessage("§7You got no back location.");
             return true;
         }
-
-        WorldLocationHolder back = D.getBack();
-        ((Player) sender).teleportAsync(new Location(back.getWorld(), back.getX(), back.getY(), back.getZ())).thenAccept(result -> {
+        ((Player) sender).teleportAsync(D.getBack(), PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
             sender.sendMessage("§7Teleported you to your previous location.");
             D.setBack(null);
         });

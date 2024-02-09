@@ -15,8 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static expansions.duels.KitOverrider.*;
 import static main.utils.Constants.*;
+import static main.utils.duels.KitOverrider.*;
 
 public class DuelUtils {
     public static NamespacedKey spectateHead = new NamespacedKey(Constants.p, "against");

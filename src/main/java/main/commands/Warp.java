@@ -2,7 +2,6 @@ package main.commands;
 
 import com.google.common.collect.ImmutableList;
 import main.Practice;
-import main.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -12,16 +11,15 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.io.File;
-import java.util.List;
 
 import static main.utils.Constants.MAIN_COLOR;
 
 public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify a warp.");
             return true;
         }
@@ -39,8 +37,9 @@ public class Warp implements CommandExecutor, TabExecutor {
                 cf.getDouble("c"),
                 cf.getDouble("d"),
                 (float) cf.getDouble("e"),
-                (float) cf.getDouble("f"))
-        ).thenAccept(result -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0]));
+                (float) cf.getDouble("f")),
+                PlayerTeleportEvent.TeleportCause.COMMAND
+        ).thenAccept(result -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0] + "."));
         return true;
     }
 
