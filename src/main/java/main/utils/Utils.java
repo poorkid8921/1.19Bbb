@@ -120,23 +120,30 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
     }
 
-    public static ItemStack createItemStack(Material mat, String display, ImmutableList<String> lore) {
-        ItemStack ie = new ItemStack(mat, 1);
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
+    public static ItemStack createItemStack(Material material, String display) {
+        ItemStack item = new ItemStack(material, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        item.setItemMeta(meta);
+        return item;
     }
 
-    public static ItemStack createItemStack(ItemStack ie, String display, ImmutableList<String> lore) {
-        ItemMeta iem = ie.getItemMeta();
-        iem.setDisplayName(display);
-        iem.setLore(lore);
-        ie.setItemMeta(iem);
-        return ie;
+    public static ItemStack createItemStack(Material material, String display, List<String> lore) {
+        ItemStack item = new ItemStack(material, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
+    public static ItemStack createItemStack(ItemStack item, String display, ImmutableList<String> lore) {
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(display);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
     public static void submitReport(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
         Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
@@ -166,7 +173,10 @@ public class Utils {
 
     public static TpaRequest getRequest(String user) {
         for (TpaRequest r : requests) {
-            if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            try {
+                if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+            } catch (Exception ignored) {
+            }
         }
 
         return null;
@@ -174,8 +184,11 @@ public class Utils {
 
     public static TpaRequest getRequest(String user, String lookup) {
         for (TpaRequest r : requests) {
-            if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
-                return r;
+            try {
+                if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
+                    return r;
+            } catch (Exception ignored) {
+            }
         }
 
         return null;

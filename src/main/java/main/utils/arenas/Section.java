@@ -1,6 +1,5 @@
 package main.utils.arenas;
 
-import main.utils.BlockChanger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -39,8 +38,7 @@ public class Section {
             short amount = this.blockAmounts[this.resetTypeIndex];
             Material data = this.getParent().getKeys()[this.blockTypes[this.resetTypeIndex]];
             while (resetCurrentTypeIndex < amount) {
-                Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
-                BlockChanger.setSectionBlockAsynchronously(getStart().clone().add(offset), new ItemStack(data), false);
+                getStart().clone().add(Arena.getLocationAtIndex(w, l, ww, resetLocationIndex)).getBlock().setType(data, false);
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
                 if (max > 0 && count++ > max) return false;

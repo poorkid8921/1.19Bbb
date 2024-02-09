@@ -16,7 +16,7 @@ import static main.utils.Constants.MAIN_COLOR;
 
 public class Setwarp implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify a warp.");
             return true;
         }

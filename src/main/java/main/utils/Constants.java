@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.Economy;
 import main.Events;
 import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.MailHolder;
 import main.utils.instances.RegionHolder;
 import main.utils.instances.TpaRequest;
 import net.luckperms.api.LuckPerms;
@@ -16,19 +17,22 @@ import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.inventory.ItemStack;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static main.Economy.config;
 
 public class Constants {
-    public static final RegionHolder spawnRegionHolder = new RegionHolder(22, 158, -23, -24, 134, 23);
+    public static final RegionHolder spawnRegionHolder = new RegionHolder(17, 155, -18, -19, 134, 18);
     public static final ObjectArrayList<RegionHolder> regions = ObjectArrayList.of(
             spawnRegionHolder,// spawn
-            new RegionHolder(41, 133, 42, -43, 133, -42),// flat
+            new RegionHolder(-44, 133, 43, 41, 3, -42),// flat
             new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
             new RegionHolder(-129, -63, -128, 127, 133, -128),// wall1
             new RegionHolder(127, -63, -127, 127, 133, 128),// wall2
@@ -84,6 +88,7 @@ public class Constants {
         if (config.contains("r")) {
             int dataLoaded = 0;
             Map<String, Location> homes = new Object2ObjectOpenHashMap<>();
+            ObjectArrayList<MailHolder> mails = ObjectArrayList.of();
             for (String key : config.getConfigurationSection("r").getKeys(false)) {
                 int i = 0;
                 int m = 0;
@@ -98,20 +103,36 @@ public class Constants {
                         case 3 -> money = config.getInt("r." + key + "." + key2);
                         case 4 -> deaths = config.getInt("r." + key + "." + key2);
                         case 5 -> kills = config.getInt("r." + key + "." + key2);
-                        case 6, 7, 8, 9, 10 -> {
-                            String[] args = config.getString("r." + key + "." + key2).split(";");
-                            homes.put(args[0], new Location(Bukkit.getWorld(args[1]),
-                                    Integer.parseInt(args[2]),
-                                    Integer.parseInt(args[3]),
-                                    Integer.parseInt(args[4]),
-                                    Float.parseFloat(args[5]),
-                                    Float.parseFloat(args[6])));
+                        case 6 -> {
+                            String og = config.getString("r." + key + ".5");
+                            if (Objects.equals(og, "null"))
+                                continue;
+                            for (String str : og.split("]")) {
+                                String[] args = str.split(",");
+                                homes.put(args[0], new Location(Bukkit.getWorld(args[1]),
+                                        Integer.parseInt(args[2]),
+                                        Integer.parseInt(args[3]),
+                                        Integer.parseInt(args[4]),
+                                        Float.parseFloat(args[5]),
+                                        Float.parseFloat(args[6])));
+                            }
+                        }
+                        case 7 -> {
+                            String og = config.getString("r." + key + ".6");
+                            if (Objects.equals(og, "null"))
+                                continue;
+                            for (String str : og.split("]")) {
+                                String[] args = str.split(",");
+                                mails.add(new MailHolder(args[0], List.of(args[1]).toArray(new ItemStack[0])));
+                            }
                         }
                     }
                 }
-                if (m == 0 && t == 0 && money == 0 && deaths == 0 && kills == 0 && homes.size() == 0) continue;
-                playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes));
+                if (m == 0 && t == 0 && money == 0 && deaths == 0 && kills == 0 && homes.size() == 0 &&
+                        mails.size() == 0) continue;
+                playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes, mails));
                 homes.clear();
+                mails.clear();
                 dataLoaded++;
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");

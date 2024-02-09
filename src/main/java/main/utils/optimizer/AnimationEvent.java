@@ -33,10 +33,9 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return;
         CustomPlayerDataHolder user = playerData.get(player.getName());
         AnimPackets lastPacket = user.getLastPacket();
+        if (lastPacket == AnimPackets.IGNORE) return;
+        if (user.isIgnoreAnim()) return;
         Bukkit.getScheduler().runTask(Constants.p, () -> {
-            if (lastPacket == AnimPackets.IGNORE) return;
-            if (user.isIgnoreAnim()) return;
-
             Location eyeLoc = player.getEyeLocation();
             RayTraceResult result = player.getWorld().rayTraceEntities(
                     eyeLoc,

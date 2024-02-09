@@ -21,18 +21,14 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
         if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY) return;
-
         WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
         if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.INTERACT_AT) return;
 
         Player player = (Player) event.getPlayer();
-
         ItemStack item = wrapper.getHand() == InteractionHand.MAIN_HAND ?
                 player.getInventory().getItemInMainHand() :
                 player.getInventory().getItemInOffHand();
-
         if (item.getType() != Material.END_CRYSTAL) return;
-
         int entityId = wrapper.getEntityId();
         Location entity = crystalsToBeOptimized.get(entityId);
         if (entity == null) return;
@@ -41,7 +37,6 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
         RayTraceResult result = player.rayTraceBlocks(4.5, FluidCollisionMode.NEVER);
         if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
         if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
-
         Bukkit.getScheduler().runTask(Constants.p, () -> {
             Location clonedLoc = entity.clone().subtract(0.5, 0.0, 0.5);
             if (clonedLoc.getBlock().getType() != Material.AIR) return;

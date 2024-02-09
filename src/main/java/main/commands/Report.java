@@ -15,7 +15,7 @@ import static main.utils.Utils.submitReport;
 public class Report implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify who you want to report.");
             return true;
         }

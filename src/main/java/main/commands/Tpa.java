@@ -16,13 +16,12 @@ import static main.utils.Utils.getRequest;
 public class Tpa implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-        if (args.length < 1) {
+        if (args.length == 0) {
             sender.sendMessage("§7You must specify who you want to teleport to.");
             return true;
         }
-        Player recipient = Bukkit.getPlayer(args[0]);
 
+        Player recipient = Bukkit.getPlayer(args[0]);
         if (recipient == null) {
             sender.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
@@ -43,11 +42,12 @@ public class Tpa implements CommandExecutor {
             }
         }
 
-        if (playerData.get(ren).getTptoggle() == 1 && !sender.hasPermission("has.staff")) {
+        if (playerData.get(ren).getTptoggle() == 1) {
             sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
-        addRequest(user, recipient, false, true);
+
+        addRequest((Player) sender, recipient, false, true);
         return true;
     }
 }

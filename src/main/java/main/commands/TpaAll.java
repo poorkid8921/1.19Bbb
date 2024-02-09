@@ -27,7 +27,7 @@ public class TpaAll implements CommandExecutor, TabExecutor {
         for (Player i : c) {
             String in = i.getName();
             TpaRequest tpr = getRequest(in);
-            if ((tpr != null && tpr.getSender().equals(sender)) || playerData.get(in).getTptoggle() == 1)
+            if ((tpr != null && tpr.getSender().equals(user)) || playerData.get(in).getTptoggle() == 1)
                 continue;
 
             Utils.addRequest(user, i, true, false);

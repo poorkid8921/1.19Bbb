@@ -4,14 +4,12 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Constants;
 import main.utils.HandShake;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.RegionHolder;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -77,16 +75,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onPlayerToggleElytra(EntityToggleGlideEvent e) {
-        Player p = (Player) e.getEntity();
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        if (D0.isTagged()) {
-            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-            e.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
         if (decoded == null) {
@@ -163,7 +151,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onPlayerLeave(PlayerQuitEvent e) {
+    private void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
 
@@ -171,9 +159,8 @@ public class Events implements Listener {
         if (D0.isTagged()) {
             D0.untag();
             p.setHealth(0);
-            D0.incrementDeaths();
-        } else
-            e.setQuitMessage(MAIN_COLOR + "← " + name);
+        }
+        e.setQuitMessage(MAIN_COLOR + "← " + name);
         Constants.requests.remove(Utils.getRequest(name));
 
         if (D0.getLastReceived() != null) {
@@ -190,7 +177,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
+    public void onClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
         if (c instanceof PlayerInventory)
             return;
@@ -217,7 +204,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onPlayerKill(PlayerDeathEvent e) {
+    private void onDeath(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
         Player killer = p.getKiller();
@@ -284,7 +271,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onEventExplosion(EntityDamageEvent e) {
+    private void onExplosion(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof Item a)) return;
         EntityDamageEvent.DamageCause c = e.getCause();
         if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
@@ -319,7 +306,7 @@ public class Events implements Listener {
             Constants.tpa.sort(String::compareToIgnoreCase);
             Constants.msg.sort(String::compareToIgnoreCase);
 
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, new Object2ObjectOpenHashMap<>()));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, new Object2ObjectOpenHashMap<>(), ObjectArrayList.of()));
         } else {
             if (D.getTptoggle() == 0) {
                 Constants.tpa.add(name);
@@ -328,6 +315,11 @@ public class Events implements Listener {
             if (D.getMtoggle() == 0) {
                 Constants.msg.add(name);
                 Constants.msg.sort(String::compareToIgnoreCase);
+            }
+            int mailsCount = D.getMails().size();
+            if (mailsCount > 0) {
+                p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+                p.sendMessage("§7You have " + MAIN_COLOR + mailsCount + " §7unread mails! Use " + MAIN_COLOR + "/inbox §7to view them.");
             }
         }
     }

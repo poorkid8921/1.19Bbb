@@ -15,6 +15,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -144,24 +145,25 @@ public class Kit implements CommandExecutor, TabCompleter {
         String sn = sender.getName();
         long D0 = cooldowns.getOrDefault(sn, 0L);
         if (System.currentTimeMillis() > D0) {
-            Inventory inv = p.getInventory();
+            PlayerInventory inv = p.getInventory();
             int freespace = 0;
+            int specialspace = 0;
             for (ItemStack item : inv.getContents()) {
-                if (item.getType() == Material.AIR)
+                if (item == null)
                     freespace++;
             }
-            switch (freespace) {
-                case 0 -> {
-                    p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
-                }
-                case 41 -> {
-                    Bukkit.getLogger().warning(Arrays.toString(inv.getContents()));
-                    inv.setContents(kit);
-                }
-                default -> {
-                    inv.addItem(shulker_kit);
-                }
+            if (inv.getItemInOffHand() == null)
+                specialspace++;
+            for (ItemStack item : inv.getArmorContents()) {
+                if (item == null)
+                    specialspace++;
             }
+            if (specialspace == 5 && freespace == 41)
+                inv.setContents(kit);
+            else if (freespace == 0)
+                p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
+            else
+                inv.addItem(shulker_kit);
             cooldowns.put(sender.getName(), System.currentTimeMillis() + 1200000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else

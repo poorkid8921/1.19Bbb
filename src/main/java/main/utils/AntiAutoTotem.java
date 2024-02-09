@@ -30,11 +30,8 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
             PlayerInventory inv = player.getInventory();
             if (inv.getItemInOffHand().getType() == Material.AIR)
                 Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
-                    ItemStack offhandItem = inv.getItemInOffHand();
-                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
-                        offhandItem.setAmount(0);
+                    if (inv.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING)
                         flag(player);
-                    }
                 }, 1L);
         }
     }

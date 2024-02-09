@@ -43,8 +43,6 @@ commands:
   stats:
     usage: /<command>
     aliases: statistics
-  acreate:
-    usage: /<command>
   rbalance:
     uasge: /<command>
     aliases: rbal
@@ -63,6 +61,12 @@ commands:
   playtime:
     usage: /<command>
   kit:
+    usage: /<command>
+  acreate:
+    usage: /<command>
+  inbox:
+    usage: /<command>
+  mail:
     usage: /<command>
 permissions:
   has.staff:

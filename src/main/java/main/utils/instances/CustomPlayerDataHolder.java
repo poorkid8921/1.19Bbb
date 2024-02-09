@@ -1,6 +1,7 @@
 package main.utils.instances;
 
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import main.utils.Constants;
@@ -50,23 +51,28 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private Map<String, Location> homes;
+    @Getter
+    @Setter
+    private ObjectArrayList<MailHolder> mails;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
                                   double z,
                                   int deaths,
                                   int kills,
-                                  Map<String, Location> homes) {
+                                  Map<String, Location> homes,
+                                  ObjectArrayList<MailHolder> mails) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
         this.homes = homes;
+        this.mails = mails;
     }
 
     public void setupCombatRunnable(Player player) {
-        currentTagTime = 10;
+        this.currentTagTime = 10;
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
@@ -81,11 +87,12 @@ public class CustomPlayerDataHolder {
             }
         };
         runnable.runTaskTimer(Constants.p, 0L, 20L);
-        setRunnableid(runnable.getTaskId());
-        tagged = true;
+        this.runnableid = runnable.getTaskId();
+        this.tagged = true;
     }
 
     public void untag() {
+        this.currentTagTime = 0;
         this.tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
     }

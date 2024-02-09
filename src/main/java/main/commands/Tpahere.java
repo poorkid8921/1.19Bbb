@@ -9,28 +9,28 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static main.utils.Constants.playerData;
+import static main.utils.Utils.addRequest;
 import static main.utils.Utils.getRequest;
 
 public class Tpahere implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player user)) return true;
-        if (args.length < 1) {
-            user.sendMessage("§7You must specify who you want to teleport to.");
+        if (args.length == 0) {
+            sender.sendMessage("§7You must specify who you want to teleport to.");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
-
         if (recipient == null) {
-            user.sendMessage("§7You can't send teleport requests to offline players.");
+            sender.sendMessage("§7You can't teleport to offline players.");
             return true;
         }
 
         String ren = recipient.getName();
         String sn = sender.getName();
         if (ren.equals(sn)) {
-            user.sendMessage("§7You can't teleport to yourself.");
+            sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
@@ -38,18 +38,17 @@ public class Tpahere implements CommandExecutor {
 
         if (tpr != null) {
             if (tpr.getSenderF().equals(sn)) {
-                user.sendMessage("§7You already have an ongoing request to this player.");
+                sender.sendMessage("§7You already have an ongoing request to this player.");
                 return true;
             }
         }
 
-        if (!Constants.tpa.contains(ren)) {
-            user.sendMessage("§7You can't request this player since they've locked their tp requests.");
+        if (playerData.get(ren).getTptoggle() == 1) {
+            sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
-        Constants.requests.remove(tpr);
-        Utils.addRequest(user, recipient, true, true);
+        addRequest((Player) sender, recipient, true, true);
         return true;
     }
 }

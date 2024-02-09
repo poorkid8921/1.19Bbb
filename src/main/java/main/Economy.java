@@ -9,6 +9,7 @@ import main.utils.arenas.ArenaIO;
 import main.utils.arenas.CreateCommand;
 import main.utils.economy.Balance;
 import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.MailHolder;
 import main.utils.optimizer.AnimationEvent;
 import main.utils.optimizer.InteractionEvent;
 import main.utils.optimizer.LastPacketEvent;
@@ -30,7 +31,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static main.utils.Constants.*;
 
@@ -75,7 +78,6 @@ public class Economy extends JavaPlugin {
         this.getCommand("msglock").setExecutor(new MsgLock());
         this.getCommand("tpalock").setExecutor(new TpaLock());
         this.getCommand("stats").setExecutor(new Stats());
-        this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("discord").setExecutor(new Discord());
         this.getCommand("warp").setExecutor(new Warp());
@@ -86,6 +88,9 @@ public class Economy extends JavaPlugin {
         this.getCommand("rsethome").setExecutor(new SetHome());
         this.getCommand("rhome").setExecutor(new Home());
         this.getCommand("rdelhome").setExecutor(new DelHome());
+        this.getCommand("acreate").setExecutor(new CreateCommand());
+        this.getCommand("inbox").setExecutor(new Inbox());
+        this.getCommand("mail").setExecutor(new Mail());
 
         TeleportCompleter tabCompleter = new TeleportCompleter();
         this.getCommand("tpa").setTabCompleter(tabCompleter);
@@ -132,10 +137,9 @@ public class Economy extends JavaPlugin {
                     netherRTP.add(getRandomLoc(d0));
                     endRTP.add(getRandomLoc(d1));
                 }
-            }.runTaskTimer(this, 0L, 20L);
+            }.runTaskTimer(this, 0L, 5L);
             d = Bukkit.getWorld("world");
-            Constants.spawn = new Location(Economy.d,
-                    -0.5, 141.06250, 0.5);
+            Constants.spawn = new Location(Economy.d, -0.5, 140.0, 0.5, 90F, 0F);
 
             Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
                 for (Entity ent : d.getEntities()) {
@@ -146,16 +150,15 @@ public class Economy extends JavaPlugin {
                 if (arena++ == 3)
                     arena = 1;
                 Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
-                for (Player a : Bukkit.getOnlinePlayers()) {
-                    if (a.isGliding())
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (p.isGliding())
                         continue;
-
-                    Location c = a.getLocation();
-                    c.setY(200);
-                    if (Economy.d.getBlockAt(c).getType() != Material.BARRIER)
+                    Location loc = p.getLocation();
+                    loc.setY(200);
+                    if (Economy.d.getBlockAt(loc).getType() != Material.BARRIER)
                         continue;
-                    c.setY(135);
-                    a.teleportAsync(c);
+                    loc.setY(135);
+                    p.teleportAsync(loc);
                 }
             }, 0L, 24000L);
         }, 100L);
@@ -168,7 +171,6 @@ public class Economy extends JavaPlugin {
             } catch (Exception ignored) {
             }
         });
-
         Gui.init();
         registerPacketListeners();
         Constants.init();
@@ -191,17 +193,23 @@ public class Economy extends JavaPlugin {
                 config.set("r." + key + ".2", value.getMoney());
                 config.set("r." + key + ".3", value.getDeaths());
                 config.set("r." + key + ".4", value.getKills());
-                int i = 5;
-                for (Map.Entry<String, Location> var : value.getHomes().entrySet()) {
-                    Location loc = var.getValue();
-                    config.set("r." + key + "." + i++, var.getKey() + ";" +
-                            loc.getWorld().getName() + ";" +
-                            loc.getX() + ";" +
-                            loc.getY() + ";" +
-                            loc.getZ() + ";" +
-                            loc.getYaw() + ";" +
-                            loc.getPitch() + ";");
-                }
+                if (value.getHomes().size() > 0) {
+                    StringBuilder finalstr = new StringBuilder();
+                    for (Map.Entry<String, Location> var : value.getHomes().entrySet()) {
+                        Location loc = var.getValue();
+                        finalstr.append(var.getKey()).append(",").append(loc.getWorld().getName()).append("m").append(loc.getX()).append(",").append(loc.getY()).append(",").append(loc.getZ()).append(",").append(loc.getYaw()).append(",").append(loc.getPitch()).append(",]");
+                    }
+                    config.set("r." + key + ".5", finalstr.toString());
+                } else
+                    config.set("r." + key + ".5", "null");
+                if (value.getMails().size() > 0) {
+                    StringBuilder finalstr = new StringBuilder();
+                    for (MailHolder var : value.getMails()) {
+                        finalstr.append(var.getSender()).append(Arrays.toString(var.getContents())).append(",]");
+                    }
+                    config.set("r." + key + ".5", finalstr.toString());
+                } else
+                    config.set("r." + key + ".6", "null");
             }
         }
         try {

@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Constants.MAIN_COLOR;
 import static main.utils.Utils.getRequest;
@@ -46,24 +47,24 @@ public class Tpaccept implements CommandExecutor {
 
         Player tempuser;
         Player temprecipient;
-        if (!request.isHere()) {
-            tempuser = request.getSender();
-            temprecipient = user;
-            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request.",
-                    "§7Teleporting...");
-            if (request.getTpaAll())
-                temprecipient.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request");
-        } else {
+        if (request.isHere()) {
             tempuser = user;
             temprecipient = request.getSender();
             temprecipient.sendMessage("§7You have accepted " + MAIN_COLOR + translate(tempuser.getDisplayName()) + "§7's teleport request.",
                     "§7Teleporting...");
             if (request.getTpaAll())
                 tempuser.sendMessage(MAIN_COLOR + translate(temprecipient.getDisplayName()) + " §7has accepted your teleport request.");
+        } else {
+            tempuser = request.getSender();
+            temprecipient = user;
+            tempuser.sendMessage("§7You have accepted " + MAIN_COLOR + translate(temprecipient.getDisplayName()) + "§7's teleport request.",
+                    "§7Teleporting...");
+            if (request.getTpaAll())
+                temprecipient.sendMessage(MAIN_COLOR + translate(tempuser.getDisplayName()) + " §7has accepted your teleport request");
         }
 
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
-        tempuser.teleport(temprecipient.getLocation());
+        tempuser.teleport(temprecipient.getLocation(), PlayerTeleportEvent.TeleportCause.COMMAND);
         Constants.requests.remove(request);
         return true;
     }

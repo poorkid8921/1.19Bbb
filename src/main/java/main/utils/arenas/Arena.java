@@ -122,7 +122,6 @@ public class Arena {
 
         ObjectArrayList<Location> sectionStarts = ObjectArrayList.of();
         ObjectArrayList<Location> sectionEnds = ObjectArrayList.of();
-
         for (int sx = 0; sx < sectionsX; sx++) {
             for (int zx = 0; zx < sectionsZ; zx++) {
                 int xStart = (int) (Math.floor(width / sectionsX) * sx);
@@ -299,7 +298,6 @@ public class Arena {
         for (Material data : keys) {
             if (!keyList.contains(data)) keyList.add(data);
         }
-
         this.keys = keyList.toArray(new Material[keyList.size()]);
     }
 
@@ -319,8 +317,7 @@ public class Arena {
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
-            boolean reset = s.reset(data.sections.get(id));
-            if (reset) {
+            if (s.reset(data.sections.get(id))) {
                 data.sections.remove(id);
                 data.sectionIDs.remove((Object) id);
                 sectionsIterated--;

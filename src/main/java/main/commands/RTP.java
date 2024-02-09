@@ -11,6 +11,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -30,7 +31,7 @@ public class RTP implements CommandExecutor, TabExecutor {
         World w = p.getWorld();
         String wn = w.getName();
         Location locC = (wn.equals("world_nether") ? netherRTP : wn.equals("world_the_end") ? endRTP : overworldRTP).get(RANDOM.nextInt(100));
-        p.teleportAsync(locC).thenAccept(result -> {
+        p.teleportAsync(locC, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
             D0.setRTPing(false);
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + (int) locC.getX() + " " + (int) locC.getY() + " " + (int) locC.getZ());

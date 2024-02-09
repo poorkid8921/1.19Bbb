@@ -30,6 +30,7 @@ public class ProtectionEvents implements Listener {
                     r.checkZ(z))
                 continue;
             e.setCancelled(true);
+            return;
         }
     }
     @EventHandler
@@ -113,7 +114,6 @@ public class ProtectionEvents implements Listener {
             D0.setTagTime(p);
         else
             D0.setupCombatRunnable(p);
-
         CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
         if (D1.isTagged())
             D1.setTagTime(attacker);
