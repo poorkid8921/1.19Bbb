@@ -3,7 +3,6 @@ package main.utils.arenas;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.inventory.ItemStack;
 
 public class Section {
     private final Arena parent;
@@ -11,9 +10,7 @@ public class Section {
     private final Location end;
     private final short[] blockTypes;
     private final short[] blockAmounts;
-
     private final int ID;
-
     private int resetTypeIndex;
     private int resetLocationIndex;
     private int resetCurrentTypeIndex;

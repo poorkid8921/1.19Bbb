@@ -2,6 +2,7 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.utils.instances.HomeHolder;
 import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Constants.*;
+import static main.utils.Initializer.*;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -47,17 +48,14 @@ public class Utils {
         seconds %= 86400;
         long hours = seconds / 3600;
         if (hours > 0)
-            builder.append(builder.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
-                    " " + hours + " " + (hours > 1 ? "hours " : "hour "));
-
+            builder.append(builder.length() == 0 ? (hours + " " + (hours > 1 ? "hours" : "hour")) :
+                    (" " + hours + " " + (hours > 1 ? "hours " : "hour ")));
         long minutes = (seconds / 60) % 60;
         if (minutes > 0)
-            builder.append(builder.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
-                    " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
-
+            builder.append(builder.length() > 1 ? " " : "").append(minutes).append(" ").append(minutes > 1 ? "minutes " : "minute ");
         seconds %= 60;
         if (seconds > 0)
-            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+            builder.append(builder.length() > 1 ? " " : "").append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
         return builder.toString();
     }
 
@@ -96,7 +94,7 @@ public class Utils {
         Firework firework = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
         FireworkMeta meta = firework.getFireworkMeta();
         meta.setPower(2);
-        meta.addEffect(FireworkEffect.builder().withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).withColor(Constants.color.get(Constants.RANDOM.nextInt(Constants.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        meta.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         firework.setFireworkMeta(meta);
     }
 
@@ -144,13 +142,20 @@ public class Utils {
         item.setItemMeta(meta);
         return item;
     }
+
     public static void submitReport(Player pp, String report, String reason) {
         String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(r -> r.hasPermission("has.staff")).forEach(r -> r.sendMessage(MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
-                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
+        String staffMSG = MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
+                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.hasPermission("has.staff"))
+                continue;
+            p.sendMessage(staffMSG);
+        }
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             String pn = pp.getName();
+            playerData.get(pn).setInventoryInfo(null);
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
                 connection.setRequestMethod("POST");
@@ -164,8 +169,7 @@ public class Utils {
                             .getBytes(StandardCharsets.UTF_8));
                 }
                 connection.getInputStream();
-            } catch (final IOException e) {
-                e.printStackTrace();
+            } catch (IOException ignored) {
             }
         });
         pp.sendMessage("§7Successfully submitted the report.");
@@ -174,7 +178,7 @@ public class Utils {
     public static TpaRequest getRequest(String user) {
         for (TpaRequest r : requests) {
             try {
-                if (r.getReceiver().equals(user) || r.getSenderF().equals(user)) return r;
+                if (r.getReceiver() == user || r.getSenderF() == user) return r;
             } catch (Exception ignored) {
             }
         }
@@ -185,7 +189,7 @@ public class Utils {
     public static TpaRequest getRequest(String user, String lookup) {
         for (TpaRequest r : requests) {
             try {
-                if ((r.getReceiver().equals(user) || r.getSenderF().equals(user)) && (r.getReceiver().equals(lookup) || r.getSenderF().equals(lookup)))
+                if ((r.getReceiver() == user || r.getSenderF() == user) && (r.getReceiver() == lookup || r.getSenderF() == lookup))
                     return r;
             } catch (Exception ignored) {
             }
@@ -194,9 +198,18 @@ public class Utils {
         return null;
     }
 
+    public static HomeHolder getHome(String x, ObjectArrayList<HomeHolder> y) {
+        for (HomeHolder k : y) {
+            if (k.getName() == x) {
+                return k;
+            }
+        }
+        return null;
+    }
+
     public static void addRequest(Player sender, Player receiver, boolean tpahere, boolean showmsg) {
         String sn = sender.getName();
-        TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere, !tpahere);
+        TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere, tpahere);
         TextComponent a = new TextComponent("§7[§a✔§7]");
         a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
 
@@ -219,7 +232,7 @@ public class Utils {
             public void run() {
                 requests.remove(request);
             }
-        }.runTaskLaterAsynchronously(Constants.p, 2400L);
+        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
         request.setRunnableid(runnable.getTaskId());
     }
 

@@ -5,7 +5,7 @@ import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Constants;
+import main.utils.Initializer;
 import main.utils.HandShake;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
@@ -18,23 +18,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
-import static main.utils.Constants.*;
+import static main.utils.Initializer.*;
 import static main.utils.Utils.spawnFirework;
+import static main.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -78,18 +77,6 @@ public class Events implements Listener {
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
         if (decoded == null) {
-            try {
-                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_TOKEN_WEBHOOK.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
-                connection.setDoOutput(true);
-                try (final OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write(("{\"tts\":false,\"username\":\"Security\",\"avatar_url\":\"https://mc-heads.net/avatar/Catto69420/100\",\"embeds\":[{\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + e.getOriginalSocketAddressHostname() + "\",\"name\":\"Target IP\",\"inline\":true}],\"title\":\"Security\"}]}").getBytes(StandardCharsets.UTF_8));
-                }
-                connection.getInputStream();
-            } catch (final IOException ignored) {
-            }
             e.setFailMessage(MAIN_COLOR + "Unauthorized access.");
             e.setFailed(true);
             return;
@@ -103,9 +90,27 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntitySpawn(EntitySpawnEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL) {
-            Entity ent = event.getEntity();
+    private void onAnvilPrepareOutput(PrepareAnvilEvent e) {
+        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser((Player) e.getView().getPlayer()).getPrimaryGroup();
+        if (Initializer.upperHierarchyRanks.contains(group)) {
+            Inventory inv = e.getInventory();
+            ItemStack input = inv.getItem(0);
+            if (input == null)
+                return;
+            ItemStack output = inv.getItem(2);
+            if (output == null)
+                return;
+            ItemMeta meta = output.getItemMeta();
+            meta.setDisplayName(translate(meta.getDisplayName()));
+            output.setItemMeta(meta);
+            e.setResult(output);
+        }
+    }
+
+    @EventHandler
+    private void onEntitySpawn(EntitySpawnEvent e) {
+        if (e.getEntityType() == EntityType.ENDER_CRYSTAL) {
+            Entity ent = e.getEntity();
             crystalsToBeOptimized.put(
                     ent.getEntityId(),
                     ent.getLocation());
@@ -113,9 +118,9 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            Bukkit.getScheduler().runTaskLater(Constants.p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+    private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent e) {
+        if (e.getEntityType() == EntityType.ENDER_CRYSTAL)
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> crystalsToBeOptimized.remove(e.getEntity().getEntityId()), 40L);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -124,9 +129,9 @@ public class Events implements Listener {
         Team team = p.getScoreboard().getPlayerTeam(p);
         e.setFormat(team == null ?
                 chat.getPlayerPrefix("world", p).replace("&", "§") +
-                        p.getName() + SECOND_COLOR + " » §r" + e.getMessage() :
+                        p.getName() + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
                 ("§7[" + team.getColor() + team.getDisplayName() + "§7] " + chat.getPlayerPrefix("world", p).replace("&", "§") +
-                        "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage()));
+                        "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
     }
 
     @EventHandler
@@ -134,20 +139,20 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String pn = p.getName();
         if (playerData.get(pn).isTagged()) {
-            p.sendMessage(Constants.EXCEPTION_TAGGED);
+            p.sendMessage(Initializer.EXCEPTION_TAGGED);
             e.setCancelled(true);
         }
     }
 
     @EventHandler
     private void onInteract(PlayerInteractEvent e) {
-        if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK) ||
-                !e.getClickedBlock().getType().equals(Material.LEVER))
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK ||
+                e.getClickedBlock().getType() != Material.LEVER)
             return;
         String name = e.getPlayer().getName();
-        if (Constants.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis())
+        if (Initializer.cooldowns.getOrDefault(name, 0L) > System.currentTimeMillis())
             e.setCancelled(true);
-        else Constants.cooldowns.put(name, System.currentTimeMillis() + 500);
+        else Initializer.cooldowns.put(name, System.currentTimeMillis() + 500L);
     }
 
     @EventHandler
@@ -161,23 +166,23 @@ public class Events implements Listener {
             p.setHealth(0);
         }
         e.setQuitMessage(MAIN_COLOR + "← " + name);
-        Constants.requests.remove(Utils.getRequest(name));
+        Initializer.requests.remove(Utils.getRequest(name));
 
         if (D0.getLastReceived() != null) {
             CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
-            if (Objects.equals(D1.getLastReceived(), name))
+            if (D1.getLastReceived() == name)
                 D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
-        Constants.msg.remove(name);
-        Constants.tpa.remove(name);
+        Initializer.msg.remove(name);
+        Initializer.tpa.remove(name);
 
-        Constants.msg.sort(String::compareToIgnoreCase);
-        Constants.tpa.sort(String::compareToIgnoreCase);
+        Initializer.msg.sort(String::compareToIgnoreCase);
+        Initializer.tpa.sort(String::compareToIgnoreCase);
     }
 
     @EventHandler
-    public void onClick(InventoryClickEvent e) {
+    private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
         if (c instanceof PlayerInventory)
             return;
@@ -188,18 +193,16 @@ public class Events implements Listener {
         if (inv == null) return;
 
         int slot = e.getSlot();
-        switch (inv.first()) {
-            case 0 -> {
-                e.setCancelled(true);
-                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
-                Utils.submitReport(p, inv.second(), switch (slot) {
-                    case 10 -> "Cheating";
-                    case 11 -> "Doxxing";
-                    case 12 -> "Ban Evading";
-                    case 13 -> "Spamming";
-                    default -> "Undefined";
-                });
-            }
+        if (inv.first() == 0) {
+            e.setCancelled(true);
+            if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+            Utils.submitReport(p, inv.second(), switch (slot) {
+                case 10 -> "Cheating";
+                case 11 -> "Doxxing";
+                case 12 -> "Ban Evading";
+                case 13 -> "Spamming";
+                default -> "Undefined";
+            });
         }
     }
 
@@ -251,9 +254,9 @@ public class Events implements Listener {
 
             Location loc = p.getLocation();
             World w = loc.getWorld();
-            if (!Constants.lp.getPlayerAdapter(Player.class).getUser(killer).getPrimaryGroup().equals("default")) {
+            if (Initializer.lp.getPlayerAdapter(Player.class).getUser(killer).getPrimaryGroup() != "default") {
                 loc.add(0, 1, 0);
-                switch (Constants.RANDOM.nextInt(4)) {
+                switch (Initializer.RANDOM.nextInt(4)) {
                     case 0 -> spawnFirework(loc);
                     case 1 -> w.spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
                     case 2 -> w.strikeLightningEffect(loc);
@@ -265,7 +268,7 @@ public class Events implements Listener {
                 }
             } else w.strikeLightningEffect(loc);
 
-            if (Constants.RANDOM.nextInt(100) <= 5)
+            if (Initializer.RANDOM.nextInt(100) <= 5)
                 w.dropItemNaturally(loc, Utils.getHead(p, killer.getDisplayName()));
         }
     }
@@ -282,7 +285,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
+    private void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         PlayerInventory inv = p.getInventory();
         if (inv.getContents().length == 0) {
@@ -293,39 +296,34 @@ public class Events implements Listener {
             inv.setLeggings(leggings);
             inv.setBoots(boots);
             inv.setItemInOffHand(gap);
-            p.teleportAsync(Constants.spawn);
+            p.teleportAsync(Initializer.spawn);
         }
         String name = p.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
 
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
-            Constants.tpa.add(name);
-            Constants.msg.add(name);
+            Initializer.tpa.add(name);
+            Initializer.msg.add(name);
 
-            Constants.tpa.sort(String::compareToIgnoreCase);
-            Constants.msg.sort(String::compareToIgnoreCase);
+            Initializer.tpa.sort(String::compareToIgnoreCase);
+            Initializer.msg.sort(String::compareToIgnoreCase);
 
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, new Object2ObjectOpenHashMap<>(), ObjectArrayList.of()));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of(), 0));
         } else {
             if (D.getTptoggle() == 0) {
-                Constants.tpa.add(name);
-                Constants.tpa.sort(String::compareToIgnoreCase);
+                Initializer.tpa.add(name);
+                Initializer.tpa.sort(String::compareToIgnoreCase);
             }
             if (D.getMtoggle() == 0) {
-                Constants.msg.add(name);
-                Constants.msg.sort(String::compareToIgnoreCase);
-            }
-            int mailsCount = D.getMails().size();
-            if (mailsCount > 0) {
-                p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-                p.sendMessage("§7You have " + MAIN_COLOR + mailsCount + " §7unread mails! Use " + MAIN_COLOR + "/inbox §7to view them.");
+                Initializer.msg.add(name);
+                Initializer.msg.sort(String::compareToIgnoreCase);
             }
         }
     }
 
     @EventHandler
-    public void onRespawn(PlayerRespawnEvent e) {
-        e.setRespawnLocation(Constants.spawn);
+    private void onRespawn(PlayerRespawnEvent e) {
+        e.setRespawnLocation(Initializer.spawn);
     }
 }

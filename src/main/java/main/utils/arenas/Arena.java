@@ -2,7 +2,7 @@ package main.utils.arenas;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Constants;
+import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -32,16 +32,15 @@ public class Arena {
     private final String name;
     private Material[] keys;
 
+    public static Map<String, Arena> getArenas() {
+        return arenas;
+    }
+
     Arena(String name, Location c1, Location c2) {
         this.name = name;
         this.c1 = c1;
         this.c2 = c2;
-        keys = new Material[]{
-                Material.AIR,
-                Material.DIRT,
-                Material.GRASS_BLOCK,
-                Material.STONE
-        };
+        keys = new Material[]{Material.AIR, Material.DIRT, Material.GRASS_BLOCK, Material.STONE};
 
         int x1 = c1.getBlockX();
         int x2 = c2.getBlockX();
@@ -73,7 +72,7 @@ public class Arena {
         c2.setZ(z2);
     }
 
-    public static void createNewArena(String name, Location c1, Location c2, Player player) {
+    static void createNewArena(String name, Location c1, Location c2, Player player) {
         int x1 = c1.getBlockX();
         int x2 = c2.getBlockX();
         int y1 = c1.getBlockY();
@@ -115,7 +114,6 @@ public class Arena {
         while (sectionArea > maxSectionArea) {
             if (x) sectionsX++;
             else sectionsZ++;
-
             sectionArea = (width / sectionsX) * (length / sectionsZ);
             x = !x;
         }
@@ -126,16 +124,12 @@ public class Arena {
             for (int zx = 0; zx < sectionsZ; zx++) {
                 int xStart = (int) (Math.floor(width / sectionsX) * sx);
                 int zStart = (int) (Math.floor(length / sectionsZ) * zx);
-
                 int xEnd = (int) (Math.floor(width / sectionsX) * (sx + 1)) - 1;
                 int zEnd = (int) (Math.floor(length / sectionsZ) * (zx + 1)) - 1;
-
                 if (sx == sectionsX - 1) xEnd = width - 1;
                 if (zx == sectionsZ - 1) zEnd = length - 1;
-
                 Location start = c1.clone().add(xStart, 0, zStart);
                 Location end = c1.clone().add(xEnd, height - 1, zEnd);
-
                 sectionStarts.add(start);
                 sectionEnds.add(end);
             }
@@ -148,21 +142,19 @@ public class Arena {
         data.sectionEnds = sectionEnds;
         data.sections = ObjectArrayList.of();
         data.maxBlocks = width * length * height;
-
-        Runnable runnable = new BukkitRunnable() {
+        BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
                 arena.getSections().addAll(data.sections);
-                Arena.arenas.put(arena.name, arena);
+                Arena.getArenas().put(arena.name, arena);
 
-                File file = new File(Constants.p.getDataFolder(), "/arenas/" + name + ".json");
+                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.getc1();
                     Location l2 = arena.getc2();
 
-                    String header = arena.getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ() + "," +
-                            l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ();
+                    String header = arena.getName() + "," + l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ() + "," + l2.getBlockX() + "," + l2.getBlockY() + "," + l2.getBlockZ();
                     byte[] headerBytes = header.getBytes(StandardCharsets.US_ASCII);
                     byte[] keyBytes = new byte[0];
                     for (Material data : arena.getKeys()) {
@@ -202,15 +194,10 @@ public class Arena {
                     totalBytes = Utils.compress(ArrayUtils.addAll(totalBytes, blockBytes));
                     stream.write(totalBytes);
                     stream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ignored) {
                 }
-
-                if (player != null && player.isOnline())
-                    player.sendMessage("§7Arena has been successfully created");
             }
         };
-
         loopyCreate(data, 500000, runnable);
     }
 
@@ -226,8 +213,7 @@ public class Arena {
             Location loc;
             try {
                 loc = Arena.getLocationAtIndex(width, length, data.arena.c1.getWorld(), data.index);
-            } catch (ArithmeticException e) {
-                e.printStackTrace();
+            } catch (ArithmeticException ignored) {
                 return;
             }
 
@@ -239,7 +225,6 @@ public class Arena {
                 data.sectionStarts.remove(0);
                 data.sectionEnds.remove(0);
                 if (keyList.size() > data.arena.keys.length) data.arena.addKeys(keyList);
-
                 if (data.sectionStarts.size() == 0) {
                     onFinished.run();
                     return;
@@ -289,7 +274,7 @@ public class Arena {
         loopyCreate(data, amount, onFinished);
     }
 
-    public static Location getLocationAtIndex(int width, int length, World world, int index) {
+    static Location getLocationAtIndex(int width, int length, World world, int index) {
         return new Location(world, index % width, index / (length * width), (index / width) % length);
     }
 
@@ -313,7 +298,7 @@ public class Arena {
         loopyReset(data);
     }
 
-    public void loopyReset(ResetLoopinData data) {
+    private void loopyReset(ResetLoopinData data) {
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
             Section s = getSections().get(id);
@@ -334,17 +319,15 @@ public class Arena {
             }
         }
 
-        if (data.sections.size() == 0)
-            return;
-
-        Bukkit.getScheduler().runTaskLater(Constants.p, () -> loopyReset(data), 1L);
+        if (data.sections.size() == 0) return;
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data), 1L);
     }
 
-    public Material[] getKeys() {
+    Material[] getKeys() {
         return keys;
     }
 
-    public void setKeys(Collection<Material> keys) {
+    void setKeys(Collection<Material> keys) {
         this.keys = keys.toArray(new Material[keys.size()]);
     }
 
@@ -352,15 +335,15 @@ public class Arena {
         return name;
     }
 
-    public Location getc1() {
+    private Location getc1() {
         return c1;
     }
 
-    public Location getc2() {
+    private Location getc2() {
         return c2;
     }
 
-    public ObjectArrayList<Section> getSections() {
+    ObjectArrayList<Section> getSections() {
         return sections;
     }
 
@@ -372,9 +355,9 @@ public class Arena {
         short[] blockAmounts, blockTypes = new short[0];
     }
 
-    public static class ResetLoopinData {
-        public Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
-        public ObjectArrayList<Integer> sectionIDs = ObjectArrayList.of();
-        public int speed;
+    private static class ResetLoopinData {
+        private final Map<Integer, Integer> sections = new Object2ObjectOpenHashMap<>();
+        private final ObjectArrayList<Integer> sectionIDs = ObjectArrayList.of();
+        private int speed;
     }
 }

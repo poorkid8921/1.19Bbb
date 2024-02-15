@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 public class AntiAutoTotem extends SimplePacketListenerAbstract {
     void flag(Player p) {
@@ -29,7 +29,7 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
                 clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
             PlayerInventory inv = player.getInventory();
             if (inv.getItemInOffHand().getType() == Material.AIR)
-                Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                     if (inv.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING)
                         flag(player);
                 }, 1L);

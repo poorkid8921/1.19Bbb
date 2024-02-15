@@ -11,7 +11,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.entity.Player;
 
-import static main.utils.Constants.playerData;
+import static main.utils.Initializer.playerData;
 
 public class LastPacketEvent extends SimplePacketListenerAbstract {
     public LastPacketEvent() {
@@ -20,40 +20,45 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
-        CustomPlayerDataHolder user = playerData.get(((Player) event.getPlayer()).getName());
-        AnimPackets animPacket = getAnimPacket(event);
-        if (user.getLastPacket() == AnimPackets.ANIMATION)
-            user.setIgnoreAnim(animPacket == AnimPackets.INV_DROP);
+        CustomPlayerDataHolder user;
+        try {
+            user = playerData.get(((Player) event.getPlayer()).getName());
+        } catch (Exception e) {
+            return;
+        }
+        int animPacket = getAnimPacket(event);
+        if (user.getLastPacket() == 0)
+            user.setIgnoreAnim(animPacket == 3);
         user.setLastPacket(animPacket);
     }
 
-    private AnimPackets getAnimPacket(PacketPlayReceiveEvent event) {
+    private int getAnimPacket(PacketPlayReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.ANIMATION) {
-            return AnimPackets.ANIMATION;
+            return 0;
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             WrapperPlayClientPlayerDigging wrapper = new WrapperPlayClientPlayerDigging(event);
             if (wrapper.getAction() == DiggingAction.DROP_ITEM
                     || wrapper.getAction() == DiggingAction.DROP_ITEM_STACK) {
-                return AnimPackets.IGNORE;
+                return 4;
             } else if (wrapper.getAction() == DiggingAction.START_DIGGING) {
-                return AnimPackets.START_DIGGING;
+                return 1;
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
             if (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.THROW ||
                     (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP
                             && wrapper.getSlot() == -999)) {
-                return AnimPackets.INV_DROP;
+                return 3;
             }
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT
                 || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
-            return AnimPackets.IGNORE;
+            return 4;
         } else if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
             if (wrapper.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
-                return AnimPackets.ATTACK;
+                return 2;
             }
         }
-        return AnimPackets.MISC;
+        return 5;
     }
 }

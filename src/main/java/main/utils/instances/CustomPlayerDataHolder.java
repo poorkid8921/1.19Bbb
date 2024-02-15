@@ -4,8 +4,7 @@ import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
-import main.utils.Constants;
-import main.utils.optimizer.AnimPackets;
+import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -29,7 +28,7 @@ public class CustomPlayerDataHolder {
     private int kills;
     @Getter
     @Setter
-    private AnimPackets lastPacket = AnimPackets.MISC;
+    private int lastPacket = 5;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -50,25 +49,25 @@ public class CustomPlayerDataHolder {
     private boolean RTPing;
     @Getter
     @Setter
-    private Map<String, Location> homes;
+    private ObjectArrayList<HomeHolder> homes;
     @Getter
     @Setter
-    private ObjectArrayList<MailHolder> mails;
+    private int rank;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
                                   double z,
                                   int deaths,
                                   int kills,
-                                  Map<String, Location> homes,
-                                  ObjectArrayList<MailHolder> mails) {
+                                  ObjectArrayList<HomeHolder> homes,
+                                  int rank) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
         this.homes = homes;
-        this.mails = mails;
+        this.rank = rank;
     }
 
     public void setupCombatRunnable(Player player) {
@@ -86,13 +85,12 @@ public class CustomPlayerDataHolder {
                 player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + currentTagTime);
             }
         };
-        runnable.runTaskTimer(Constants.p, 0L, 20L);
+        runnable.runTaskTimer(Initializer.p, 0L, 20L);
         this.runnableid = runnable.getTaskId();
         this.tagged = true;
     }
 
     public void untag() {
-        this.currentTagTime = 0;
         this.tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
     }

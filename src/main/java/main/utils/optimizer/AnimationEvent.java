@@ -3,7 +3,7 @@ package main.utils.optimizer;
 import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import main.utils.Constants;
+import main.utils.Initializer;
 import main.utils.instances.CustomPlayerDataHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,7 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import static main.utils.Constants.playerData;
+import static main.utils.Initializer.playerData;
 
 public class AnimationEvent extends SimplePacketListenerAbstract {
     Holder<DamageType> cachedHolder = Holder.a(new DamageType("player", 0.1f));
@@ -32,10 +32,10 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
         Player player = (Player) event.getPlayer();
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return;
         CustomPlayerDataHolder user = playerData.get(player.getName());
-        AnimPackets lastPacket = user.getLastPacket();
-        if (lastPacket == AnimPackets.IGNORE) return;
+        int lastPacket = user.getLastPacket();
+        if (lastPacket == 4) return;
         if (user.isIgnoreAnim()) return;
-        Bukkit.getScheduler().runTask(Constants.p, () -> {
+        Bukkit.getScheduler().runTask(Initializer.p, () -> {
             Location eyeLoc = player.getEyeLocation();
             RayTraceResult result = player.getWorld().rayTraceEntities(
                     eyeLoc,
@@ -44,9 +44,7 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
                     0.0,
                     entity -> {
                         if (entity.getType() != EntityType.PLAYER) return true;
-
-                        Player p = (Player) entity;
-                        return !player.getUniqueId().equals(p.getUniqueId()) && player.canSee(p);
+                        return player.getUniqueId() != entity.getUniqueId();
                     }
             );
             if (result == null) return;
@@ -59,7 +57,7 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
                 if (bResult != null) {
                     Block block = bResult.getHitBlock();
                     Vector eyeLocV = eyeLoc.toVector();
-                    if (block != null && (lastPacket != AnimPackets.START_DIGGING && lastPacket != AnimPackets.ATTACK ||
+                    if (block != null && (lastPacket != 1 && lastPacket != 2 ||
                             eyeLocV.distanceSquared(bResult.getHitPosition()) <=
                                     eyeLocV.distanceSquared(result.getHitPosition())))
                         return;

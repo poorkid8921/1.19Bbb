@@ -2,8 +2,6 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Pair;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.MailHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,7 +9,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import static main.utils.Constants.playerData;
+import static main.utils.Initializer.playerData;
 import static main.utils.Utils.createItemStack;
 
 public class Gui {
@@ -40,49 +38,5 @@ public class Gui {
         inv.setContents(report);
         inv.setItem(12, createItemStack(main.utils.Utils.getHead(arg), "Ban Evading", ImmutableList.of("§aUsing an alt to play after being banned")));
         p.openInventory(inv);
-    }
-
-    public static void openMail(Player p) {
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        D0.setInventoryInfo(Pair.of(1, "-"));
-        Inventory inv = Bukkit.createInventory(p, 36, "ᴍᴀɪʟ");
-        int i = 0;
-
-        for (MailHolder mail : D0.getMails()) {
-            inv.setItem(i++, createItemStack(Material.CHEST, mail.getSender()));
-        }
-        ItemStack GLASS = new ItemStack(Material.GRAY_STAINED_GLASS);
-        for (i = 18; i < 27; i++) {
-            inv.setItem(i, GLASS);
-        }
-        inv.setItem(36, createItemStack(Material.NETHER_STAR, "Send"));
-        p.openInventory(inv);
-    }
-
-    public static void openInbox(Player p) {
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        D0.setInventoryInfo(Pair.of(1, "0"));
-        Inventory inv = Bukkit.createInventory(p, 36, "ɪɴʙᴏx");
-        int i = 0;
-
-        for (MailHolder mail : D0.getMails()) {
-            inv.setItem(i++, createItemStack(Material.CHEST, mail.getSender()));
-        }
-        ItemStack GLASS = new ItemStack(Material.GRAY_STAINED_GLASS);
-        for (i = 18; i < 27; i++) {
-            inv.setItem(i, GLASS);
-        }
-        inv.setItem(36, createItemStack(Material.NETHER_STAR, "Send"));
-        p.openInventory(inv);
-    }
-
-    private static void openInbox(CustomPlayerDataHolder D0, Player p, String idx) {
-        D0.setInventoryInfo(Pair.of(1, "1"));
-        for (MailHolder mail : D0.getMails()) {
-            if (mail.getSender().equals(idx)) {
-                p.getInventory().setContents(mail.getContents());
-                return;
-            }
-        }
     }
 }

@@ -2,14 +2,23 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.commands.*;
+import main.commands.essentials.*;
+import main.commands.tpa.*;
+import main.commands.warps.DelHome;
+import main.commands.warps.Home;
+import main.commands.warps.SetHome;
+import main.commands.warps.SetWarp;
+import main.commands.warps.Warp;
 import main.utils.*;
 import main.utils.arenas.Arena;
 import main.utils.arenas.ArenaIO;
 import main.utils.arenas.CreateCommand;
-import main.utils.economy.Balance;
+import main.commands.economy.Balance;
+import main.utils.instances.CommandHolder;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.MailHolder;
+import main.utils.instances.HomeHolder;
 import main.utils.optimizer.AnimationEvent;
 import main.utils.optimizer.InteractionEvent;
 import main.utils.optimizer.LastPacketEvent;
@@ -25,17 +34,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
-import static main.utils.Constants.*;
+import static main.utils.Initializer.*;
 
 public class Economy extends JavaPlugin {
     public static File dataFolder;
@@ -48,8 +55,8 @@ public class Economy extends JavaPlugin {
     Location getRandomLoc(World w) {
         Location loc = null;
         while (loc == null) {
-            int boundX = Constants.RANDOM.nextInt(-5000, 5000);
-            int boundZ = Constants.RANDOM.nextInt(-5000, 5000);
+            int boundX = Initializer.RANDOM.nextInt(-5000, 5000);
+            int boundZ = Initializer.RANDOM.nextInt(-5000, 5000);
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid())
                 loc = new Location(w, boundX, b.getY() + 1, boundZ);
@@ -57,40 +64,57 @@ public class Economy extends JavaPlugin {
         return loc;
     }
 
-    @Override
-    public void onLoad() {
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().getSettings()
-                .checkForUpdates(false)
-                .reEncodeByDefault(false);
-        PacketEvents.getAPI().load();
+    Location getNetherRandomLoc(World w) {
+        Location loc = null;
+        while (loc == null) {
+            int boundX = Initializer.RANDOM.nextInt(-5000, 5000);
+            int boundZ = Initializer.RANDOM.nextInt(-5000, 5000);
+
+            for (int y = 30; y < 128; y++) {
+                Block curBlock = w.getBlockAt(boundX, y, boundZ);
+                if (curBlock.getType() == Material.AIR) {
+                    if (!curBlock.isSolid())
+                        continue;
+                    if (w.getBlockAt(boundX, y - 1, boundZ).getType() == Material.AIR)
+                        continue;
+                    if (w.getBlockAt(boundX, y + 1, boundZ).getType() == Material.AIR)
+                        loc = new Location(w, boundX, y, boundZ);
+                }
+            }
+        }
+        return loc;
     }
 
     void registerCommands() {
-        this.getCommand("msg").setExecutor(new Msg());
-        this.getCommand("reply").setExecutor(new Reply());
-        this.getCommand("tpa").setExecutor(new Tpa());
-        this.getCommand("tpaall").setExecutor(new TpaAll());
-        this.getCommand("tpaccept").setExecutor(new Tpaccept());
-        this.getCommand("tpahere").setExecutor(new Tpahere());
-        this.getCommand("tpdeny").setExecutor(new TpDeny());
-        this.getCommand("report").setExecutor(new Report());
-        this.getCommand("msglock").setExecutor(new MsgLock());
-        this.getCommand("tpalock").setExecutor(new TpaLock());
-        this.getCommand("stats").setExecutor(new Stats());
-        this.getCommand("spawn").setExecutor(new Spawn());
-        this.getCommand("discord").setExecutor(new Discord());
-        this.getCommand("warp").setExecutor(new Warp());
-        this.getCommand("setwarp").setExecutor(new Setwarp());
-        this.getCommand("playtime").setExecutor(new Playtime());
-        this.getCommand("kit").setExecutor(new Kit());
-        this.getCommand("rbalance").setExecutor(new Balance());
-        this.getCommand("rsethome").setExecutor(new SetHome());
-        this.getCommand("rhome").setExecutor(new Home());
-        this.getCommand("rdelhome").setExecutor(new DelHome());
-        this.getCommand("acreate").setExecutor(new CreateCommand());
-        this.getCommand("inbox").setExecutor(new Inbox());
-        this.getCommand("mail").setExecutor(new Mail());
+        ObjectArrayList<CommandHolder> commands = ObjectArrayList.of(
+                new CommandHolder("msg", new Msg()),
+                new CommandHolder("reply", new Reply()),
+                new CommandHolder("tpa", new Tpa()),
+                new CommandHolder("tpaall", new TpaAll()),
+                new CommandHolder("tpaccept", new Tpaccept()),
+                new CommandHolder("tpahere", new Tpahere()),
+                new CommandHolder("tpdeny", new TpDeny()),
+                new CommandHolder("report", new Report()),
+                new CommandHolder("msglock", new MsgLock()),
+                new CommandHolder("tpalock", new TpaLock()),
+                new CommandHolder("stats", new Stats()),
+                new CommandHolder("spawn", new Spawn()),
+                new CommandHolder("discord", new Discord()),
+                new CommandHolder("warp", new Warp()),
+                new CommandHolder("setwarp", new SetWarp()),
+                new CommandHolder("playtime", new PlayTime()),
+                new CommandHolder("kit", new Kit()),
+                new CommandHolder("rbalance", new Balance()),
+                new CommandHolder("rsethome", new SetHome()),
+                new CommandHolder("rhome", new Home()),
+                new CommandHolder("rdelhome", new DelHome()),
+                new CommandHolder("acreate", new CreateCommand()),
+                new CommandHolder("enderchest", new EnderChest()),
+                new CommandHolder("setrank", new SetRank())
+        );
+        for (CommandHolder command : commands) {
+            getCommand(command.getName()).setExecutor(command.getClazz());
+        }
 
         TeleportCompleter tabCompleter = new TeleportCompleter();
         this.getCommand("tpa").setTabCompleter(tabCompleter);
@@ -102,12 +126,32 @@ public class Economy extends JavaPlugin {
         this.getCommand("rdelhome").setTabCompleter(homeCompleter);
     }
 
-    public void registerPacketListeners() {
+    private void setupArenas() {
+        for (File file : new File(dataFolder, "arenas").listFiles()) {
+            try {
+                Arena arena = ArenaIO.loadArena(file);
+                if (arena != null) Arena.getArenas().put(arena.getName(), arena);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+    
+    private void registerPacketListeners() {
         PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
         PacketEvents.getAPI().getEventManager().registerListener(new AntiAutoTotem());
         PacketEvents.getAPI().init();
+    }
+
+    @Override
+    public void onLoad() {
+        p = this;
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().getSettings()
+                .checkForUpdates(false)
+                .reEncodeByDefault(false);
+        PacketEvents.getAPI().load();
     }
 
     @Override
@@ -118,9 +162,8 @@ public class Economy extends JavaPlugin {
         chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
         lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
         economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
-        p = this;
+
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            Bukkit.getLogger().warning("Started population of RTPs...");
             World d0 = Bukkit.getWorld("world_nether");
             World d1 = Bukkit.getWorld("world_the_end");
             new BukkitRunnable() {
@@ -129,55 +172,48 @@ public class Economy extends JavaPlugin {
                 public void run() {
                     if (i++ == 101) {
                         getCommand("rtp").setExecutor(new RTP());
+                        Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
+                            for (Entity ent : d.getEntities()) {
+                                if (ent instanceof EnderCrystal)
+                                    ent.remove();
+                            }
+
+                            if (arena++ == 3)
+                                arena = 1;
+                            Arena.getArenas().get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
+                            for (Player p : Bukkit.getOnlinePlayers()) {
+                                if (p.isGliding())
+                                    continue;
+                                Location loc = p.getLocation();
+                                loc.setY(200);
+                                if (Economy.d.getBlockAt(loc).getType() != Material.BARRIER)
+                                    continue;
+                                loc.setY(135);
+                                p.teleportAsync(loc);
+                            }
+                        }, 0L, 24000L);
                         Bukkit.getLogger().warning("Finished RTP population.");
                         this.cancel();
                         return;
                     }
                     overworldRTP.add(getRandomLoc(d));
-                    netherRTP.add(getRandomLoc(d0));
+                    netherRTP.add(getNetherRandomLoc(d0));
                     endRTP.add(getRandomLoc(d1));
                 }
-            }.runTaskTimer(this, 0L, 5L);
+            }.runTaskTimer(this, 0L, 0L);
             d = Bukkit.getWorld("world");
-            Constants.spawn = new Location(Economy.d, -0.5, 140.0, 0.5, 90F, 0F);
-
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                for (Entity ent : d.getEntities()) {
-                    if (ent instanceof EnderCrystal)
-                        ent.remove();
-                }
-
-                if (arena++ == 3)
-                    arena = 1;
-                Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    if (p.isGliding())
-                        continue;
-                    Location loc = p.getLocation();
-                    loc.setY(200);
-                    if (Economy.d.getBlockAt(loc).getType() != Material.BARRIER)
-                        continue;
-                    loc.setY(135);
-                    p.teleportAsync(loc);
-                }
-            }, 0L, 24000L);
+            spawn = new Location(Economy.d, -0.5, 140.0, 0.5, 90F, 0F);
         }, 100L);
         registerCommands();
-        Arrays.stream(new File(dataFolder, "arenas").listFiles()).forEach(result -> {
-            try {
-                Arena arena = ArenaIO.loadArena(result);
-                if (arena != null)
-                    Arena.arenas.put(arena.getName(), arena);
-            } catch (Exception ignored) {
-            }
-        });
+        setupArenas();
         Gui.init();
         registerPacketListeners();
-        Constants.init();
+        Initializer.init();
     }
 
     @Override
     public void onDisable() {
+        HandlerList.unregisterAll(p);
         PacketEvents.getAPI().terminate();
         if (alreadySavingData)
             return;
@@ -195,21 +231,14 @@ public class Economy extends JavaPlugin {
                 config.set("r." + key + ".4", value.getKills());
                 if (value.getHomes().size() > 0) {
                     StringBuilder finalstr = new StringBuilder();
-                    for (Map.Entry<String, Location> var : value.getHomes().entrySet()) {
-                        Location loc = var.getValue();
-                        finalstr.append(var.getKey()).append(",").append(loc.getWorld().getName()).append("m").append(loc.getX()).append(",").append(loc.getY()).append(",").append(loc.getZ()).append(",").append(loc.getYaw()).append(",").append(loc.getPitch()).append(",]");
+                    for (HomeHolder k : value.getHomes()) {
+                        Location loc = k.getLocation();
+                        finalstr.append(k.getName()).append(":").append(loc.getWorld().getName()).append("m").append(loc.getX()).append(":").append(loc.getY()).append(":").append(loc.getZ()).append(":").append(loc.getYaw()).append(":").append(loc.getPitch()).append(":;");
                     }
                     config.set("r." + key + ".5", finalstr.toString());
                 } else
                     config.set("r." + key + ".5", "null");
-                if (value.getMails().size() > 0) {
-                    StringBuilder finalstr = new StringBuilder();
-                    for (MailHolder var : value.getMails()) {
-                        finalstr.append(var.getSender()).append(Arrays.toString(var.getContents())).append(",]");
-                    }
-                    config.set("r." + key + ".5", finalstr.toString());
-                } else
-                    config.set("r." + key + ".6", "null");
+                config.set("r." + key + ".6", value.getRank());
             }
         }
         try {

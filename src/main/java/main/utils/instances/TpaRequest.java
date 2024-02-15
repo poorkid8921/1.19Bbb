@@ -25,7 +25,7 @@ public class TpaRequest {
     }
 
     public boolean getTpaAll() {
-        return !showacceptmsg;
+        return showacceptmsg;
     }
 
     public Player getSender() {

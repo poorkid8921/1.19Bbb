@@ -5,7 +5,7 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import main.utils.Constants;
+import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 
-import static main.utils.Constants.crystalsToBeOptimized;
+import static main.utils.Initializer.crystalsToBeOptimized;
 
 public class InteractionEvent extends SimplePacketListenerAbstract {
     @Override
@@ -33,11 +33,10 @@ public class InteractionEvent extends SimplePacketListenerAbstract {
         Location entity = crystalsToBeOptimized.get(entityId);
         if (entity == null) return;
 
-        Location blockLoc = entity.clone().subtract(0.5, 1.0, 0.5);
         RayTraceResult result = player.rayTraceBlocks(4.5, FluidCollisionMode.NEVER);
         if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
-        if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
-        Bukkit.getScheduler().runTask(Constants.p, () -> {
+        if (result.getHitBlock().getLocation() != entity.clone().subtract(0.5, 1.0, 0.5)) return;
+        Bukkit.getScheduler().runTask(Initializer.p, () -> {
             Location clonedLoc = entity.clone().subtract(0.5, 0.0, 0.5);
             if (clonedLoc.getBlock().getType() != Material.AIR) return;
 

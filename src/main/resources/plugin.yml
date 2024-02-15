@@ -64,9 +64,10 @@ commands:
     usage: /<command>
   acreate:
     usage: /<command>
-  inbox:
-    usage: /<command>
-  mail:
+  enderchest:
+    aliases: ec
+    uasge: /<command>
+  setrank:
     usage: /<command>
 permissions:
   has.staff:

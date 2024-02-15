@@ -19,15 +19,14 @@ public class RegionHolder {
         this.maxZ = Math.max(minZ, maxZ);
     }
 
-    public boolean checkX(int x) {
-        return x <= minX || x >= maxX;
+    public boolean check(int x, int y, int z) {
+        return minX <= x && x <= maxX &&
+                minY <= y && y <= maxY &&
+                minZ <= z && z <= maxZ;
     }
 
-    public boolean checkY(int y) {
-        return y <= minY || y >= maxY;
-    }
-
-    public boolean checkZ(int z) {
-        return z <= minZ || z >= maxZ;
+    public boolean check(int x, int z) {
+        return minX <= x && x <= maxX &&
+                minZ <= z && z <= maxZ;
     }
 }

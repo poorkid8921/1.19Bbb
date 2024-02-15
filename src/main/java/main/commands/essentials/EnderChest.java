@@ -1,4 +1,4 @@
-package main.commands;
+package main.commands.essentials;
 
 import com.google.common.collect.ImmutableList;
 import main.utils.Initializer;
@@ -7,12 +7,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
-public class Spawn implements CommandExecutor, TabExecutor {
+public class EnderChest implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+        Player p = (Player) sender;
+        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser(p).getPrimaryGroup();
+        if (!Initializer.upperHierarchyRanks.contains(group)) {
+            sender.sendMessage("§7You must be ranked in order to use this command!");
+            return true;
+        }
+        p.openInventory(p.getEnderChest());
         return true;
     }
 

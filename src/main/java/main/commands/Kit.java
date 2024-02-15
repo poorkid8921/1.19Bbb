@@ -2,9 +2,8 @@ package main.commands;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import main.utils.Constants;
+import main.utils.Initializer;
 import main.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
@@ -21,11 +20,9 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
-import java.util.Arrays;
 import java.util.Map;
 
-import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
 
 public class Kit implements CommandExecutor, TabCompleter {
     Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
@@ -94,7 +91,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.DAMAGE_ALL, 5, false);
         meta.addEnchant(Enchantment.KNOCKBACK, 1, false);
         meta.addEnchant(Enchantment.SWEEPING_EDGE, 3, true);
-        boots.setItemMeta(meta);
+        sword.setItemMeta(meta);
         shulker_inv.setItem(4, sword);
         kit[4] = sword;
 
@@ -105,7 +102,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.DURABILITY, 3, false);
         meta.addEnchant(Enchantment.DIG_SPEED, 5, false);
         meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 3, true);
-        boots.setItemMeta(meta);
+        pickaxe.setItemMeta(meta);
         shulker_inv.setItem(5, pickaxe);
         kit[5] = pickaxe;
 
@@ -129,6 +126,9 @@ public class Kit implements CommandExecutor, TabCompleter {
         shulker_inv.setItem(10, fireworks);
         kit[10] = fireworks;
 
+        ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
+        kit[11] = totem;
+
         shulkmeta.setBlockState(box);
         shulker_kit.setItemMeta(shulkmeta);
     }
@@ -136,9 +136,9 @@ public class Kit implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player p = (Player) sender;
-        String group = Constants.lp.getPlayerAdapter(Player.class).getUser(p).getPrimaryGroup();
-        if (!ImmutableList.of("vip", "media", "booster").contains(group)) {
-            sender.sendMessage("§7You must be ranked in order to use this command.");
+        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser(p).getPrimaryGroup();
+        if (!Initializer.upperHierarchyRanks.contains(group)) {
+            sender.sendMessage("§7You must be ranked in order to use this command!");
             return true;
         }
 
@@ -158,8 +158,14 @@ public class Kit implements CommandExecutor, TabCompleter {
                 if (item == null)
                     specialspace++;
             }
-            if (specialspace == 5 && freespace == 41)
-                inv.setContents(kit);
+            if (specialspace == 5 && freespace == 41) {
+                inv.setBoots(kit[3]);
+                inv.setLeggings(kit[2]);
+                inv.setChestplate(kit[1]);
+                inv.setHelmet(kit[0]);
+
+                inv.setItemInOffHand(kit[11]);
+            }
             else if (freespace == 0)
                 p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
             else
@@ -167,7 +173,7 @@ public class Kit implements CommandExecutor, TabCompleter {
             cooldowns.put(sender.getName(), System.currentTimeMillis() + 1200000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else
-            sender.sendMessage("§7You must wait " + MAIN_COLOR + Utils.getTime(D0 - System.currentTimeMillis()) + " §7in order to be able to claim your kit.");
+            sender.sendMessage("§7You must wait " + MAIN_COLOR + Utils.getTime(D0 - System.currentTimeMillis()) + " §7in order to be able to claim your kit!");
         return true;
     }
 
