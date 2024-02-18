@@ -44,7 +44,8 @@ public class AnimationEvent extends SimplePacketListenerAbstract {
                     0.0,
                     entity -> {
                         if (entity.getType() != EntityType.PLAYER) return true;
-                        return player.getUniqueId() != entity.getUniqueId();
+                        Player p = (Player) entity;
+                        return !player.getUniqueId().equals(p.getUniqueId()) && player.canSee(p);
                     }
             );
             if (result == null) return;

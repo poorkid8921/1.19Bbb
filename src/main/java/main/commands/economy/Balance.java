@@ -1,5 +1,6 @@
 package main.commands.economy;
 
+import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,21 +10,23 @@ import org.bukkit.entity.Player;
 import java.text.NumberFormat;
 
 import static main.utils.Initializer.playerData;
+import static main.utils.Utils.economyFormat;
 
 public class Balance implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        if (args.length > 0)
+        if (args.length > 0) {
             try {
                 Player p = (Player) Bukkit.getOfflinePlayer(args[0]);
                 String name = p.getName();
-                sender.sendMessage("§a" + name + "§7's balance is $" + formatter.format(playerData.get(name).getMoney()));
-            } catch (Exception e) {
+                CustomPlayerDataHolder D0 = playerData.get(name);
+                sender.sendMessage("§aBalance of " + D0.getFRank(name) + ": §c$" + economyFormat.format(D0.getMoney()));
+            } catch (Exception ignored) {
                 sender.sendMessage("§7You must specify a valid player!");
             }
+        }
         else
-            sender.sendMessage("§aYour balance is $" + formatter.format(playerData.get(sender.getName()).getMoney()));
+            sender.sendMessage("§aYour balance is $" + economyFormat.format(playerData.get(sender.getName()).getMoney()));
         return true;
     }
 }

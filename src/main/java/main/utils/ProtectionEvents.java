@@ -130,18 +130,18 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        Entity damager = e.getDamager();
-        if (!(e.getEntity() instanceof Player p) ||
-                !(damager instanceof Player attacker && damager instanceof Arrow))
+        if (!(e.getEntity() instanceof Player p))
             return;
+        Entity attacker = e.getDamager();
+        boolean playerAttacker = attacker instanceof Player;
         Location loc = p.getLocation();
         if (loc.getWorld() != Economy.d)
             return;
         int x = loc.getBlockX();
-        int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        if (spawnRegionHolder.check(x, y, z)) {
-            damager.sendMessage("§7You can't combat here!");
+        if (spawnRegionHolder.check(x, z)) {
+            if (!playerAttacker)
+                attacker.sendMessage("§7You can't combat here!");
             e.setCancelled(true);
             return;
         }
@@ -151,13 +151,14 @@ public class ProtectionEvents implements Listener {
             D0.setTagTime(p);
         else
             D0.setupCombatRunnable(p);
-        if (damager.getType() == EntityType.ARROW)
-            return;
-        CustomPlayerDataHolder D1 = playerData.get(damager.getName());
-        if (D1.isTagged())
-            D1.setTagTime(attacker);
-        else
-            D1.setupCombatRunnable(attacker);
+        if (playerAttacker) {
+            Player damagePlayer = (Player) attacker;
+            CustomPlayerDataHolder D1 = playerData.get(attacker.getName());
+            if (D1.isTagged())
+                D1.setTagTime(damagePlayer);
+            else
+                D1.setupCombatRunnable(damagePlayer);
+        }
     }
 
     @EventHandler

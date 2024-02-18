@@ -1,24 +1,27 @@
 package main.commands.essentials;
 
 import com.google.common.collect.ImmutableList;
-import main.utils.Initializer;
+import main.utils.instances.RegionHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.regions;
 
-public class EnderChest implements CommandExecutor, TabExecutor {
+public class CreateRegion implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player p = (Player) sender;
-        if (playerData.get(sender.getName()).getRank() < 4) {
-            sender.sendMessage("§7You must be ranked in order to use this command!");
-            return true;
+        if (sender.isOp()) {
+            regions.add(new RegionHolder(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5])));
+            sender.sendMessage("§7Successfully created the region.");
         }
-        p.openInventory(p.getEnderChest());
         return true;
     }
 

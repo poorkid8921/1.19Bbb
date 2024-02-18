@@ -14,15 +14,15 @@ import static main.utils.Utils.getHome;
 public class SetHome implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        CustomPlayerDataHolder D0 = playerData.get(sender.getName());
-        Player p = ((Player) sender);
-        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser(p).getPrimaryGroup();
-        int maxHomes = (upperHierarchyRanks.contains(group) ? 5 : 3);
-        HomeHolder home = getHome(args[0], D0.getHomes());
         if (args.length == 0) {
             sender.sendMessage("§7You must specify a name for your home!");
             return true;
-        } else if (home != null) {
+        }
+        CustomPlayerDataHolder D0 = playerData.get(sender.getName());
+        Player p = ((Player) sender);
+        int maxHomes = (playerData.get(sender.getName()).getRank() > 3 ? 5 : 3);
+        HomeHolder home = getHome(args[0], D0.getHomes());
+        if (home != null) {
             sender.sendMessage("§7You already have a home called " + MAIN_COLOR + args[0] + "!");
             return true;
         } else if ((D0.getHomes().size() + 1) > maxHomes) {

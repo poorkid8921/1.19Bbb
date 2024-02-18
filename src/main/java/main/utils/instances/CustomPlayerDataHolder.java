@@ -10,7 +10,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.math.BigDecimal;
 import java.util.Map;
+
+import static main.utils.Initializer.*;
+import static main.utils.Initializer.EXECUTIVE;
 
 public class CustomPlayerDataHolder {
     @Getter
@@ -70,6 +74,28 @@ public class CustomPlayerDataHolder {
         this.rank = rank;
     }
 
+    public String getFRank(String pn) {
+        return switch (rank) {
+            case 0 -> "§r" + pn;
+            case 1 -> CATTO_LOVES + pn;
+            case 2 -> CATTO_HATES + pn;
+            case 3 -> GAY + pn;
+            case 4 -> QUACK + pn;
+            case 5 -> CLAPCLAP + pn;
+            case 6 -> VIP + pn;
+            case 7 -> BOOSTER + pn;
+            case 8 -> MEDIA + pn;
+            case 9 -> T_HELPER + pn;
+            case 10 -> HELPER + pn;
+            case 11 -> JRMOD + pn;
+            case 12 -> MOD + pn;
+            case 13 -> ADMIN + pn;
+            case 14 -> MANAGER + pn;
+            case 15 -> EXECUTIVE + pn;
+            default -> "";
+        };
+    }
+
     public void setupCombatRunnable(Player player) {
         this.currentTagTime = 10;
         BukkitRunnable runnable = new BukkitRunnable() {
@@ -95,11 +121,11 @@ public class CustomPlayerDataHolder {
         Bukkit.getScheduler().cancelTask(this.runnableid);
     }
 
-    public void incrementMoney(int money) {
+    public void incrementMoney(double money) {
         this.money += money;
     }
 
-    public void decrementMoney(int money) {
+    public void decrementMoney(double money) {
         this.money -= money;
     }
 

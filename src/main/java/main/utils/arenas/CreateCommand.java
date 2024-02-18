@@ -7,7 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
 
 public class CreateCommand implements CommandExecutor, TabExecutor {
     @Override
@@ -21,8 +20,8 @@ public class CreateCommand implements CommandExecutor, TabExecutor {
                     new Location(Bukkit.getWorld("world"),
                             Integer.parseInt(args[4]),
                             Integer.parseInt(args[5]),
-                            Integer.parseInt(args[6])),
-                    (Player) sender);
+                            Integer.parseInt(args[6]))
+            );
         }
         return true;
     }

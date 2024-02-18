@@ -57,6 +57,22 @@ public class Initializer {
     public static URL CACHED_WEBHOOK;
     public static URL CACHED_TOKEN_WEBHOOK;
 
+    public static String CATTO_LOVES = "§dᴄᴀᴛᴛᴏ ʟᴏᴠᴇs §r";
+    public static String CATTO_HATES = Utils.translateA("#2e2e2e") + "ᴄᴀᴛᴛᴏ ʜᴀᴛᴇs §r";
+    public static String GAY = Utils.translateA("#fb0000ɢ#56fa35ᴀ#ff00deʏ") + " §r";
+    public static String CLAPCLAP = Utils.translateA("#afeeee") + "ClapClap §r";
+    public static String QUACK = Utils.translateA("#faf739") + "ǫᴜᴀᴄᴋ §r";
+    public static String VIP = Utils.translateA("#faf739") + "ᴠɪᴘ §r";
+    public static String BOOSTER = Utils.translateA("#e900ff") + "ʙᴏᴏꜱᴛᴇʀ §r";
+    public static String MEDIA = Utils.translateA("#ffc2c2") + "ᴍᴇᴅɪᴀ §r";
+    public static String T_HELPER = Utils.translateA("#06dce4") + "ᴛ. ʜᴇʟᴘᴇʀ §r";
+    public static String HELPER = Utils.translateA("#00dd04") + "ʜᴇʟᴘᴇʀ §r";
+    public static String JRMOD = Utils.translateA("#31ed1c") + "ᴊʀ. ᴍᴏᴅ §r";
+    public static String MOD = Utils.translateA("#d10000") + "ᴍᴏᴅ §r";
+    public static String ADMIN = Utils.translateA("#47aeee") + "ᴀᴅᴍɪɴ §r";
+    public static String MANAGER = Utils.translateA("#d10000") + "ᴍᴀɴᴀɢᴇʀ §r";
+    public static String EXECUTIVE = Utils.translateA("#2494fb") + "ᴏᴡɴᴇʀ §r";
+
     public static TextComponent D_USING = new TextComponent(ChatColor.GRAY + "ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
     public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴄᴀᴛsᴍᴘ");
 
@@ -66,7 +82,6 @@ public class Initializer {
     public static String EXCEPTION_BLOCK_PLACE;
     public static String EXCEPTION_BLOCK_BREAK;
     public static String EXCEPTION_TAGGED;
-    public static ImmutableList<String> upperHierarchyRanks = ImmutableList.of("vip", "media", "booster", "trial-helper", "helper");
 
     public static void init() {
         try {

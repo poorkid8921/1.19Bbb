@@ -3,6 +3,7 @@ package main.utils.arenas;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 
 public class Section {
     private final Arena parent;
@@ -14,6 +15,9 @@ public class Section {
     private int resetTypeIndex;
     private int resetLocationIndex;
     private int resetCurrentTypeIndex;
+    private final int totalBlocks;
+    private final int w;
+    private final int l;
 
     Section(Arena parent, int ID, Location start, Location end, short[] blockTypes, short[] blockAmounts) {
         this.blockAmounts = blockAmounts;
@@ -22,20 +26,28 @@ public class Section {
         this.start = start;
         this.end = end;
         this.ID = ID;
+
+        totalBlocks = (end.getBlockX() - start.getBlockX() + 1) *
+                (end.getBlockY() - start.getBlockY() + 1) *
+                (end.getBlockZ() - start.getBlockZ() + 1);
+        w = end.getBlockX() - start.getBlockX() + 1;
+        l = end.getBlockZ() - start.getBlockZ() + 1;
     }
 
     public boolean reset(int max) {
-        int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
-        int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
         resetTypeIndex = Math.max(resetTypeIndex, 0);
         resetLocationIndex = Math.max(resetLocationIndex, 0);
-        World ww = getStart().getWorld();
         int count = 0;
+        BlockData blockData;
+        Location loc = start.clone();
         while (resetTypeIndex < blockTypes.length) {
-            short amount = this.blockAmounts[this.resetTypeIndex];
-            Material data = this.getParent().getKeys()[this.blockTypes[this.resetTypeIndex]];
+            short amount = this.blockAmounts[resetTypeIndex];
+            blockData = this.getParent().getKeys()[this.blockTypes[resetTypeIndex]].createBlockData();
             while (resetCurrentTypeIndex < amount) {
-                getStart().clone().add(Arena.getLocationAtIndex(w, l, ww, resetLocationIndex)).getBlock().setType(data, false);
+                loc.add(Arena.getLocationAtIndex(w, l, resetLocationIndex))
+                        .getBlock()
+                        .setBlockData(blockData, false);
+                loc = start.clone();
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
                 if (max > 0 && count++ > max) return false;
@@ -52,9 +64,7 @@ public class Section {
     }
 
     public int getTotalBlocks() {
-        return (getEnd().getBlockX() - getStart().getBlockX() + 1) *
-                (getEnd().getBlockY() - getStart().getBlockY() + 1) *
-                (getEnd().getBlockZ() - getStart().getBlockZ() + 1);
+        return totalBlocks;
     }
 
     public Location getStart() {

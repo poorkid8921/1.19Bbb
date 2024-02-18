@@ -91,8 +91,7 @@ public class Events implements Listener {
 
     @EventHandler
     private void onAnvilPrepareOutput(PrepareAnvilEvent e) {
-        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser((Player) e.getView().getPlayer()).getPrimaryGroup();
-        if (Initializer.upperHierarchyRanks.contains(group)) {
+        if (playerData.get(e.getView().getPlayer().getName()).getRank() > 0) {
             Inventory inv = e.getInventory();
             ItemStack input = inv.getItem(0);
             if (input == null)
@@ -126,12 +125,11 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
+        String pn = p.getName();
         Team team = p.getScoreboard().getPlayerTeam(p);
-        e.setFormat(team == null ?
-                chat.getPlayerPrefix("world", p).replace("&", "§") +
-                        p.getName() + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
-                ("§7[" + team.getColor() + team.getDisplayName() + "§7] " + chat.getPlayerPrefix("world", p).replace("&", "§") +
-                        "§r" + p.getName() + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
+        e.setFormat(team == null ? playerData.get(p.getName()).getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
+                ("§7[" + team.getColor() + team.getDisplayName() + "§7] " +
+                        playerData.get(p.getName()).getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
     }
 
     @EventHandler

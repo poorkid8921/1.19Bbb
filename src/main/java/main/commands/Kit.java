@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.playerData;
 
 public class Kit implements CommandExecutor, TabCompleter {
     Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
@@ -136,8 +137,7 @@ public class Kit implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player p = (Player) sender;
-        String group = Initializer.lp.getPlayerAdapter(Player.class).getUser(p).getPrimaryGroup();
-        if (!Initializer.upperHierarchyRanks.contains(group)) {
+        if (playerData.get(sender.getName()).getRank() < 6) {
             sender.sendMessage("§7You must be ranked in order to use this command!");
             return true;
         }

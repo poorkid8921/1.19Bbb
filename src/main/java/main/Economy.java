@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.commands.*;
+import main.commands.economy.Pay;
 import main.commands.essentials.*;
 import main.commands.tpa.*;
 import main.commands.warps.DelHome;
@@ -29,8 +30,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_19_R3.CraftServer;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -71,14 +74,10 @@ public class Economy extends JavaPlugin {
             int boundZ = Initializer.RANDOM.nextInt(-5000, 5000);
 
             for (int y = 30; y < 128; y++) {
-                Block curBlock = w.getBlockAt(boundX, y, boundZ);
-                if (curBlock.getType() == Material.AIR) {
-                    if (!curBlock.isSolid())
-                        continue;
-                    if (w.getBlockAt(boundX, y - 1, boundZ).getType() == Material.AIR)
-                        continue;
-                    if (w.getBlockAt(boundX, y + 1, boundZ).getType() == Material.AIR)
-                        loc = new Location(w, boundX, y, boundZ);
+                if (w.getBlockAt(boundX, y, boundZ).getType() == Material.AIR &&
+                        w.getBlockAt(boundX, y - 1, boundZ).isSolid()) {
+                    loc = new Location(w, boundX, y, boundZ);
+                    break;
                 }
             }
         }
@@ -86,7 +85,7 @@ public class Economy extends JavaPlugin {
     }
 
     void registerCommands() {
-        ObjectArrayList<CommandHolder> commands = ObjectArrayList.of(
+        for (CommandHolder command : ObjectArrayList.of(
                 new CommandHolder("msg", new Msg()),
                 new CommandHolder("reply", new Reply()),
                 new CommandHolder("tpa", new Tpa()),
@@ -110,12 +109,11 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("rdelhome", new DelHome()),
                 new CommandHolder("acreate", new CreateCommand()),
                 new CommandHolder("enderchest", new EnderChest()),
-                new CommandHolder("setrank", new SetRank())
-        );
-        for (CommandHolder command : commands) {
+                new CommandHolder("setrank", new SetRank()),
+                new CommandHolder("rgc", new CreateRegion()),
+                new CommandHolder("rpay", new Pay())
+        ))
             getCommand(command.getName()).setExecutor(command.getClazz());
-        }
-
         TeleportCompleter tabCompleter = new TeleportCompleter();
         this.getCommand("tpa").setTabCompleter(tabCompleter);
         this.getCommand("tpaccept").setTabCompleter(tabCompleter);
@@ -137,10 +135,10 @@ public class Economy extends JavaPlugin {
     }
     
     private void registerPacketListeners() {
-        PacketEvents.getAPI().getEventManager().registerListener(new AnimationEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new InteractionEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new LastPacketEvent());
-        PacketEvents.getAPI().getEventManager().registerListener(new AntiAutoTotem());
+        PacketEvents.getAPI().getEventManager().registerListeners(new AnimationEvent(),
+                new InteractionEvent(),
+                new LastPacketEvent(),
+                new AntiAutoTotem());
         PacketEvents.getAPI().init();
     }
 
@@ -213,7 +211,6 @@ public class Economy extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        HandlerList.unregisterAll(p);
         PacketEvents.getAPI().terminate();
         if (alreadySavingData)
             return;

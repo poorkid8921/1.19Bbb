@@ -11,12 +11,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.playerData;
 
 public class AntiAutoTotem extends SimplePacketListenerAbstract {
     void flag(Player p) {
-        String pn = p.getName();
-        Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + pn + "§7 has been flagged for auto totem."));
-        Bukkit.getLogger().warning("AntiCheat: " + pn + " has been flagged.");
+        String alertStr = MAIN_COLOR + p.getName() + "§7 has been flagged for auto totem.";
+        for (Player k : Bukkit.getOnlinePlayers()) {
+            if (playerData.get(k.getName()).getRank() > 8)
+                k.sendMessage(alertStr);
+        }
     }
 
     @Override
@@ -25,13 +28,17 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
         Player player = (Player) event.getPlayer();
         WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
         ItemStack clickedItem = player.getInventory().getItem(packet.getSlot());
-        if (packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP && clickedItem != null &&
+        if (packet.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP &&
+                clickedItem != null &&
                 clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
             PlayerInventory inv = player.getInventory();
             if (inv.getItemInOffHand().getType() == Material.AIR)
                 Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                    if (inv.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING)
+                    ItemStack offhandItem = inv.getItemInOffHand();
+                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
+                        offhandItem.setAmount(0);
                         flag(player);
+                    }
                 }, 1L);
         }
     }

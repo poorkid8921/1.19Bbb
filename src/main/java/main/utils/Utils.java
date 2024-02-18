@@ -24,7 +24,9 @@ import org.bukkit.scheduler.BukkitTask;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,11 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 public class Utils {
     public static TextComponent space = new TextComponent("  ");
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+    public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance();
+    public static final BigDecimal THOUSAND = new BigDecimal(1000);
+    public static final BigDecimal MILLION = new BigDecimal(1_000_000);
+    public static final BigDecimal BILLION = new BigDecimal(1_000_000_000);
+    public static final BigDecimal TRILLION = new BigDecimal(1_000_000_000_000L);
 
     public static String getTime(Player p) {
         StringBuilder builder = new StringBuilder();
@@ -43,19 +50,18 @@ public class Utils {
 
         int days = seconds / 86400;
         if (days > 0)
-            builder.append(days).append(days > 1 ? " days" : " day");
+            builder.append(days).append(days > 1 ? " days " : " day ");
 
         seconds %= 86400;
         long hours = seconds / 3600;
         if (hours > 0)
-            builder.append(builder.length() == 0 ? (hours + " " + (hours > 1 ? "hours" : "hour")) :
-                    (" " + hours + " " + (hours > 1 ? "hours " : "hour ")));
+            builder.append(hours).append(" ").append(hours > 1 ? "hours " : "hour ");
         long minutes = (seconds / 60) % 60;
         if (minutes > 0)
-            builder.append(builder.length() > 1 ? " " : "").append(minutes).append(" ").append(minutes > 1 ? "minutes " : "minute ");
+            builder.append(minutes).append(" ").append(minutes > 1 ? "minutes " : "minute ");
         seconds %= 60;
         if (seconds > 0)
-            builder.append(builder.length() > 1 ? " " : "").append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
         return builder.toString();
     }
 
@@ -148,9 +154,8 @@ public class Utils {
         String staffMSG = MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
                 report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.hasPermission("has.staff"))
-                continue;
-            p.sendMessage(staffMSG);
+            if (playerData.get(p.getName()).getRank() > 8)
+                p.sendMessage(staffMSG);
         }
         pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {

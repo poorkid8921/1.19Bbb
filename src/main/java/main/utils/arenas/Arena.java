@@ -2,6 +2,8 @@ package main.utils.arenas;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import main.Economy;
 import main.utils.Initializer;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -17,9 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static main.utils.arenas.ArenaIO.KEY_SPLIT;
 import static main.utils.arenas.ArenaIO.SECTION_SPLIT;
@@ -31,10 +31,6 @@ public class Arena {
     private final ObjectArrayList<Section> sections = ObjectArrayList.of();
     private final String name;
     private Material[] keys;
-
-    public static Map<String, Arena> getArenas() {
-        return arenas;
-    }
 
     Arena(String name, Location c1, Location c2) {
         this.name = name;
@@ -72,7 +68,11 @@ public class Arena {
         c2.setZ(z2);
     }
 
-    static void createNewArena(String name, Location c1, Location c2, Player player) {
+    public static Map<String, Arena> getArenas() {
+        return arenas;
+    }
+
+    static void createNewArena(String name, Location c1, Location c2) {
         int x1 = c1.getBlockX();
         int x2 = c2.getBlockX();
         int y1 = c1.getBlockY();
@@ -107,31 +107,46 @@ public class Arena {
         int length = c2.getBlockZ() - c1.getBlockZ() + 1;
         int height = c2.getBlockY() - c1.getBlockY() + 1;
         int maxSectionArea = 1024 / height;
-        int sectionArea = width * length;
+        int sectionArea = width * length * height;
         int sectionsX = 1;
+        int sectionsY = 1;
         int sectionsZ = 1;
         boolean x = true;
+        boolean y = true;
         while (sectionArea > maxSectionArea) {
-            if (x) sectionsX++;
-            else sectionsZ++;
-            sectionArea = (width / sectionsX) * (length / sectionsZ);
+            if (x) {
+                sectionsX++;
+                sectionArea = (width / sectionsX) * (length / sectionsZ) * (height / sectionsY);
+            } else if (y) {
+                sectionsY++;
+                sectionArea = (width / sectionsX) * (length / sectionsZ) * (height / sectionsY);
+                y = false;
+            } else {
+                sectionsZ++;
+                sectionArea = (width / sectionsX) * (length / sectionsZ) * (height / sectionsY);
+            }
             x = !x;
         }
 
         ObjectArrayList<Location> sectionStarts = ObjectArrayList.of();
         ObjectArrayList<Location> sectionEnds = ObjectArrayList.of();
         for (int sx = 0; sx < sectionsX; sx++) {
-            for (int zx = 0; zx < sectionsZ; zx++) {
-                int xStart = (int) (Math.floor(width / sectionsX) * sx);
-                int zStart = (int) (Math.floor(length / sectionsZ) * zx);
-                int xEnd = (int) (Math.floor(width / sectionsX) * (sx + 1)) - 1;
-                int zEnd = (int) (Math.floor(length / sectionsZ) * (zx + 1)) - 1;
-                if (sx == sectionsX - 1) xEnd = width - 1;
-                if (zx == sectionsZ - 1) zEnd = length - 1;
-                Location start = c1.clone().add(xStart, 0, zStart);
-                Location end = c1.clone().add(xEnd, height - 1, zEnd);
-                sectionStarts.add(start);
-                sectionEnds.add(end);
+            for (int sy = 0; sy < sectionsY; sy++) {
+                for (int zx = 0; zx < sectionsZ; zx++) {
+                    int xStart = Math.floorDiv(width, sectionsX) * sx;
+                    int yStart = Math.floorDiv(height, sectionsY) * sy;
+                    int zStart = Math.floorDiv(length, sectionsZ) * zx;
+                    int xEnd = Math.floorDiv(width, sectionsX) * (sx + 1) - 1;
+                    int yEnd = Math.floorDiv(height, sectionsY) * (sy + 1) - 1;
+                    int zEnd = Math.floorDiv(length, sectionsZ) * (zx + 1) - 1;
+                    if (sx == sectionsX - 1) xEnd = width - 1;
+                    if (sy == sectionsY - 1) yEnd = height - 1;
+                    if (zx == sectionsZ - 1) zEnd = length - 1;
+                    Location start = c1.clone().add(xStart, yStart, zStart);
+                    Location end = c1.clone().add(xEnd, yEnd, zEnd);
+                    sectionStarts.add(start);
+                    sectionEnds.add(end);
+                }
             }
         }
         Arena arena = new Arena(name, c1, c2);
@@ -147,7 +162,6 @@ public class Arena {
             public void run() {
                 arena.getSections().addAll(data.sections);
                 Arena.getArenas().put(arena.name, arena);
-
                 File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
@@ -212,7 +226,7 @@ public class Arena {
         for (int i = 0; i < amount; i++) {
             Location loc;
             try {
-                loc = Arena.getLocationAtIndex(width, length, data.arena.c1.getWorld(), data.index);
+                loc = Arena.getLocationAtIndex(width, length, data.index);
             } catch (ArithmeticException ignored) {
                 return;
             }
@@ -274,23 +288,22 @@ public class Arena {
         loopyCreate(data, amount, onFinished);
     }
 
-    static Location getLocationAtIndex(int width, int length, World world, int index) {
-        return new Location(world, index % width, index / (length * width), (index / width) % length);
+    static Location getLocationAtIndex(int width, int length, int index) {
+        return new Location(Economy.d, index % width, index / (length * width), (index / width) % length);
     }
 
     protected void addKeys(Collection<Material> keys) {
-        ObjectArrayList<Material> keyList = ObjectArrayList.of(this.keys);
-        for (Material data : keys) {
-            if (!keyList.contains(data)) keyList.add(data);
-        }
-        this.keys = keyList.toArray(new Material[keyList.size()]);
+        ObjectOpenHashSet<Material> keySet = ObjectOpenHashSet.of(this.keys);
+        keySet.addAll(keys);
+        this.keys = keySet.toArray(new Material[keySet.size()]);
     }
 
     public void reset(int speed) {
         ResetLoopinData data = new ResetLoopinData();
         data.speed = speed;
+        int reverseTotalBlocks = (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1);
         for (Section s : getSections()) {
-            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * (c2.getBlockY() - c1.getBlockY() + 1) * (c2.getBlockZ() - c1.getBlockZ() + 1) * (double) s.getTotalBlocks());
+            int sectionAmount = (int) ((double) speed / (double) (c2.getBlockX() - c1.getBlockX() + 1) * reverseTotalBlocks * (double) s.getTotalBlocks());
             if (sectionAmount <= 0) sectionAmount = 1;
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
@@ -301,17 +314,15 @@ public class Arena {
     private void loopyReset(ResetLoopinData data) {
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
-            Section s = getSections().get(id);
+            Section s = sections.get(id);
             if (s.reset(data.sections.get(id))) {
                 data.sections.remove(id);
-                data.sectionIDs.remove((Object) id);
+                data.sectionIDs.remove(id);
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;
                 int newTotalAmount = data.sections.keySet().parallelStream().mapToInt((sectionid) -> (getSections().get(sectionid).getTotalBlocks())).sum();
-
-                List<Section> sectionList = data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList();
-                for (Section s1 : sectionList) {
+                for (Section s1 : data.sections.keySet().parallelStream().map((sectionid) -> getSections().get(sectionid)).toList()) {
                     int sectionAmount = (int) ((double) data.speed / (double) newTotalAmount * (double) s.getTotalBlocks());
                     if (sectionAmount <= 0) sectionAmount = 1;
                     data.sections.put(s1.getID(), sectionAmount);

@@ -69,6 +69,7 @@ commands:
     uasge: /<command>
   setrank:
     usage: /<command>
-permissions:
-  has.staff:
-    description: Use chatlock & Bypass it
+  rgc:
+    usage: /<command>
+  rpay:
+    usage: /<command>

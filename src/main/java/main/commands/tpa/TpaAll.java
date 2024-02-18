@@ -1,6 +1,7 @@
 package main.commands.tpa;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Utils;
 import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
@@ -21,15 +22,16 @@ public class TpaAll implements CommandExecutor, TabExecutor {
         if (!(sender instanceof Player user)) return true;
         sender.sendMessage("§7Requested everyone to teleport to you.");
 
-        ArrayList<Player> c = new ArrayList<>(Bukkit.getOnlinePlayers());
+        String pn = user.getName();
+        ObjectArrayList<Player> c = ObjectArrayList.of();
+        c.addAll(Bukkit.getOnlinePlayers());
         c.remove(user);
-        for (Player i : c) {
-            String in = i.getName();
+        for (Player k : c) {
+            String in = k.getName();
             TpaRequest tpr = getRequest(in);
-            if ((tpr != null && tpr.getSender() == user) || playerData.get(in).getTptoggle() == 1)
+            if ((tpr != null && tpr.getSenderF() == pn) || playerData.get(in).getTptoggle() == 1)
                 continue;
-
-            Utils.addRequest(user, i, true, false);
+            Utils.addRequest(user, k, true, false);
         }
         return true;
     }

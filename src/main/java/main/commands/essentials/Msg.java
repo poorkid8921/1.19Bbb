@@ -32,9 +32,11 @@ public class Msg implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        String pn = sender.getName();
         String tn = target.getName();
+        CustomPlayerDataHolder D0 = playerData.get(pn);
         CustomPlayerDataHolder D1 = playerData.get(tn);
-        if (D1.getMtoggle() == 1 && !sender.hasPermission("has.staff")) {
+        if (D1.getMtoggle() == 1 && D0.getRank() < 9) {
             sender.sendMessage("§7You can't message this player since they've locked their messages.");
             return true;
         }
@@ -45,8 +47,7 @@ public class Msg implements CommandExecutor, TabCompleter {
 
         sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
         target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
-        String pn = sender.getName();
-        playerData.get(pn).setLastReceived(tn);
+        D0.setLastReceived(tn);
         D1.setLastReceived(pn);
         return true;
     }
