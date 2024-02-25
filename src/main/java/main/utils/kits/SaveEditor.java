@@ -1,6 +1,6 @@
 package main.utils.kits;
 
-import main.utils.Constants;
+import main.utils.Initializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -45,13 +45,13 @@ public class SaveEditor {
                 }
             }
 
-            Constants.kitMap.get(key).put("items", itemsArray);
+            Initializer.kitMap.get(key).put("items", itemsArray);
             if (sendMsg)
                 player.sendMessage("§dSaved §bKit " + i + "§d! Type §b/k" + i + "§d, §b/kit" + i + "§d, or §b/kit" + i + " §dto load!");
         } else {
-            Constants.kitMap.get(key).remove("items");
-            if (Constants.kitMap.get(key).containsKey("public")) {
-                Constants.kitMap.get(key).remove("public");
+            Initializer.kitMap.get(key).remove("items");
+            if (Initializer.kitMap.get(key).containsKey("public")) {
+                Initializer.kitMap.get(key).remove("public");
                 player.sendMessage("§6Kit " + i + " §cwas empty, so it was removed from public kits.");
             }
         }

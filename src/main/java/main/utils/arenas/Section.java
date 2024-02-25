@@ -1,18 +1,27 @@
 package main.utils.arenas;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 
 public class Section {
+    @Getter
+    private static int totalBlocks;
+    @Getter
     private final Arena parent;
+    @Getter
     private final Location start;
+    @Getter
     private final Location end;
+    @Getter
     private final short[] blockTypes;
+    @Getter
     private final short[] blockAmounts;
-
+    @Getter
     private final int ID;
-
+    private final int w;
+    private final int l;
     private int resetTypeIndex;
     private int resetLocationIndex;
     private int resetCurrentTypeIndex;
@@ -24,65 +33,39 @@ public class Section {
         this.start = start;
         this.end = end;
         this.ID = ID;
+
+        totalBlocks = (end.getBlockX() - start.getBlockX() + 1) *
+                (end.getBlockY() - start.getBlockY() + 1) *
+                (end.getBlockZ() - start.getBlockZ() + 1);
+        w = end.getBlockX() - start.getBlockX() + 1;
+        l = end.getBlockZ() - start.getBlockZ() + 1;
     }
 
     public boolean reset(int max) {
-        int w = getEnd().getBlockX() - getStart().getBlockX() + 1;
-        int l = getEnd().getBlockZ() - getStart().getBlockZ() + 1;
-        resetTypeIndex = Math.max(resetTypeIndex, 0);
-        resetLocationIndex = Math.max(resetLocationIndex, 0);
-        World ww = getStart().getWorld();
+        if (resetTypeIndex < 0)
+            resetTypeIndex = 0;
+        if (resetLocationIndex < 0)
+            resetLocationIndex = 0;
         int count = 0;
+        Material cachedMat = this.getParent().getKeys()[this.blockTypes[resetTypeIndex]];
+        BlockData blockData = cachedMat.createBlockData();
         while (resetTypeIndex < blockTypes.length) {
-            short type = this.blockTypes[this.resetTypeIndex];
-            short amount = this.blockAmounts[this.resetTypeIndex];
-            Material data = this.getParent().getKeys()[type];
-            while (resetCurrentTypeIndex < amount) {
-                Location offset = Arena.getLocationAtIndex(w, l, ww, resetLocationIndex);
-                getStart().add(offset).getBlock().setType(data, false);
-                getStart().subtract(offset);
+            Material currentMat = this.getParent().getKeys()[this.blockTypes[resetTypeIndex]];
+            if (currentMat != cachedMat)
+                blockData = currentMat.createBlockData();
+            while (resetCurrentTypeIndex < this.blockAmounts[resetTypeIndex]) {
+                start.clone().add(Arena.getLocationAtIndex(w, l, resetLocationIndex))
+                        .getBlock()
+                        .setBlockData(blockData, false);
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
                 if (max > 0 && count++ > max) return false;
             }
-
             resetCurrentTypeIndex = 0;
             resetTypeIndex++;
         }
-
         resetTypeIndex = 0;
         resetLocationIndex = -1;
-
         return true;
-    }
-
-    public int getTotalBlocks() {
-        return (getEnd().getBlockX() - getStart().getBlockX() + 1) *
-                (getEnd().getBlockY() - getStart().getBlockY() + 1) *
-                (getEnd().getBlockZ() - getStart().getBlockZ() + 1);
-    }
-
-    public Location getStart() {
-        return start;
-    }
-
-    public Location getEnd() {
-        return end;
-    }
-
-    public short[] getBlockAmounts() {
-        return blockAmounts;
-    }
-
-    public short[] getBlockTypes() {
-        return blockTypes;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public Arena getParent() {
-        return parent;
     }
 }

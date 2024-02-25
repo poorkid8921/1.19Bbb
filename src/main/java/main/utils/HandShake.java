@@ -17,10 +17,19 @@ public class HandShake {
 
     public static HandShake decodeAndVerify(String handshake) {
         try {
+            if (handshake.length() > 2500)
+                return null;
+
             String[] split = handshake.split("\00");
+            if (split.length != 3 && split.length != 4)
+                return null;
+
             String serverHostname = split[0];
             String socketAddressHostname = split[1];
             UUID uniqueId = UUID.fromString(split[2].replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5"));
+            if (split.length == 3)
+                return null;
+
             List<JsonObject> properties = new LinkedList<>(GSON.fromJson(split[3], PROPERTY_LIST_TYPE));
             if (properties.isEmpty())
                 return null;
@@ -37,7 +46,7 @@ public class HandShake {
                 }
             }
 
-            if (!bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8"))
+            if (bungeeGuardToken == null || !bungeeGuardToken.equals("DsrSWAr93oQh9ZHIpWptf1Rw1ALg9xCTvexPSF0F9iAxuDD9RS7kExvn30QWMoX8"))
                 return null;
 
             return new Success(serverHostname, socketAddressHostname, uniqueId, GSON.toJson(properties, PROPERTY_LIST_TYPE));

@@ -4,19 +4,27 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import static main.utils.Constants.MAIN_COLOR;
+import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.playerData;
 
 public class AntiAutoTotem extends SimplePacketListenerAbstract {
-    void flag(Player p) {
+    private boolean flag(Player p) {
         String pn = p.getName();
-        Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + pn + "§7 has been flagged for auto totem."));
-        Bukkit.getLogger().warning("AntiCheat: " + pn + " has been flagged.");
+        CustomPlayerDataHolder D0 = playerData.get(pn);
+        D0.incrementFlags();
+        if (D0.getFlags() == 3) {
+            D0.setFlags(0);
+            Bukkit.broadcastMessage(MAIN_COLOR + pn + " §7has been flagged for Auto Totem");
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -30,12 +38,10 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
                 clickedItem.getType() == Material.TOTEM_OF_UNDYING) {
             PlayerInventory inv = player.getInventory();
             if (inv.getItemInOffHand().getType() == Material.AIR)
-                Bukkit.getScheduler().runTaskLater(Constants.p, () -> {
+                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                     ItemStack offhandItem = inv.getItemInOffHand();
-                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
+                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING && flag(player))
                         offhandItem.setAmount(0);
-                        flag(player);
-                    }
                 }, 1L);
         }
     }

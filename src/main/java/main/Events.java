@@ -3,21 +3,20 @@ package main;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.*;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import main.utils.Gui;
+import main.utils.HandShake;
+import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.DuelHolder;
-import main.utils.duels.Matchmaking;
+import main.utils.Utils;
 import main.utils.kits.KitClaimer;
 import main.utils.kits.SaveEditor;
 import org.bukkit.*;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -32,40 +31,25 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import static main.utils.Constants.tpa;
-import static main.utils.Constants.*;
-import static main.utils.DuelUtils.*;
-import static main.utils.Gui.*;
-import static main.utils.RequestManager.*;
+import static main.utils.Gui.inInventory;
+import static main.utils.Initializer.*;
 import static main.utils.Utils.*;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
-    String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
-    NamespacedKey itemKey = new NamespacedKey(Constants.p, "key");
-    String UNAUTHORIZED = MAIN_COLOR + "Unauthorized access.";
+    private final String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
+    private final NamespacedKey ITEMKEY = new NamespacedKey(Initializer.p, "key");
+    private final String UNAUTHORIZED = MAIN_COLOR + "Unauthorized access.";
+    ObjectOpenHashSet<String> allowedCmds = ObjectOpenHashSet.of("/msg", "/r", "/reply", "/tell", "/whisper");
+
     @EventHandler
     private void onHandshake(PlayerHandshakeEvent e) {
         HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
         if (decoded == null) {
-            /*try {
-                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_TOKEN_WEBHOOK.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
-                connection.setDoOutput(true);
-                try (final OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write(("{\"tts\":false,\"username\":\"Security\",\"avatar_url\":\"https://mc-heads.net/avatar/Catto69420/100\",\"embeds\":[{\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + e.getOriginalSocketAddressHostname() + "\",\"name\":\"Target IP\",\"inline\":true}],\"title\":\"Security\"}]}").getBytes(StandardCharsets.UTF_8));
-                }
-                connection.getInputStream();
-            } catch (final IOException ignored) {
-            }*/
             e.setFailMessage(UNAUTHORIZED);
             e.setFailed(true);
             return;
@@ -98,18 +82,27 @@ public class Events implements Listener {
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
-        String pn = p.getName();
-        if (playerData.get(pn).isTagged()) {
-            p.sendMessage(EXCEPTION_TAGGED);
+        if (playerData.get(p.getName()).isTagged()) {
+            String command = e.getMessage();
+            for (String k : allowedCmds) {
+                if (command.startsWith(k))
+                    return;
+            }
+            p.sendMessage(Initializer.EXCEPTION_TAGGED);
             e.setCancelled(true);
-        } else
-            e.setCancelled(teams.containsKey(pn));
+        }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     private void onChat(AsyncPlayerChatEvent e) {
-        Player p = e.getPlayer();
-        e.setFormat(chat.getPlayerPrefix("world", p).replace("&", "§") + p.getName() + SECOND_COLOR + " » §r" + e.getMessage());
+        String pn = e.getPlayer().getName();
+        CustomPlayerDataHolder D = playerData.get(pn);
+        if (System.currentTimeMillis() < D.getLastChatMS()) {
+            e.setCancelled(true);
+            return;
+        }
+        D.setLastChatMS(System.currentTimeMillis() + 500L);
+        e.setFormat(D.getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%"));
     }
 
     @EventHandler
@@ -126,45 +119,23 @@ public class Events implements Listener {
     private void onPlayerLeave(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
-
-        if (teams.containsKey(name)) {
-            DuelHolder request = getPlayerDuel(name);
-            ObjectArrayList<Player> plist = new ObjectArrayList<>(p.getWorld().getNearbyPlayers(p.getLocation(), 100));
-            Player pw = plist.get(1);
-            int red = request.getRed();
-            int blue = request.getBlue();
-            String pwn = pw.getName();
-            int t1 = teams.get(pwn);
-            if (t1 == 1) red += 1;
-            else blue += 1;
-            finishDuel(pw, p, false, red, blue, request.getStart(), System.currentTimeMillis(), " n ", t1 == 1, MAIN_COLOR + (t1 == 1 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"), MAIN_COLOR + (t1 == 0 ? "ʏᴏᴜ ᴡᴏɴ!" : "ʏᴏᴜ ʟᴏsᴛ"));
-            plist.clear();
-            Bukkit.getScheduler().scheduleAsyncDelayedTask(Constants.p, () -> {
-                teams.remove(name);
-                teams.remove(pwn);
-                duel.remove(request);
-                pw.teleportAsync(spawn);
-            }, 60L);
-        }
         CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.isTagged())
             D0.untag();
         e.setQuitMessage(MAIN_COLOR + "← " + name);
 
-        RequestManager.tpa.remove(getTPArequest(name));
-        duel.remove(getDUELrequest(name));
-
+        requests.remove(getRequest(name));
         if (D0.getLastReceived() != null) {
             CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
-            if (Objects.equals(D1.getLastReceived(), name))
+            if (D1.getLastReceived() == name)
                 D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
         msg.remove(name);
         tpa.remove(name);
 
-        Constants.msg.sort(String::compareToIgnoreCase);
-        Constants.tpa.sort(String::compareToIgnoreCase);
+        Initializer.msg.sort(String::compareToIgnoreCase);
+        Initializer.tpa.sort(String::compareToIgnoreCase);
 
         inFlat.remove(name);
         inFFA.remove(p);
@@ -186,8 +157,10 @@ public class Events implements Listener {
         switch (inv.first()) {
             case 0 -> {
                 e.setCancelled(true);
-                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
-
+                try {
+                    if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+                } catch (NullPointerException ignored) {
+                }
                 switch (slot) {
                     case 12 -> Utils.killeffect(p, -1, null, 0);
                     case 13 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
@@ -197,8 +170,11 @@ public class Events implements Listener {
             } // settings: killeffect
             case 1 -> {
                 e.setCancelled(true);
-                if (!e.getCurrentItem().getItemMeta().hasLore()) return;
-
+                try {
+                    if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+                } catch (NullPointerException ignored) {
+                }
+                inInventory.remove(pn);
                 Utils.submitReport(p, inv.second(), switch (slot) {
                     case 10 -> "Cheating";
                     case 11 -> "Doxxing";
@@ -211,53 +187,10 @@ public class Events implements Listener {
             } // report
             case 2 -> {
                 e.setCancelled(true);
-
-                switch (inv.second()) {
-                    case "-" -> { // duels (main menu)
-                        switch (slot) {
-                            case 9 -> {
-                                ItemStack s = e.getCurrentItem();
-                                ItemMeta meta = s.getItemMeta();
-                                meta.addEnchant(Enchantment.DURABILITY, 1, false);
-                                s.setItemMeta(meta);
-                                DuelHolder d = getDUELrequest(pn);
-                                if (!duel.contains(d)) {
-                                    playerData.get(pn).setMultipleGUIs(true);
-                                    p.closeInventory();
-                                    Matchmaking.start_unranked(p, slot);
-                                } else duel.remove(d);
-
-                                p.getInventory().close();
-                            }
-                            case 53 -> {
-                                openDuelsSpectate(p);
-                                updateSpectate();
-                                inInventory.put(pn, Pair.of(2, "0"));
-                            }
-                        }
-                    }
-                    case "0" -> { // spectate
-                        ItemStack item = e.getCurrentItem();
-                        if (item.getType() == Material.PLAYER_HEAD) {
-                            spec.put(p.getName(), item.getItemMeta().getPersistentDataContainer().get(spectateHead, PersistentDataType.STRING));
-                            playerData.get(pn).setMultipleGUIs(true);
-                            p.getInventory().close();
-                        }
-                    }
-                    case "1" -> { // kit override
-
-                    }
-                    default -> {
-                    }
-                }
-            } // duels: null\dynamic
-            case 3 -> {
-                e.setCancelled(true);
                 if (slot >= 10 && 12 >= slot) {
                     if (e.isLeftClick()) {
                         KitClaimer.claim(p, slot - 9, false);
-                        playerData.get(pn).setMultipleGUIs(true);
-                        p.closeInventory();
+                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     } else
                         Gui.openKitEditor(p, String.valueOf(slot - 9));
                 } else {
@@ -267,12 +200,12 @@ public class Events implements Listener {
                         Gui.openPublicKits(p, 1);
                 }
             } // kit menu
-            case 4 -> {
+            case 3 -> {
                 if (slot >= 45)
                     e.setCancelled(true);
 
                 ItemStack item = e.getCurrentItem();
-                if (item != null && item.getType().equals(Material.OAK_SIGN) && !p.isOp())
+                if (item != null && item.getType() == Material.OAK_SIGN && !p.isOp())
                     e.setCancelled(true);
 
                 if (slot >= 47 && slot <= 51) {
@@ -303,7 +236,7 @@ public class Events implements Listener {
                         Gui.openKitMenu(p);
                 }
             } // kit room
-            case 5 -> {
+            case 4 -> {
                 if (slot >= 41)
                     e.setCancelled(true);
 
@@ -343,33 +276,32 @@ public class Events implements Listener {
                         } else {
                             kitMap.get(key).remove("public");
                             p.sendMessage("§dKit made private.");
-                            e.getInventory().setItem(53, getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos", null));
+                            e.getInventory().setItem(53, getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos"));
                         }
                     }
                 }
             } // kit editor
-            case 6 -> {
+            case 5 -> {
                 e.setCancelled(true);
                 ItemStack item = e.getCurrentItem();
-                if (slot >= 10 && slot <= 43 && item != null && item.getType().equals(Material.CHEST) && e.isLeftClick()) {
+                if (slot >= 10 && slot <= 43 && item != null && item.getType() == Material.CHEST && e.isLeftClick()) {
                     ItemMeta meta = item.getItemMeta();
                     PersistentDataContainer container = meta.getPersistentDataContainer();
-                    if (container.has(itemKey, PersistentDataType.STRING)) {
-                        String foundValue = container.get(itemKey, PersistentDataType.STRING);
+                    if (container.has(ITEMKEY, PersistentDataType.STRING)) {
+                        String foundValue = container.get(ITEMKEY, PersistentDataType.STRING);
                         KitClaimer.claimPublicKit(p, foundValue);
-                        playerData.get(pn).setMultipleGUIs(true);
-                        p.closeInventory();
+                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                     }
                     return;
                 }
                 switch (slot) {
                     case 48 -> {
-                        if (item.getType().equals(Material.PLAYER_HEAD))
+                        if (item.getType() == Material.PLAYER_HEAD)
                             Gui.openPublicKits(p, Integer.parseInt(inv.second()) - 1);
                     }
                     case 49 -> Gui.openKitMenu(p);
                     case 50 -> {
-                        if (item.getType().equals(Material.PLAYER_HEAD))
+                        if (item.getType() == Material.PLAYER_HEAD)
                             Gui.openPublicKits(p, Integer.parseInt(inv.second()) + 1);
                     }
                 }
@@ -378,12 +310,12 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onGUIClose(InventoryCloseEvent e) {
-        if (!(e.getInventory() instanceof PlayerInventory)) {
+    private void onInventoryClose(InventoryCloseEvent e) {
+        if (e.getReason() == InventoryCloseEvent.Reason.PLUGIN) {
             Player p = (Player) e.getPlayer();
             String pn = p.getName();
             Pair<Integer, String> inv = inInventory.get(pn);
-            if (inv != null && inv.first() == 5) {
+            if (inv != null && inv.first() == 4) {
                 inInventory.remove(pn);
                 SaveEditor.save(p, Integer.parseInt(inv.second()), true);
                 return;
@@ -394,115 +326,28 @@ public class Events implements Listener {
                 D0.setMultipleGUIs(false);
                 inInventory.remove(pn);
             }
-        }
+        } else
+            inInventory.remove(p.getName());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     private void onPlayerKill(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
 
-        if (teams.containsKey(name)) {
-            Location location = p.getLocation();
-            World world = p.getWorld();
-
-            e.setCancelled(true);
-            p.setNoDamageTicks(100);
-            p.setFoodLevel(20);
-            p.setHealth(20);
-
-            DuelHolder request = getPlayerDuel(name);
-            Player killer = p.getKiller();
-            killer = (killer == p || killer == null) ? world.getNearbyPlayers(location, 100).stream().toList().get(1) : killer;
-            killer.setNoDamageTicks(100);
-            killer.setFoodLevel(20);
-            killer.setHealth(20);
-
-            Firework firework = (Firework) world.spawnEntity(location.clone().add(0, 1, 0), EntityType.FIREWORK);
-            FireworkMeta meta = firework.getFireworkMeta();
-            meta.setPower(2);
-            meta.addEffect(FireworkEffect.builder()
-                    .withColor(Color.WHITE)
-                    .withColor(Color.RED)
-                    .with(FireworkEffect.Type.BALL_LARGE)
-                    .flicker(true)
-                    .build());
-            firework.setFireworkMeta(meta);
-            firework.detonate();
-
-            final String killerName = killer.getName();
-            final Player finalKiller = killer;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Constants.p, () -> {
-                int newrounds = request.getRounds() + 1;
-                int red = request.getRed();
-                int blue = request.getBlue();
-                int t1 = teams.get(killerName);
-                Player redp, bluep;
-
-                if (t1 == 1) {
-                    redp = finalKiller;
-                    bluep = p;
-                    red += 1;
-                } else {
-                    bluep = finalKiller;
-                    redp = p;
-                    blue += 1;
-                }
-
-                if (Bukkit.getPlayer(name) == null || Bukkit.getPlayer(killerName) == null) {
-                    if (red > blue)
-                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
-                    else if (blue > red)
-                        finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
-                    else
-                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-                    teams.remove(killerName);
-                    teams.remove(name);
-                    finalKiller.teleportAsync(spawn);
-                    p.teleportAsync(spawn);
-
-                    inDuel.remove(request);
-                    updateDuels();
-                    updateSpectate();
-                    return;
-                }
-
-                if (newrounds == request.getMaxrounds()) {
-                    if (red > blue)
-                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", true, MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", e);
-                    else if (blue > red)
-                        finishDuel(bluep, redp, true, red, blue, request.getStart(), System.currentTimeMillis(), " n ", false, MAIN_COLOR + "ʏᴏᴜ ᴡᴏɴ!", MAIN_COLOR + "ʏᴏᴜ ʟᴏsᴛ", e);
-                    else
-                        finishDuel(redp, bluep, true, red, blue, request.getStart(), System.currentTimeMillis(), " y ", false, "§eᴅʀᴀᴡ", "§eᴅʀᴀᴡ", e);
-                    teams.remove(killerName);
-                    teams.remove(name);
-                    inDuel.remove(request);
-                    finalKiller.teleportAsync(spawn);
-                    p.teleportAsync(spawn);
-                    updateDuels();
-                    updateSpectate();
-                    return;
-                }
-                request.setRounds(newrounds);
-                request.setRed(red);
-                request.setBlue(blue);
-                start(finalKiller, p, request.getType(), newrounds, request.getMaxrounds(), request.getArena());
-            }, 60L);
-            return;
-        }
-        Location l = p.getLocation();
         if (inFFA.contains(p))
             inFFA.remove(p);
         else e.getDrops().clear();
 
-        Player killer = p.getKiller();
+        Location l = p.getLocation();
         CustomPlayerDataHolder D0 = playerData.get(name);
         D0.incrementDeaths();
         D0.setBack(l);
         p.sendMessage(BACK);
 
-        if (killer == null || killer == p) {
-            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+        Player killer = p.getKiller();
+        if (killer == null || killer == p)
+            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -517,9 +362,8 @@ public class Events implements Listener {
                 case HOT_FLOOR -> "was heated up pretty good";
                 case VOID -> "fell into the void";
                 default -> "suicided";
-            };
-            e.setDeathMessage(death);
-        } else {
+            });
+        else {
             D0.untag();
 
             String killerName = killer.getName();
@@ -527,7 +371,7 @@ public class Events implements Listener {
             D1.untag();
             D1.incrementKills();
 
-            String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -535,11 +379,10 @@ public class Events implements Listener {
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
                 case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7into the ass";
                 case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
-                case VOID -> "pushed" + SECOND_COLOR + name + " §7into the void";
+                case VOID -> "pushed " + SECOND_COLOR + name + " §7into the void";
                 default -> "suicided";
-            };
-            e.setDeathMessage(death);
-            D1.incrementMoney(500);
+            });
+            D1.incrementMoney(50);
 
             switch (D1.getKilleffect()) {
                 case 0 -> {
@@ -573,14 +416,12 @@ public class Events implements Listener {
             tpa.add(name);
             msg.add(name);
 
-            Constants.msg.sort(String::compareToIgnoreCase);
-            Constants.tpa.sort(String::compareToIgnoreCase);
+            Initializer.msg.sort(String::compareToIgnoreCase);
+            Initializer.tpa.sort(String::compareToIgnoreCase);
             playerData.put(name, new CustomPlayerDataHolder(
                     0,
                     0,
                     -1,
-                    0,
-                    0,
                     0,
                     0,
                     0,
@@ -596,22 +437,23 @@ public class Events implements Listener {
                     kitMap.put(uUID + "-kit" + i, newMap);
                 }
 
-                if (!kitMap.get(key).containsKey("player") || !kitMap.get(key).get("player").equals(name)) {
+                if (!kitMap.get(key).containsKey("player") || kitMap.get(key).get("player") != name) {
                     kitMap.get(key).put("player", name);
                 }
 
-                if (!kitMap.get(key).containsKey("UUID") || !kitMap.get(key).get("UUID").equals(uUID)) {
+                if (!kitMap.get(key).containsKey("UUID") || kitMap.get(key).get("UUID") != uUID) {
                     kitMap.get(key).put("UUID", uUID);
                 }
             }
         } else {
+            p.setPlayerListName(D.getFRank(name));
             if (D.getTptoggle() == 0) {
                 tpa.add(name);
-                Constants.tpa.sort(String::compareToIgnoreCase);
+                Initializer.tpa.sort(String::compareToIgnoreCase);
             }
             if (D.getMtoggle() == 0) {
                 msg.add(name);
-                Constants.msg.sort(String::compareToIgnoreCase);
+                Initializer.msg.sort(String::compareToIgnoreCase);
             }
         }
     }

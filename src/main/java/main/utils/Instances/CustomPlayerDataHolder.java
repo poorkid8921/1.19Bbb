@@ -2,20 +2,15 @@ package main.utils.Instances;
 
 import lombok.Getter;
 import lombok.Setter;
-import main.utils.Constants;
-import main.utils.optimizer.AnimPackets;
+import main.utils.Initializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import static main.utils.Initializer.*;
+
 public class CustomPlayerDataHolder {
-    @Getter
-    @Setter
-    private int wins;
-    @Getter
-    @Setter
-    private int losses;
     @Getter
     @Setter
     private int killeffect;
@@ -29,9 +24,6 @@ public class CustomPlayerDataHolder {
     @Setter
     private int money;
     @Getter
-    @Setter
-    private int elo;
-    @Getter
     private int deaths;
     @Getter
     private int kills;
@@ -40,7 +32,7 @@ public class CustomPlayerDataHolder {
     private Location back;
     @Getter
     @Setter
-    private AnimPackets lastPacket = AnimPackets.MISC;
+    private int lastPacket = 5;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -55,17 +47,51 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private boolean multipleGUIs = false;
+    @Getter
+    @Setter
+    private int rank;
+    @Getter
+    @Setter
+    private long lastChatMS;
+    @Getter
+    @Setter
+    private int flags;
 
-    public CustomPlayerDataHolder(int wins, int losses, int c, int m, int t, int z, int elo, int deaths, int kills) {
-        this.wins = wins;
-        this.losses = losses;
-        this.money = z;
+    public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills, int rank) {
         this.killeffect = c;
         this.mtoggle = m;
         this.tptoggle = t;
-        this.elo = elo;
+        this.money = z;
         this.deaths = deaths;
         this.kills = kills;
+        this.rank = rank;
+        this.lastChatMS = 0L;
+    }
+
+    public String getFRank(String pn) {
+        return switch (rank) {
+            case 0 -> pn;
+            case 1 -> CATTO_LOVES + pn;
+            case 2 -> CATTO_HATES + pn;
+            case 3 -> GAY + pn;
+            case 4 -> QUACK + pn;
+            case 5 -> CLAPCLAP + pn;
+            case 6 -> VIP + pn;
+            case 7 -> BOOSTER + pn;
+            case 8 -> MEDIA + pn;
+            case 9 -> T_HELPER + pn;
+            case 10 -> HELPER + pn;
+            case 11 -> JRMOD + pn;
+            case 12 -> MOD + pn;
+            case 13 -> ADMIN + pn;
+            case 14 -> MANAGER + pn;
+            case 15 -> EXECUTIVE + pn;
+            default -> "";
+        };
+    }
+
+    public void incrementFlags() {
+        flags++;
     }
 
     public void setupCombatRunnable(Player player) {
@@ -83,31 +109,14 @@ public class CustomPlayerDataHolder {
                 player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + currentTagTime);
             }
         };
-        runnable.runTaskTimer(Constants.p, 0L, 20L);
+        runnable.runTaskTimer(Initializer.p, 0L, 20L);
         this.runnableid = runnable.getTaskId();
         this.tagged = true;
     }
 
     public void untag() {
-        this.currentTagTime = 0;
         this.tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
-    }
-
-    public void incrementElo(int elo) {
-        this.elo += elo;
-    }
-
-    public void decrementElo(int elo) {
-        this.elo -= elo;
-    }
-
-    public void incrementWins() {
-        this.wins++;
-    }
-
-    public void incrementLosses() {
-        this.losses++;
     }
 
     public void incrementMoney(int money) {

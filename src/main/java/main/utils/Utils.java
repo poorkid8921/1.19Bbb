@@ -3,15 +3,21 @@ package main.utils;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Instances.CustomPlayerDataHolder;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import main.utils.Instances.TpaRequest;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -21,12 +27,27 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.utils.Constants.*;
+import static main.utils.Initializer.*;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+    static TextComponent space = new TextComponent("  ");
+    static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
+    static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
+
+    public static void teleportEffect(World w, Location locC) {
+        for (int index = 1; index < 16; index++) {
+            double p1 = (index * Math.PI) / 8;
+            double p2 = (index - 1) * Math.PI / 8;
+            double x1 = Math.cos(p1) * 3;
+            double xx2 = Math.cos(p2) * 3;
+            double z1 = Math.sin(p1) * 3;
+            double z2 = Math.sin(p2) * 3;
+            w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 5, 1.5f);
+        }
+    }
 
     public static ObjectArrayList<String> tabCompleteFilter(ObjectArrayList<String> og, String arg) {
         ObjectArrayList<String> og2 = og.clone();
@@ -57,8 +78,7 @@ public class Utils {
 
     public static void killeffect(Player p, int toset, String fancy, int money) {
         String pn = p.getName();
-        playerData.get(pn).setMultipleGUIs(true);
-        p.closeInventory();
+        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         CustomPlayerDataHolder D = playerData.get(pn);
         if (money > D.getMoney()) {
             p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » " + MAIN_COLOR + "ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ");
@@ -70,14 +90,17 @@ public class Utils {
                 "ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ " + MAIN_COLOR + fancy + " §fꜰᴏʀ " + SECOND_COLOR + "$" + money));
     }
 
-    public static void submitReport(Player pp, String report, String reason) {
-        String d = pp.getDisplayName();
-        Bukkit.getOnlinePlayers().stream().filter(result -> result.hasPermission("has.staff")).forEach(result -> result.sendMessage(MAIN_COLOR + d + " §7has submitted a report against " + MAIN_COLOR +
-                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason)));
-        String pn = pp.getName();
-        playerData.get(pn).setMultipleGUIs(true);
-        pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        Bukkit.getScheduler().runTaskAsynchronously(Constants.p, () -> {
+    public static void submitReport(Player sender, String target, String reason) {
+        String name = sender.getName();
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        String staffMSG = reason == null ? (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report: " + MAIN_COLOR +
+                target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR +
+                target + " §7with the reason of " + MAIN_COLOR + reason);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (playerData.get(p.getName()).getRank() > 8)
+                p.sendMessage(staffMSG);
+        }
+        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
                 connection.setRequestMethod("POST");
@@ -86,23 +109,75 @@ public class Utils {
                 connection.setDoOutput(true);
                 try (final OutputStream outputStream = connection.getOutputStream()) {
                     outputStream.write((reason == null ?
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\"}]}" :
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + pn + "/100\"}}]}")
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" :
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}")
                             .getBytes(StandardCharsets.UTF_8));
                 }
                 connection.getInputStream();
-            } catch (final IOException ignored) {
+            } catch (IOException ignored) {
             }
         });
-        pp.sendMessage("§7Successfully submitted the report.");
+        sender.sendMessage("§7Successfully submitted your report.");
     }
 
-    public static ItemStack getHead(String name, String player, ImmutableList<String> lore) {
+    public static TpaRequest getRequest(String user) {
+        for (TpaRequest request : requests) {
+            try {
+                if (request.getReceiver() == user || request.getSenderF() == user) return request;
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    public static TpaRequest getRequest(String user, String lookup) {
+        for (TpaRequest request : requests) {
+            try {
+                if ((request.getReceiver() == user || request.getSenderF() == user) && (request.getReceiver() == lookup || request.getSenderF() == lookup))
+                    return request;
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    public static void addRequest(Player sender, Player receiver, boolean tpahere) {
+        String sn = sender.getName();
+        TextComponent a = new TextComponent("§7[§a✔§7]");
+        a.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpaccept " + sn));
+        TextComponent b = new TextComponent("§7[§cX§7]");
+        b.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpdeny " + sn));
+
+        a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ACCEPT_TEXT));
+        b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, DENY_TEXT));
+
+        receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+        sender.sendMessage("§7Request sent to " + MAIN_COLOR + Utils.translate(receiver.getDisplayName()));
+
+        receiver.sendMessage(new ComponentBuilder(sn)
+                        .color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0],
+                new TextComponent(tpahere ? " §7has requested that you teleport to them. " :
+                        " §7has requested to teleport to you. "),
+                a,
+                space,
+                b);
+        TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere);
+        requests.add(request);
+
+        BukkitTask runnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                requests.remove(request);
+            }
+        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
+        request.setRunnableid(runnable.getTaskId());
+    }
+
+    public static ItemStack getHead(String name, String player) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         meta.setOwner(player);
         meta.setDisplayName(name);
-        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }

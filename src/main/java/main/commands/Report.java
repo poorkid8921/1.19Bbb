@@ -15,17 +15,17 @@ public class Report implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("§7You must specify who you want to report.");
+            sender.sendMessage("§7You must specify who you want to report!");
             return true;
         }
 
         if (args.length < 2)
             Gui.openReport((Player) sender, args[0]);
         else {
-            StringBuilder msgargs = new StringBuilder();
-            for (String arg : args) msgargs.append(arg).append(" ");
+            StringBuilder msg = new StringBuilder();
+            for (String arg : args) msg.append(arg).append(" ");
 
-            Utils.submitReport((Player) sender, msgargs.toString(), null);
+            Utils.submitReport((Player) sender, msg.toString(), null);
         }
         return true;
     }
