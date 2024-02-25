@@ -2,12 +2,9 @@ package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.instances.HomeHolder;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-
-import java.util.Map;
 
 import static main.utils.Initializer.playerData;
 

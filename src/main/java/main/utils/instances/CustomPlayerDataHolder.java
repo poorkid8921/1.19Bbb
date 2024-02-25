@@ -6,15 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import main.utils.Initializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 import static main.utils.Initializer.*;
-import static main.utils.Initializer.EXECUTIVE;
 
 public class CustomPlayerDataHolder {
     @Getter
@@ -57,6 +52,12 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private int rank;
+    @Getter
+    @Setter
+    private long lastChatMS;
+    @Getter
+    @Setter
+    private int flags;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
@@ -72,11 +73,12 @@ public class CustomPlayerDataHolder {
         this.kills = kills;
         this.homes = homes;
         this.rank = rank;
+        this.lastChatMS = 0L;
     }
 
     public String getFRank(String pn) {
         return switch (rank) {
-            case 0 -> "§r" + pn;
+            case 0 -> pn;
             case 1 -> CATTO_LOVES + pn;
             case 2 -> CATTO_HATES + pn;
             case 3 -> GAY + pn;
@@ -94,6 +96,10 @@ public class CustomPlayerDataHolder {
             case 15 -> EXECUTIVE + pn;
             default -> "";
         };
+    }
+
+    public void incrementFlags() {
+        flags++;
     }
 
     public void setupCombatRunnable(Player player) {

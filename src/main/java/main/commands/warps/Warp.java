@@ -1,9 +1,9 @@
 package main.commands.warps;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.io.Files;
 import main.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,11 +12,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collections;
 
 import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Utils.teleportEffect;
 
 public class Warp implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -32,20 +33,16 @@ public class Warp implements CommandExecutor, TabExecutor {
         }
 
         FileConfiguration cf = YamlConfiguration.loadConfiguration(f);
-        ((Player) sender).teleportAsync(new Location(
-                        Bukkit.getWorld(cf.getString("a")),
-                        cf.getDouble("b"),
-                        cf.getDouble("c"),
-                        cf.getDouble("d"),
-                        (float) cf.getDouble("e"),
-                        (float) cf.getDouble("f")),
-                PlayerTeleportEvent.TeleportCause.COMMAND
-        ).thenAccept(result -> sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + args[0]));
+        String worldString = cf.getString("a");
+        World world = worldString == "world" ? Economy.d : worldString == "world_nether" ? Economy.d0 : Economy.d1;
+        Location loc = new Location(world, cf.getDouble("b"), cf.getDouble("c"), cf.getDouble("d"), (float) cf.getDouble("e"), (float) cf.getDouble("f"));
+        ((Player) sender).teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> teleportEffect(world, loc));
+        sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + Files.getNameWithoutExtension(f.getName()));
         return true;
     }
 
     @Override
-    public @Nullable java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return Collections.emptyList();
     }
 }

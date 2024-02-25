@@ -4,43 +4,36 @@ import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.commands.*;
+import main.commands.economy.Balance;
+import main.commands.economy.Baltop;
 import main.commands.economy.Pay;
+import main.commands.essentials.List;
 import main.commands.essentials.*;
 import main.commands.tpa.*;
-import main.commands.warps.DelHome;
-import main.commands.warps.Home;
-import main.commands.warps.SetHome;
-import main.commands.warps.SetWarp;
-import main.commands.warps.Warp;
+import main.commands.warps.*;
 import main.utils.*;
 import main.utils.arenas.Arena;
 import main.utils.arenas.ArenaIO;
 import main.utils.arenas.CreateCommand;
-import main.commands.economy.Balance;
 import main.utils.instances.CommandHolder;
 import main.utils.instances.CustomPlayerDataHolder;
 import main.utils.instances.HomeHolder;
-import main.utils.optimizer.AnimationEvent;
-import main.utils.optimizer.InteractionEvent;
+import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
-import net.luckperms.api.LuckPerms;
-import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_19_R3.CraftServer;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -50,16 +43,21 @@ import static main.utils.Initializer.*;
 public class Economy extends JavaPlugin {
     public static File dataFolder;
     public static World d;
+    public static World d0;
+    public static World d1;
     public static FileConfiguration config;
     private static boolean alreadySavingData;
+    private final Point spawnDistance = new Point(0, 0);
     private File dataFile;
     private int arena = 1;
 
-    Location getRandomLoc(World w) {
+    private Location getRandomLoc(World w) {
         Location loc = null;
         while (loc == null) {
             int boundX = Initializer.RANDOM.nextInt(-5000, 5000);
             int boundZ = Initializer.RANDOM.nextInt(-5000, 5000);
+            if (spawnDistance.distance(boundX, boundZ) < 128)
+                continue;
             Block b = w.getHighestBlockAt(boundX, boundZ);
             if (b.isSolid())
                 loc = new Location(w, boundX, b.getY() + 1, boundZ);
@@ -67,7 +65,7 @@ public class Economy extends JavaPlugin {
         return loc;
     }
 
-    Location getNetherRandomLoc(World w) {
+    private Location getNetherRandomLoc(World w) {
         Location loc = null;
         while (loc == null) {
             int boundX = Initializer.RANDOM.nextInt(-5000, 5000);
@@ -84,7 +82,7 @@ public class Economy extends JavaPlugin {
         return loc;
     }
 
-    void registerCommands() {
+    private void registerCommands() {
         for (CommandHolder command : ObjectArrayList.of(
                 new CommandHolder("msg", new Msg()),
                 new CommandHolder("reply", new Reply()),
@@ -111,7 +109,13 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("enderchest", new EnderChest()),
                 new CommandHolder("setrank", new SetRank()),
                 new CommandHolder("rgc", new CreateRegion()),
-                new CommandHolder("rpay", new Pay())
+                new CommandHolder("rpay", new Pay()),
+                new CommandHolder("rbaltop", new Baltop()),
+                new CommandHolder("anvil", new Anvil()),
+                new CommandHolder("grindstone", new GrindStone()),
+                new CommandHolder("list", new List()),
+                new CommandHolder("broadcast", new Broadcast()),
+                new CommandHolder("bombrtp", new BombRTP())
         ))
             getCommand(command.getName()).setExecutor(command.getClazz());
         TeleportCompleter tabCompleter = new TeleportCompleter();
@@ -126,19 +130,17 @@ public class Economy extends JavaPlugin {
 
     private void setupArenas() {
         for (File file : new File(dataFolder, "arenas").listFiles()) {
-            try {
-                Arena arena = ArenaIO.loadArena(file);
-                if (arena != null) Arena.getArenas().put(arena.getName(), arena);
-            } catch (Exception ignored) {
-            }
+            Arena arena = ArenaIO.loadArena(file);
+            if (arena != null) Arena.getArenas().put(arena.getName(), arena);
         }
     }
-    
+
     private void registerPacketListeners() {
-        PacketEvents.getAPI().getEventManager().registerListeners(new AnimationEvent(),
-                new InteractionEvent(),
+        PacketEvents.getAPI().getEventManager().registerListeners(
+                new InteractionListeners(),
                 new LastPacketEvent(),
-                new AntiAutoTotem());
+                new AntiAutoTotem()
+        );
         PacketEvents.getAPI().init();
     }
 
@@ -157,50 +159,41 @@ public class Economy extends JavaPlugin {
         dataFolder = getDataFolder();
         dataFile = new File(dataFolder, "data.yml");
         config = YamlConfiguration.loadConfiguration(dataFile);
-        chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        lp = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
-        economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
-
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            World d0 = Bukkit.getWorld("world_nether");
-            World d1 = Bukkit.getWorld("world_the_end");
-            new BukkitRunnable() {
-                int i = 0;
-
-                public void run() {
-                    if (i++ == 101) {
-                        getCommand("rtp").setExecutor(new RTP());
-                        Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
-                            for (Entity ent : d.getEntities()) {
-                                if (ent instanceof EnderCrystal)
-                                    ent.remove();
-                            }
-
-                            if (arena++ == 3)
-                                arena = 1;
-                            Arena.getArenas().get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                if (p.isGliding())
-                                    continue;
-                                Location loc = p.getLocation();
-                                loc.setY(200);
-                                if (Economy.d.getBlockAt(loc).getType() != Material.BARRIER)
-                                    continue;
-                                loc.setY(135);
-                                p.teleportAsync(loc);
-                            }
-                        }, 0L, 24000L);
-                        Bukkit.getLogger().warning("Finished RTP population.");
-                        this.cancel();
-                        return;
-                    }
-                    overworldRTP.add(getRandomLoc(d));
-                    netherRTP.add(getNetherRandomLoc(d0));
-                    endRTP.add(getRandomLoc(d1));
-                }
-            }.runTaskTimer(this, 0L, 0L);
             d = Bukkit.getWorld("world");
-            spawn = new Location(Economy.d, -0.5, 140.0, 0.5, 90F, 0F);
+            d0 = Bukkit.getWorld("world_nether");
+            d1 = Bukkit.getWorld("world_the_end");
+            spawn = new Location(d, -0.5D, 140.0D, 0.5D, 90F, 0F);
+            for (int i = 0; i < 101; i++) {
+                if (i == 100) {
+                    getCommand("rtp").setExecutor(new RTP());
+                    Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
+                        for (Entity ent : d.getEntities()) {
+                            if (ent instanceof EnderCrystal)
+                                ent.remove();
+                        }
+
+                        if (arena++ == 3)
+                            arena = 1;
+                        Arena.getArenas().get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            if (p.isGliding())
+                                continue;
+                            Location loc = p.getLocation();
+                            loc.setY(200);
+                            if (Economy.d.getBlockAt(loc).getType() != Material.BARRIER)
+                                continue;
+                            loc.setY(135);
+                            p.teleportAsync(loc);
+                        }
+                    }, 0L, 12000L);
+                    Bukkit.getLogger().warning("Finished RTP population.");
+                    return;
+                }
+                overworldRTP.add(getRandomLoc(d));
+                netherRTP.add(getNetherRandomLoc(d0));
+                endRTP.add(getRandomLoc(d1));
+            }
         }, 100L);
         registerCommands();
         setupArenas();
@@ -226,7 +219,7 @@ public class Economy extends JavaPlugin {
                 config.set("r." + key + ".2", value.getMoney());
                 config.set("r." + key + ".3", value.getDeaths());
                 config.set("r." + key + ".4", value.getKills());
-                if (value.getHomes().size() > 0) {
+                if (!value.getHomes().isEmpty()) {
                     StringBuilder finalstr = new StringBuilder();
                     for (HomeHolder k : value.getHomes()) {
                         Location loc = k.getLocation();

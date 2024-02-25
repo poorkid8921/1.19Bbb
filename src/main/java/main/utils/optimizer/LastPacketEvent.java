@@ -20,12 +20,11 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
-        CustomPlayerDataHolder user;
-        try {
-            user = playerData.get(((Player) event.getPlayer()).getName());
-        } catch (Exception e) {
+        Player p = (Player) event.getPlayer();
+        if (p == null)
             return;
-        }
+
+        CustomPlayerDataHolder user = playerData.get(p.getName());
         int animPacket = getAnimPacket(event);
         if (user.getLastPacket() == 0)
             user.setIgnoreAnim(animPacket == 3);

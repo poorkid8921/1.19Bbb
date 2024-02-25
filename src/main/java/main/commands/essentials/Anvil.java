@@ -1,15 +1,17 @@
 package main.commands.essentials;
 
 import main.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 
 import java.util.Collections;
 
-public class EnderChest implements CommandExecutor, TabExecutor {
+public class Anvil implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (Utils.isPlayerUnRanked(sender.getName())) {
@@ -17,7 +19,7 @@ public class EnderChest implements CommandExecutor, TabExecutor {
             return true;
         }
         Player p = (Player) sender;
-        p.openInventory(p.getEnderChest());
+        p.openInventory(Bukkit.createInventory(p, InventoryType.ANVIL));
         return true;
     }
 

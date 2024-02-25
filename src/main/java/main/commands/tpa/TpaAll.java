@@ -1,6 +1,5 @@
 package main.commands.tpa;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Utils;
 import main.utils.instances.TpaRequest;
@@ -11,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
+import java.util.Collections;
 
 import static main.utils.Initializer.playerData;
 import static main.utils.Utils.getRequest;
@@ -38,6 +37,6 @@ public class TpaAll implements CommandExecutor, TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 }

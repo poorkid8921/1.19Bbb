@@ -16,8 +16,15 @@ import static main.utils.Initializer.MAIN_COLOR;
 
 public class SetWarp implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String errMSG = "§7You must specify a warp!";
         if (args.length == 0) {
-            sender.sendMessage("§7You must specify a warp!");
+            sender.sendMessage(errMSG);
+            return true;
+        }
+
+        String sanitized = args[0].replaceAll("[A-Za-z0-9]", "");
+        if (sanitized.length() != 0) {
+            sender.sendMessage(errMSG);
             return true;
         }
 

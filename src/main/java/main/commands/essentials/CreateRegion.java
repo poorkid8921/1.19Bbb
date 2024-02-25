@@ -1,18 +1,13 @@
 package main.commands.essentials;
 
-import com.google.common.collect.ImmutableList;
 import main.utils.instances.RegionHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Collections;
 
-import static main.utils.Initializer.playerData;
 import static main.utils.Initializer.regions;
 
 public class CreateRegion implements CommandExecutor, TabExecutor {
@@ -27,6 +22,6 @@ public class CreateRegion implements CommandExecutor, TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 }

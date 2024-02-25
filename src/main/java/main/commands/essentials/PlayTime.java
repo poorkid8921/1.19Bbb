@@ -7,21 +7,19 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Initializer.MAIN_COLOR;
-
 public class PlayTime implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length > 0) {
-            Player p = Bukkit.getPlayer(args[0]);
+            Player p = (Player) Bukkit.getOfflinePlayer(args[0]);
             if (p == null) {
-                sender.sendMessage("§7You can't view the playtime of offline players.");
+                sender.sendMessage("§7You must specify a valid player!");
                 return true;
             }
-            sender.sendMessage(MAIN_COLOR + p.getDisplayName() + "§7's playtime is " + MAIN_COLOR + Utils.getTime(p));
+            sender.sendMessage("§6Playtime of " + p.getName() + ": §c" + Utils.getTime(p));
             return true;
         }
-        sender.sendMessage("§7Your playtime is " + MAIN_COLOR + Utils.getTime((Player) sender));
+        sender.sendMessage("§6Playtime: §c" + Utils.getTime((Player) sender));
         return true;
     }
 }

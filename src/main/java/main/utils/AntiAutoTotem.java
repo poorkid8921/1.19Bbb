@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
+import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,12 +15,16 @@ import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.playerData;
 
 public class AntiAutoTotem extends SimplePacketListenerAbstract {
-    void flag(Player p) {
-        String alertStr = MAIN_COLOR + p.getName() + "§7 has been flagged for auto totem.";
-        for (Player k : Bukkit.getOnlinePlayers()) {
-            if (playerData.get(k.getName()).getRank() > 8)
-                k.sendMessage(alertStr);
+    private boolean flag(Player p) {
+        String pn = p.getName();
+        CustomPlayerDataHolder D0 = playerData.get(pn);
+        D0.incrementFlags();
+        if (D0.getFlags() == 3) {
+            D0.setFlags(0);
+            Bukkit.broadcastMessage(MAIN_COLOR + pn + " §7has been flagged for Auto Totem");
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -35,10 +40,8 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
             if (inv.getItemInOffHand().getType() == Material.AIR)
                 Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                     ItemStack offhandItem = inv.getItemInOffHand();
-                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
+                    if (offhandItem.getType() == Material.TOTEM_OF_UNDYING && flag(player))
                         offhandItem.setAmount(0);
-                        flag(player);
-                    }
                 }, 1L);
         }
     }

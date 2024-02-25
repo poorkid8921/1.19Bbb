@@ -3,10 +3,10 @@ package main;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Initializer;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.HandShake;
+import main.utils.Initializer;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.*;
@@ -23,11 +23,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
 
@@ -45,6 +44,7 @@ public class Events implements Listener {
     ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
     ItemStack boots = new ItemStack(Material.IRON_BOOTS);
     ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 16);
+    ObjectOpenHashSet<String> allowedCmds = ObjectOpenHashSet.of("/msg", "/r", "/reply", "/tell", "/whisper");
 
     public Events() {
         pick.addEnchantment(Enchantment.DIG_SPEED, 3);
@@ -90,29 +90,13 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onAnvilPrepareOutput(PrepareAnvilEvent e) {
-        if (playerData.get(e.getView().getPlayer().getName()).getRank() > 0) {
-            Inventory inv = e.getInventory();
-            ItemStack input = inv.getItem(0);
-            if (input == null)
-                return;
-            ItemStack output = inv.getItem(2);
-            if (output == null)
-                return;
-            ItemMeta meta = output.getItemMeta();
-            meta.setDisplayName(translate(meta.getDisplayName()));
-            output.setItemMeta(meta);
-            e.setResult(output);
-        }
-    }
-
-    @EventHandler
     private void onEntitySpawn(EntitySpawnEvent e) {
         if (e.getEntityType() == EntityType.ENDER_CRYSTAL) {
             Entity ent = e.getEntity();
             crystalsToBeOptimized.put(
                     ent.getEntityId(),
-                    ent.getLocation());
+                    ent.getLocation()
+            );
         }
     }
 
@@ -125,18 +109,23 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        String pn = p.getName();
+        String name = p.getName();
+        CustomPlayerDataHolder D = playerData.get(name);
+        if (System.currentTimeMillis() < D.getLastChatMS()) {
+            e.setCancelled(true);
+            return;
+        }
+        D.setLastChatMS(System.currentTimeMillis() + 500L);
         Team team = p.getScoreboard().getPlayerTeam(p);
-        e.setFormat(team == null ? playerData.get(p.getName()).getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
-                ("§7[" + team.getColor() + team.getDisplayName() + "§7] " +
-                        playerData.get(p.getName()).getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
+        e.setFormat(team == null ? playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
+                ("§7[§6" + team.getDisplayName() + "§7] " +
+                        playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
     }
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
-        String pn = p.getName();
-        if (playerData.get(pn).isTagged()) {
+        if (playerData.get(p.getName()).isTagged() && !allowedCmds.contains(e.getMessage())) {
             p.sendMessage(Initializer.EXCEPTION_TAGGED);
             e.setCancelled(true);
         }
@@ -157,7 +146,6 @@ public class Events implements Listener {
     private void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
-
         CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.isTagged()) {
             D0.untag();
@@ -182,18 +170,23 @@ public class Events implements Listener {
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
-        if (c instanceof PlayerInventory)
+        if (c instanceof PlayerInventory ||
+                c instanceof AnvilInventory ||
+                c instanceof GrindstoneInventory)
             return;
 
         Player p = (Player) e.getWhoClicked();
-        String pn = p.getName();
-        Pair<Integer, String> inv = playerData.get(pn).getInventoryInfo();
+        String name = p.getName();
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        Pair<Integer, String> inv = D0.getInventoryInfo();
         if (inv == null) return;
 
         int slot = e.getSlot();
         if (inv.first() == 0) {
             e.setCancelled(true);
             if (!e.getCurrentItem().getItemMeta().hasLore()) return;
+            p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            D0.setInventoryInfo(null);
             Utils.submitReport(p, inv.second(), switch (slot) {
                 case 10 -> "Cheating";
                 case 11 -> "Doxxing";
@@ -245,14 +238,14 @@ public class Events implements Listener {
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
                 case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7into the ass";
                 case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
-                case VOID -> "pushed" + SECOND_COLOR + name + " §7into the void";
+                case VOID -> "pushed " + SECOND_COLOR + name + " §7into the void";
                 default -> "suicided";
             };
             e.setDeathMessage(death);
 
             Location loc = p.getLocation();
             World w = loc.getWorld();
-            if (Initializer.lp.getPlayerAdapter(Player.class).getUser(killer).getPrimaryGroup() != "default") {
+            if (D1.getRank() > 0) {
                 loc.add(0, 1, 0);
                 switch (Initializer.RANDOM.nextInt(4)) {
                     case 0 -> spawnFirework(loc);
@@ -285,8 +278,8 @@ public class Events implements Listener {
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        PlayerInventory inv = p.getInventory();
-        if (inv.getContents().length == 0) {
+        if (!p.hasPlayedBefore()) {
+            PlayerInventory inv = p.getInventory();
             inv.addItem(sword);
             inv.addItem(pick);
             inv.setHelmet(helmet);
@@ -295,6 +288,16 @@ public class Events implements Listener {
             inv.setBoots(boots);
             inv.setItemInOffHand(gap);
             p.teleportAsync(Initializer.spawn);
+
+            String name = p.getName();
+            e.setJoinMessage(JOIN_PREFIX + name);
+
+            Initializer.tpa.add(name);
+            Initializer.msg.add(name);
+            Initializer.tpa.sort(String::compareToIgnoreCase);
+            Initializer.msg.sort(String::compareToIgnoreCase);
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of(), 0));
+            return;
         }
         String name = p.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
@@ -309,6 +312,7 @@ public class Events implements Listener {
 
             playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of(), 0));
         } else {
+            p.setPlayerListName(D.getFRank(name));
             if (D.getTptoggle() == 0) {
                 Initializer.tpa.add(name);
                 Initializer.tpa.sort(String::compareToIgnoreCase);

@@ -1,12 +1,13 @@
 package main.commands.essentials;
 
-import com.google.common.collect.ImmutableList;
 import main.utils.Initializer;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+
+import java.util.Collections;
 
 import static main.utils.Initializer.msg;
 import static main.utils.Initializer.playerData;
@@ -32,6 +33,6 @@ public class MsgLock implements CommandExecutor, TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 }

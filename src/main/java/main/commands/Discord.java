@@ -1,10 +1,11 @@
 package main.commands;
 
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+
+import java.util.Collections;
 
 import static main.utils.Initializer.D_LINK;
 import static main.utils.Initializer.D_USING;
@@ -19,6 +20,6 @@ public class Discord implements CommandExecutor, TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 }

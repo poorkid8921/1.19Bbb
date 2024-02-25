@@ -2,6 +2,7 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.utils.instances.CustomPlayerDataHolder;
 import main.utils.instances.HomeHolder;
 import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -28,6 +29,8 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,18 +39,45 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
+    static final BigDecimal THOUSAND = new BigDecimal(1000);
+    static final BigDecimal MILLION = new BigDecimal(1_000_000);
+    static final BigDecimal BILLION = new BigDecimal(1_000_000_000);
+    static final BigDecimal TRILLION = new BigDecimal(1_000_000_000_000L);
     public static TextComponent space = new TextComponent("  ");
+    public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+    public static TreeMap<String, Integer> leaderBoardMoney = new TreeMap<>();
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-    public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance();
-    public static final BigDecimal THOUSAND = new BigDecimal(1000);
-    public static final BigDecimal MILLION = new BigDecimal(1_000_000);
-    public static final BigDecimal BILLION = new BigDecimal(1_000_000_000);
-    public static final BigDecimal TRILLION = new BigDecimal(1_000_000_000_000L);
+
+    public static void teleportEffect(World w, Location locC) {
+        for (int index = 1; index < 16; index++) {
+            double p1 = (index * Math.PI) / 8;
+            double p2 = (index - 1) * Math.PI / 8;
+            double x1 = Math.cos(p1) * 3;
+            double xx2 = Math.cos(p2) * 3;
+            double z1 = Math.sin(p1) * 3;
+            double z2 = Math.sin(p2) * 3;
+            w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 5, 1.5f);
+        }
+    }
+
+    public static boolean isPlayerUnRanked(String name) {
+        return playerData.get(name).getRank() < 4;
+    }
+
+    public static double getMoneyValue(String unsanitized, String sanitized) {
+        BigDecimal amount = new BigDecimal(unsanitized);
+        switch (Character.toLowerCase(sanitized.charAt(sanitized.length() - 1))) {
+            case 'k' -> amount = amount.multiply(THOUSAND);
+            case 'm' -> amount = amount.multiply(MILLION);
+            case 'b' -> amount = amount.multiply(BILLION);
+            case 't' -> amount = amount.multiply(TRILLION);
+        }
+        return amount.doubleValue();
+    }
 
     public static String getTime(Player p) {
         StringBuilder builder = new StringBuilder();
         int seconds = p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
-
         int days = seconds / 86400;
         if (days > 0)
             builder.append(days).append(days > 1 ? " days " : " day ");
@@ -59,33 +89,33 @@ public class Utils {
         long minutes = (seconds / 60) % 60;
         if (minutes > 0)
             builder.append(minutes).append(" ").append(minutes > 1 ? "minutes " : "minute ");
-        seconds %= 60;
-        if (seconds > 0)
-            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        if (days == 0) {
+            seconds %= 60;
+            if (seconds > 0)
+                builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        }
         return builder.toString();
     }
 
     public static String getTime(long ms) {
         StringBuilder builder = new StringBuilder();
-        long seconds = ms / 1000;
-        long days = seconds / 86400;
+        int seconds = (int) (ms / 1000);
+        int days = seconds / 86400;
         if (days > 0)
-            builder.append(days).append(" ").append(days > 1 ? "days" : "day");
+            builder.append(days).append(days > 1 ? " days " : " day ");
 
         seconds %= 86400;
         long hours = seconds / 3600;
         if (hours > 0)
-            builder.append(builder.length() == 0 ? hours + " " + (hours > 1 ? "hours" : "hour") :
-                    " " + hours + " " + (hours > 1 ? "hours " : "hour "));
-
+            builder.append(hours).append(" ").append(hours > 1 ? "hours " : "hour ");
         long minutes = (seconds / 60) % 60;
         if (minutes > 0)
-            builder.append(builder.length() == 0 ? minutes + " " + (minutes > 1 ? "minutes" : "minute") :
-                    " " + minutes + " " + (minutes > 1 ? "minutes " : "minute "));
-
-        seconds %= 60;
-        if (seconds > 0)
-            builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+            builder.append(minutes).append(" ").append(minutes > 1 ? "minutes " : "minute ");
+        if (days == 0) {
+            seconds %= 60;
+            if (seconds > 0)
+                builder.append(seconds).append(" ").append(seconds > 1 ? "seconds" : "second");
+        }
         return builder.toString();
     }
 
@@ -149,18 +179,17 @@ public class Utils {
         return item;
     }
 
-    public static void submitReport(Player pp, String report, String reason) {
-        String d = pp.getDisplayName();
-        String staffMSG = MAIN_COLOR + translate(d) + " §7has submitted a report against " + MAIN_COLOR +
-                report + (reason == null ? "" : " §7with the reason of " + MAIN_COLOR + reason);
+    public static void submitReport(Player sender, String target, String reason) {
+        String name = sender.getName();
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        String staffMSG = reason == null ? (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report: " + MAIN_COLOR +
+                target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR +
+                target + " §7with the reason of " + MAIN_COLOR + reason);
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (playerData.get(p.getName()).getRank() > 8)
                 p.sendMessage(staffMSG);
         }
-        pp.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-            String pn = pp.getName();
-            playerData.get(pn).setInventoryInfo(null);
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
                 connection.setRequestMethod("POST");
@@ -169,15 +198,15 @@ public class Utils {
                 connection.setDoOutput(true);
                 try (final OutputStream outputStream = connection.getOutputStream()) {
                     outputStream.write((reason == null ?
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\"}]}" :
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + pn + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + pn + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + report + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + pn + "/100\"}}]}")
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" :
+                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}")
                             .getBytes(StandardCharsets.UTF_8));
                 }
                 connection.getInputStream();
             } catch (IOException ignored) {
             }
         });
-        pp.sendMessage("§7Successfully submitted the report.");
+        sender.sendMessage("§7Successfully submitted your report.");
     }
 
     public static TpaRequest getRequest(String user) {

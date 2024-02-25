@@ -317,7 +317,7 @@ public class Arena {
             Section s = sections.get(id);
             if (s.reset(data.sections.get(id))) {
                 data.sections.remove(id);
-                data.sectionIDs.remove(id);
+                data.sectionIDs.remove((Object) id);
                 sectionsIterated--;
 
                 if (data.sections.size() == 0) break;

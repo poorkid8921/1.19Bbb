@@ -1,20 +1,15 @@
 package main.commands.economy;
 
-import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.*;
-import org.bukkit.command.defaults.BukkitCommand;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static main.utils.Initializer.playerData;
-import static main.utils.Utils.*;
+import static main.utils.Utils.economyFormat;
+import static main.utils.Utils.getMoneyValue;
 
 public class Pay implements CommandExecutor {
     @Override
@@ -35,27 +30,20 @@ public class Pay implements CommandExecutor {
             sender.sendMessage("§7You must specify the amount to pay the specified player!");
             return true;
         }
-        BigDecimal amount = new BigDecimal(sanitizedString);
-        switch (Character.toLowerCase(args[1].charAt(args[1].length() - 1))) {
-            case 'k' -> amount = amount.multiply(THOUSAND);
-            case 'm' -> amount = amount.multiply(MILLION);
-            case 'b' -> amount = amount.multiply(BILLION);
-            case 't' -> amount = amount.multiply(TRILLION);
-        }
-        double finalAmount = amount.doubleValue();
+        double amount = getMoneyValue(args[1], sanitizedString);
         String sn = sender.getName();
         CustomPlayerDataHolder D0 = playerData.get(sn);
-        if ((D0.getMoney() - finalAmount) < 0) {
+        if ((D0.getMoney() - amount) < 0) {
             sender.sendMessage("§7You don't have enough money.");
             return true;
         }
-        D0.decrementMoney(finalAmount);
+        D0.decrementMoney(amount);
 
-        String formattedMoney = "§a$" + economyFormat.format(finalAmount);
+        String formattedMoney = "§a" + economyFormat.format(amount);
         Player toSendPlayer = (Player) Bukkit.getOfflinePlayer(args[0]);
         String toSendName = toSendPlayer.getName();
         CustomPlayerDataHolder D1 = playerData.get(toSendName);
-        D1.incrementMoney(finalAmount);
+        D1.incrementMoney(amount);
 
         if (toSendPlayer.isOnline())
             toSendPlayer.sendMessage(formattedMoney + " §6has been received from " + D0.getFRank(sn) + "§6.");

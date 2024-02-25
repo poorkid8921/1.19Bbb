@@ -3,18 +3,16 @@ package main.utils;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
-import main.commands.warps.Home;
 import main.utils.instances.CustomPlayerDataHolder;
 import main.utils.instances.HomeHolder;
 import main.utils.instances.RegionHolder;
 import main.utils.instances.TpaRequest;
-import net.luckperms.api.LuckPerms;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -28,7 +26,7 @@ import static main.Economy.config;
 
 public class Initializer {
     public static final RegionHolder spawnRegionHolder = new RegionHolder(17, 155, -18, -19, 134, 18);
-    public static final ObjectArrayList<RegionHolder> regions = ObjectArrayList.of(
+    public static final ObjectOpenHashSet<RegionHolder> regions = ObjectOpenHashSet.of(
             spawnRegionHolder,
             new RegionHolder(-44, 133, 43, 41, 3, -42),// flat
             new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
@@ -48,11 +46,10 @@ public class Initializer {
     public static ObjectArrayList<TpaRequest> requests = ObjectArrayList.of();
     public static ObjectArrayList<String> tpa = ObjectArrayList.of();
     public static ObjectArrayList<String> msg = ObjectArrayList.of();
+    public static ObjectArrayList<Location> NPCs = ObjectArrayList.of();
+    public static ObjectArrayList<Location> holos = ObjectArrayList.of();
     public static Economy p;
-    public static Chat chat;
-    public static LuckPerms lp;
     public static Location spawn;
-    public static net.milkbowl.vault.economy.Economy economy;
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     public static URL CACHED_WEBHOOK;
     public static URL CACHED_TOKEN_WEBHOOK;
@@ -96,45 +93,38 @@ public class Initializer {
         EXCEPTION_INTERACTION = MAIN_COLOR + "Sorry, §7buy you can't interact here.";
         EXCEPTION_BLOCK_PLACE = MAIN_COLOR + "Sorry, §7but you can't place blocks here.";
         EXCEPTION_BLOCK_BREAK = MAIN_COLOR + "Sorry, §7but you can't break blocks here.";
-
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
         if (config.contains("r")) {
             int dataLoaded = 0;
             ObjectArrayList<HomeHolder> homes = ObjectArrayList.of();
             for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                int i = 0;
-                int m = 0;
-                int t = 0;
-                int money = 0;
-                int deaths = 0;
-                int kills = 0;
-                int rank = 0;
-                for (String key2 : config.getConfigurationSection("r." + key).getKeys(false)) {
-                    switch (i++) {
-                        case 1 -> m = config.getInt("r." + key + "." + key2);
-                        case 2 -> t = config.getInt("r." + key + "." + key2);
-                        case 3 -> money = config.getInt("r." + key + "." + key2);
-                        case 4 -> deaths = config.getInt("r." + key + "." + key2);
-                        case 5 -> kills = config.getInt("r." + key + "." + key2);
-                        case 6 -> {
-                            String og = config.getString("r." + key + ".5");
-                            if (og.equals("null"))
-                                continue;
-                            for (String str : og.split(";")) {
-                                String[] args = str.split(":");
-                                homes.add(new HomeHolder(args[0], new Location(Bukkit.getWorld(args[1]),
-                                        Integer.parseInt(args[2]),
-                                        Integer.parseInt(args[3]),
-                                        Integer.parseInt(args[4]),
-                                        Float.parseFloat(args[5]),
-                                        Float.parseFloat(args[6]))));
-                            }
-                        }
-                        case 7 -> rank = config.getInt("r." + key + "." + key2);
+                int m = config.getInt("r." + key + ".0");
+                int t = config.getInt("r." + key + ".1");
+                int money = config.getInt("r." + key + ".2");
+                int deaths = config.getInt("r." + key + ".3");
+                int kills = config.getInt("r." + key + ".4");
+
+                String og = config.getString("r." + key + ".5");
+                if (!og.equals("null")) {
+                    for (String str : og.split(";")) {
+                        String[] args = str.split(":");
+                        homes.add(new HomeHolder(args[0], new Location(Bukkit.getWorld(args[1]),
+                                Integer.parseInt(args[2]),
+                                Integer.parseInt(args[3]),
+                                Integer.parseInt(args[4]),
+                                Float.parseFloat(args[5]),
+                                Float.parseFloat(args[6]))));
                     }
                 }
-                if (m == 0 && t == 0 && money == 0 && deaths == 0 && kills == 0 && homes.size() == 0 && rank == 0)
+                int rank = config.getInt("r." + key + ".6");
+                if (m == 0 &&
+                        t == 0 &&
+                        money == 0 &&
+                        deaths == 0 &&
+                        kills == 0 &&
+                        homes.size() == 0 &&
+                        rank == 0)
                     continue;
                 playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes, rank));
                 homes.clear();

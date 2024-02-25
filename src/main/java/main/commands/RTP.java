@@ -1,6 +1,5 @@
 package main.commands;
 
-import com.google.common.collect.ImmutableList;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -14,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.Collections;
 
 import static main.utils.Initializer.*;
 
@@ -42,7 +43,7 @@ public class RTP implements CommandExecutor, TabExecutor {
                 double xx2 = Math.cos(p2) * 3;
                 double z1 = Math.sin(p1) * 3;
                 double z2 = Math.sin(p2) * 3;
-                w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 1, 1.5f);
+                w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 5, 1.5f);
             }
         });
         return true;
@@ -50,6 +51,6 @@ public class RTP implements CommandExecutor, TabExecutor {
 
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 }

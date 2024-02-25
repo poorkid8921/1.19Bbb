@@ -41,12 +41,12 @@ public class Msg implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        StringBuilder msgargs = new StringBuilder();
+        StringBuilder msg = new StringBuilder();
         for (int i = 1; i < args.length; i++)
-            msgargs.append(args[i]).append(" ");
+            msg.append(args[i]).append(" ");
 
-        sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
-        target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
+        sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msg);
+        target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msg);
         D0.setLastReceived(tn);
         D1.setLastReceived(pn);
         return true;
