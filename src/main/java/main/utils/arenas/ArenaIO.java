@@ -37,8 +37,7 @@ public class ArenaIO {
                     outputStream.write(buffer, 0, count);
                 }
                 readBytes = outputStream.toByteArray();
-            } catch (DataFormatException e) {
-                e.printStackTrace();
+            } catch (DataFormatException ignored) {
             }
 
             int firstSectionSplit = ArrayUtils.indexOf(readBytes, SECTION_SPLIT);
@@ -68,8 +67,7 @@ public class ArenaIO {
                 } catch (IllegalArgumentException e) {
                     try {
                         blockDataSet.add(Material.valueOf(blockData.split("\\[")[0]));
-                    } catch (IllegalArgumentException e2) {
-                        e.printStackTrace();
+                    } catch (IllegalArgumentException ignored) {
                         return null;
                     }
                 }
@@ -113,12 +111,9 @@ public class ArenaIO {
                 arena.getSections().add(new Section(arena, currentSection, start, end, types, amounts));
                 currentSection++;
             }
-
             return arena;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
-
         return null;
     }
 }

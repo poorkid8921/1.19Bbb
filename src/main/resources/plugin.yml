@@ -88,3 +88,5 @@ commands:
     usage: /<command>
   bombrtp:
     usage: /<command>
+  banip:
+    uasge: /<command>

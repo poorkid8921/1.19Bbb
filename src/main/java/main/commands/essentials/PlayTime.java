@@ -11,7 +11,7 @@ public class PlayTime implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length > 0) {
-            Player p = (Player) Bukkit.getOfflinePlayer(args[0]);
+            Player p = Bukkit.getPlayer(args[0]);
             if (p == null) {
                 sender.sendMessage("§7You must specify a valid player!");
                 return true;

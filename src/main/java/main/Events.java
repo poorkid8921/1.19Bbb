@@ -7,8 +7,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.HandShake;
 import main.utils.Initializer;
+import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Utils;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.storage.DB;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -24,15 +25,14 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scoreboard.Team;
 
 import static main.utils.Initializer.*;
 import static main.utils.Utils.spawnFirework;
-import static main.utils.Utils.translate;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -118,14 +118,19 @@ public class Events implements Listener {
         D.setLastChatMS(System.currentTimeMillis() + 500L);
         Team team = p.getScoreboard().getPlayerTeam(p);
         e.setFormat(team == null ? playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
-                ("§7[§6" + team.getDisplayName() + "§7] " +
+                ("§7[§6" + team.getDisplayName() + "§7] §f" +
                         playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
     }
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
-        if (playerData.get(p.getName()).isTagged() && !allowedCmds.contains(e.getMessage())) {
+        if (playerData.get(p.getName()).isTagged()) {
+            String command = e.getMessage();
+            for (String k : allowedCmds) {
+                if (command.startsWith(k))
+                    return;
+            }
             p.sendMessage(Initializer.EXCEPTION_TAGGED);
             e.setCancelled(true);
         }
@@ -170,9 +175,7 @@ public class Events implements Listener {
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
-        if (c instanceof PlayerInventory ||
-                c instanceof AnvilInventory ||
-                c instanceof GrindstoneInventory)
+        if (c instanceof PlayerInventory)
             return;
 
         Player p = (Player) e.getWhoClicked();
@@ -230,7 +233,15 @@ public class Events implements Listener {
             D1.untag();
             D1.incrementKills();
 
-            String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
+            int armor = 0;
+            for (ItemStack item : p.getInventory().getArmorContents()) {
+                if (item != null)
+                    armor++;
+            }
+            String death = (armor == 0 ?
+                    SECOND_COLOR + "☠ §7a naked " + SECOND_COLOR + kp + " §7" :
+                    SECOND_COLOR + "☠ " + kp + " §7") + switch (p.getLastDamageCause().getCause()
+                    ) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -296,7 +307,7 @@ public class Events implements Listener {
             Initializer.msg.add(name);
             Initializer.tpa.sort(String::compareToIgnoreCase);
             Initializer.msg.sort(String::compareToIgnoreCase);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of(), 0));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
             return;
         }
         String name = p.getName();
@@ -310,9 +321,10 @@ public class Events implements Listener {
             Initializer.tpa.sort(String::compareToIgnoreCase);
             Initializer.msg.sort(String::compareToIgnoreCase);
 
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of(), 0));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
         } else {
             p.setPlayerListName(D.getFRank(name));
+            D.setRank(DB.parseRank(name));
             if (D.getTptoggle() == 0) {
                 Initializer.tpa.add(name);
                 Initializer.tpa.sort(String::compareToIgnoreCase);

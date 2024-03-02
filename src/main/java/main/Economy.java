@@ -3,21 +3,21 @@ package main;
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.commands.*;
 import main.commands.economy.Balance;
 import main.commands.economy.Baltop;
+import main.commands.economy.Kit;
 import main.commands.economy.Pay;
 import main.commands.essentials.List;
 import main.commands.essentials.*;
 import main.commands.tpa.*;
 import main.commands.warps.*;
 import main.utils.*;
+import main.utils.Instances.CommandHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.Instances.HomeHolder;
 import main.utils.arenas.Arena;
 import main.utils.arenas.ArenaIO;
 import main.utils.arenas.CreateCommand;
-import main.utils.instances.CommandHolder;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.HomeHolder;
 import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
 import org.bukkit.Bukkit;
@@ -29,7 +29,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -115,7 +114,8 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("grindstone", new GrindStone()),
                 new CommandHolder("list", new List()),
                 new CommandHolder("broadcast", new Broadcast()),
-                new CommandHolder("bombrtp", new BombRTP())
+                new CommandHolder("bombrtp", new BombRTP()),
+                new CommandHolder("banip", new Ban())
         ))
             getCommand(command.getName()).setExecutor(command.getClazz());
         TeleportCompleter tabCompleter = new TeleportCompleter();
@@ -186,7 +186,19 @@ public class Economy extends JavaPlugin {
                             loc.setY(135);
                             p.teleportAsync(loc);
                         }
-                    }, 0L, 12000L);
+                        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                            boolean hasFound = false;
+                            while (!hasFound) {
+                                int x = RANDOM.nextInt(128);
+                                int z = RANDOM.nextInt(128);
+                                double dist = spawnDistance.distance(x, z);
+                                if (dist > 64D && dist < 120D) {
+                                    Utils.spawnLootdrop(x, z);
+                                    hasFound = true;
+                                }
+                            }
+                        }, 400L);
+                    }, 0L, 24000L);
                     Bukkit.getLogger().warning("Finished RTP population.");
                     return;
                 }
@@ -228,7 +240,6 @@ public class Economy extends JavaPlugin {
                     config.set("r." + key + ".5", finalstr.toString());
                 } else
                     config.set("r." + key + ".5", "null");
-                config.set("r." + key + ".6", value.getRank());
             }
         }
         try {

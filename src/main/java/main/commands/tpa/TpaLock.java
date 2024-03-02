@@ -1,6 +1,6 @@
 package main.commands.tpa;
 
-import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,17 +14,17 @@ import static main.utils.Initializer.tpa;
 public class TpaLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String pn = sender.getName();
-        CustomPlayerDataHolder T = playerData.get(pn);
+        String name = sender.getName();
+        CustomPlayerDataHolder T = playerData.get(name);
         if (T.getTptoggle() == 0) {
             sender.sendMessage("§7You will no longer receive tp requests.");
-            playerData.get(pn).setTptoggle(1);
-            tpa.remove(pn);
+            playerData.get(name).setTptoggle(1);
+            tpa.remove(name);
             tpa.sort(String::compareToIgnoreCase);
         } else {
             sender.sendMessage("§7You can receive tp requests again.");
-            playerData.get(pn).setTptoggle(0);
-            tpa.add(pn);
+            playerData.get(name).setTptoggle(0);
+            tpa.add(name);
             tpa.sort(String::compareToIgnoreCase);
         }
         return true;

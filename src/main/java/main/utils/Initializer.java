@@ -6,10 +6,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.HomeHolder;
-import main.utils.instances.RegionHolder;
-import main.utils.instances.TpaRequest;
+import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.Instances.HomeHolder;
+import main.utils.Instances.RegionHolder;
+import main.utils.Instances.TpaRequest;
+import main.utils.storage.DB;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -19,6 +20,8 @@ import org.bukkit.Location;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -46,13 +49,11 @@ public class Initializer {
     public static ObjectArrayList<TpaRequest> requests = ObjectArrayList.of();
     public static ObjectArrayList<String> tpa = ObjectArrayList.of();
     public static ObjectArrayList<String> msg = ObjectArrayList.of();
-    public static ObjectArrayList<Location> NPCs = ObjectArrayList.of();
-    public static ObjectArrayList<Location> holos = ObjectArrayList.of();
     public static Economy p;
     public static Location spawn;
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     public static URL CACHED_WEBHOOK;
-    public static URL CACHED_TOKEN_WEBHOOK;
+    public static URL CACHED_MODERATION_WEBHOOK;
 
     public static String CATTO_LOVES = "§dᴄᴀᴛᴛᴏ ʟᴏᴠᴇs §r";
     public static String CATTO_HATES = Utils.translateA("#2e2e2e") + "ᴄᴀᴛᴛᴏ ʜᴀᴛᴇs §r";
@@ -64,7 +65,7 @@ public class Initializer {
     public static String MEDIA = Utils.translateA("#ffc2c2") + "ᴍᴇᴅɪᴀ §r";
     public static String T_HELPER = Utils.translateA("#06dce4") + "ᴛ. ʜᴇʟᴘᴇʀ §r";
     public static String HELPER = Utils.translateA("#00dd04") + "ʜᴇʟᴘᴇʀ §r";
-    public static String JRMOD = Utils.translateA("#31ed1c") + "ᴊʀ. ᴍᴏᴅ §r";
+    public static String JRMOD = Utils.translateA("#ff7e13") + "ᴊʀ. ᴍᴏᴅ §r";
     public static String MOD = Utils.translateA("#d10000") + "ᴍᴏᴅ §r";
     public static String ADMIN = Utils.translateA("#47aeee") + "ᴀᴅᴍɪɴ §r";
     public static String MANAGER = Utils.translateA("#d10000") + "ᴍᴀɴᴀɢᴇʀ §r";
@@ -79,11 +80,13 @@ public class Initializer {
     public static String EXCEPTION_BLOCK_PLACE;
     public static String EXCEPTION_BLOCK_BREAK;
     public static String EXCEPTION_TAGGED;
+    public static String EXPLOITING_KICK = MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴄᴀᴛ ɴᴇᴛᴡᴏʀᴋ!\n\n" +
+            "§7ʙᴀɴɴᴇᴅ ᴏɴ " + MAIN_COLOR + "» §7";
 
     public static void init() {
         try {
             CACHED_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
-            CACHED_TOKEN_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919761007018045/fs81ovFWMXtO6LB4JnRyZ59c188dGZSQElkYr1vNju7fV0qeuRLlrWA-QhtHdfyIoyzd");
+            CACHED_MODERATION_WEBHOOK = new URL("https://discord.com/api/webhooks/1212078373132836994/7SoUq23VE2nameFN4AtTqI8nmJ0NHXEaqvvrJsL4eMVVx_IKvISjKfG878wCpqonO_BAxL");
         } catch (MalformedURLException ignored) {
         }
         D_LINK.setColor(ChatColor.of("#fc282f"));
@@ -93,6 +96,12 @@ public class Initializer {
         EXCEPTION_INTERACTION = MAIN_COLOR + "Sorry, §7buy you can't interact here.";
         EXCEPTION_BLOCK_PLACE = MAIN_COLOR + "Sorry, §7but you can't place blocks here.";
         EXCEPTION_BLOCK_BREAK = MAIN_COLOR + "Sorry, §7but you can't break blocks here.";
+        EXPLOITING_KICK += new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + "\n" +
+                "§7ʙᴀɴɴᴇᴅ ʙʏ " + MAIN_COLOR + "» §7ᴀɴᴛɪᴄʜᴇᴀᴛ\n" +
+                "§7ʀᴇᴀsᴏɴ " + MAIN_COLOR + "» §7ᴄʜᴇᴀᴛɪɴɢ\n" +
+                "§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» §75 days\n\n" +
+                "§7ᴅɪsᴄᴏʀᴅ " + MAIN_COLOR + "» §7discord.gg/catsmp";
+
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
         if (config.contains("r")) {
@@ -117,20 +126,19 @@ public class Initializer {
                                 Float.parseFloat(args[6]))));
                     }
                 }
-                int rank = config.getInt("r." + key + ".6");
                 if (m == 0 &&
                         t == 0 &&
                         money == 0 &&
                         deaths == 0 &&
                         kills == 0 &&
-                        homes.size() == 0 &&
-                        rank == 0)
+                        homes.isEmpty())
                     continue;
-                playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes, rank));
+                playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes));
                 homes.clear();
                 dataLoaded++;
             }
             Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
         }
+        DB.init();
     }
 }

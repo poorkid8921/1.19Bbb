@@ -1,22 +1,19 @@
-package main.commands.essentials;
+package main.commands.warps;
 
-import main.utils.Instances.RegionHolder;
+import main.utils.Initializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Collections;
 
-import static main.utils.Initializer.regions;
-
-public class CreateRegion implements CommandExecutor, TabExecutor {
+public class Spawn implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender.isOp()) {
-            regions.add(new RegionHolder(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5])));
-            sender.sendMessage("§7Successfully created the region.");
-        }
+        ((Player) sender).teleportAsync(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
         return true;
     }
 

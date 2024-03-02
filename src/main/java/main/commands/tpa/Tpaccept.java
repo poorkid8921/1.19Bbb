@@ -1,7 +1,7 @@
 package main.commands.tpa;
 
 import main.utils.Initializer;
-import main.utils.instances.TpaRequest;
+import main.utils.Instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -12,7 +12,8 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.playerData;
-import static main.utils.Utils.*;
+import static main.utils.Utils.getRequest;
+import static main.utils.Utils.teleportEffect;
 
 @SuppressWarnings("deprecation")
 public class Tpaccept implements CommandExecutor {

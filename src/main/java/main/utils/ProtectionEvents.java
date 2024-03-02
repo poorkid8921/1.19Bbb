@@ -2,8 +2,8 @@ package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.RegionHolder;
+import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.Instances.RegionHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -31,6 +31,8 @@ import java.util.List;
 import static main.utils.Initializer.*;
 
 public class ProtectionEvents implements Listener {
+    ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
+
     private void handleBlockPlace(BlockPlaceEvent e) {
         Location loc = e.getBlock().getLocation();
         if (loc.getWorld() != Economy.d)
@@ -51,7 +53,6 @@ public class ProtectionEvents implements Listener {
     }
 
     private ObjectOpenHashSet<Block> handleExplosion(List<Block> blockList) {
-        ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
         for (Block b : blockList) {
             int x = b.getX();
             int y = b.getY();
@@ -81,10 +82,14 @@ public class ProtectionEvents implements Listener {
         if (loc.getWorld() != Economy.d)
             return;
         int x = loc.getBlockX();
+        int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        if (!spawnRegionHolder.check(x, z))
+        for (RegionHolder r : regions) {
+            if (!r.check(x, y, z))
+                continue;
+            e.setCancelled(true);
             return;
-        e.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -93,12 +98,13 @@ public class ProtectionEvents implements Listener {
             Location loc = e.getTo();
             if (loc.getWorld() != Economy.d)
                 return;
-            int x = loc.getBlockX();
-            int z = loc.getBlockZ();
-            if (!spawnRegionHolder.check(x, z))
+            if (!spawnRegionHolder.check(loc.getBlockX(), loc.getBlockZ()))
                 return;
-            e.getPlayer().sendMessage("§7You can't pearl here!");
-            e.setCancelled(true);
+            Player p = e.getPlayer();
+            if (playerData.get(p.getName()).isTagged()) {
+                p.sendMessage("§7You can't pearl here!");
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -140,12 +146,10 @@ public class ProtectionEvents implements Listener {
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
         if (e.isCancelled())
             return;
+        Entity ent = e.getEntity();
         Entity attacker = e.getDamager();
         EntityType entType = attacker.getType();
-        boolean playerAttacker = entType == EntityType.PLAYER;
-        Entity ent = e.getEntity();
-        if (ent.getType() != EntityType.PLAYER ||
-                (!playerAttacker && entType != EntityType.SPLASH_POTION) && entType != EntityType.ARROW)
+        if (e.getEntityType() != EntityType.PLAYER && entType != EntityType.SPLASH_POTION && entType != EntityType.ARROW)
             return;
         Player p = (Player) ent;
         Location loc = p.getLocation();
@@ -153,13 +157,12 @@ public class ProtectionEvents implements Listener {
             return;
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
-        if (playerAttacker) {
+        if (entType == EntityType.PLAYER) {
             if (spawnRegionHolder.check(x, z)) {
                 attacker.sendMessage("§7You can't combat here!");
                 e.setCancelled(true);
                 return;
             }
-
             CustomPlayerDataHolder D0 = playerData.get(p.getName());
             if (D0.isTagged())
                 D0.setTagTime(p);
@@ -176,7 +179,6 @@ public class ProtectionEvents implements Listener {
                 e.setCancelled(true);
                 return;
             }
-
             CustomPlayerDataHolder D0 = playerData.get(p.getName());
             if (D0.isTagged())
                 D0.setTagTime(p);

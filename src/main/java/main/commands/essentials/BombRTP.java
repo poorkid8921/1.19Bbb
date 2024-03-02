@@ -1,29 +1,30 @@
 package main.commands.essentials;
 
-import main.utils.Utils;
-import org.bukkit.Bukkit;
+import main.Economy;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.entity.EntityType;
 
 import java.util.Collections;
 
-import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.overworldRTP;
 
-public class Anvil implements CommandExecutor, TabExecutor {
+public class BombRTP implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String pn = sender.getName();
-        if (Utils.isPlayerUnRanked(pn)) {
-            sender.sendMessage("§7You must be ranked in order to use this command!");
+        if (!sender.isOp())
             return true;
+        int amt = args.length == 1 ? Integer.parseInt(args[0]) : 5;
+        for (int id = 0; id < amt; id++) {
+            for (Location l : overworldRTP) {
+                l.setY(l.getY() + 1);
+                Economy.d.spawnEntity(l, EntityType.MINECART_TNT);
+            }
         }
-        Player p = (Player) sender;
-        playerData.get(pn).setInventoryInfo(null);
-        p.openInventory(Bukkit.createInventory(p, InventoryType.ANVIL));
+        sender.sendMessage("§7Successfully bombed the RTP.");
         return true;
     }
 

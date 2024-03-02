@@ -7,12 +7,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.playerData;
+import static main.utils.storage.DB.setRank;
 
 public class SetRank implements CommandExecutor, TabExecutor {
     ImmutableList<String> ranks = ImmutableList.of(
@@ -45,7 +45,11 @@ public class SetRank implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        String name = Bukkit.getOfflinePlayer(args[0]).getName();
+        String name = args[0];
+        try {
+            name = Bukkit.getPlayer(args[0]).getName();
+        } catch (Exception ignored) {
+        }
         int transformedArg = switch (args[1].toLowerCase()) {
             case "lub" -> 1;
             case "nigger" -> 2;
@@ -64,7 +68,13 @@ public class SetRank implements CommandExecutor, TabExecutor {
             case "executive" -> 15;
             default -> Integer.parseInt(args[1]);
         };
-        playerData.get(name).setRank(transformedArg);
+        try {
+            playerData.get(name).setRank(transformedArg);
+        } catch (Exception ignored) {
+            sender.sendMessage("§7Couldn't find the specified player.");
+            return true;
+        }
+        setRank(name, transformedArg);
         sender.sendMessage(MAIN_COLOR + name + "§7's rank is now " + MAIN_COLOR + switch (transformedArg) {
             case 1 -> "Catto Loves";
             case 2 -> "Catto Hates";
@@ -88,10 +98,9 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length == 0 ? null : args.length == 2 ? ranks : args.length == 3 ?
-                ranks.stream().filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                        .sorted(String::compareToIgnoreCase)
-                        .collect(Collectors.toList()) :
-                Collections.emptyList();
+        return args.length == 1 ? null : args.length == 2 ?
+                ranks : ranks.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
     }
 }
