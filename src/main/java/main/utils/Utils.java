@@ -2,9 +2,9 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.HomeHolder;
-import main.utils.Instances.TpaRequest;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.HomeHolder;
+import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -65,7 +65,7 @@ public class Utils {
     }
 
     public static boolean isPlayerUnRanked(String name) {
-        return playerData.get(name).getRank() < 4;
+        return playerData.get(name).getRank() < 5;
     }
 
     public static void spawnLootdrop(int x, int z) {
@@ -96,11 +96,11 @@ public class Utils {
         d.getBlockAt(x + 1, y + 1, z).setType(Material.CRYING_OBSIDIAN, false);
         d.getBlockAt(x - 1, y + 1, z).setType(Material.CRYING_OBSIDIAN, false);
 
-        // x y z axis (a block, y)
-        d.getBlockAt(x + 1, y + 1, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 1, y + 1, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y + 1, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y + 1, z + 1).setType(Material.CRYING_OBSIDIAN, false);
+        // x y z axis (a block, y=y)
+        d.getBlockAt(x + 1, y, z + 1).setType(Material.CRYING_OBSIDIAN, false);
+        d.getBlockAt(x + 1, y, z - 1).setType(Material.CRYING_OBSIDIAN, false);
+        d.getBlockAt(x - 1, y, z + 1).setType(Material.CRYING_OBSIDIAN, false);
+        d.getBlockAt(x - 1, y, z - 1).setType(Material.CRYING_OBSIDIAN, false);
 
         // center
         Block block = d.getBlockAt(x, y, z);
@@ -118,7 +118,7 @@ public class Utils {
         if (RANDOM.nextInt(2) == 0)
             stack[RANDOM.nextInt(27)] = ench(Material.SHIELD, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3));
 
-        if (RANDOM.nextInt(2) == 0) for (int i = 0; i < RANDOM.nextInt(3) + 1; i++)
+        if (RANDOM.nextInt(2) == 0) for (int i = 0; i < RANDOM.nextInt(3) + 2; i++)
             stack[RANDOM.nextInt(27)] = new ItemStack(Material.EXPERIENCE_BOTTLE, RANDOM.nextInt(33) + 32);
 
         if (RANDOM.nextInt(2) == 0)
@@ -137,24 +137,24 @@ public class Utils {
             stack[RANDOM.nextInt(27)] = new ItemStack(Material.GLOWSTONE, RANDOM.nextInt(33) + 32);
 
         if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
         else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
 
         if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
         else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
 
         if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(4) == 0);
         else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(4) == 0);
 
         if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
         else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 1, RANDOM.nextInt(4) == 0);
+            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
 
         if (RANDOM.nextInt(4) == 0)
             stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_PICKAXE, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3, Enchantment.SILK_TOUCH, 1, Enchantment.DIG_SPEED, 5));
@@ -170,7 +170,7 @@ public class Utils {
             stack[RANDOM.nextInt(27)] = ench(Material.CROSSBOW, Map.of(Enchantment.MENDING, 1, Enchantment.MULTISHOT, 1, Enchantment.PIERCING, 4, Enchantment.QUICK_CHARGE, 3, Enchantment.DURABILITY, 3));
 
         ((Chest) block.getState()).getInventory().setContents(stack);
-        Bukkit.broadcastMessage("§aA lootdrop has spawned at " + x + " " + z + "!");
+        Bukkit.broadcastMessage("§aA lootdrop has spawned at X: " + x + " Z: " + z + "!");
     }
 
     private static ItemStack ench(Material stack, Enchantment enchantment, int level, boolean mending) {
@@ -298,7 +298,7 @@ public class Utils {
         CustomPlayerDataHolder D0 = playerData.get(name);
         String staffMSG = reason == null ? (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report: " + MAIN_COLOR + target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR + target + " §7with the reason of " + MAIN_COLOR + reason);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (playerData.get(p.getName()).getRank() > 8) p.sendMessage(staffMSG);
+            if (playerData.get(p.getName()).getRank() > 7) p.sendMessage(staffMSG);
         }
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             try {

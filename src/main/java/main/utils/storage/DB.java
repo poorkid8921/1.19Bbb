@@ -27,10 +27,10 @@ public class DB {
     }
 
     public static int parseRank(String name) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM data WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next() ? resultSet.getInt(3) : 0;
+                if (resultSet.next()) return resultSet.getInt(1);
             }
         } catch (SQLException ignored) {
         }

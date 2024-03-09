@@ -23,7 +23,7 @@ public class SetWarp implements CommandExecutor {
         }
 
         String sanitized = args[0].replaceAll("[A-Za-z0-9]", "");
-        if (sanitized.length() != 0) {
+        if (!sanitized.isEmpty()) {
             sender.sendMessage(errMSG);
             return true;
         }

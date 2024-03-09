@@ -1,7 +1,7 @@
 package main.commands.essentials;
 
 import main.utils.Initializer;
-import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -54,7 +54,7 @@ public class Msg implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         return args.length == 0 ?
-                Initializer.msg :
-                tabCompleteFilter(Initializer.msg, args[0].toLowerCase());
+                Initializer.msg : args.length == 1 ?
+                tabCompleteFilter(Initializer.msg, args[0].toLowerCase()) : null;
     }
 }

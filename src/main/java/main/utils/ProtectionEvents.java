@@ -1,9 +1,8 @@
 package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import main.Economy;
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.RegionHolder;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.RegionHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,12 +11,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
-import org.bukkit.event.block.BlockMultiPlaceEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -28,6 +23,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.List;
 
+import static main.Economy.d;
 import static main.utils.Initializer.*;
 
 public class ProtectionEvents implements Listener {
@@ -35,7 +31,7 @@ public class ProtectionEvents implements Listener {
 
     private void handleBlockPlace(BlockPlaceEvent e) {
         Location loc = e.getBlock().getLocation();
-        if (loc.getWorld() != Economy.d)
+        if (loc.getWorld() != d)
             return;
         int x = loc.getBlockX();
         int y = loc.getBlockY();
@@ -79,7 +75,7 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onPlayerShootArrow(EntityShootBowEvent e) {
         Location loc = e.getEntity().getLocation();
-        if (loc.getWorld() != Economy.d)
+        if (loc.getWorld() != d)
             return;
         int x = loc.getBlockX();
         int y = loc.getBlockY();
@@ -96,7 +92,7 @@ public class ProtectionEvents implements Listener {
     private void onPlayerPearlCollide(PlayerTeleportEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
             Location loc = e.getTo();
-            if (loc.getWorld() != Economy.d)
+            if (loc.getWorld() != d)
                 return;
             if (!spawnRegionHolder.check(loc.getBlockX(), loc.getBlockZ()))
                 return;
@@ -132,32 +128,44 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onBlockExplosion(BlockExplodeEvent e) {
-        if (e.getBlock().getWorld() == Economy.d)
+        if (e.getBlock().getWorld() == d)
             e.blockList().removeAll(handleExplosion(e.blockList()));
     }
 
     @EventHandler
     private void onEntityExplosion(EntityExplodeEvent e) {
-        if (e.getEntity().getWorld() == Economy.d)
+        if (e.getEntity().getWorld() == d)
             e.blockList().removeAll(handleExplosion(e.blockList()));
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
+    private void onAnvilDamage(BlockDamageEvent e) {
+        Block b = e.getBlock();
+        if (b.getType() != Material.DAMAGED_ANVIL)
+            return;
+        if (spawnRegionHolder.check(b.getX(), b.getZ()))
+            return;
+        e.setCancelled(true);
+    }
+
+    @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
         if (e.isCancelled())
             return;
-        Entity ent = e.getEntity();
         Entity attacker = e.getDamager();
         EntityType entType = attacker.getType();
-        if (e.getEntityType() != EntityType.PLAYER && entType != EntityType.SPLASH_POTION && entType != EntityType.ARROW)
+        boolean playerAttacker = entType == EntityType.PLAYER;
+        Entity ent = e.getEntity();
+        if (ent.getType() != EntityType.PLAYER ||
+                (!playerAttacker && entType != EntityType.SPLASH_POTION) && entType != EntityType.ARROW)
             return;
         Player p = (Player) ent;
         Location loc = p.getLocation();
-        if (loc.getWorld() != Economy.d)
+        if (loc.getWorld() != d)
             return;
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
-        if (entType == EntityType.PLAYER) {
+        if (playerAttacker) {
             if (spawnRegionHolder.check(x, z)) {
                 attacker.sendMessage("§7You can't combat here!");
                 e.setCancelled(true);
@@ -190,7 +198,7 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onBlockBreak(BlockBreakEvent e) {
         Location loc = e.getBlock().getLocation();
-        if (loc.getWorld() != Economy.d)
+        if (loc.getWorld() != d)
             return;
         int x = loc.getBlockX();
         int y = loc.getBlockY();

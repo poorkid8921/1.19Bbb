@@ -1,7 +1,7 @@
 package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.Instances.HomeHolder;
+import main.utils.instances.HomeHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

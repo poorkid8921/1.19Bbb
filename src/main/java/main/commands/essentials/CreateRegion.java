@@ -1,6 +1,6 @@
 package main.commands.essentials;
 
-import main.utils.Instances.RegionHolder;
+import main.utils.instances.RegionHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

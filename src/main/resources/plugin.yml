@@ -90,3 +90,7 @@ commands:
     usage: /<command>
   banip:
     uasge: /<command>
+  areset:
+    usage: /<command>
+  suicide:
+    usage: /<command>

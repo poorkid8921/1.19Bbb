@@ -1,7 +1,7 @@
 package main.commands.tpa;
 
 import main.utils.Initializer;
-import main.utils.Instances.TpaRequest;
+import main.utils.instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -15,7 +15,6 @@ import static main.utils.Initializer.playerData;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.teleportEffect;
 
-@SuppressWarnings("deprecation")
 public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String msg = "§7You got no active teleport request.";
@@ -64,13 +63,13 @@ public class Tpaccept implements CommandExecutor {
             String userName = user.getName();
             target.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(userName).getFRank(userName) + "§7's teleport request.",
                     "§7Teleporting...");
-            String recName = user.getName();
+            String recName = target.getName();
             user.sendMessage(MAIN_COLOR + playerData.get(recName).getFRank(recName) + " §7has accepted your teleport request");
         }
 
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
         Location loc = target.getLocation();
-        user.teleport(target.getLocation(), PlayerTeleportEvent.TeleportCause.COMMAND);
+        user.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND);
         teleportEffect(loc.getWorld(), loc);
         Initializer.requests.remove(request);
         return true;

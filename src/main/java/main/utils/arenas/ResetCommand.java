@@ -11,7 +11,7 @@ public class ResetCommand implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.isOp())
-            Arena.getArenas().get(args[0]).reset(Integer.parseInt(args[1]));
+            Arena.arenas.get(args[0]).reset(Integer.parseInt(args[1]));
         return true;
     }
 

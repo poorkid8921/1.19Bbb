@@ -34,7 +34,7 @@ public class Warp implements CommandExecutor, TabExecutor {
 
         FileConfiguration cf = YamlConfiguration.loadConfiguration(f);
         String worldString = cf.getString("a");
-        World world = worldString == "world" ? Economy.d : worldString == "world_nether" ? Economy.d0 : Economy.d1;
+        World world = worldString.equals("world") ? Economy.d : worldString.equals("world_nether") ? Economy.d0 : Economy.d1;
         Location loc = new Location(world, cf.getDouble("b"), cf.getDouble("c"), cf.getDouble("d"), (float) cf.getDouble("e"), (float) cf.getDouble("f"));
         ((Player) sender).teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> teleportEffect(world, loc));
         sender.sendMessage("§7Successfully warped to " + MAIN_COLOR + Files.getNameWithoutExtension(f.getName()));

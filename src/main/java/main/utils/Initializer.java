@@ -1,15 +1,17 @@
 package main.utils;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.HomeHolder;
-import main.utils.Instances.RegionHolder;
-import main.utils.Instances.TpaRequest;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.HomeHolder;
+import main.utils.instances.RegionHolder;
+import main.utils.instances.TpaRequest;
 import main.utils.storage.DB;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -17,6 +19,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,8 +44,8 @@ public class Initializer {
             new RegionHolder(-128, 2, -127, 126, 2, 127) // underarena
     );
     public static ImmutableList<Color> color = ImmutableList.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW);
-    public static Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
-    public static Map<Integer, Location> crystalsToBeOptimized = new Object2ObjectOpenHashMap<>();
+    public static Map<String, Long> cooldowns = new Object2LongOpenHashMap<>();
+    public static Map<Integer, Location> crystalsToBeOptimized = new Int2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<Location> overworldRTP = ObjectArrayList.of();
     public static ObjectArrayList<Location> netherRTP = ObjectArrayList.of();
@@ -55,11 +59,10 @@ public class Initializer {
     public static URL CACHED_WEBHOOK;
     public static URL CACHED_MODERATION_WEBHOOK;
 
+    public static String GAY = Utils.translateA("#fb0000ɢ#56fa35ᴀ#ff00deʏ") + " §r";
     public static String CATTO_LOVES = "§dᴄᴀᴛᴛᴏ ʟᴏᴠᴇs §r";
     public static String CATTO_HATES = Utils.translateA("#2e2e2e") + "ᴄᴀᴛᴛᴏ ʜᴀᴛᴇs §r";
-    public static String GAY = Utils.translateA("#fb0000ɢ#56fa35ᴀ#ff00deʏ") + " §r";
-    public static String CLAPCLAP = Utils.translateA("#afeeee") + "ClapClap §r";
-    public static String QUACK = Utils.translateA("#faf739") + "ǫᴜᴀᴄᴋ §r";
+    public static String ANGEL = Utils.translateA("#ffffed") + "ᴀɴɢᴇʟ §r";
     public static String VIP = Utils.translateA("#faf739") + "ᴠɪᴘ §r";
     public static String BOOSTER = Utils.translateA("#e900ff") + "ʙᴏᴏꜱᴛᴇʀ §r";
     public static String MEDIA = Utils.translateA("#ffc2c2") + "ᴍᴇᴅɪᴀ §r";
@@ -83,6 +86,22 @@ public class Initializer {
     public static String EXPLOITING_KICK = MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴄᴀᴛ ɴᴇᴛᴡᴏʀᴋ!\n\n" +
             "§7ʙᴀɴɴᴇᴅ ᴏɴ " + MAIN_COLOR + "» §7";
 
+    public static Scoreboard scoreboard;
+    public static Team ownerTeam;
+    public static Team managerTeam;
+    public static Team adminTeam;
+    public static Team modTeam;
+    public static Team jrmodTeam;
+    public static Team helperTeam;
+    public static Team trialHelperTeam;
+    public static Team mediaTeam;
+    public static Team boosterTeam;
+    public static Team vipTeam;
+    public static Team angelTeam;
+    public static Team cattoLovesTeam;
+    public static Team cattoHatesTeam;
+    public static Team gayTeam;
+
     public static void init() {
         try {
             CACHED_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
@@ -92,6 +111,79 @@ public class Initializer {
         D_LINK.setColor(ChatColor.of("#fc282f"));
         D_LINK.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/catsmp"));
 
+        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        try {
+            ownerTeam = scoreboard.registerNewTeam("a");
+            ownerTeam.setPrefix(EXECUTIVE);
+
+            managerTeam = scoreboard.registerNewTeam("b");
+            managerTeam.setPrefix(MANAGER);
+
+            adminTeam = scoreboard.registerNewTeam("c");
+            adminTeam.setPrefix(ADMIN);
+
+            modTeam = scoreboard.registerNewTeam("d");
+            modTeam.setPrefix(MOD);
+
+            jrmodTeam = scoreboard.registerNewTeam("e");
+            jrmodTeam.setPrefix(JRMOD);
+
+            helperTeam = scoreboard.registerNewTeam("f");
+            helperTeam.setPrefix(HELPER);
+
+            trialHelperTeam = scoreboard.registerNewTeam("g");
+            trialHelperTeam.setPrefix(T_HELPER);
+
+            mediaTeam = scoreboard.registerNewTeam("h");
+            mediaTeam.setPrefix(MEDIA);
+
+            boosterTeam = scoreboard.registerNewTeam("i");
+            boosterTeam.setPrefix(BOOSTER);
+
+            vipTeam = scoreboard.registerNewTeam("j");
+            vipTeam.setPrefix(VIP);
+
+            angelTeam = scoreboard.registerNewTeam("k");
+            angelTeam.setPrefix(ANGEL);
+
+            cattoLovesTeam = scoreboard.registerNewTeam("l");
+            cattoLovesTeam.setPrefix(CATTO_LOVES);
+
+            cattoHatesTeam = scoreboard.registerNewTeam("m");
+            cattoHatesTeam.setPrefix(CATTO_HATES);
+
+            gayTeam = scoreboard.registerNewTeam("n");
+            gayTeam.setPrefix(GAY);
+        } catch (Exception e) {
+            ownerTeam = scoreboard.getTeam("a");
+            ownerTeam.removeEntries(ownerTeam.getEntries());
+            managerTeam = scoreboard.getTeam("b");
+            managerTeam.removeEntries(managerTeam.getEntries());
+            adminTeam = scoreboard.getTeam("c");
+            adminTeam.removeEntries(adminTeam.getEntries());
+            modTeam = scoreboard.getTeam("d");
+            modTeam.removeEntries(modTeam.getEntries());
+            jrmodTeam = scoreboard.getTeam("e");
+            jrmodTeam.removeEntries(jrmodTeam.getEntries());
+            helperTeam = scoreboard.getTeam("f");
+            helperTeam.removeEntries(helperTeam.getEntries());
+            trialHelperTeam = scoreboard.getTeam("g");
+            trialHelperTeam.removeEntries(trialHelperTeam.getEntries());
+            mediaTeam = scoreboard.getTeam("h");
+            mediaTeam.removeEntries(mediaTeam.getEntries());
+            boosterTeam = scoreboard.getTeam("i");
+            boosterTeam.removeEntries(boosterTeam.getEntries());
+            vipTeam = scoreboard.getTeam("j");
+            vipTeam.removeEntries(vipTeam.getEntries());
+            angelTeam = scoreboard.getTeam("k");
+            angelTeam.removeEntries(angelTeam.getEntries());
+            cattoLovesTeam = scoreboard.getTeam("l");
+            cattoLovesTeam.removeEntries(cattoLovesTeam.getEntries());
+            cattoHatesTeam = scoreboard.getTeam("m");
+            cattoHatesTeam.removeEntries(cattoHatesTeam.getEntries());
+            gayTeam = scoreboard.getTeam("n");
+            gayTeam.removeEntries(gayTeam.getEntries());
+        }
         EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ!";
         EXCEPTION_INTERACTION = MAIN_COLOR + "Sorry, §7buy you can't interact here.";
         EXCEPTION_BLOCK_PLACE = MAIN_COLOR + "Sorry, §7but you can't place blocks here.";

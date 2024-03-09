@@ -1,7 +1,7 @@
 package main.commands.warps;
 
-import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Instances.HomeHolder;
+import main.utils.instances.CustomPlayerDataHolder;
+import main.utils.instances.HomeHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

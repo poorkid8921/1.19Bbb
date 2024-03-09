@@ -1,6 +1,6 @@
 package main.commands.essentials;
 
-import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

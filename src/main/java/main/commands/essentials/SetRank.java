@@ -19,8 +19,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             "lub",
             "nigger",
             "gay",
-            "quack",
-            "clapclap",
+            "angel",
             "vip",
             "booster",
             "media",
@@ -51,21 +50,20 @@ public class SetRank implements CommandExecutor, TabExecutor {
         } catch (Exception ignored) {
         }
         int transformedArg = switch (args[1].toLowerCase()) {
-            case "lub" -> 1;
-            case "nigger" -> 2;
-            case "gay" -> 3;
-            case "quack" -> 4;
-            case "clapclap" -> 5;
-            case "vip" -> 6;
-            case "booster" -> 7;
-            case "media" -> 8;
-            case "trial-helper" -> 9;
-            case "helper" -> 10;
-            case "jrmod" -> 11;
-            case "mod" -> 12;
-            case "admin" -> 13;
-            case "manager" -> 14;
-            case "executive" -> 15;
+            case "angel" -> 1;
+            case "lub" -> 2;
+            case "nigger" -> 3;
+            case "gay" -> 4;
+            case "vip" -> 5;
+            case "booster" -> 6;
+            case "media" -> 7;
+            case "trial-helper" -> 8;
+            case "helper" -> 9;
+            case "jrmod" -> 10;
+            case "mod" -> 11;
+            case "admin" -> 12;
+            case "manager" -> 13;
+            case "executive" -> 14;
             default -> Integer.parseInt(args[1]);
         };
         try {
@@ -76,21 +74,20 @@ public class SetRank implements CommandExecutor, TabExecutor {
         }
         setRank(name, transformedArg);
         sender.sendMessage(MAIN_COLOR + name + "§7's rank is now " + MAIN_COLOR + switch (transformedArg) {
-            case 1 -> "Catto Loves";
-            case 2 -> "Catto Hates";
-            case 3 -> "Gay";
-            case 4 -> "Quack";
-            case 5 -> "ClapClap";
-            case 6 -> "Vip";
-            case 7 -> "Booster";
-            case 8 -> "Media";
-            case 9 -> "Trial Helper";
-            case 10 -> "Helper";
-            case 11 -> "Junior Mod";
-            case 12 -> "Mod";
-            case 13 -> "Admin";
-            case 14 -> "Manager";
-            case 15 -> "Executive";
+            case 1 -> "Angel";
+            case 2 -> "Catto Loves";
+            case 3 -> "Catto Hates";
+            case 4 -> "Gay";
+            case 5 -> "Vip";
+            case 6 -> "Booster";
+            case 7 -> "Media";
+            case 8 -> "Trial Helper";
+            case 9 -> "Helper";
+            case 10 -> "Junior Mod";
+            case 11 -> "Mod";
+            case 12 -> "Admin";
+            case 13 -> "Manager";
+            case 14 -> "Executive";
             default -> "Default";
         } + "!");
         return true;
@@ -98,8 +95,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length == 1 ? null : args.length == 2 ?
-                ranks : ranks.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+        return args.length == 1 ? null : ranks.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.toList());
     }

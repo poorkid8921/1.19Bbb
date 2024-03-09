@@ -1,6 +1,6 @@
 package main.commands.warps;
 
-import main.utils.Instances.CustomPlayerDataHolder;
+import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
