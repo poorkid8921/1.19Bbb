@@ -29,7 +29,7 @@ public class Stats implements CommandExecutor {
                 }
 
                 sender.sendMessage(
-                        MAIN_COLOR + p.getDisplayName() + "'s §7sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
+                        MAIN_COLOR + p.getDisplayName() + "§7's sᴛᴀᴛɪsᴛɪᴄs ᴀʀᴇ:",
                         "  §7ʙᴀʟᴀɴᴄᴇ " + MAIN_COLOR + "» $" + String.format("%,.2f", playerData.get(p.getName()).getMoney()),
                         "  §7ᴋɪʟʟs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.PLAYER_KILLS),
                         "  §7ᴅᴇᴀᴛʜs " + MAIN_COLOR + "» " + p.getStatistic(Statistic.DEATHS));

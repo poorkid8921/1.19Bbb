@@ -10,8 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import static main.utils.Initializer.MAIN_COLOR;
-import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.*;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.teleportEffect;
 
@@ -50,20 +49,30 @@ public class Tpaccept implements CommandExecutor {
         if (request.isHere()) {
             user = (Player) sender;
             target = request.getSender();
+            if (target == null) {
+                requests.remove(request);
+                sender.sendMessage(msg);
+                return true;
+            }
             String recName = target.getName();
-            user.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(recName).getFRank(recName) + "§7's teleport request.",
+            sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(recName).getFRank(recName) + "§7's teleport request.",
                     "§7Teleporting...");
             if (request.getTpaAll()) {
-                String userName = user.getName();
+                String userName = sender.getName();
                 target.sendMessage(MAIN_COLOR + playerData.get(userName).getFRank(userName) + " §7has accepted your teleport request.");
             }
         } else {
             user = request.getSender();
             target = (Player) sender;
+            if (user == null) {
+                requests.remove(request);
+                sender.sendMessage(msg);
+                return true;
+            }
             String userName = user.getName();
-            target.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(userName).getFRank(userName) + "§7's teleport request.",
+            sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(userName).getFRank(userName) + "§7's teleport request.",
                     "§7Teleporting...");
-            String recName = target.getName();
+            String recName = sender.getName();
             user.sendMessage(MAIN_COLOR + playerData.get(recName).getFRank(recName) + " §7has accepted your teleport request");
         }
 

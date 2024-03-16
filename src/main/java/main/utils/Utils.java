@@ -11,9 +11,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -29,16 +26,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.Economy.d;
 import static main.utils.Initializer.*;
+import static main.utils.storage.DB.connection;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -49,8 +47,39 @@ public class Utils {
     static final BigDecimal TRILLION = new BigDecimal(1_000_000_000_000L);
     public static TextComponent space = new TextComponent("  ");
     public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance(Locale.US);
-    public static TreeMap<String, Integer> leaderBoardMoney = new TreeMap<>();
     static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+
+    public static CustomPlayerDataHolder getPlayerData(String name) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,em,et,ez,ed,ek FROM data WHERE name = ?")) {
+            statement.setString(1, name);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) return new CustomPlayerDataHolder(
+                        resultSet.getInt(2),
+                        resultSet.getInt(3),
+                        resultSet.getInt(4),
+                        resultSet.getInt(5),
+                        resultSet.getInt(6),
+                        null,
+                        resultSet.getInt(1)
+                ); else
+                    return new CustomPlayerDataHolder(
+                            0,
+                            0,
+                            -1,
+                            0,
+                            0,
+                            null);
+            }
+        } catch (SQLException ignored) {
+        }
+        return new CustomPlayerDataHolder(
+                0,
+                0,
+                -1,
+                0,
+                0,
+                null);
+    }
 
     public static void teleportEffect(World w, Location locC) {
         for (int index = 1; index < 16; index++) {
@@ -65,125 +94,7 @@ public class Utils {
     }
 
     public static boolean isPlayerUnRanked(String name) {
-        return playerData.get(name).getRank() < 5;
-    }
-
-    public static void spawnLootdrop(int x, int z) {
-        int y = 133 + (RANDOM.nextBoolean() ? RANDOM.nextInt(2) : -RANDOM.nextInt(2));
-        //x y z axis (2 blocks)
-        d.getBlockAt(x, y + 1, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y + 2, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y - 1, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y - 2, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y, z + 2).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y, z - 2).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 1, y, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 2, y, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 2, y, z).setType(Material.CRYING_OBSIDIAN, false);
-
-        // x y z axis (a block, y-1)
-        d.getBlockAt(x, y - 1, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y - 1, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 1, y - 1, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y - 1, z).setType(Material.CRYING_OBSIDIAN, false);
-
-        // x y z axis (a block, y+1)
-        d.getBlockAt(x, y + 1, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x, y + 1, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 1, y + 1, z).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y + 1, z).setType(Material.CRYING_OBSIDIAN, false);
-
-        // x y z axis (a block, y=y)
-        d.getBlockAt(x + 1, y, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x + 1, y, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y, z + 1).setType(Material.CRYING_OBSIDIAN, false);
-        d.getBlockAt(x - 1, y, z - 1).setType(Material.CRYING_OBSIDIAN, false);
-
-        // center
-        Block block = d.getBlockAt(x, y, z);
-        block.setType(Material.CHEST, false);
-        ((Chest) block.getState()).setCustomName("ʟᴏᴏᴛᴅʀᴏᴘ");
-
-        ItemStack[] stack = new ItemStack[27];
-        ItemStack TOTEM = new ItemStack(Material.TOTEM_OF_UNDYING);
-        if (RANDOM.nextInt(2) == 0) for (int i = 0; i < RANDOM.nextInt(6) + 1; i++)
-            stack[RANDOM.nextInt(27)] = TOTEM;
-
-        if (RANDOM.nextInt(2) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.GOLDEN_APPLE, RANDOM.nextInt(32) + 32);
-
-        if (RANDOM.nextInt(2) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.SHIELD, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3));
-
-        if (RANDOM.nextInt(2) == 0) for (int i = 0; i < RANDOM.nextInt(3) + 2; i++)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.EXPERIENCE_BOTTLE, RANDOM.nextInt(33) + 32);
-
-        if (RANDOM.nextInt(2) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.END_CRYSTAL, RANDOM.nextInt(33) + 32);
-
-        if (RANDOM.nextInt(2) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.OBSIDIAN, RANDOM.nextInt(33) + 32);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.ENDER_PEARL, RANDOM.nextInt(9) + 8);
-
-        if (RANDOM.nextInt(6) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.RESPAWN_ANCHOR, RANDOM.nextInt(33) + 32);
-
-        if (RANDOM.nextInt(6) == 0)
-            stack[RANDOM.nextInt(27)] = new ItemStack(Material.GLOWSTONE, RANDOM.nextInt(33) + 32);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_LEGGINGS, RANDOM.nextInt(2) == 0 ? Enchantment.PROTECTION_EXPLOSIONS : Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(4) == 0);
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(4) == 0);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, RANDOM.nextInt(3) + 2, RANDOM.nextInt(2) == 0);
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_PICKAXE, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3, Enchantment.SILK_TOUCH, 1, Enchantment.DIG_SPEED, 5));
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_PICKAXE, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3, Enchantment.SILK_TOUCH, 1, Enchantment.DIG_SPEED, 5));
-
-        if (RANDOM.nextInt(4) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.DIAMOND_SWORD, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3, Enchantment.KNOCKBACK, RANDOM.nextInt(2) + 1, Enchantment.DAMAGE_ALL, 5));
-        else if (RANDOM.nextInt(8) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.NETHERITE_SWORD, Map.of(Enchantment.MENDING, 1, Enchantment.DURABILITY, 3, Enchantment.KNOCKBACK, RANDOM.nextInt(2) + 1, Enchantment.DAMAGE_ALL, 5));
-
-        if (RANDOM.nextInt(2) == 0)
-            stack[RANDOM.nextInt(27)] = ench(Material.CROSSBOW, Map.of(Enchantment.MENDING, 1, Enchantment.MULTISHOT, 1, Enchantment.PIERCING, 4, Enchantment.QUICK_CHARGE, 3, Enchantment.DURABILITY, 3));
-
-        ((Chest) block.getState()).getInventory().setContents(stack);
-        Bukkit.broadcastMessage("§aA lootdrop has spawned at X: " + x + " Z: " + z + "!");
-    }
-
-    private static ItemStack ench(Material stack, Enchantment enchantment, int level, boolean mending) {
-        ItemStack item = new ItemStack(stack, 1);
-        item.addEnchantment(enchantment, level);
-        if (mending) item.addEnchantment(Enchantment.MENDING, 1);
-        return item;
-    }
-
-    private static ItemStack ench(Material stack, Map<Enchantment, Integer> enchantments) {
-        ItemStack item = new ItemStack(stack, 1);
-        item.addEnchantments(enchantments);
-        return item;
+        return playerData.get(name).getRank() < 4;
     }
 
     public static double getMoneyValue(String unsanitized, String sanitized) {
@@ -298,7 +209,7 @@ public class Utils {
         CustomPlayerDataHolder D0 = playerData.get(name);
         String staffMSG = reason == null ? (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report: " + MAIN_COLOR + target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR + target + " §7with the reason of " + MAIN_COLOR + reason);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (playerData.get(p.getName()).getRank() > 7) p.sendMessage(staffMSG);
+            if (playerData.get(p.getName()).getRank() > 6) p.sendMessage(staffMSG);
         }
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
             try {

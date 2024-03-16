@@ -3,6 +3,8 @@ package main;
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.commands.BombRTP;
+import main.commands.FastCrystals;
 import main.commands.economy.Balance;
 import main.commands.economy.Baltop;
 import main.commands.economy.Kit;
@@ -20,10 +22,7 @@ import main.utils.instances.HomeHolder;
 import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
 import org.apache.commons.lang3.ArrayUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -52,10 +51,7 @@ public class Economy extends JavaPlugin {
     public static World d;
     public static World d0;
     public static World d1;
-    public static FileConfiguration config;
-    private static boolean alreadySavingData;
     private final Point spawnDistance = new Point(0, 0);
-    private File dataFile;
     private int arena = 1;
 
     private Location getRandomLoc(World w, int x) {
@@ -72,16 +68,15 @@ public class Economy extends JavaPlugin {
         return loc;
     }
 
-    private Location getNetherRandomLoc(World w) {
+    private Location getNetherRandomLoc() {
         Location loc = null;
         while (loc == null) {
             int boundX = Initializer.RANDOM.nextInt(-1500, 1500);
             int boundZ = Initializer.RANDOM.nextInt(-1500, 1500);
-
             for (int y = 30; y < 128; y++) {
-                if (w.getBlockAt(boundX, y, boundZ).getType() == Material.AIR &&
-                        w.getBlockAt(boundX, y - 1, boundZ).isSolid()) {
-                    loc = new Location(w, boundX, y, boundZ);
+                if (d0.getBlockAt(boundX, y, boundZ).getType() == Material.AIR &&
+                        d0.getBlockAt(boundX, y - 1, boundZ).isSolid()) {
+                    loc = new Location(d0, boundX, y, boundZ);
                     break;
                 }
             }
@@ -125,7 +120,8 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("bombrtp", new BombRTP()),
                 new CommandHolder("banip", new Ban()),
                 new CommandHolder("areset", new ResetCommand()),
-                new CommandHolder("suicide", new Suicide())
+                new CommandHolder("suicide", new Suicide()),
+                new CommandHolder("fastcrystals", new FastCrystals())
         ))
             getCommand(command.getName()).setExecutor(command.getClazz());
         TeleportCompleter tabCompleter = new TeleportCompleter();
@@ -259,12 +255,16 @@ public class Economy extends JavaPlugin {
     @Override
     public void onEnable() {
         dataFolder = getDataFolder();
-        dataFile = new File(dataFolder, "data.yml");
-        config = YamlConfiguration.loadConfiguration(dataFile);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             d = Bukkit.getWorld("world");
             d0 = Bukkit.getWorld("world_nether");
             d1 = Bukkit.getWorld("world_the_end");
+            WorldBorder wb = d0.getWorldBorder();
+            wb.setCenter(0D, 0D);
+            wb.setSize(12500D);
+            wb = d1.getWorldBorder();
+            wb.setCenter(0D, 0D);
+            wb.setSize(100000D);
             spawn = new Location(d, -0.5D, 140.0D, 0.5D, 90F, 0F);
             for (int i = 0; i < 101; i++) {
                 if (i == 100) {
@@ -292,10 +292,11 @@ public class Economy extends JavaPlugin {
                     Bukkit.getLogger().warning("Finished RTP population.");
                     return;
                 }
+                int finalI = i;
                 Bukkit.getScheduler().runTaskLater(this, () -> {
-                    overworldRTP.add(getRandomLoc(d, 5000));
-                    netherRTP.add(getNetherRandomLoc(d0));
-                    endRTP.add(getRandomLoc(d1, 1500));
+                    overworldRTP[finalI] = getRandomLoc(d, 5000);
+                    netherRTP[finalI] = getNetherRandomLoc();
+                    endRTP[finalI] = getRandomLoc(d1, 1500);
                 }, i);
             }
         }, 100L);
@@ -309,35 +310,5 @@ public class Economy extends JavaPlugin {
     @Override
     public void onDisable() {
         PacketEvents.getAPI().terminate();
-        if (alreadySavingData)
-            return;
-
-        alreadySavingData = true;
-        config.set("r", null);
-        if (!playerData.isEmpty()) {
-            for (Map.Entry<String, CustomPlayerDataHolder> entry : playerData.entrySet()) {
-                CustomPlayerDataHolder value = entry.getValue();
-                String key = entry.getKey();
-                config.set("r." + key + ".0", value.getMtoggle());
-                config.set("r." + key + ".1", value.getTptoggle());
-                config.set("r." + key + ".2", value.getMoney());
-                config.set("r." + key + ".3", value.getDeaths());
-                config.set("r." + key + ".4", value.getKills());
-                if (!value.getHomes().isEmpty()) {
-                    StringBuilder finalstr = new StringBuilder();
-                    for (HomeHolder k : value.getHomes()) {
-                        Location loc = k.getLocation();
-                        finalstr.append(k.getName()).append(":").append(loc.getWorld().getName()).append("m").append(loc.getX()).append(":").append(loc.getY()).append(":").append(loc.getZ()).append(":").append(loc.getYaw()).append(":").append(loc.getPitch()).append(":;");
-                    }
-                    config.set("r." + key + ".5", finalstr.toString());
-                } else
-                    config.set("r." + key + ".5", "null");
-            }
-        }
-        try {
-            config.save(dataFile);
-        } catch (IOException ignored) {
-        }
-        alreadySavingData = false;
     }
 }

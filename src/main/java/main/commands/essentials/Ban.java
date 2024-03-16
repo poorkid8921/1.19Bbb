@@ -31,7 +31,7 @@ public class Ban implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String sn = sender.getName();
-        if (playerData.get(sn).getRank() < 9) {
+        if (playerData.get(sn).getRank() < 7) {
             sender.sendMessage("§7You must be an Operator to ban others!");
             return true;
         } else if (args.length == 0) {
@@ -48,9 +48,10 @@ public class Ban implements CommandExecutor, TabExecutor {
         if (target != null)
             target.kickPlayer("Connection with the remote server has been closed.");
         String outputName = target == null ? args[0] : target.getName();
+        long time = args.length == 2 ? Integer.parseInt(args[1].replaceAll("d", "")) * 86400000L : 432000000L;
         try (PreparedStatement statement1 = connection.prepareStatement("INSERT INTO bans (ip, bantime, banner) VALUES (?, ?, ?)")) {
             statement1.setBytes(1, ip);
-            statement1.setTimestamp(2, new Timestamp(System.currentTimeMillis() + (args.length == 2 ? args[1].equals("30d") ? 2592000000L : 432000000L : 432000000L)));
+            statement1.setTimestamp(2, new Timestamp(System.currentTimeMillis() + time));
             statement1.setString(3, sn == "CONSOLE" ? "Catto69420" : sn);
             statement1.executeUpdate();
         } catch (SQLException ignored) {
@@ -61,6 +62,6 @@ public class Ban implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length > 1 ? ImmutableList.of("5d", "30d") : null;
+        return args.length > 1 ? ImmutableList.of("5d", "30d", "60d", "90d") : null;
     }
 }

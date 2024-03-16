@@ -55,9 +55,27 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private long lastChatMS;
+    private int flags;
     @Getter
     @Setter
-    private int flags;
+    private boolean fastCrystals;
+
+    public CustomPlayerDataHolder(int m,
+                                  int t,
+                                  double z,
+                                  int deaths,
+                                  int kills,
+                                  ObjectArrayList<HomeHolder> homes,
+                                  int rank) {
+        this.money = z;
+        this.mtoggle = m;
+        this.tptoggle = t;
+        this.deaths = deaths;
+        this.kills = kills;
+        this.homes = homes;
+        this.lastChatMS = 0L;
+        this.rank = rank;
+    }
 
     public CustomPlayerDataHolder(int m,
                                   int t,
@@ -72,31 +90,31 @@ public class CustomPlayerDataHolder {
         this.kills = kills;
         this.homes = homes;
         this.lastChatMS = 0L;
+        this.rank = 0;
     }
 
     public String getFRank(String name) {
         return switch (rank) {
             case 0 -> name;
-            case 1 -> ANGEL + name;
-            case 2 -> CATTO_LOVES + name;
-            case 3 -> CATTO_HATES + name;
-            case 4 -> GAY + name;
-            case 5 -> VIP + name;
-            case 6 -> BOOSTER + name;
-            case 7 -> MEDIA + name;
-            case 8 -> T_HELPER + name;
-            case 9 -> HELPER + name;
-            case 10 -> JRMOD + name;
-            case 11 -> MOD + name;
-            case 12 -> ADMIN + name;
-            case 13 -> MANAGER + name;
-            case 14 -> EXECUTIVE + name;
+            case 1 -> CATTO_LOVES + name;
+            case 2 -> CATTO_HATES + name;
+            case 3 -> GAY + name;
+            case 4 -> VIP + name;
+            case 5 -> BOOSTER + name;
+            case 6 -> MEDIA + name;
+            case 7 -> T_HELPER + name;
+            case 8 -> HELPER + name;
+            case 9 -> JRMOD + name;
+            case 10 -> MOD + name;
+            case 11 -> ADMIN + name;
+            case 12 -> MANAGER + name;
+            case 13 -> EXECUTIVE + name;
             default -> "";
         };
     }
 
-    public void incrementFlags() {
-        flags++;
+    public int incrementFlags() {
+        return flags++;
     }
 
     public void setupCombatRunnable(Player player) {

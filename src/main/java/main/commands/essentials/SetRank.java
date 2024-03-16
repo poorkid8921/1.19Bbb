@@ -19,7 +19,6 @@ public class SetRank implements CommandExecutor, TabExecutor {
             "lub",
             "nigger",
             "gay",
-            "angel",
             "vip",
             "booster",
             "media",
@@ -50,20 +49,19 @@ public class SetRank implements CommandExecutor, TabExecutor {
         } catch (Exception ignored) {
         }
         int transformedArg = switch (args[1].toLowerCase()) {
-            case "angel" -> 1;
-            case "lub" -> 2;
-            case "nigger" -> 3;
-            case "gay" -> 4;
-            case "vip" -> 5;
-            case "booster" -> 6;
-            case "media" -> 7;
-            case "trial-helper" -> 8;
-            case "helper" -> 9;
-            case "jrmod" -> 10;
-            case "mod" -> 11;
-            case "admin" -> 12;
-            case "manager" -> 13;
-            case "executive" -> 14;
+            case "lub" -> 1;
+            case "nigger" -> 2;
+            case "gay" -> 3;
+            case "vip" -> 4;
+            case "booster" -> 5;
+            case "media" -> 6;
+            case "trial-helper" -> 7;
+            case "helper" -> 8;
+            case "jrmod" -> 9;
+            case "mod" -> 10;
+            case "admin" -> 11;
+            case "manager" -> 12;
+            case "executive" -> 13;
             default -> Integer.parseInt(args[1]);
         };
         try {
@@ -74,20 +72,19 @@ public class SetRank implements CommandExecutor, TabExecutor {
         }
         setRank(name, transformedArg);
         sender.sendMessage(MAIN_COLOR + name + "§7's rank is now " + MAIN_COLOR + switch (transformedArg) {
-            case 1 -> "Angel";
-            case 2 -> "Catto Loves";
-            case 3 -> "Catto Hates";
-            case 4 -> "Gay";
-            case 5 -> "Vip";
-            case 6 -> "Booster";
-            case 7 -> "Media";
-            case 8 -> "Trial Helper";
-            case 9 -> "Helper";
-            case 10 -> "Junior Mod";
-            case 11 -> "Mod";
-            case 12 -> "Admin";
-            case 13 -> "Manager";
-            case 14 -> "Executive";
+            case 1 -> "Catto Loves";
+            case 2 -> "Catto Hates";
+            case 3 -> "Gay";
+            case 4 -> "Vip";
+            case 5 -> "Booster";
+            case 6 -> "Media";
+            case 7 -> "Trial Helper";
+            case 8 -> "Helper";
+            case 9 -> "Junior Mod";
+            case 10 -> "Mod";
+            case 11 -> "Admin";
+            case 12 -> "Manager";
+            case 13 -> "Executive";
             default -> "Default";
         } + "!");
         return true;

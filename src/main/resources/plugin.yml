@@ -94,3 +94,5 @@ commands:
     usage: /<command>
   suicide:
     usage: /<command>
+  fastcrystals:
+    usage: /<command>

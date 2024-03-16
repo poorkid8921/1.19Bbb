@@ -5,13 +5,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.HomeHolder;
-import main.utils.instances.RegionHolder;
-import main.utils.instances.TpaRequest;
+import main.utils.instances.*;
 import main.utils.storage.DB;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -29,27 +25,25 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static main.Economy.config;
-
 public class Initializer {
-    public static final RegionHolder spawnRegionHolder = new RegionHolder(17, 155, -18, -19, 134, 18);
-    public static final ObjectOpenHashSet<RegionHolder> regions = ObjectOpenHashSet.of(
+    public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(17, -18, -19, 18);
+    public static final AbstractRegionHolder[] regions = new AbstractRegionHolder[]{
             spawnRegionHolder,
             new RegionHolder(-44, 133, 43, 41, 3, -42),// flat
             new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
-            new RegionHolder(-129, -63, -128, 127, 133, -128),// wall1
-            new RegionHolder(127, -63, -127, 127, 133, 128),// wall2
-            new RegionHolder(-129, -63, 128, 126, 133, 128),// wall3
-            new RegionHolder(-129, -63, -127, -129, 133, 127),// wall4
+            new YDeficientRegionHolder(-129, -128, 127, -128),// wall1
+            new YDeficientRegionHolder(127, -127, 127, 128),// wall2
+            new YDeficientRegionHolder(-129, 128, 126, 128),// wall3
+            new YDeficientRegionHolder(-129, -127, -129, 127),// wall4
             new RegionHolder(-128, 2, -127, 126, 2, 127) // underarena
-    );
+    };
     public static ImmutableList<Color> color = ImmutableList.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW);
     public static Map<String, Long> cooldowns = new Object2LongOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Int2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
-    public static ObjectArrayList<Location> overworldRTP = ObjectArrayList.of();
-    public static ObjectArrayList<Location> netherRTP = ObjectArrayList.of();
-    public static ObjectArrayList<Location> endRTP = ObjectArrayList.of();
+    public static Location[] overworldRTP = new Location[100];
+    public static Location[] netherRTP = new Location[100];
+    public static Location[] endRTP = new Location[100];
     public static ObjectArrayList<TpaRequest> requests = ObjectArrayList.of();
     public static ObjectArrayList<String> tpa = ObjectArrayList.of();
     public static ObjectArrayList<String> msg = ObjectArrayList.of();
@@ -62,7 +56,6 @@ public class Initializer {
     public static String GAY = Utils.translateA("#fb0000ɢ#56fa35ᴀ#ff00deʏ") + " §r";
     public static String CATTO_LOVES = "§dᴄᴀᴛᴛᴏ ʟᴏᴠᴇs §r";
     public static String CATTO_HATES = Utils.translateA("#2e2e2e") + "ᴄᴀᴛᴛᴏ ʜᴀᴛᴇs §r";
-    public static String ANGEL = Utils.translateA("#ffffed") + "ᴀɴɢᴇʟ §r";
     public static String VIP = Utils.translateA("#faf739") + "ᴠɪᴘ §r";
     public static String BOOSTER = Utils.translateA("#e900ff") + "ʙᴏᴏꜱᴛᴇʀ §r";
     public static String MEDIA = Utils.translateA("#ffc2c2") + "ᴍᴇᴅɪᴀ §r";
@@ -74,7 +67,7 @@ public class Initializer {
     public static String MANAGER = Utils.translateA("#d10000") + "ᴍᴀɴᴀɢᴇʀ §r";
     public static String EXECUTIVE = Utils.translateA("#2494fb") + "ᴏᴡɴᴇʀ §r";
 
-    public static TextComponent D_USING = new TextComponent(ChatColor.GRAY + "ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
+    public static TextComponent D_USING = new TextComponent("§7ᴊᴏɪɴ ᴏᴜʀ ᴅɪsᴄᴏʀᴅ sᴇʀᴠᴇʀ ᴜsɪɴɢ ");
     public static TextComponent D_LINK = new TextComponent("ᴅɪsᴄᴏʀᴅ.ɢɢ/ᴄᴀᴛsᴍᴘ");
 
     public static String MAIN_COLOR = Utils.translateA("#fc282f");
@@ -97,7 +90,6 @@ public class Initializer {
     public static Team mediaTeam;
     public static Team boosterTeam;
     public static Team vipTeam;
-    public static Team angelTeam;
     public static Team cattoLovesTeam;
     public static Team cattoHatesTeam;
     public static Team gayTeam;
@@ -143,16 +135,13 @@ public class Initializer {
             vipTeam = scoreboard.registerNewTeam("j");
             vipTeam.setPrefix(VIP);
 
-            angelTeam = scoreboard.registerNewTeam("k");
-            angelTeam.setPrefix(ANGEL);
-
-            cattoLovesTeam = scoreboard.registerNewTeam("l");
+            cattoLovesTeam = scoreboard.registerNewTeam("k");
             cattoLovesTeam.setPrefix(CATTO_LOVES);
 
-            cattoHatesTeam = scoreboard.registerNewTeam("m");
+            cattoHatesTeam = scoreboard.registerNewTeam("l");
             cattoHatesTeam.setPrefix(CATTO_HATES);
 
-            gayTeam = scoreboard.registerNewTeam("n");
+            gayTeam = scoreboard.registerNewTeam("m");
             gayTeam.setPrefix(GAY);
         } catch (Exception e) {
             ownerTeam = scoreboard.getTeam("a");
@@ -175,13 +164,11 @@ public class Initializer {
             boosterTeam.removeEntries(boosterTeam.getEntries());
             vipTeam = scoreboard.getTeam("j");
             vipTeam.removeEntries(vipTeam.getEntries());
-            angelTeam = scoreboard.getTeam("k");
-            angelTeam.removeEntries(angelTeam.getEntries());
-            cattoLovesTeam = scoreboard.getTeam("l");
+            cattoLovesTeam = scoreboard.getTeam("k");
             cattoLovesTeam.removeEntries(cattoLovesTeam.getEntries());
-            cattoHatesTeam = scoreboard.getTeam("m");
+            cattoHatesTeam = scoreboard.getTeam("l");
             cattoHatesTeam.removeEntries(cattoHatesTeam.getEntries());
-            gayTeam = scoreboard.getTeam("n");
+            gayTeam = scoreboard.getTeam("m");
             gayTeam.removeEntries(gayTeam.getEntries());
         }
         EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ!";
@@ -196,41 +183,6 @@ public class Initializer {
 
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
-        if (config.contains("r")) {
-            int dataLoaded = 0;
-            ObjectArrayList<HomeHolder> homes = ObjectArrayList.of();
-            for (String key : config.getConfigurationSection("r").getKeys(false)) {
-                int m = config.getInt("r." + key + ".0");
-                int t = config.getInt("r." + key + ".1");
-                int money = config.getInt("r." + key + ".2");
-                int deaths = config.getInt("r." + key + ".3");
-                int kills = config.getInt("r." + key + ".4");
-
-                String og = config.getString("r." + key + ".5");
-                if (!og.equals("null")) {
-                    for (String str : og.split(";")) {
-                        String[] args = str.split(":");
-                        homes.add(new HomeHolder(args[0], new Location(Bukkit.getWorld(args[1]),
-                                Integer.parseInt(args[2]),
-                                Integer.parseInt(args[3]),
-                                Integer.parseInt(args[4]),
-                                Float.parseFloat(args[5]),
-                                Float.parseFloat(args[6]))));
-                    }
-                }
-                if (m == 0 &&
-                        t == 0 &&
-                        money == 0 &&
-                        deaths == 0 &&
-                        kills == 0 &&
-                        homes.isEmpty())
-                    continue;
-                playerData.put(key, new CustomPlayerDataHolder(m, t, money, deaths, kills, homes));
-                homes.clear();
-                dataLoaded++;
-            }
-            Bukkit.getLogger().warning("Successfully loaded " + dataLoaded + " accounts!");
-        }
         DB.init();
     }
 }

@@ -127,6 +127,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
         shulker_inv.setItem(11, totem);
         kit[11] = totem;
+        shulker_inv.setItem(13, totem);
+        kit[13] = totem;
 
         shulkmeta.setBlockState(box);
         shulker_kit.setItemMeta(shulkmeta);
@@ -150,13 +152,11 @@ public class Kit implements CommandExecutor, TabCompleter {
                 if (item == null)
                     freespace++;
             }
-            if (inv.getItemInOffHand() == null)
-                specialspace++;
             for (ItemStack item : inv.getArmorContents()) {
                 if (item == null)
                     specialspace++;
             }
-            if (specialspace == 5 && freespace == 41) {
+            if (specialspace == 4 && freespace == 41) {
                 inv.setBoots(kit[3]);
                 inv.setLeggings(kit[2]);
                 inv.setChestplate(kit[1]);
@@ -167,7 +167,7 @@ public class Kit implements CommandExecutor, TabCompleter {
                 p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
             else
                 inv.addItem(shulker_kit);
-            cooldowns.put(sender.getName(), System.currentTimeMillis() + 3600000L);
+            cooldowns.put(sender.getName(), System.currentTimeMillis() + 1200000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else
             sender.sendMessage("§7You must wait " + MAIN_COLOR + Utils.getTime(D0 - System.currentTimeMillis()) + " §7in order to be able to claim your kit!");

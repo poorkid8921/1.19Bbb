@@ -2,7 +2,6 @@ package main.commands.warps;
 
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -18,6 +17,7 @@ import java.util.Collections;
 
 import static main.utils.Initializer.*;
 import static main.utils.Utils.getTime;
+import static main.utils.Utils.teleportEffect;
 
 public class RTP implements CommandExecutor, TabExecutor {
     @Override
@@ -33,21 +33,13 @@ public class RTP implements CommandExecutor, TabExecutor {
         Player p = (Player) sender;
         World w = p.getWorld();
         String wn = w.getName();
-        Location locC = (wn.equals("world_nether") ? netherRTP : wn.equals("world_the_end") ? endRTP : overworldRTP).get(RANDOM.nextInt(100));
+        Location locC = (wn.equals("world_nether") ? netherRTP : wn.equals("world_the_end") ? endRTP : overworldRTP)[RANDOM.nextInt(100)];
         p.teleportAsync(locC, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
             p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locC.getBlockX() + " " + locC.getBlockY() + " " + locC.getBlockZ());
             p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
             p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-            for (int index = 1; index < 16; index++) {
-                double p1 = (index * Math.PI) / 8;
-                double p2 = (index - 1) * Math.PI / 8;
-                double x1 = Math.cos(p1) * 3;
-                double xx2 = Math.cos(p2) * 3;
-                double z1 = Math.sin(p1) * 3;
-                double z2 = Math.sin(p2) * 3;
-                w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 5, 1.5f);
-            }
+            teleportEffect(w, locC);
         });
         return true;
     }

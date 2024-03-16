@@ -33,10 +33,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
 import static main.utils.Utils.spawnFirework;
+import static main.utils.storage.DB.connection;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -128,6 +131,17 @@ public class Events implements Listener {
             if (D1.getLastReceived() == name) D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET em = ?, et = ?, ez = ?, ed = ?, ek = ?, fc = ? WHERE name = ?")) {
+            statement.setInt(1, D0.getMtoggle());
+            statement.setInt(2, D0.getTptoggle());
+            statement.setDouble(3, D0.getMoney());
+            statement.setInt(4, D0.getDeaths());
+            statement.setInt(5, D0.getKills());
+            statement.setBoolean(6, D0.isFastCrystals());
+            statement.setString(7, name);
+            statement.executeUpdate();
+        } catch (SQLException ignored) {
+        }
         Initializer.msg.remove(name);
         Initializer.tpa.remove(name);
 
@@ -139,7 +153,6 @@ public class Events implements Listener {
     private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
         if (c instanceof PlayerInventory) return;
-
         Player p = (Player) e.getWhoClicked();
         String name = p.getName();
         CustomPlayerDataHolder D0 = playerData.get(name);
@@ -167,29 +180,28 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         String name = p.getName();
         Player killer = p.getKiller();
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        D0.untag();
+        D0.incrementDeaths();
         if (killer == null || killer == p) {
             String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
-                case FALL -> "broke their legs by not using feather falling";
-                case FALLING_BLOCK -> "couldn't escape from ishowspeed's fart";
+                case FALL -> "broke their legs";
+                case FALLING_BLOCK -> "suffocated";
                 case FLY_INTO_WALL -> "tried to bypass physics";
                 case FIRE_TICK, LAVA -> "melted away";
                 case DROWNING -> "forgot to breathe";
                 case STARVATION -> "forgot to eat";
-                case POISON -> "was poisoned from ishowspeed's fast";
+                case POISON -> "was poisoned";
                 case MAGIC -> "thought they could cook meth";
                 case FREEZE -> "belonged into the water";
                 case SUFFOCATION -> "was mashed up pretty good";
-                case HOT_FLOOR -> "was oiled up in lava";
-                case VOID -> ": imagine falling into the void";
-                default -> "suicided because they thought they are HIM";
+                case HOT_FLOOR -> "was heated up pretty good";
+                case VOID -> "fell into the void";
+                default -> "suicided";
             };
             e.setDeathMessage(death);
         } else {
-            CustomPlayerDataHolder D0 = playerData.get(name);
-            D0.untag();
-            D0.incrementDeaths();
-
             String kp = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(kp);
             D1.untag();
@@ -201,14 +213,14 @@ public class Events implements Listener {
             }
             String death = armor == 0 ? SECOND_COLOR + "☠ " + kp + " §7touched " + SECOND_COLOR + name : SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
-                case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
+                case ENTITY_EXPLOSION -> "crystalled " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
-                case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "raped " + SECOND_COLOR + name;
+                case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
                 case PROJECTILE -> "shot " + SECOND_COLOR + name + " §7into the ass";
-                case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7by watching skibidi toilet";
+                case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
                 case VOID -> "pushed " + SECOND_COLOR + name + " §7into the void";
-                default -> "suicided because they thought that they are HIM";
+                default -> "suicided";
             };
             e.setDeathMessage(death);
 
@@ -228,24 +240,27 @@ public class Events implements Listener {
                 }
             } else w.strikeLightningEffect(loc);
 
-            if (Initializer.RANDOM.nextInt(100) <= 5)
-                w.dropItemNaturally(loc, Utils.getHead(p, killer.getDisplayName()));
+            if (Initializer.RANDOM.nextInt(100) <= 10)
+                w.dropItemNaturally(loc, Utils.getHead(p, D1.getFRank(kp)));
         }
     }
 
     @EventHandler
     private void onExplosion(EntityDamageEvent e) {
-        if (!(e.getEntity() instanceof Item a)) return;
-        EntityDamageEvent.DamageCause c = e.getCause();
-        if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && c != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
-            return;
-        String name = a.getItemStack().getType().name();
-        e.setCancelled(name.contains("DIAMOND") || name.contains("NETHERITE"));
+        if (e.getEntity() instanceof Item a) {
+            EntityDamageEvent.DamageCause c = e.getCause();
+            if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && c != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
+                return;
+            String name = a.getItemStack().getType().name();
+            e.setCancelled(name.contains("DIAMOND") || name.contains("NETHERITE"));
+        }
     }
 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
+        String name = p.getName();
+        e.setJoinMessage(JOIN_PREFIX + name);
         if (!p.hasPlayedBefore()) {
             PlayerInventory inv = p.getInventory();
             inv.addItem(sword);
@@ -255,11 +270,7 @@ public class Events implements Listener {
             inv.setLeggings(leggings);
             inv.setBoots(boots);
             inv.setItemInOffHand(gap);
-            p.teleportAsync(Initializer.spawn);
-
-            String name = p.getName();
-            e.setJoinMessage(JOIN_PREFIX + name);
-
+            p.teleport(Initializer.spawn);
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
             Initializer.tpa.sort(String::compareToIgnoreCase);
@@ -267,9 +278,6 @@ public class Events implements Listener {
             playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
             return;
         }
-        String name = p.getName();
-        e.setJoinMessage(JOIN_PREFIX + name);
-
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             Initializer.tpa.add(name);
@@ -280,28 +288,29 @@ public class Events implements Listener {
 
             playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
         } else {
-            int rank = DB.parseRank(name);
+            int rank = DB.setUsefulData(name, D);
             ServerPlayer craftPlayer = ((CraftPlayer) p).getHandle();
             craftPlayer.listName = CraftChatMessage.fromString(D.getFRank(name))[0];
             for (ServerPlayer player : DedicatedServer.getServer().getPlayerList().players) {
                 player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, craftPlayer));
             }
-            switch (rank) {
-                case 1 -> gayTeam.addPlayer(p);
-                case 2 -> cattoHatesTeam.addPlayer(p);
-                case 3 -> cattoLovesTeam.addPlayer(p);
-                case 4 -> angelTeam.addPlayer(p);
-                case 5 -> vipTeam.addPlayer(p);
-                case 6 -> boosterTeam.addPlayer(p);
-                case 7 -> mediaTeam.addPlayer(p);
-                case 8 -> trialHelperTeam.addPlayer(p);
-                case 9 -> helperTeam.addPlayer(p);
-                case 10 -> jrmodTeam.addPlayer(p);
-                case 11 -> modTeam.addPlayer(p);
-                case 12 -> adminTeam.addPlayer(p);
-                case 13 -> managerTeam.addPlayer(p);
-                case 14 -> ownerTeam.addPlayer(p);
-            }
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                switch (rank) {
+                    case 1 -> cattoLovesTeam.addEntry(name);
+                    case 2 -> cattoHatesTeam.addEntry(name);
+                    case 3 -> gayTeam.addEntry(name);
+                    case 4 -> vipTeam.addEntry(name);
+                    case 5 -> boosterTeam.addEntry(name);
+                    case 6 -> mediaTeam.addEntry(name);
+                    case 7 -> trialHelperTeam.addEntry(name);
+                    case 8 -> helperTeam.addEntry(name);
+                    case 9 -> jrmodTeam.addEntry(name);
+                    case 10 -> modTeam.addEntry(name);
+                    case 11 -> adminTeam.addEntry(name);
+                    case 12 -> managerTeam.addEntry(name);
+                    case 13 -> ownerTeam.addEntry(name);
+                }
+            }, 5L);
             D.setRank(rank);
             if (D.getTptoggle() == 0) {
                 Initializer.tpa.add(name);
@@ -316,6 +325,6 @@ public class Events implements Listener {
 
     @EventHandler
     private void onRespawn(PlayerRespawnEvent e) {
-        e.setRespawnLocation(Initializer.spawn);
+        e.setRespawnLocation(spawn);
     }
 }

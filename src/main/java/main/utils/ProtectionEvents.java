@@ -1,8 +1,8 @@
 package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import main.utils.instances.AbstractRegionHolder;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.RegionHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,7 +12,10 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockMultiPlaceEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -36,8 +39,8 @@ public class ProtectionEvents implements Listener {
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        for (RegionHolder r : regions) {
-            if (!r.check(x, y, z))
+        for (AbstractRegionHolder r : regions) {
+            if (!r.testY(x, y, z))
                 continue;
             Player p = e.getPlayer();
             if (p.isOp())
@@ -53,8 +56,8 @@ public class ProtectionEvents implements Listener {
             int x = b.getX();
             int y = b.getY();
             int z = b.getZ();
-            for (RegionHolder r : regions) {
-                if (!r.check(x, y, z))
+            for (AbstractRegionHolder r : regions) {
+                if (!r.testY(x, y, z))
                     continue;
                 inRegion.add(b);
                 break;
@@ -77,15 +80,9 @@ public class ProtectionEvents implements Listener {
         Location loc = e.getEntity().getLocation();
         if (loc.getWorld() != d)
             return;
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
-        for (RegionHolder r : regions) {
-            if (!r.check(x, y, z))
-                continue;
-            e.setCancelled(true);
+        if (!spawnRegionHolder.test(loc.getBlockX(), loc.getBlockZ()))
             return;
-        }
+        e.setCancelled(true);
     }
 
     @EventHandler
@@ -94,13 +91,10 @@ public class ProtectionEvents implements Listener {
             Location loc = e.getTo();
             if (loc.getWorld() != d)
                 return;
-            if (!spawnRegionHolder.check(loc.getBlockX(), loc.getBlockZ()))
+            if (!spawnRegionHolder.test(loc.getBlockX(), loc.getBlockZ()))
                 return;
-            Player p = e.getPlayer();
-            if (playerData.get(p.getName()).isTagged()) {
-                p.sendMessage("§7You can't pearl here!");
-                e.setCancelled(true);
-            }
+            e.getPlayer().sendMessage("§7You can't pearl here!");
+            e.setCancelled(true);
         }
     }
 
@@ -114,8 +108,8 @@ public class ProtectionEvents implements Listener {
             Location loc = p.getLocation();
             int x = loc.getBlockX();
             int z = loc.getBlockZ();
-            for (RegionHolder r : regions) {
-                if (!r.check(x, z))
+            for (AbstractRegionHolder r : regions) {
+                if (!r.test(x, z))
                     continue;
                 if (p.isOp())
                     return;
@@ -139,16 +133,6 @@ public class ProtectionEvents implements Listener {
     }
 
     @EventHandler
-    private void onAnvilDamage(BlockDamageEvent e) {
-        Block b = e.getBlock();
-        if (b.getType() != Material.DAMAGED_ANVIL)
-            return;
-        if (spawnRegionHolder.check(b.getX(), b.getZ()))
-            return;
-        e.setCancelled(true);
-    }
-
-    @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
         if (e.isCancelled())
             return;
@@ -166,7 +150,7 @@ public class ProtectionEvents implements Listener {
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
         if (playerAttacker) {
-            if (spawnRegionHolder.check(x, z)) {
+            if (spawnRegionHolder.test(x, z)) {
                 attacker.sendMessage("§7You can't combat here!");
                 e.setCancelled(true);
                 return;
@@ -183,7 +167,7 @@ public class ProtectionEvents implements Listener {
             else
                 D1.setupCombatRunnable(damagePlayer);
         } else {
-            if (spawnRegionHolder.check(x, z)) {
+            if (spawnRegionHolder.test(x, z)) {
                 e.setCancelled(true);
                 return;
             }
@@ -203,8 +187,8 @@ public class ProtectionEvents implements Listener {
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        for (RegionHolder r : regions) {
-            if (!r.check(x, y, z))
+        for (AbstractRegionHolder r : regions) {
+            if (!r.testY(x, y, z))
                 continue;
             Player p = e.getPlayer();
             if (p.isOp())
@@ -228,9 +212,8 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onPlayerBucketEmpty(PlayerBucketEmptyEvent e) {
         Location loc = e.getBlock().getLocation();
-        if (spawnRegionHolder.check(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())) {
-            Player p = e.getPlayer();
-            if (p.isOp())
+        if (spawnRegionHolder.test(loc.getBlockX(), loc.getBlockZ())) {
+            if (e.getPlayer().isOp())
                 return;
             e.setCancelled(true);
         }

@@ -23,8 +23,9 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
         Player p = (Player) event.getPlayer();
         if (p == null)
             return;
-
         CustomPlayerDataHolder user = playerData.get(p.getName());
+        if (!user.isFastCrystals())
+            return;
         int animPacket = getAnimPacket(event);
         if (user.getLastPacket() == 0)
             user.setIgnoreAnim(animPacket == 3);

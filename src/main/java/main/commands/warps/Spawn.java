@@ -13,7 +13,8 @@ import java.util.Collections;
 public class Spawn implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).teleportAsync(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+        Player p = (Player) sender;
+        p.teleportAsync(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
         return true;
     }
 

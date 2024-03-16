@@ -2,6 +2,7 @@ package main.utils.storage;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import main.utils.instances.CustomPlayerDataHolder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,11 +27,16 @@ public class DB {
         }
     }
 
-    public static int parseRank(String name) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT rank FROM data WHERE name = ?")) {
+    public static int setUsefulData(String name, CustomPlayerDataHolder D0) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,fc FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) return resultSet.getInt(1);
+                if (resultSet.next()) {
+                    int rank = resultSet.getInt(1);
+                    D0.setRank(rank);
+                    D0.setFastCrystals(resultSet.getBoolean(2));
+                    return rank;
+                }
             }
         } catch (SQLException ignored) {
         }

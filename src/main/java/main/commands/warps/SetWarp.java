@@ -40,7 +40,6 @@ public class SetWarp implements CommandExecutor {
         try {
             file.createNewFile();
         } catch (IOException ignored) {
-            return true;
         }
         Player p = (Player) sender;
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -55,7 +54,6 @@ public class SetWarp implements CommandExecutor {
         try {
             config.save(file);
         } catch (IOException ignored) {
-            return true;
         }
         sender.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
         return true;

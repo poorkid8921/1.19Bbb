@@ -36,10 +36,7 @@ public class AntiAutoTotem extends SimplePacketListenerAbstract {
                     ItemStack offhandItem = inv.getItemInOffHand();
                     if (offhandItem.getType() == Material.TOTEM_OF_UNDYING) {
                         String name = player.getName();
-                        CustomPlayerDataHolder D0 = playerData.get(name);
-                        D0.incrementFlags();
-                        if (D0.getFlags() == 3) {
-                            D0.setFlags(0);
+                        if (playerData.get(name).incrementFlags() == 3 && !name.contains(".")) {
                             player.kickPlayer(EXPLOITING_KICK);
                             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO bans (ip, bantime, banner) VALUES (?, ?, ?)")) {
                                 statement.setBytes(1, player.getAddress().getAddress().getAddress());

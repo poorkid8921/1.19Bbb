@@ -41,10 +41,12 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                 if (player.hasPotionEffect(PotionEffectType.WEAKNESS))
                     return;
                 CustomPlayerDataHolder user = playerData.get(player.getName());
+                if (!user.isFastCrystals())
+                    return;
                 int lastPacket = user.getLastPacket();
+                if (lastPacket == 3) return;
+                if (user.isIgnoreAnim()) return;
                 Bukkit.getScheduler().runTask(p, () -> {
-                    if (lastPacket == 3) return;
-                    if (user.isIgnoreAnim()) return;
                     Location eyeLoc = player.getEyeLocation();
                     RayTraceResult result = player.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0,
                             entity -> {
@@ -71,16 +73,15 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                     EndCrystal endCrystal = ((CraftEnderCrystal) entity).getHandle();
                     if (!endCrystal.isRemoved()) {
                         DamageSource damageSource = new DamageSource(cachedHolder, ((CraftPlayer) player).getHandle());
-                        if (CraftEventFactory.handleNonLivingEntityDamageEvent(endCrystal, damageSource, 1D, false)) {
+                        if (CraftEventFactory.handleNonLivingEntityDamageEvent(endCrystal, damageSource, 1D, false))
                             return;
-                        }
                         endCrystal.remove(net.minecraft.world.entity.Entity.RemovalReason.KILLED);
                         DamageSource damagesource1 = endCrystal.damageSources().explosion(endCrystal, damageSource.getEntity());
                         ExplosionPrimeEvent event1 = new ExplosionPrimeEvent(endCrystal.getBukkitEntity(), 6.0F, false);
                         endCrystal.level.getCraftServer().getPluginManager().callEvent(event1);
-                        if (!event1.isCancelled())
+                        if (!event1.isCancelled()) {
                             endCrystal.level.explode(endCrystal, damagesource1, null, endCrystal.getX(), endCrystal.getY(), endCrystal.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
-                        else
+                        } else
                             endCrystal.unsetRemoved();
                     }
                 });
