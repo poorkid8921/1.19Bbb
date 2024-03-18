@@ -41,34 +41,48 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    static final BigDecimal THOUSAND = new BigDecimal(1000);
-    static final BigDecimal MILLION = new BigDecimal(1_000_000);
-    static final BigDecimal BILLION = new BigDecimal(1_000_000_000);
-    static final BigDecimal TRILLION = new BigDecimal(1_000_000_000_000L);
+    public static final HomeHolder[] NULL_HOMES = new HomeHolder[3];
+    private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+    private static final char[] c = new char[]{'K', 'M', 'B'};
     public static TextComponent space = new TextComponent("  ");
     public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance(Locale.US);
-    static Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
+
+    public static String shortFormat(double n, int iteration) {
+        double d = n / 1000;
+        boolean isRound = (d * 10) % 10 == 0;
+        return (d < 1000 ?
+                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
+                        (int) d * 10 / 10 : d + ""
+                ) + "" + c[iteration])
+                : shortFormat(d, iteration + 1));
+    }
 
     public static CustomPlayerDataHolder getPlayerData(String name) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,em,et,ez,ed,ek FROM data WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ez,ed,ek,b FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) return new CustomPlayerDataHolder(
-                        resultSet.getInt(2),
-                        resultSet.getInt(3),
-                        resultSet.getInt(4),
-                        resultSet.getInt(5),
-                        resultSet.getInt(6),
-                        null,
-                        resultSet.getInt(1)
-                ); else
+                if (resultSet.next()) {
+                    //String[] copyHomes = resultSet.getString(7).split(";");
+                    //HomeHolder[] homes = new HomeHolder[copyHomes.length];
+                    return new CustomPlayerDataHolder(
+                            resultSet.getInt(2),
+                            resultSet.getInt(3),
+                            resultSet.getInt(4),
+                            resultSet.getInt(5),
+                            resultSet.getInt(6),
+                            NULL_HOMES, //homes == null ? NULL_HOMES : homes,
+                            resultSet.getInt(1),
+                            resultSet.getInt(8)
+                    );
+                } else
                     return new CustomPlayerDataHolder(
                             0,
                             0,
                             -1,
                             0,
                             0,
-                            null);
+                            NULL_HOMES,
+                            0);
             }
         } catch (SQLException ignored) {
         }
@@ -78,7 +92,8 @@ public class Utils {
                 -1,
                 0,
                 0,
-                null);
+                NULL_HOMES,
+                0);
     }
 
     public static void teleportEffect(World w, Location locC) {
@@ -97,15 +112,13 @@ public class Utils {
         return playerData.get(name).getRank() < 4;
     }
 
-    public static double getMoneyValue(String unsanitized, String sanitized) {
-        BigDecimal amount = new BigDecimal(unsanitized);
-        switch (Character.toLowerCase(sanitized.charAt(sanitized.length() - 1))) {
-            case 'k' -> amount = amount.multiply(THOUSAND);
-            case 'm' -> amount = amount.multiply(MILLION);
-            case 'b' -> amount = amount.multiply(BILLION);
-            case 't' -> amount = amount.multiply(TRILLION);
+    public static double getMoneyValue(double i, char sanitized) {
+        switch (Character.toLowerCase(sanitized)) {
+            case 'k' -> i *= 1000;
+            case 'm' -> i *= 1_000_000;
+            case 'b' -> i *= 1_000_000_000;
         }
-        return amount.doubleValue();
+        return i;
     }
 
     public static String getTime(Player p) {
@@ -155,7 +168,7 @@ public class Utils {
         Firework firework = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
         FireworkMeta meta = firework.getFireworkMeta();
         meta.setPower(2);
-        meta.addEffect(FireworkEffect.builder().withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).withColor(Initializer.color.get(Initializer.RANDOM.nextInt(Initializer.color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        meta.addEffect(FireworkEffect.builder().withColor(Initializer.color[Initializer.RANDOM.nextInt(Initializer.color.length)]).withColor(Initializer.color[Initializer.RANDOM.nextInt(Initializer.color.length)]).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         firework.setFireworkMeta(meta);
     }
 
@@ -228,6 +241,18 @@ public class Utils {
         sender.sendMessage("§7Successfully submitted your report.");
     }
 
+    public static boolean hasRequestedThePlayer(String name, String requester) {
+        for (TpaRequest r : requests) {
+            try {
+                if ((r.getReceiver() == name && r.getSenderF() == requester) || (r.getSenderF() == name && r.getReceiver() == requester))
+                    return true;
+            } catch (Exception ignored) {
+
+            }
+        }
+        return false;
+    }
+
     public static TpaRequest getRequest(String user) {
         for (TpaRequest r : requests) {
             try {
@@ -251,11 +276,10 @@ public class Utils {
         return null;
     }
 
-    public static HomeHolder getHome(String x, ObjectArrayList<HomeHolder> y) {
+    public static HomeHolder getHome(String x, HomeHolder[] y) {
         for (HomeHolder k : y) {
-            if (k.getName() == x) {
+            if (k.getName() == x)
                 return k;
-            }
         }
         return null;
     }

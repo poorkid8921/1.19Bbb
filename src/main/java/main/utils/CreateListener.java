@@ -11,7 +11,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import static main.Economy.d;
-import static main.utils.Initializer.*;
+import static main.utils.Initializer.playerData;
+import static main.utils.Initializer.regions;
 
 public class CreateListener implements Listener {
     @EventHandler

@@ -11,12 +11,6 @@ import java.util.List;
 public class Baltop implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        /*ObjectArrayList<Map.Entry<String, Integer>> top5 = new ObjectArrayList<>(leaderBoardMoney.entrySet());
-        top5.sort(Map.Entry.comparingByValue());
-        top5.subList(0, 9);
-        Collections.reverse(top5);
-        Bukkit.getServer().getLogger().warning(top5.toString());
-        */
         return true;
     }
 

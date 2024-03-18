@@ -8,8 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static main.utils.Initializer.playerData;
-import static main.utils.Utils.addRequest;
-import static main.utils.Utils.getRequest;
+import static main.utils.Utils.*;
 
 public class Tpa implements CommandExecutor {
     @Override
@@ -33,7 +32,7 @@ public class Tpa implements CommandExecutor {
         }
 
         TpaRequest tpr = getRequest(ren);
-        if (tpr != null && tpr.getSenderF() == sn) {
+        if (tpr != null && hasRequestedThePlayer(sn, ren)) {
             sender.sendMessage("§7You already have an ongoing request to this player.");
             return true;
         }

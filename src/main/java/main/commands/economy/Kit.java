@@ -23,9 +23,20 @@ import java.util.Map;
 import static main.utils.Initializer.MAIN_COLOR;
 
 public class Kit implements CommandExecutor, TabCompleter {
-    Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
-    ItemStack shulker_kit = new ItemStack(Material.RED_SHULKER_BOX);
-    ItemStack[] kit = new ItemStack[36];
+    private static final Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
+    private static final ItemStack shulker_kit = new ItemStack(Material.RED_SHULKER_BOX);
+    private static final ItemStack crystal = new ItemStack(Material.END_CRYSTAL, 64);
+    private static final ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 64);
+    private static final ItemStack obi = new ItemStack(Material.OBSIDIAN, 64);
+    private static final ItemStack elytra = new ItemStack(Material.ELYTRA);
+    private static final ItemStack fireworks = new ItemStack(Material.FIREWORK_ROCKET, 64);
+    private static final ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
+    private static ItemStack helmet;
+    private static ItemStack chestplate;
+    private static ItemStack leggings;
+    private static ItemStack boots;
+    private static ItemStack sword;
+    private static ItemStack pickaxe;
 
     public Kit() {
         String name = MAIN_COLOR + "ᴄᴀᴛsᴍᴘ.ꜰᴜɴ";
@@ -45,7 +56,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         helmet.setItemMeta(meta);
         shulker_inv.setItem(0, helmet);
-        kit[0] = helmet;
+        Kit.helmet = helmet;
 
         ItemStack chestplate = new ItemStack(Material.NETHERITE_CHESTPLATE);
         meta = chestplate.getItemMeta();
@@ -56,7 +67,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         chestplate.setItemMeta(meta);
         shulker_inv.setItem(1, chestplate);
-        kit[1] = chestplate;
+        Kit.chestplate = chestplate;
 
         ItemStack leggings = new ItemStack(Material.NETHERITE_LEGGINGS);
         meta = leggings.getItemMeta();
@@ -67,7 +78,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         leggings.setItemMeta(meta);
         shulker_inv.setItem(2, leggings);
-        kit[2] = leggings;
+        Kit.leggings = leggings;
 
         ItemStack boots = new ItemStack(Material.NETHERITE_BOOTS);
         meta = boots.getItemMeta();
@@ -79,7 +90,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         boots.setItemMeta(meta);
         shulker_inv.setItem(3, boots);
-        kit[3] = boots;
+        Kit.boots = boots;
 
         ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
         meta = sword.getItemMeta();
@@ -91,7 +102,7 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.SWEEPING_EDGE, 3, true);
         sword.setItemMeta(meta);
         shulker_inv.setItem(4, sword);
-        kit[4] = sword;
+        Kit.sword = sword;
 
         ItemStack pickaxe = new ItemStack(Material.NETHERITE_PICKAXE);
         meta = pickaxe.getItemMeta();
@@ -102,33 +113,23 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 3, true);
         pickaxe.setItemMeta(meta);
         shulker_inv.setItem(5, pickaxe);
-        kit[5] = pickaxe;
+        Kit.pickaxe = pickaxe;
 
-        ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 64);
         shulker_inv.setItem(6, gap);
-        kit[6] = gap;
-
-        ItemStack elytra = new ItemStack(Material.ELYTRA);
+        shulker_inv.setItem(7, crystal);
+        shulker_inv.setItem(8, obi);
         meta = elytra.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
         meta.addEnchant(Enchantment.DURABILITY, 3, true);
         elytra.setItemMeta(meta);
         shulker_inv.setItem(9, elytra);
-        kit[9] = elytra;
-
-        ItemStack fireworks = new ItemStack(Material.FIREWORK_ROCKET, 64);
         meta = fireworks.getItemMeta();
         ((FireworkMeta) meta).setPower(3);
         fireworks.setItemMeta(meta);
         shulker_inv.setItem(10, fireworks);
-        kit[10] = fireworks;
-
-        ItemStack totem = new ItemStack(Material.TOTEM_OF_UNDYING);
         shulker_inv.setItem(11, totem);
-        kit[11] = totem;
-        shulker_inv.setItem(13, totem);
-        kit[13] = totem;
+        shulker_inv.setItem(12, totem);
 
         shulkmeta.setBlockState(box);
         shulker_kit.setItemMeta(shulkmeta);
@@ -149,24 +150,25 @@ public class Kit implements CommandExecutor, TabCompleter {
             int freespace = 0;
             int specialspace = 0;
             for (ItemStack item : inv.getContents()) {
-                if (item == null)
-                    freespace++;
+                if (item == null) freespace++;
             }
             for (ItemStack item : inv.getArmorContents()) {
-                if (item == null)
-                    specialspace++;
+                if (item == null) specialspace++;
             }
             if (specialspace == 4 && freespace == 41) {
-                inv.setBoots(kit[3]);
-                inv.setLeggings(kit[2]);
-                inv.setChestplate(kit[1]);
-                inv.setHelmet(kit[0]);
+                inv.setBoots(boots);
+                inv.setLeggings(leggings);
+                inv.setChestplate(chestplate);
+                inv.setHelmet(helmet);
 
-                inv.setItemInOffHand(kit[11]);
-            } else if (freespace == 0)
-                p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
-            else
-                inv.addItem(shulker_kit);
+                inv.setItemInOffHand(totem);
+                inv.setItem(0, sword);
+                inv.setItem(1, pickaxe);
+                inv.setItem(2, gap);
+                inv.setItem(3, crystal);
+                inv.setItem(4, obi);
+            } else if (freespace == 0) p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
+            else inv.addItem(shulker_kit);
             cooldowns.put(sender.getName(), System.currentTimeMillis() + 1200000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else

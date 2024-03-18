@@ -96,3 +96,5 @@ commands:
     usage: /<command>
   fastcrystals:
     usage: /<command>
+  bounty:
+    usage: /<command>

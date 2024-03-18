@@ -24,7 +24,11 @@ public class DelHome implements CommandExecutor {
             return true;
         }
 
-        D0.getHomes().remove(home);
+        int i = -1;
+        for (HomeHolder k : D0.getHomes()) {
+            if (k == home)
+                D0.getHomes()[i++] = null;
+        }
         sender.sendMessage("§7You have successfully delete " + MAIN_COLOR + args[0] + ".");
         return true;
     }

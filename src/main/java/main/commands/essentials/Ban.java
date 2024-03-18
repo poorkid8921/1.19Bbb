@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.List;
 
 import static main.utils.Initializer.playerData;
@@ -49,11 +50,20 @@ public class Ban implements CommandExecutor, TabExecutor {
             target.kickPlayer("Connection with the remote server has been closed.");
         String outputName = target == null ? args[0] : target.getName();
         long time = args.length == 2 ? Integer.parseInt(args[1].replaceAll("d", "")) * 86400000L : 432000000L;
-        try (PreparedStatement statement1 = connection.prepareStatement("INSERT INTO bans (ip, bantime, banner) VALUES (?, ?, ?)")) {
-            statement1.setBytes(1, ip);
-            statement1.setTimestamp(2, new Timestamp(System.currentTimeMillis() + time));
-            statement1.setString(3, sn == "CONSOLE" ? "Catto69420" : sn);
-            statement1.executeUpdate();
+        try (PreparedStatement statement = connection.prepareStatement("INSERT INTO bans (ip, bantime, banner, pass) VALUES (?, ?, ?)")) {
+            statement.setBytes(1, ip);
+            statement.setTimestamp(2, new Timestamp(System.currentTimeMillis() + time));
+            try (PreparedStatement statement1 = connection.prepareStatement("SELECT pass FROM data WHERE ip = ?")) {
+                statement1.setBytes(1, ip);
+                try (ResultSet resultSet = statement1.executeQuery()) {
+                    if (resultSet.next()) {
+                        statement.setString(3, resultSet.getString(1));
+                        statement.setString(4, sn == "CONSOLE" ? "Catto69420" : sn);
+                        statement.executeUpdate();
+                    }
+                }
+            } catch (SQLException ignored) {
+            }
         } catch (SQLException ignored) {
         }
         Bukkit.broadcastMessage("§a" + outputName + " §fwas §cbanned §fby §a" + sn + " §ffor §a" + (args.length == 2 ? args[1].replace('d', ' ') + "days" : "5 days"));
@@ -62,6 +72,6 @@ public class Ban implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length > 1 ? ImmutableList.of("5d", "30d", "60d", "90d") : null;
+        return args.length == 2 ? ImmutableList.of("5d", "30d", "60d", "90d") : args.length < 2 ? null : Collections.emptyList();
     }
 }

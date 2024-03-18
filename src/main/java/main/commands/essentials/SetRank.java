@@ -1,12 +1,13 @@
 package main.commands.essentials;
 
-import com.google.common.collect.ImmutableList;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,7 @@ import static main.utils.Initializer.playerData;
 import static main.utils.storage.DB.setRank;
 
 public class SetRank implements CommandExecutor, TabExecutor {
-    ImmutableList<String> ranks = ImmutableList.of(
+    String[] ranks = new String[]{
             "lub",
             "nigger",
             "gay",
@@ -29,7 +30,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             "admin",
             "manager",
             "executive"
-    );
+    };
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -92,8 +93,8 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return args.length == 1 ? null : ranks.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+        return args.length < 2 ? null : args.length == 2 ? Arrays.stream(ranks).filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                 .sorted(String::compareToIgnoreCase)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : Collections.emptyList();
     }
 }

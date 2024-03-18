@@ -2,13 +2,9 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.commands.BombRTP;
 import main.commands.FastCrystals;
-import main.commands.economy.Balance;
-import main.commands.economy.Baltop;
-import main.commands.economy.Kit;
-import main.commands.economy.Pay;
+import main.commands.economy.*;
 import main.commands.essentials.List;
 import main.commands.essentials.*;
 import main.commands.tpa.*;
@@ -17,15 +13,11 @@ import main.utils.*;
 import main.utils.arenas.Utils;
 import main.utils.arenas.*;
 import main.utils.instances.CommandHolder;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.HomeHolder;
 import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -34,13 +26,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -85,7 +75,7 @@ public class Economy extends JavaPlugin {
     }
 
     private void registerCommands() {
-        for (CommandHolder command : ObjectArrayList.of(
+        for (CommandHolder command : new CommandHolder[]{
                 new CommandHolder("msg", new Msg()),
                 new CommandHolder("reply", new Reply()),
                 new CommandHolder("tpa", new Tpa()),
@@ -107,7 +97,7 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("rsethome", new SetHome()),
                 new CommandHolder("rhome", new Home()),
                 new CommandHolder("rdelhome", new DelHome()),
-                new CommandHolder("acreate", new CreateCommand()),
+                new CommandHolder("acreate", new main.utils.arenasc.CreateCommand()),
                 new CommandHolder("enderchest", new EnderChest()),
                 new CommandHolder("setrank", new SetRank()),
                 new CommandHolder("rgc", new CreateRegion()),
@@ -121,13 +111,15 @@ public class Economy extends JavaPlugin {
                 new CommandHolder("banip", new Ban()),
                 new CommandHolder("areset", new ResetCommand()),
                 new CommandHolder("suicide", new Suicide()),
-                new CommandHolder("fastcrystals", new FastCrystals())
-        ))
+                new CommandHolder("fastcrystals", new FastCrystals()),
+                new CommandHolder("bounty", new Bounty())
+        })
             getCommand(command.getName()).setExecutor(command.getClazz());
         TeleportCompleter tabCompleter = new TeleportCompleter();
         this.getCommand("tpa").setTabCompleter(tabCompleter);
         this.getCommand("tpaccept").setTabCompleter(tabCompleter);
         this.getCommand("tpahere").setTabCompleter(tabCompleter);
+        this.getCommand("tpdeny").setTabCompleter(tabCompleter);
 
         HomeCompleter homeCompleter = new HomeCompleter();
         this.getCommand("rhome").setTabCompleter(homeCompleter);
@@ -138,23 +130,7 @@ public class Economy extends JavaPlugin {
         for (File file : new File(dataFolder, "arenas").listFiles()) {
             Arena arena;
             try {
-                byte[] readBytes = null;
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                Inflater decompresser = new Inflater();
-                decompresser.setInput(bytes);
-
-                try {
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
-                    decompresser.setInput(bytes);
-                    byte[] buffer = new byte[1024];
-                    while (!decompresser.finished()) {
-                        int count = decompresser.inflate(buffer);
-                        outputStream.write(buffer, 0, count);
-                    }
-                    readBytes = outputStream.toByteArray();
-                } catch (DataFormatException ignored) {
-                }
-
+                byte[] readBytes = Files.readAllBytes(file.toPath());
                 int firstSectionSplit = ArrayUtils.indexOf(readBytes, (byte) '\u0002');
                 byte[] header = Arrays.copyOfRange(readBytes, 0, firstSectionSplit);
                 String headerString = new String(header, StandardCharsets.US_ASCII);
@@ -255,6 +231,7 @@ public class Economy extends JavaPlugin {
     @Override
     public void onEnable() {
         dataFolder = getDataFolder();
+        economyHandler = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
         Bukkit.getScheduler().runTaskLater(this, () -> {
             d = Bukkit.getWorld("world");
             d0 = Bukkit.getWorld("world_nether");
@@ -277,7 +254,7 @@ public class Economy extends JavaPlugin {
 
                         if (arena++ == 3)
                             arena = 1;
-                        Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(100000);
+                        Arena.arenas.get(arena == 1 ? "ffa1" : "ffa2").reset(1000000);
                         for (Player p : Bukkit.getOnlinePlayers()) {
                             if (p.isGliding())
                                 continue;

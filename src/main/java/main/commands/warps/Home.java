@@ -17,7 +17,7 @@ public class Home implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         CustomPlayerDataHolder D0 = playerData.get(sender.getName());
         boolean zeroL = args.length == 0;
-        String homeStr = zeroL ? (D0.getHomes().size() == 1 ? D0.getHomes().get(0).getName() : "home") : args[0];
+        String homeStr = zeroL ? (D0.getHomes().length == 1 ? D0.getHomes()[0].getName() : "home") : args[0];
         HomeHolder home = getHome(homeStr, D0.getHomes());
         if (zeroL && home == null) {
             sender.sendMessage(homeStr == "home" ? "§7You didn't set any home." : "§7You must specify the home you want to teleport to!");

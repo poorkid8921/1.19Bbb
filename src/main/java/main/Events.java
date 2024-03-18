@@ -2,12 +2,11 @@ package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.Initializer;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
 import main.utils.storage.DB;
+import net.kyori.adventure.text.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,8 +14,7 @@ import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.util.CraftChatMessage;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -38,7 +36,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
-import static main.utils.Utils.spawnFirework;
+import static main.utils.Utils.*;
 import static main.utils.storage.DB.connection;
 
 @SuppressWarnings("deprecation")
@@ -51,7 +49,7 @@ public class Events implements Listener {
     private final ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
     private final ItemStack boots = new ItemStack(Material.IRON_BOOTS);
     private final ItemStack gap = new ItemStack(Material.GOLDEN_APPLE, 16);
-    private final ObjectOpenHashSet<String> allowedCmds = ObjectOpenHashSet.of("/msg", "/r", "/reply", "/tell", "/whisper", "/suicide");
+    private final String[] allowedCmds = new String[]{"/msg", "/r", "/reply", "/tell", "/whisper", "/suicide"};
 
     public Events() {
         pick.addEnchantments(Map.of(Enchantment.DIG_SPEED, 3, Enchantment.DURABILITY, 3, Enchantment.LOOT_BONUS_BLOCKS, 2, Enchantment.MENDING, 1));
@@ -64,20 +62,22 @@ public class Events implements Listener {
 
     @EventHandler
     private void onEntitySpawn(EntitySpawnEvent e) {
-        if (e.getEntityType() == EntityType.ENDER_CRYSTAL) {
-            Entity ent = e.getEntity();
+        if (e.getEntity() instanceof EnderCrystal ent)
             crystalsToBeOptimized.put(ent.getEntityId(), ent.getLocation());
-        }
     }
 
     @EventHandler
     private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent e) {
-        if (e.getEntityType() == EntityType.ENDER_CRYSTAL)
-            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(e.getEntity().getEntityId()), 40L);
+        if (e.getEntity() instanceof EnderCrystal ent)
+            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(ent.getEntityId()), 40L);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
+        if (e.getMessage().length() > 128) {
+            e.setCancelled(true);
+            return;
+        }
         Player p = e.getPlayer();
         String name = p.getName();
         CustomPlayerDataHolder D = playerData.get(name);
@@ -131,14 +131,16 @@ public class Events implements Listener {
             if (D1.getLastReceived() == name) D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
-        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET em = ?, et = ?, ez = ?, ed = ?, ek = ?, fc = ? WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET m = ?, t = ?, ez = ?, ed = ?, ek = ?, fc = ? WHERE name = '?'")) {
             statement.setInt(1, D0.getMtoggle());
             statement.setInt(2, D0.getTptoggle());
             statement.setDouble(3, D0.getMoney());
             statement.setInt(4, D0.getDeaths());
             statement.setInt(5, D0.getKills());
             statement.setBoolean(6, D0.isFastCrystals());
-            statement.setString(7, name);
+            statement.setInt(7, D0.getBounty());
+            //statement.setString(8, HOMES);
+            statement.setString(8, name);
             statement.executeUpdate();
         } catch (SQLException ignored) {
         }
@@ -207,11 +209,18 @@ public class Events implements Listener {
             D1.untag();
             D1.incrementKills();
 
-            int armor = 0;
-            for (ItemStack item : p.getInventory().getArmorContents()) {
-                if (item != null) armor++;
+            int bounty = D0.getBounty();
+            if (bounty >= 10000) {
+                economyHandler.depositPlayer(killer, bounty);
+                D0.setBounty(0);
+                Component component = miniMessage.deserialize("<#d6a7eb>ʙᴏᴜɴᴛʏ » " + kp + " <gray>claimed <#d6a7eb>" + name + " <gray>'s bounty");
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendMessage(component);
+                }
+                e.setKeepInventory(true);
             }
-            String death = armor == 0 ? SECOND_COLOR + "☠ " + kp + " §7touched " + SECOND_COLOR + name : SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
+
+            String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "crystalled " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -223,7 +232,6 @@ public class Events implements Listener {
                 default -> "suicided";
             };
             e.setDeathMessage(death);
-
             Location loc = p.getLocation();
             World w = loc.getWorld();
             if (D1.getRank() > 0) {
@@ -240,7 +248,7 @@ public class Events implements Listener {
                 }
             } else w.strikeLightningEffect(loc);
 
-            if (Initializer.RANDOM.nextInt(100) <= 10)
+            if (Initializer.RANDOM.nextInt(100) <= 5)
                 w.dropItemNaturally(loc, Utils.getHead(p, D1.getFRank(kp)));
         }
     }
@@ -275,18 +283,16 @@ public class Events implements Listener {
             Initializer.msg.add(name);
             Initializer.tpa.sort(String::compareToIgnoreCase);
             Initializer.msg.sort(String::compareToIgnoreCase);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, NULL_HOMES, 0));
             return;
         }
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
-
             Initializer.tpa.sort(String::compareToIgnoreCase);
             Initializer.msg.sort(String::compareToIgnoreCase);
-
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, ObjectArrayList.of()));
+            playerData.put(name, getPlayerData(name));
         } else {
             int rank = DB.setUsefulData(name, D);
             ServerPlayer craftPlayer = ((CraftPlayer) p).getHandle();

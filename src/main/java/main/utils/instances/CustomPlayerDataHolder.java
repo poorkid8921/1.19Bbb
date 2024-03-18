@@ -1,7 +1,6 @@
 package main.utils.instances;
 
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import main.utils.Initializer;
@@ -48,7 +47,7 @@ public class CustomPlayerDataHolder {
     private long lastRTPed;
     @Getter
     @Setter
-    private ObjectArrayList<HomeHolder> homes;
+    private HomeHolder[] homes;
     @Getter
     @Setter
     private int rank;
@@ -59,14 +58,18 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private boolean fastCrystals;
+    @Getter
+    @Setter
+    private int bounty;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
                                   double z,
                                   int deaths,
                                   int kills,
-                                  ObjectArrayList<HomeHolder> homes,
-                                  int rank) {
+                                  HomeHolder[] homes,
+                                  int rank,
+                                  int bounty) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
@@ -75,6 +78,7 @@ public class CustomPlayerDataHolder {
         this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = rank;
+        this.bounty = bounty;
     }
 
     public CustomPlayerDataHolder(int m,
@@ -82,7 +86,8 @@ public class CustomPlayerDataHolder {
                                   double z,
                                   int deaths,
                                   int kills,
-                                  ObjectArrayList<HomeHolder> homes) {
+                                  HomeHolder[] homes,
+                                  int bounty) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
@@ -91,6 +96,7 @@ public class CustomPlayerDataHolder {
         this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = 0;
+        this.bounty = bounty;
     }
 
     public String getFRank(String name) {
@@ -111,6 +117,10 @@ public class CustomPlayerDataHolder {
             case 13 -> EXECUTIVE + name;
             default -> "";
         };
+    }
+
+    public void incrementBounty(double add) {
+        this.bounty += add;
     }
 
     public int incrementFlags() {

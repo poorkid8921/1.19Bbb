@@ -1,6 +1,5 @@
 package main.utils;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -9,6 +8,7 @@ import main.Economy;
 import main.Events;
 import main.utils.instances.*;
 import main.utils.storage.DB;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,10 +26,11 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
-    public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(17, -18, -19, 18);
+    public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(-24, 23, 22, -23);
+    public static final Color[] color = new Color[]{org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW};
     public static final AbstractRegionHolder[] regions = new AbstractRegionHolder[]{
             spawnRegionHolder,
-            new RegionHolder(-44, 133, 43, 41, 3, -42),// flat
+            new RegionHolder(-45, 133, -44, 44, 3, 45),// flat
             new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
             new YDeficientRegionHolder(-129, -128, 127, -128),// wall1
             new YDeficientRegionHolder(127, -127, 127, 128),// wall2
@@ -37,7 +38,6 @@ public class Initializer {
             new YDeficientRegionHolder(-129, -127, -129, 127),// wall4
             new RegionHolder(-128, 2, -127, 126, 2, 127) // underarena
     };
-    public static ImmutableList<Color> color = ImmutableList.of(Color.LIME, Color.ORANGE, Color.RED, Color.BLUE, Color.OLIVE, Color.PURPLE, Color.WHITE, Color.AQUA, Color.BLACK, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.MAROON, Color.NAVY, Color.SILVER, Color.TEAL, Color.YELLOW);
     public static Map<String, Long> cooldowns = new Object2LongOpenHashMap<>();
     public static Map<Integer, Location> crystalsToBeOptimized = new Int2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
@@ -78,6 +78,7 @@ public class Initializer {
     public static String EXCEPTION_TAGGED;
     public static String EXPLOITING_KICK = MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴄᴀᴛ ɴᴇᴛᴡᴏʀᴋ!\n\n" +
             "§7ʙᴀɴɴᴇᴅ ᴏɴ " + MAIN_COLOR + "» §7";
+    public static MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public static Scoreboard scoreboard;
     public static Team ownerTeam;
@@ -93,11 +94,12 @@ public class Initializer {
     public static Team cattoLovesTeam;
     public static Team cattoHatesTeam;
     public static Team gayTeam;
+    public static net.milkbowl.vault.economy.Economy economyHandler;
 
     public static void init() {
         try {
             CACHED_WEBHOOK = new URL("https://discord.com/api/webhooks/1188919657088946186/ZV0kpZI_P6KLzz_d_LVbGmVgj94DLwOJBNQylbayYUJo0zz0L8xVZzG7tPP9BOlt4Bip");
-            CACHED_MODERATION_WEBHOOK = new URL("https://discord.com/api/webhooks/1212078373132836994/7SoUq23VE2nameFN4AtTqI8nmJ0NHXEaqvvrJsL4eMVVx_IKvISjKfG878wCpqonO_BAxL");
+            CACHED_MODERATION_WEBHOOK = new URL("https://discord.com/api/webhooks/1212078373132836994/7SoUq23VE2PnFN4AtTqI8nmJ0NHXEaqvvrJsL4eMVVx_IKvISjKfG878wCpqonO_BAxL");
         } catch (MalformedURLException ignored) {
         }
         D_LINK.setColor(ChatColor.of("#fc282f"));
@@ -184,5 +186,6 @@ public class Initializer {
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
         DB.init();
+        main.utils.tab.Utils.init();
     }
 }

@@ -4,7 +4,6 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
-import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
