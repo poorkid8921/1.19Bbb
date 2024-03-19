@@ -1,12 +1,28 @@
 name: CatSMP
-version: '${project.version}'
+version: 1.0
 main: main.Practice
-api-version: 1.18
+api-version: '1.19'
 softdepend:
   - ViaVersion
   - ViaBackwards
 
 commands:
+  kit:
+    description: <required> [optional], no arguments -> open player's kit menu
+    usage: /<command> [kitname]
+    aliases: k
+  kit1:
+    description: Loads kit1
+    usage: /<command>
+    aliases: k1
+  kit2:
+    description: Loads kit2
+    usage: /<command>
+    aliases: k2
+  kit3:
+    description: Loads kit3
+    usage: /<command>
+    aliases: k3
   spawn:
     usage: /<command>
   discord:
@@ -24,20 +40,11 @@ commands:
     usage: /<command>
   tpdeny:
     usage: /<command>
-    aliases: [ tpd, tpno ]
+    aliases: [ tpd, tno ]
   tpaccept:
     usage: /<command>
     aliases: [ tpy, tpyes ]
   tpall:
-    usage: /<command>
-  duel:
-    usage: /<command>
-    aliases: 1v1
-  dueldeny:
-    usage: /<command>
-  duelaccept:
-    usage: /<command>
-  event:
     usage: /<command>
   msg:
     usage: /<command>
@@ -64,6 +71,7 @@ commands:
     usage: /<command>
   rtp:
     usage: /<command>
+    aliases: wild
   gmc:
     usage: /<command>
   gms:
@@ -95,18 +103,18 @@ commands:
     usage: /<command>
   nethpot:
     usage: /<command>
-    aliases: np
-  stats:
+    aliases: npot
+  setrank:
     usage: /<command>
-    aliases: statistics
-  kt:
+  broadcast:
     usage: /<command>
-  kt1:
+    aliases: bc
+  areset:
     usage: /<command>
-  kt2:
+  settings:
     usage: /<command>
-  kt3:
+    aliases: config
+  banip:
     usage: /<command>
-permissions:
-  has.staff:
-    description: Is a staff member
+  fastcrystals:
+    usage: /<command>

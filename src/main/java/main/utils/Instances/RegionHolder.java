@@ -1,6 +1,6 @@
 package main.utils.Instances;
 
-public class RegionHolder {
+public class RegionHolder extends AbstractRegionHolder {
     private final int minX, minY, minZ, maxX, maxY, maxZ;
 
     public RegionHolder(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
@@ -13,11 +13,13 @@ public class RegionHolder {
         this.maxZ = Math.max(minZ, maxZ);
     }
 
-    public boolean check(int x, int y, int z) {
+    @Override
+    public boolean testY(int x, int y, int z) {
         return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
     }
 
-    public boolean check(int x, int z) {
+    @Override
+    public boolean test(int x, int z) {
         return minX <= x && x <= maxX && minZ <= z && z <= maxZ;
     }
 }

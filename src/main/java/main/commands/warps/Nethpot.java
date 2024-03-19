@@ -9,12 +9,14 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Collections;
 
+import static main.utils.Initializer.inNethpot;
 import static main.utils.Initializer.nethpot;
 
 public class Nethpot implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        ((Player) sender).teleport(nethpot, PlayerTeleportEvent.TeleportCause.COMMAND);
+        Player p = (Player) sender;
+        p.teleportAsync(nethpot, PlayerTeleportEvent.TeleportCause.PLUGIN).thenAccept(r -> inNethpot.add(p.getName()));
         return true;
     }
 

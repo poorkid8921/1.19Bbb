@@ -1,6 +1,7 @@
 package main.utils.kits;
 
-import main.utils.Initializer;
+import main.Practice;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -9,6 +10,7 @@ import java.util.Arrays;
 public class SaveEditor {
     public static void save(Player player, int i, boolean sendMsg) {
         String key = player.getUniqueId() + "-kit" + i;
+        String kitName = "Kit " + i;
         ItemStack[] itemsArray = Arrays.copyOfRange(player.getOpenInventory().getTopInventory().getContents(), 0, 41);
         ItemStack[] equipmentArray = new ItemStack[5];
         boolean arrayIsEmpty = true;
@@ -19,6 +21,10 @@ public class SaveEditor {
                 arrayIsEmpty = false;
                 break;
             }
+        }
+
+        if (Practice.kitMap.get(key).containsKey("name")) {
+            kitName = (String) Practice.kitMap.get(key).get("name");
         }
 
         if (!arrayIsEmpty) {
@@ -45,15 +51,21 @@ public class SaveEditor {
                 }
             }
 
-            Initializer.kitMap.get(key).put("items", itemsArray);
-            if (sendMsg)
-                player.sendMessage("§dSaved §bKit " + i + "§d! Type §b/k" + i + "§d, §b/kit" + i + "§d, or §b/kit" + i + " §dto load!");
+            Practice.kitMap.get(key).put("items", itemsArray);
+            if (sendMsg) {
+                if (!kitName.equals("Kit " + i)) {
+                    player.sendMessage("§dSaved §b" + kitName + "§d! Type §b/k" + i + "§d, §b/kit" + i + "§d, or §b/kit " + kitName + " §dto load!");
+                } else {
+                    player.sendMessage(ChatColor.LIGHT_PURPLE + "Saved " + ChatColor.AQUA + kitName + ChatColor.LIGHT_PURPLE + "! Type" + ChatColor.AQUA + " /k" + i + ChatColor.LIGHT_PURPLE + " or" + ChatColor.AQUA + " /kit" + i + ChatColor.LIGHT_PURPLE + " to load!");
+                }
+            }
         } else {
-            Initializer.kitMap.get(key).remove("items");
-            if (Initializer.kitMap.get(key).containsKey("public")) {
-                Initializer.kitMap.get(key).remove("public");
-                player.sendMessage("§6Kit " + i + " §cwas empty, so it was removed from public kits.");
+            Practice.kitMap.get(key).remove("items");
+            if (Practice.kitMap.get(key).containsKey("public")) {
+                Practice.kitMap.get(key).remove("public");
+                player.sendMessage("§6" + kitName + " §cwas empty, so it was removed from public kits.");
             }
         }
+
     }
 }

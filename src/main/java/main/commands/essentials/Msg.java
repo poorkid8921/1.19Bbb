@@ -2,7 +2,6 @@ package main.commands.essentials;
 
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -32,11 +31,11 @@ public class Msg implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        String pn = sender.getName();
+        String name = sender.getName();
         String tn = target.getName();
-        CustomPlayerDataHolder D0 = playerData.get(pn);
+        CustomPlayerDataHolder D0 = playerData.get(name);
         CustomPlayerDataHolder D1 = playerData.get(tn);
-        if (D1.getMtoggle() == 1 && D0.getRank() < 9) {
+        if (D1.getMtoggle() == 1 && D0.getRank() < 7) {
             sender.sendMessage("§7You can't message this player since they've locked their messages.");
             return true;
         }
@@ -45,17 +44,17 @@ public class Msg implements CommandExecutor, TabCompleter {
         for (int i = 1; i < args.length; i++)
             msg.append(args[i]).append(" ");
 
-        sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msg);
-        target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msg);
+        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(tn) + "§6] §r" + msg);
+        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msg);
         D0.setLastReceived(tn);
-        D1.setLastReceived(pn);
+        D1.setLastReceived(name);
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         return args.length == 0 ?
-                Initializer.msg :
-                tabCompleteFilter(Initializer.msg, args[0].toLowerCase());
+                Initializer.msg : args.length == 1 ?
+                tabCompleteFilter(Initializer.msg, args[0].toLowerCase()) : null;
     }
 }

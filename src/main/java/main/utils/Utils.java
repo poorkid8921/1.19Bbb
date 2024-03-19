@@ -10,7 +10,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.*;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -23,11 +22,15 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static main.utils.Initializer.*;
+import static main.utils.storage.DB.connection;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -37,6 +40,31 @@ public class Utils {
     static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
     static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
 
+    public static void setPlayerData(String name) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT c,m,t,pz,pd,pk,rank FROM data WHERE name = '?'")) {
+            statement.setString(1, name);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) playerData.put(name, new CustomPlayerDataHolder(
+                        resultSet.getInt(1),
+                        resultSet.getInt(2),
+                        resultSet.getInt(3),
+                        resultSet.getInt(4),
+                        resultSet.getInt(5),
+                        resultSet.getInt(6),
+                        resultSet.getInt(7)
+                ));
+            }
+        } catch (SQLException ignored) {
+        }
+        playerData.put(name, new CustomPlayerDataHolder(
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0));
+    }
+
     public static void teleportEffect(World w, Location locC) {
         for (int index = 1; index < 16; index++) {
             double p1 = (index * Math.PI) / 8;
@@ -45,7 +73,7 @@ public class Utils {
             double xx2 = Math.cos(p2) * 3;
             double z1 = Math.sin(p1) * 3;
             double z2 = Math.sin(p2) * 3;
-            w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 5, 1.5f);
+            w.spawnParticle(Particle.TOTEM, locC.clone().add(xx2 - x1, 0, z2 - z1), 50);
         }
     }
 
@@ -77,9 +105,9 @@ public class Utils {
     }
 
     public static void killeffect(Player p, int toset, String fancy, int money) {
-        String pn = p.getName();
+        String name = p.getName();
         p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-        CustomPlayerDataHolder D = playerData.get(pn);
+        CustomPlayerDataHolder D = playerData.get(name);
         if (money > D.getMoney()) {
             p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » " + MAIN_COLOR + "ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴍᴏɴᴇʏ");
             return;
@@ -90,6 +118,12 @@ public class Utils {
                 "ʏᴏᴜ ʜᴀᴠᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴘᴜʀᴄʜᴀꜱᴇ ᴛʜᴇ " + MAIN_COLOR + fancy + " §fꜰᴏʀ " + SECOND_COLOR + "$" + money));
     }
 
+    public static void killeffect(Player p) {
+        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        playerData.get(p.getName()).setKilleffect(-1);
+        p.sendMessage(SECOND_COLOR + "ꜱʜᴏᴘ » §fʏᴏᴜʀ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ");
+    }
+
     public static void submitReport(Player sender, String target, String reason) {
         String name = sender.getName();
         CustomPlayerDataHolder D0 = playerData.get(name);
@@ -97,7 +131,7 @@ public class Utils {
                 target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR +
                 target + " §7with the reason of " + MAIN_COLOR + reason);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (playerData.get(p.getName()).getRank() > 8)
+            if (playerData.get(p.getName()).getRank() > 6)
                 p.sendMessage(staffMSG);
         }
         Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
@@ -118,6 +152,17 @@ public class Utils {
             }
         });
         sender.sendMessage("§7Successfully submitted your report.");
+    }
+
+    public static boolean hasRequestedThePlayer(String name, String requester) {
+        for (TpaRequest r : requests) {
+            try {
+                if ((r.getReceiver() == name && r.getSenderF() == requester) || (r.getSenderF() == name && r.getReceiver() == requester))
+                    return true;
+            } catch (Exception ignored) {
+            }
+        }
+        return false;
     }
 
     public static TpaRequest getRequest(String user) {
@@ -152,7 +197,8 @@ public class Utils {
         b.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, DENY_TEXT));
 
         receiver.playSound(receiver.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-        sender.sendMessage("§7Request sent to " + MAIN_COLOR + Utils.translate(receiver.getDisplayName()));
+        String receiverName = receiver.getName();
+        sender.sendMessage("§7Request sent to " + MAIN_COLOR + playerData.get(receiverName).getFRank(receiverName));
 
         receiver.sendMessage(new ComponentBuilder(sn)
                         .color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0],
@@ -182,16 +228,12 @@ public class Utils {
         return item;
     }
 
-    public static ItemStack enchant(ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    public static ItemStack disEnchant(ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        meta.removeEnchant(Enchantment.DURABILITY);
+    public static ItemStack getHead(String name, String player, ImmutableList<String> lore) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setOwner(player);
+        meta.setDisplayName(name);
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }

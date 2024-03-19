@@ -32,7 +32,7 @@ public class CustomPlayerDataHolder {
     private Location back;
     @Getter
     @Setter
-    private int lastPacket = 5;
+    private int lastPacket = 0;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -43,19 +43,29 @@ public class CustomPlayerDataHolder {
     private boolean tagged;
     @Getter
     @Setter
-    private String lastReceived;
-    @Getter
-    @Setter
-    private boolean multipleGUIs = false;
+    private String lastReceived, lastTaggedBy;
     @Getter
     @Setter
     private int rank;
     @Getter
     @Setter
-    private long lastChatMS;
+    private long lastChatMS = 0L;
+    private int flags;
     @Getter
     @Setter
-    private int flags;
+    private boolean fastCrystals = true;
+    @Getter
+    @Setter
+    private long lastTimeKitWasUsed = 0L;
+
+    public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills) {
+        this.killeffect = c;
+        this.mtoggle = m;
+        this.tptoggle = t;
+        this.money = z;
+        this.deaths = deaths;
+        this.kills = kills;
+    }
 
     public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills, int rank) {
         this.killeffect = c;
@@ -65,38 +75,35 @@ public class CustomPlayerDataHolder {
         this.deaths = deaths;
         this.kills = kills;
         this.rank = rank;
-        this.lastChatMS = 0L;
     }
 
-    public String getFRank(String pn) {
+    public String getFRank(String name) {
         return switch (rank) {
-            case 0 -> pn;
-            case 1 -> CATTO_LOVES + pn;
-            case 2 -> CATTO_HATES + pn;
-            case 3 -> GAY + pn;
-            case 4 -> QUACK + pn;
-            case 5 -> CLAPCLAP + pn;
-            case 6 -> VIP + pn;
-            case 7 -> BOOSTER + pn;
-            case 8 -> MEDIA + pn;
-            case 9 -> T_HELPER + pn;
-            case 10 -> HELPER + pn;
-            case 11 -> JRMOD + pn;
-            case 12 -> MOD + pn;
-            case 13 -> ADMIN + pn;
-            case 14 -> MANAGER + pn;
-            case 15 -> EXECUTIVE + pn;
+            case 0 -> name;
+            case 1 -> CATTO_LOVES + name;
+            case 2 -> CATTO_HATES + name;
+            case 3 -> GAY + name;
+            case 4 -> VIP + name;
+            case 5 -> BOOSTER + name;
+            case 6 -> MEDIA + name;
+            case 7 -> T_HELPER + name;
+            case 8 -> HELPER + name;
+            case 9 -> JRMOD + name;
+            case 10 -> MOD + name;
+            case 11 -> ADMIN + name;
+            case 12 -> MANAGER + name;
+            case 13 -> EXECUTIVE + name;
             default -> "";
         };
     }
 
-    public void incrementFlags() {
-        flags++;
+    public int incrementFlags() {
+        return flags++;
     }
 
     public void setupCombatRunnable(Player player) {
         this.currentTagTime = 10;
-        BukkitRunnable runnable = new BukkitRunnable() {
+        this.runnableid = new BukkitRunnable() {
             @Override
             public void run() {
                 if (currentTagTime-- < 1) {
@@ -108,9 +115,7 @@ public class CustomPlayerDataHolder {
                 }
                 player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §4" + currentTagTime);
             }
-        };
-        runnable.runTaskTimer(Initializer.p, 0L, 20L);
-        this.runnableid = runnable.getTaskId();
+        }.runTaskTimer(Initializer.p, 0L, 20L).getTaskId();
         this.tagged = true;
     }
 

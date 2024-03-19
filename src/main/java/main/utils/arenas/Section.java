@@ -3,6 +3,7 @@ package main.utils.arenas;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 
 public class Section {
@@ -26,7 +27,7 @@ public class Section {
     private int resetLocationIndex;
     private int resetCurrentTypeIndex;
 
-    Section(Arena parent, int ID, Location start, Location end, short[] blockTypes, short[] blockAmounts) {
+    public Section(Arena parent, int ID, Location start, Location end, short[] blockTypes, short[] blockAmounts) {
         this.blockAmounts = blockAmounts;
         this.blockTypes = blockTypes;
         this.parent = parent;
@@ -47,16 +48,19 @@ public class Section {
         if (resetLocationIndex < 0)
             resetLocationIndex = 0;
         int count = 0;
-        Material cachedMat = this.getParent().getKeys()[this.blockTypes[resetTypeIndex]];
+        Material[] keys = this.getParent().getKeys();
+        Material cachedMat = keys[this.blockTypes[resetTypeIndex]];
         BlockData blockData = cachedMat.createBlockData();
+        Material currentMat;
         while (resetTypeIndex < blockTypes.length) {
-            Material currentMat = this.getParent().getKeys()[this.blockTypes[resetTypeIndex]];
-            if (currentMat != cachedMat)
+            if ((currentMat = keys[this.blockTypes[resetTypeIndex]]) != cachedMat) {
                 blockData = currentMat.createBlockData();
+                cachedMat = currentMat;
+            }
             while (resetCurrentTypeIndex < this.blockAmounts[resetTypeIndex]) {
-                start.clone().add(Arena.getLocationAtIndex(w, l, resetLocationIndex))
-                        .getBlock()
-                        .setBlockData(blockData, false);
+                Block block = start.clone().add(Arena.getLocationAtIndex(w, l, resetLocationIndex)).getBlock();
+                if (block.getType() != currentMat)
+                    block.setBlockData(blockData, false);
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
                 if (max > 0 && count++ > max) return false;

@@ -1,7 +1,6 @@
 package main.commands.essentials;
 
 import main.utils.Instances.CustomPlayerDataHolder;
-import main.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,14 +17,14 @@ public class Reply implements CommandExecutor {
             return true;
         }
 
-        String pn = sender.getName();
-        CustomPlayerDataHolder D = playerData.get(pn);
-        if (D.getLastReceived() == null) {
+        String name = sender.getName();
+        CustomPlayerDataHolder D0 = playerData.get(name);
+        if (D0.getLastReceived() == null) {
             sender.sendMessage("§7You have no one to reply to.");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(D.getLastReceived());
+        Player target = Bukkit.getPlayer(D0.getLastReceived());
         if (target == null) {
             sender.sendMessage("§7You have no one to reply to.");
             return true;
@@ -34,9 +33,10 @@ public class Reply implements CommandExecutor {
         StringBuilder msgargs = new StringBuilder();
         for (String arg : args) msgargs.append(arg).append(" ");
 
-        playerData.get(D.getLastReceived()).setLastReceived(pn);
-        sender.sendMessage("§6[§cme §6-> §c" + Utils.translate(target.getDisplayName()) + "§6] §r" + msgargs);
-        target.sendMessage("§6[§c" + Utils.translate(((Player) sender).getDisplayName()) + " §6-> §cme§6] §r" + msgargs);
+        CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
+        D1.setLastReceived(name);
+        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(D0.getLastReceived()) + "§6] §r" + msgargs);
+        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msgargs);
         return true;
     }
 }

@@ -1,21 +1,23 @@
 package main;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import com.destroystokyo.paper.event.player.PlayerHandshakeEvent;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import main.utils.Gui;
-import main.utils.HandShake;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
 import main.utils.Utils;
-import main.utils.kits.KitClaimer;
-import main.utils.kits.SaveEditor;
+import main.utils.storage.DB;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
+import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Player;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_19_R3.util.CraftChatMessage;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -27,56 +29,55 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.NumberConversions;
+import org.bukkit.util.Vector;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static main.utils.Gui.inInventory;
 import static main.utils.Initializer.*;
-import static main.utils.Utils.*;
+import static main.utils.Utils.getRequest;
+import static main.utils.Utils.setPlayerData;
+import static main.utils.npcs.Utils.NPCs;
+import static main.utils.storage.DB.connection;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
     private final String JOIN_PREFIX = Utils.translateA("#31ed1c→ ");
-    private final NamespacedKey ITEMKEY = new NamespacedKey(Initializer.p, "key");
-    private final String UNAUTHORIZED = MAIN_COLOR + "Unauthorized access.";
-    ObjectOpenHashSet<String> allowedCmds = ObjectOpenHashSet.of("/msg", "/r", "/reply", "/tell", "/whisper");
+    private final String[] allowedCmds = new String[]{"/msg", "/r", "/reply", "/tell", "/whisper", "/report"};
 
     @EventHandler
-    private void onHandshake(PlayerHandshakeEvent e) {
-        HandShake decoded = HandShake.decodeAndVerify(e.getOriginalHandshake());
-        if (decoded == null) {
-            e.setFailMessage(UNAUTHORIZED);
-            e.setFailed(true);
-            return;
+    public void onPlayerMove(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        if (!atSpawn.contains(p.getName())) return;
+        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        Location playerLocation = p.getLocation();
+        for (main.utils.npcs.Utils.LoopableNPCHolder k : NPCs) {
+            ServerPlayer NPC = k.NPC();
+            Entity entity = NPC.getBukkitEntity();
+            Location loc = entity.getLocation();
+            Vector vector = playerLocation.subtract(loc).toVector();
+            double x = vector.getX();
+            double z = vector.getZ();
+            double yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
+            double pitch = Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z))));
+            connection.send(new ClientboundRotateHeadPacket(NPC, (byte) ((yaw % 360) * 256 / 360)));
+            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((pitch % 360.) * 256 / 360), false));
         }
-
-        HandShake.Success data = (HandShake.Success) decoded;
-        e.setServerHostname(data.serverHostname());
-        e.setSocketAddressHostname(data.socketAddressHostname());
-        e.setUniqueId(data.uniqueId());
-        e.setPropertiesJson(data.propertiesJson());
     }
 
     @EventHandler
     private void onEntitySpawn(EntitySpawnEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL) {
-            Entity ent = event.getEntity();
-            crystalsToBeOptimized.put(
-                    ent.getEntityId(),
-                    ent.getLocation()
-            );
+        if (event.getEntity() instanceof EnderCrystal ent) {
+            crystalsToBeOptimized.put(ent.getEntityId(), ent.getLocation());
         }
     }
 
     @EventHandler
-    private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_CRYSTAL)
-            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(event.getEntity().getEntityId()), 40L);
+    private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent e) {
+        if (e.getEntity() instanceof EnderCrystal ent)
+            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(ent.getEntityId()), 40L);
     }
 
     @EventHandler
@@ -85,72 +86,88 @@ public class Events implements Listener {
         if (playerData.get(p.getName()).isTagged()) {
             String command = e.getMessage();
             for (String k : allowedCmds) {
-                if (command.startsWith(k))
-                    return;
+                if (command.startsWith(k)) return;
             }
-            p.sendMessage(Initializer.EXCEPTION_TAGGED);
+            p.sendMessage(EXCEPTION_TAGGED);
             e.setCancelled(true);
         }
     }
 
     @EventHandler
     private void onChat(AsyncPlayerChatEvent e) {
-        String pn = e.getPlayer().getName();
-        CustomPlayerDataHolder D = playerData.get(pn);
+        String message = e.getMessage();
+        if (message.length() > 96) {
+            e.setCancelled(true);
+            return;
+        }
+        String name = e.getPlayer().getName();
+        CustomPlayerDataHolder D = playerData.get(name);
         if (System.currentTimeMillis() < D.getLastChatMS()) {
             e.setCancelled(true);
             return;
         }
         D.setLastChatMS(System.currentTimeMillis() + 500L);
-        e.setFormat(D.getFRank(pn) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%"));
+        e.setFormat(D.getFRank(name) + SECOND_COLOR + " » §r" + message.replace("%", "%%"));
     }
 
     @EventHandler
     private void onTeleport(PlayerTeleportEvent e) {
-        if (e.getCause() != PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND) {
             Player p = e.getPlayer();
-            String pn = p.getName();
-            inFlat.remove(pn);
+            String name = p.getName();
+            atSpawn.remove(name);
             inFFA.remove(p);
+            inNethpot.remove(name);
         }
     }
 
     @EventHandler
-    private void onPlayerLeave(PlayerQuitEvent e) {
+    private void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
         CustomPlayerDataHolder D0 = playerData.get(name);
-        if (D0.isTagged())
-            D0.untag();
+        if (D0.isTagged()) D0.untag();
         e.setQuitMessage(MAIN_COLOR + "← " + name);
 
         requests.remove(getRequest(name));
         if (D0.getLastReceived() != null) {
             CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
-            if (D1.getLastReceived() == name)
-                D1.setLastReceived(null);
+            if (D1.getLastReceived() == name) D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
+        D0.setLastTaggedBy(null);
         msg.remove(name);
         tpa.remove(name);
 
-        Initializer.msg.sort(String::compareToIgnoreCase);
-        Initializer.tpa.sort(String::compareToIgnoreCase);
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET c = ?, m = ?, t = ?, pz = ?, pd = ?, pk = ?, fc = ? WHERE name = '?'")) {
+            statement.setInt(1, D0.getKilleffect());
+            statement.setInt(2, D0.getMtoggle());
+            statement.setInt(3, D0.getTptoggle());
+            statement.setInt(4, D0.getMoney());
+            statement.setInt(5, D0.getDeaths());
+            statement.setInt(6, D0.getKills());
+            statement.setBoolean(7, D0.isFastCrystals());
+            statement.setString(8, name);
+            statement.executeUpdate();
+        } catch (SQLException ignored) {
+        }
+        msg.sort(String::compareToIgnoreCase);
+        tpa.sort(String::compareToIgnoreCase);
 
-        inFlat.remove(name);
+        atSpawn.remove(name);
         inFFA.remove(p);
+        inNethpot.remove(name);
     }
 
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
-        if (c instanceof PlayerInventory)
-            return;
+        if (c instanceof PlayerInventory) return;
 
         Player p = (Player) e.getWhoClicked();
-        String pn = p.getName();
+        String name = p.getName();
 
-        Pair<Integer, String> inv = inInventory.getOrDefault(pn, null);
+        Pair<Integer, String> inv = inInventory.getOrDefault(name, null);
         if (inv == null) return;
 
         int slot = e.getSlot();
@@ -162,10 +179,11 @@ public class Events implements Listener {
                 } catch (NullPointerException ignored) {
                 }
                 switch (slot) {
-                    case 12 -> Utils.killeffect(p, -1, null, 0);
-                    case 13 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
-                    case 14 -> Utils.killeffect(p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 425);
-                    case 15 -> Utils.killeffect(p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 750);
+                    case 12 -> Utils.killeffect(p);
+                    case 13 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 150);
+                    case 14 -> Utils.killeffect(p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
+                    case 15 -> Utils.killeffect(p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 450);
+                    case 16 -> Utils.killeffect(p, 3, "ᴛʜᴇ ᴅᴇʟᴀʏᴇᴅ ᴅᴇᴀᴛʜ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 625);
                 }
             } // settings: killeffect
             case 1 -> {
@@ -174,7 +192,7 @@ public class Events implements Listener {
                     if (!e.getCurrentItem().getItemMeta().hasLore()) return;
                 } catch (NullPointerException ignored) {
                 }
-                inInventory.remove(pn);
+                inInventory.remove(name);
                 Utils.submitReport(p, inv.second(), switch (slot) {
                     case 10 -> "Cheating";
                     case 11 -> "Doxxing";
@@ -185,169 +203,68 @@ public class Events implements Listener {
                     default -> null;
                 });
             } // report
-            case 2 -> {
+            case 6 -> {
                 e.setCancelled(true);
-                if (slot >= 10 && 12 >= slot) {
-                    if (e.isLeftClick()) {
-                        KitClaimer.claim(p, slot - 9, false);
-                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                    } else
-                        Gui.openKitEditor(p, String.valueOf(slot - 9));
-                } else {
-                    if (slot == 38)
-                        Gui.openKitRoom(p);
-                    else if (slot == 43)
-                        Gui.openPublicKits(p, 1);
-                }
-            } // kit menu
-            case 3 -> {
-                if (slot >= 45)
-                    e.setCancelled(true);
-
-                ItemStack item = e.getCurrentItem();
-                if (item != null && item.getType() == Material.OAK_SIGN && !p.isOp())
-                    e.setCancelled(true);
-
-                if (slot >= 47 && slot <= 51) {
-                    int i = Integer.parseInt(inv.second());
-                    Inventory inventory = e.getInventory();
-                    ItemStack cleanedItem = disEnchant(inventory.getItem(i + 46));
-                    inventory.setItem(i + 46, cleanedItem);
-                    int newPage = slot - 46;
-                    ItemStack enchantedItem = enchant(e.getCurrentItem());
-                    inventory.setItem(slot, enchantedItem);
-                    for (i = 0; i <= 44; ++i) {
-                        inventory.setItem(i, ((ItemStack[]) kitRoomMap.get(newPage))[i]);
-                    }
-                    inInventory.put(pn, Pair.of(4, String.valueOf(newPage)));
-                } else if (slot == 53) {
-                    Inventory inventory = e.getInventory();
-                    int transformed = Integer.parseInt(inv.second());
-                    for (int i = 0; i <= 44; ++i) {
-                        inventory.setItem(i, ((ItemStack[]) kitRoomMap.get(transformed))[i]);
-                    }
-                } else if (slot == 45) {
-                    if (p.isOp()) {
-                        Inventory inventory = e.getInventory();
-                        ItemStack[] items = Arrays.copyOfRange(inventory.getContents(), 0, 45);
-                        kitRoomMap.put(Integer.valueOf(inv.second()), items);
-                        p.sendMessage(ChatColor.AQUA + "Page " + inv.second() + ChatColor.LIGHT_PURPLE + " saved!");
-                    } else
-                        Gui.openKitMenu(p);
-                }
-            } // kit room
-            case 4 -> {
-                if (slot >= 41)
-                    e.setCancelled(true);
-
-                if (slot == 45)
-                    Gui.openKitMenu(p);
-
-                int j;
-                if (slot == 47) {
-                    Inventory inventory = e.getInventory();
-                    Inventory pInventory = p.getInventory();
-                    for (j = 0; j <= 40; ++j) {
-                        inventory.setItem(j, pInventory.getItem(j));
-                    }
-                } else if (slot != 48 && slot != 49) {
-                    if (slot == 50) {
-                        Inventory inventory = e.getInventory();
-                        for (j = 0; j <= 40; ++j) {
-                            inventory.setItem(j, null);
-                        }
-                    } else if (slot == 51) {
-                        String key = p.getUniqueId() + "-kit" + inv.second();
-                        if (kitMap.get(key).containsKey("name")) {
-                            kitMap.get(key).remove("name");
-                            p.sendMessage("§dKit name removed.");
-                            Gui.openKitEditor(p, inv.second());
-                        }
-                    } else if (slot == 53) {
-                        SaveEditor.save(p, Integer.parseInt(inv.second()), false);
-                        String key = p.getUniqueId() + "-kit" + inv.second();
-                        if (!kitMap.get(key).containsKey("public")) {
-                            if (kitMap.get(key).containsKey("items")) {
-                                p.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
-                                kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
-                                e.getInventory().setItem(53, createItemStack(Material.FIREWORK_STAR, ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PRIVATE"));
-                            } else
-                                p.sendMessage("§cCannot publish an empty kit.");
-                        } else {
-                            kitMap.get(key).remove("public");
-                            p.sendMessage("§dKit made private.");
-                            e.getInventory().setItem(53, getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos"));
-                        }
-                    }
-                }
-            } // kit editor
-            case 5 -> {
-                e.setCancelled(true);
-                ItemStack item = e.getCurrentItem();
-                if (slot >= 10 && slot <= 43 && item != null && item.getType() == Material.CHEST && e.isLeftClick()) {
-                    ItemMeta meta = item.getItemMeta();
-                    PersistentDataContainer container = meta.getPersistentDataContainer();
-                    if (container.has(ITEMKEY, PersistentDataType.STRING)) {
-                        String foundValue = container.get(ITEMKEY, PersistentDataType.STRING);
-                        KitClaimer.claimPublicKit(p, foundValue);
-                        p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                    }
-                    return;
-                }
                 switch (slot) {
-                    case 48 -> {
-                        if (item.getType() == Material.PLAYER_HEAD)
-                            Gui.openPublicKits(p, Integer.parseInt(inv.second()) - 1);
+                    case 12 -> {
+                        CustomPlayerDataHolder D0 = playerData.get(name);
+                        boolean newVal = !D0.isFastCrystals();
+                        D0.setFastCrystals(newVal);
+                        ItemStack item = c.getItem(slot);
+                        item.setLore(ImmutableList.of("§7sᴛᴀᴛᴜs: " + (newVal ? "§aᴇɴᴀʙʟᴇᴅ" : "§cᴅɪsᴀʙʟᴇᴅ")));
+                        item.setType(newVal ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS);
+                        c.setItem(slot, item);
                     }
-                    case 49 -> Gui.openKitMenu(p);
-                    case 50 -> {
-                        if (item.getType() == Material.PLAYER_HEAD)
-                            Gui.openPublicKits(p, Integer.parseInt(inv.second()) + 1);
+                    case 13 -> {
+                        CustomPlayerDataHolder D0 = playerData.get(name);
+                        int newVal = D0.getMtoggle() == 0 ? 1 : 0;
+                        D0.setMtoggle(newVal);
+                        ItemStack item = c.getItem(slot);
+                        item.setLore(ImmutableList.of("§7sᴛᴀᴛᴜs: " + (newVal == 0 ? "§aᴇɴᴀʙʟᴇᴅ" : "§cᴅɪsᴀʙʟᴇᴅ")));
+                        item.setType(newVal == 0 ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS);
+                        c.setItem(slot, item);
+                    }
+                    case 14 -> {
+                        CustomPlayerDataHolder D0 = playerData.get(name);
+                        int newVal = D0.getTptoggle() == 0 ? 1 : 0;
+                        D0.setTptoggle(newVal);
+                        ItemStack item = c.getItem(slot);
+                        item.setLore(ImmutableList.of("§7sᴛᴀᴛᴜs: " + (newVal == 0 ? "§aᴇɴᴀʙʟᴇᴅ" : "§cᴅɪsᴀʙʟᴇᴅ")));
+                        item.setType(newVal == 0 ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS);
+                        c.setItem(slot, item);
                     }
                 }
-            } // publickits
+            } // settings
         }
     }
 
     @EventHandler
     private void onInventoryClose(InventoryCloseEvent e) {
-        if (e.getReason() == InventoryCloseEvent.Reason.PLUGIN) {
-            Player p = (Player) e.getPlayer();
-            String pn = p.getName();
-            Pair<Integer, String> inv = inInventory.get(pn);
-            if (inv != null && inv.first() == 4) {
-                inInventory.remove(pn);
-                SaveEditor.save(p, Integer.parseInt(inv.second()), true);
-                return;
-            }
-
-            CustomPlayerDataHolder D0 = playerData.get(pn);
-            if (D0.isMultipleGUIs()) {
-                D0.setMultipleGUIs(false);
-                inInventory.remove(pn);
-            }
-        } else
-            inInventory.remove(p.getName());
+        inInventory.remove(e.getPlayer().getName());
     }
 
     @EventHandler
-    private void onPlayerKill(PlayerDeathEvent e) {
+    private void onDeath(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
-
-        if (inFFA.contains(p))
-            inFFA.remove(p);
+        if (inFFA.contains(p)) inFFA.remove(p);
         else e.getDrops().clear();
-
         Location l = p.getLocation();
         CustomPlayerDataHolder D0 = playerData.get(name);
+        D0.untag();
         D0.incrementDeaths();
         D0.setBack(l);
         p.sendMessage(BACK);
-
         Player killer = p.getKiller();
-        if (killer == null || killer == p)
-            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+        if (killer == null || killer == p) {
+            String lastTaggedBy = D0.getLastTaggedBy();
+            if (lastTaggedBy != null) {
+                CustomPlayerDataHolder lastTaggedD0 = playerData.get(lastTaggedBy);
+                if (lastTaggedD0.getLastTaggedBy() == lastTaggedBy)
+                    lastTaggedD0.untag();
+                D0.setLastTaggedBy(null);
+            }
+            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -362,18 +279,25 @@ public class Events implements Listener {
                 case HOT_FLOOR -> "was heated up pretty good";
                 case VOID -> "fell into the void";
                 default -> "suicided";
-            });
-        else {
-            D0.untag();
+            };
+            e.setDeathMessage(death);
+        } else {
+            String lastTaggedBy = D0.getLastTaggedBy();
+            if (lastTaggedBy != null) {
+                CustomPlayerDataHolder lastTaggedD0 = playerData.get(lastTaggedBy);
+                if (lastTaggedD0.getLastTaggedBy() == lastTaggedBy)
+                    lastTaggedD0.untag();
+                D0.setLastTaggedBy(null);
+            }
 
             String killerName = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(killerName);
             D1.untag();
             D1.incrementKills();
-
-            e.setDeathMessage(SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
+            D1.setLastTaggedBy(null);
+            String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
-                case ENTITY_EXPLOSION -> "exploded " + SECOND_COLOR + name;
+                case ENTITY_EXPLOSION -> "crystalled " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
                 case FALL -> "broke " + SECOND_COLOR + name + "§7's legs";
                 case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK -> "sworded " + SECOND_COLOR + name;
@@ -381,7 +305,8 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
                 case VOID -> "pushed " + SECOND_COLOR + name + " §7into the void";
                 default -> "suicided";
-            });
+            };
+            e.setDeathMessage(death);
             D1.incrementMoney(50);
 
             switch (D1.getKilleffect()) {
@@ -393,13 +318,13 @@ public class Events implements Listener {
                     }
                 }
                 case 1 -> {
-                    Firework fw = (Firework) p.getWorld().spawnEntity(l.add(0, 1, 0), EntityType.FIREWORK);
+                    Firework fw = (Firework) p.getWorld().spawnEntity(l.add(0D, 1D, 0D), EntityType.FIREWORK);
                     FireworkMeta fwm = fw.getFireworkMeta();
                     fwm.setPower(2);
-                    fwm.addEffect(FireworkEffect.builder().withColor(color.get(RANDOM.nextInt(color.size()))).withColor(color.get(RANDOM.nextInt(color.size()))).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+                    fwm.addEffect(FireworkEffect.builder().withColor(color[RANDOM.nextInt(color.length)]).withColor(color[RANDOM.nextInt(color.length)]).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
                     fw.setFireworkMeta(fwm);
                 }
-                case 2 -> p.getWorld().strikeLightningEffect(l.add(0, 1, 0));
+                case 2 -> p.getWorld().strikeLightningEffect(l.add(0D, 1D, 0D));
             }
         }
     }
@@ -410,56 +335,84 @@ public class Events implements Listener {
         String name = p.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleport(spawn);
-
+        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Initializer.p, () -> main.utils.npcs.Utils.showForPlayer(connection), 10L);
+        main.utils.holos.Utils.showForPlayerTickable(connection);
+        atSpawn.add(name);
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             tpa.add(name);
             msg.add(name);
-
-            Initializer.msg.sort(String::compareToIgnoreCase);
-            Initializer.tpa.sort(String::compareToIgnoreCase);
-            playerData.put(name, new CustomPlayerDataHolder(
-                    0,
-                    0,
-                    -1,
-                    0,
-                    0,
-                    0,
-                    0));
-
-            String uUID = p.getUniqueId().toString();
-            for (int i = 1; i <= 3; ++i) {
-                String key = uUID + "-kit" + i;
-                if (!kitMap.containsKey(key)) {
-                    Map<String, Object> newMap = new HashMap<>();
-                    newMap.put("player", name);
-                    newMap.put("UUID", uUID);
-                    kitMap.put(uUID + "-kit" + i, newMap);
-                }
-
-                if (!kitMap.get(key).containsKey("player") || kitMap.get(key).get("player") != name) {
-                    kitMap.get(key).put("player", name);
-                }
-
-                if (!kitMap.get(key).containsKey("UUID") || kitMap.get(key).get("UUID") != uUID) {
-                    kitMap.get(key).put("UUID", uUID);
-                }
-            }
+            msg.sort(String::compareToIgnoreCase);
+            tpa.sort(String::compareToIgnoreCase);
+            setPlayerData(name);
         } else {
-            p.setPlayerListName(D.getFRank(name));
+            int rank = DB.setUsefulData(name, D);
+            ServerPlayer craftPlayer = ((CraftPlayer) p).getHandle();
+            craftPlayer.listName = CraftChatMessage.fromString(D.getFRank(name))[0];
+            for (ServerPlayer player : DedicatedServer.getServer().getPlayerList().players) {
+                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, craftPlayer));
+            }
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                switch (rank) {
+                    case 1 -> cattoLovesTeam.addEntry(name);
+                    case 2 -> cattoHatesTeam.addEntry(name);
+                    case 3 -> gayTeam.addEntry(name);
+                    case 4 -> vipTeam.addEntry(name);
+                    case 5 -> boosterTeam.addEntry(name);
+                    case 6 -> mediaTeam.addEntry(name);
+                    case 7 -> trialHelperTeam.addEntry(name);
+                    case 8 -> helperTeam.addEntry(name);
+                    case 9 -> jrmodTeam.addEntry(name);
+                    case 10 -> modTeam.addEntry(name);
+                    case 11 -> adminTeam.addEntry(name);
+                    case 12 -> managerTeam.addEntry(name);
+                    case 13 -> ownerTeam.addEntry(name);
+                }
+            }, 5L);
+            D.setRank(rank);
             if (D.getTptoggle() == 0) {
                 tpa.add(name);
-                Initializer.tpa.sort(String::compareToIgnoreCase);
+                tpa.sort(String::compareToIgnoreCase);
             }
             if (D.getMtoggle() == 0) {
                 msg.add(name);
-                Initializer.msg.sort(String::compareToIgnoreCase);
+                msg.sort(String::compareToIgnoreCase);
             }
         }
+        String uUID = p.getUniqueId().toString();
+        for (int i = 1; i <= 3; ++i) {
+            String key = uUID + "-kit" + i;
+            if (!Practice.kitMap.containsKey(key)) {
+                Object2ObjectOpenHashMap<String, Object> newMap = new Object2ObjectOpenHashMap<>();
+                newMap.put("player", name);
+                newMap.put("UUID", uUID);
+                Practice.kitMap.put(uUID + "-kit" + i, newMap);
+            }
+        }
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> p.sendMessage(MOTD), 5L);
     }
 
     @EventHandler
     private void onRespawn(PlayerRespawnEvent e) {
+        Player p = e.getPlayer();
+        String name = p.getName();
+        atSpawn.add(name);
         e.setRespawnLocation(spawn);
+        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        main.utils.npcs.Utils.showForPlayer(connection);
+        main.utils.holos.Utils.showForPlayerTickable(connection);
+        for (main.utils.npcs.Utils.LoopableNPCHolder k : NPCs) {
+            ServerPlayer NPC = k.NPC();
+            Entity entity = NPC.getBukkitEntity();
+            Location loc = entity.getLocation();
+            Vector vector = spawn.clone().subtract(loc).toVector();
+            double x = vector.getX();
+            double z = vector.getZ();
+            double yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
+            double pitch = Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z))));
+            connection.send(new ClientboundRotateHeadPacket(NPC, (byte) ((yaw % 360) * 256 / 360)));
+            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((pitch % 360.) * 256 / 360), false));
+        }
     }
 }

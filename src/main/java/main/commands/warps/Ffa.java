@@ -9,20 +9,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 public class Ffa implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player pp) {
-            pp.teleportAsync(Initializer.ffa, PlayerTeleportEvent.TeleportCause.COMMAND);
-            Initializer.inFFA.add(pp);
-        }
+        Player p = (Player) sender;
+        p.teleportAsync(Initializer.ffa, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(r -> Initializer.inFFA.add(p));
         return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

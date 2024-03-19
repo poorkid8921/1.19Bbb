@@ -25,7 +25,7 @@ public class SetWarp implements CommandExecutor, TabExecutor {
         }
 
         String sanitized = args[0].replaceAll("[A-Za-z0-9]", "");
-        if (sanitized.length() != 0) {
+        if (!sanitized.isEmpty()) {
             sender.sendMessage(errMSG);
             return true;
         }
@@ -39,7 +39,6 @@ public class SetWarp implements CommandExecutor, TabExecutor {
         try {
             file.createNewFile();
         } catch (IOException ignored) {
-            return true;
         }
         Player p = (Player) sender;
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -54,7 +53,6 @@ public class SetWarp implements CommandExecutor, TabExecutor {
         try {
             config.save(file);
         } catch (IOException ignored) {
-            return true;
         }
         sender.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
         return true;

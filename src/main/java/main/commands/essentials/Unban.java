@@ -5,16 +5,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 
 import static main.utils.Initializer.playerData;
 
-public class Unban implements CommandExecutor {
+public class Unban implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (playerData.get(sender.getName()).getRank() > 8) {
+        if (playerData.get(sender.getName()).getRank() > 6) {
             if (args.length == 0) {
-                sender.sendMessage("§7Invalid args.");
+                sender.sendMessage("§7Invalid arguments.");
                 return true;
             }
 
@@ -27,5 +32,10 @@ public class Unban implements CommandExecutor {
             sender.sendMessage("§7Successfully unbanned " + args[0] + ".");
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return args.length < 2 ? null : Collections.emptyList();
     }
 }
