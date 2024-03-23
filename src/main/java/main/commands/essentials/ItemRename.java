@@ -1,6 +1,7 @@
 package main.commands.essentials;
 
 import main.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,6 +32,10 @@ public class ItemRename implements CommandExecutor, TabExecutor {
         StringBuilder msg = new StringBuilder();
         for (String arg : args) msg.append(arg).append(" ");
         String t = Utils.translate(msg.toString());
+        if (ChatColor.stripColor(t).length() > 32) {
+            sender.sendMessage("§7Your item name is too long!");
+            return true;
+        }
         ItemMeta im = hand.getItemMeta();
         im.setDisplayName(t);
         hand.setItemMeta(im);

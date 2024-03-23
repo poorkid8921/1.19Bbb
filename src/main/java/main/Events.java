@@ -40,6 +40,7 @@ import static main.utils.Initializer.*;
 import static main.utils.Utils.getRequest;
 import static main.utils.Utils.setPlayerData;
 import static main.utils.npcs.Utils.NPCs;
+import static main.utils.npcs.Utils.moveNPCs;
 import static main.utils.storage.DB.connection;
 
 @SuppressWarnings("deprecation")
@@ -53,8 +54,7 @@ public class Events implements Listener {
         if (!atSpawn.contains(p.getName())) return;
         ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
         Location playerLocation = p.getLocation();
-        for (main.utils.npcs.Utils.LoopableNPCHolder k : NPCs) {
-            ServerPlayer NPC = k.NPC();
+        for (ServerPlayer NPC : moveNPCs) {
             Entity entity = NPC.getBukkitEntity();
             Location loc = entity.getLocation();
             Vector vector = playerLocation.subtract(loc).toVector();
@@ -100,7 +100,8 @@ public class Events implements Listener {
             e.setCancelled(true);
             return;
         }
-        String name = e.getPlayer().getName();
+        Player player = e.getPlayer();
+        String name = player.getName();
         CustomPlayerDataHolder D = playerData.get(name);
         if (System.currentTimeMillis() < D.getLastChatMS()) {
             e.setCancelled(true);
@@ -264,7 +265,7 @@ public class Events implements Listener {
                     lastTaggedD0.untag();
                 D0.setLastTaggedBy(null);
             }
-            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -279,8 +280,7 @@ public class Events implements Listener {
                 case HOT_FLOOR -> "was heated up pretty good";
                 case VOID -> "fell into the void";
                 default -> "suicided";
-            };
-            e.setDeathMessage(death);
+            });
         } else {
             String lastTaggedBy = D0.getLastTaggedBy();
             if (lastTaggedBy != null) {
@@ -295,7 +295,7 @@ public class Events implements Listener {
             D1.untag();
             D1.incrementKills();
             D1.setLastTaggedBy(null);
-            String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
+            e.setDeathMessage(SECOND_COLOR + "☠ " + killerName + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "crystalled " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -305,8 +305,7 @@ public class Events implements Listener {
                 case FIRE_TICK, LAVA -> "melted " + SECOND_COLOR + name + " §7away";
                 case VOID -> "pushed " + SECOND_COLOR + name + " §7into the void";
                 default -> "suicided";
-            };
-            e.setDeathMessage(death);
+            });
             D1.incrementMoney(50);
 
             switch (D1.getKilleffect()) {
@@ -370,7 +369,7 @@ public class Events implements Listener {
                     case 13 -> ownerTeam.addEntry(name);
                 }
             }, 5L);
-            D.setRank(rank);
+            D.setLastTimeKitWasUsed(System.currentTimeMillis());
             if (D.getTptoggle() == 0) {
                 tpa.add(name);
                 tpa.sort(String::compareToIgnoreCase);
@@ -402,8 +401,7 @@ public class Events implements Listener {
         ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
         main.utils.npcs.Utils.showForPlayer(connection);
         main.utils.holos.Utils.showForPlayerTickable(connection);
-        for (main.utils.npcs.Utils.LoopableNPCHolder k : NPCs) {
-            ServerPlayer NPC = k.NPC();
+        for (ServerPlayer NPC : moveNPCs) {
             Entity entity = NPC.getBukkitEntity();
             Location loc = entity.getLocation();
             Vector vector = spawn.clone().subtract(loc).toVector();

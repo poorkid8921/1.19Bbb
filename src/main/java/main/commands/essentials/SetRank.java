@@ -34,7 +34,8 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.isOp()) {
+        int pRank = playerData.get(sender.getName()).getRank();
+        if (pRank < 8) {
             return true;
         } else if (args.length == 0) {
             sender.sendMessage("§7You must specify a player you want to rank!");
@@ -46,7 +47,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
         String name = args[0];
         try {
-            name = Bukkit.getPlayer(args[0]).getName();
+            name = Bukkit.getPlayer(name).getName();
         } catch (Exception ignored) {
         }
         int transformedArg = switch (args[1].toLowerCase()) {
@@ -65,6 +66,10 @@ public class SetRank implements CommandExecutor, TabExecutor {
             case "executive" -> 13;
             default -> Integer.parseInt(args[1]);
         };
+        if (transformedArg > 3 && !sender.isOp()) {
+            sender.sendMessage("§7You can't rank other players that rank!");
+            return true;
+        }
         try {
             playerData.get(name).setRank(transformedArg);
         } catch (Exception ignored) {

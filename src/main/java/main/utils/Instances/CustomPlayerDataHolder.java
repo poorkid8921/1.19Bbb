@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import static main.utils.Initializer.*;
 
 public class CustomPlayerDataHolder {
+    private final int hashCode;
     @Getter
     @Setter
     private int killeffect;
@@ -56,7 +57,7 @@ public class CustomPlayerDataHolder {
     private boolean fastCrystals = true;
     @Getter
     @Setter
-    private long lastTimeKitWasUsed = 0L;
+    private long lastTimeKitWasUsed;
 
     public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills) {
         this.killeffect = c;
@@ -65,6 +66,8 @@ public class CustomPlayerDataHolder {
         this.money = z;
         this.deaths = deaths;
         this.kills = kills;
+        this.lastTimeKitWasUsed = System.currentTimeMillis();
+        this.hashCode = customPlayerDataHashCode++;
     }
 
     public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills, int rank) {
@@ -75,6 +78,8 @@ public class CustomPlayerDataHolder {
         this.deaths = deaths;
         this.kills = kills;
         this.rank = rank;
+        this.lastTimeKitWasUsed = System.currentTimeMillis();
+        this.hashCode = customPlayerDataHashCode++;
     }
 
     public String getFRank(String name) {
@@ -143,5 +148,15 @@ public class CustomPlayerDataHolder {
     public void setTagTime(Player player) {
         this.currentTagTime = 10;
         player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §410");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o && o.hashCode() == hashCode;
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
     }
 }

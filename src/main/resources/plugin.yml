@@ -40,7 +40,7 @@ commands:
     usage: /<command>
   tpdeny:
     usage: /<command>
-    aliases: [ tpd, tno ]
+    aliases: [ tpd, tpno ]
   tpaccept:
     usage: /<command>
     aliases: [ tpy, tpyes ]

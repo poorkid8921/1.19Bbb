@@ -34,6 +34,7 @@ import static net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePac
 
 public class Utils {
     public static LoopableNPCHolder[] NPCs = new LoopableNPCHolder[4];
+    public static ServerPlayer[] moveNPCs = new ServerPlayer[4];
     static ObjectArrayList<UUID> UUIDs = ObjectArrayList.of();
 
     public static void init() {
@@ -48,7 +49,7 @@ public class Utils {
         Utils.NPCHolder RTP = new Utils.NPCHolder(new String[]{CLICK_NPC, translateA("#e52d27§l▪ ʀᴛᴘ ▪")}, "ewogICJ0aW1lc3RhbXAiIDogMTcwOTQyMTk3NDI1NywKICAicHJvZmlsZUlkIiA6ICJjZjQxNmViZDkyNWU0ZmI0YjQxNTA5YTBkMThlNmZiMyIsCiAgInByb2ZpbGVOYW1lIiA6ICJSVFAiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzhlMDQwMGVhMzMxNDgwZDhkYTA1MTBiNjQyYmE3MzExOWVhZTg4OTFmOGEwMTlkNjVkYjJjYWQyNDkyZGM2NSIKICAgIH0KICB9Cn0=", "SeAZhv07Yj+s+evr8AT7sWinEoDYWHq1HJGAsC+1PaQ+8vPvJwgxDZmoHUTkx+b4MIwk+pf3/yv0+5LwQdss8GgUBrTIh9pKvHUfUGw8S5MHu6mDOpxtE5mlUG4Ws61L6Vents5a7BJaGDbqNOh15k03q9N1bU01jKt5PgC5ULzMjRzL/MjR5/z/IdLzVCdRYA52XlV2f6/ziZ1yPLGFxFs0t9+S1lxJSozHp//ILISIuCPZ0NBs5sKE8PHtTv4euybi79q3gM7rCNxKSCO5/eIt7g4CE1OgnNjwFy8dPeioQr9VgWUWYyeBdxCGItzGI+t/gyQPlP4tAwt9T9DeeH2QnltMokQuEYSpuyD8A8amq6ilNXt0ZXthlsIXioIZpCaRCznByefQT5hBwEymQom5N1zu8trvqjjqC7uY63oZKcJoyoa+BO02n9pb/Rk8teJwU+bJsgxHd9K4fCHwDmnfg68rTasrtt761IEtgKJonQCtkV8ok8OsQEkfD/nSFr8CM13ZRNb1DWFYcCOS0Vn6lLNvaY+rLQye8YQGkpllu9SLtntSTXCAuFeZub2/RuJWLltNz0g5nuL7P5n2SZKoxEQWIyZG7gKTmKr+VrdAPhjqydeibsgc+yJ823Bm0aH6dN9IU8+aP/0sefmX2xSrNihppGEYUGdhodCHjyY=", -19.5D, 86D, 5.5D, new ItemStack(Material.OBSIDIAN), new ItemStack(Material.END_CRYSTAL));
         Utils.NPCHolder NPot = new Utils.NPCHolder(new String[]{CLICK_NPC, translateA("#e52d27§l▪ ɴᴇᴛʜᴘᴏᴛ ▪")}, "ewogICJ0aW1lc3RhbXAiIDogMTcwOTQyMTk3NDI1NywKICAicHJvZmlsZUlkIiA6ICJjZjQxNmViZDkyNWU0ZmI0YjQxNTA5YTBkMThlNmZiMyIsCiAgInByb2ZpbGVOYW1lIiA6ICJSVFAiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzhlMDQwMGVhMzMxNDgwZDhkYTA1MTBiNjQyYmE3MzExOWVhZTg4OTFmOGEwMTlkNjVkYjJjYWQyNDkyZGM2NSIKICAgIH0KICB9Cn0=", "SeAZhv07Yj+s+evr8AT7sWinEoDYWHq1HJGAsC+1PaQ+8vPvJwgxDZmoHUTkx+b4MIwk+pf3/yv0+5LwQdss8GgUBrTIh9pKvHUfUGw8S5MHu6mDOpxtE5mlUG4Ws61L6Vents5a7BJaGDbqNOh15k03q9N1bU01jKt5PgC5ULzMjRzL/MjR5/z/IdLzVCdRYA52XlV2f6/ziZ1yPLGFxFs0t9+S1lxJSozHp//ILISIuCPZ0NBs5sKE8PHtTv4euybi79q3gM7rCNxKSCO5/eIt7g4CE1OgnNjwFy8dPeioQr9VgWUWYyeBdxCGItzGI+t/gyQPlP4tAwt9T9DeeH2QnltMokQuEYSpuyD8A8amq6ilNXt0ZXthlsIXioIZpCaRCznByefQT5hBwEymQom5N1zu8trvqjjqC7uY63oZKcJoyoa+BO02n9pb/Rk8teJwU+bJsgxHd9K4fCHwDmnfg68rTasrtt761IEtgKJonQCtkV8ok8OsQEkfD/nSFr8CM13ZRNb1DWFYcCOS0Vn6lLNvaY+rLQye8YQGkpllu9SLtntSTXCAuFeZub2/RuJWLltNz0g5nuL7P5n2SZKoxEQWIyZG7gKTmKr+VrdAPhjqydeibsgc+yJ823Bm0aH6dN9IU8+aP/0sefmX2xSrNihppGEYUGdhodCHjyY=", -9.5D, 86D, -5.5D, new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.GOLDEN_APPLE));
         ServerLevel level = ((CraftWorld) d).getHandle();
-        int count = 0;
+        int count = -1;
         int i = -1;
         for (Utils.NPCHolder k : new Utils.NPCHolder[]{FFA, Flat, RTP, NPot}) {
             UUID ID = UUID.randomUUID();
@@ -61,7 +62,8 @@ public class Utils {
             NPC.setId(count);
             SynchedEntityData data = NPC.getEntityData();
             data.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) (0x01 | 0x04 | 0x08 | 0x10 | 0x20 | 0x40));
-            NPCs[count - 1] = new Utils.LoopableNPCHolder(NPC, k.getLines(), data, new ClientboundPlayerInfoUpdatePacket(ADD_PLAYER, NPC), new ClientboundAddPlayerPacket(NPC), new ClientboundSetEntityDataPacket(count, data.getNonDefaultValues()), new ClientboundSetEquipmentPacket(count, List.of(com.mojang.datafixers.util.Pair.of(EquipmentSlot.MAINHAND, CraftItemStack.asNMSCopy(k.getFirst())))), new ClientboundSetEquipmentPacket(count, List.of(com.mojang.datafixers.util.Pair.of(EquipmentSlot.OFFHAND, CraftItemStack.asNMSCopy(k.getSecond())))));
+            NPCs[count] = new Utils.LoopableNPCHolder(NPC, k.getLines(), data, new ClientboundPlayerInfoUpdatePacket(ADD_PLAYER, NPC), new ClientboundAddPlayerPacket(NPC), new ClientboundSetEntityDataPacket(count, data.getNonDefaultValues()), new ClientboundSetEquipmentPacket(count, List.of(com.mojang.datafixers.util.Pair.of(EquipmentSlot.MAINHAND, CraftItemStack.asNMSCopy(k.getFirst())))), new ClientboundSetEquipmentPacket(count, List.of(com.mojang.datafixers.util.Pair.of(EquipmentSlot.OFFHAND, CraftItemStack.asNMSCopy(k.getSecond())))));
+            moveNPCs[count] = NPC;
             UUIDs.add(ID);
             double y = k.getY() + 1.8D;
             for (String c : k.getLines()) {
@@ -84,7 +86,7 @@ public class Utils {
             connection.send(k.EQUIPMENT1);
             connection.send(k.EQUIPMENT2);
         }
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> connection.send(new ClientboundPlayerInfoRemovePacket(UUIDs)), 5L);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> connection.send(new ClientboundPlayerInfoRemovePacket(UUIDs)), 15L);
     }
 
     public record LoopableNPCHolder(ServerPlayer NPC, String[] lines, SynchedEntityData data,

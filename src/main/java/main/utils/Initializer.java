@@ -106,6 +106,7 @@ public class Initializer {
     public static Team cattoHatesTeam;
     public static Team gayTeam;
     public static String[] MOTD;
+    public static int customPlayerDataHashCode;
 
     public static void init() {
         try {
@@ -246,10 +247,11 @@ public class Initializer {
                 CustomPlayerDataHolder value = D0.getValue();
                 if (expireDate > value.getLastTimeKitWasUsed()) {
                     String key = D0.getKey();
-                    playerData.remove(key);
                     Player p = Bukkit.getPlayer(key);
-                    if (p != null)
-                        p.kickPlayer("§7You were too inactive.");
+                    if (p != null) {
+                        p.kickPlayer("§7You have been kicked for being too inactive!");
+                        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> playerData.remove(key), 5L);
+                    }
                 }
             }
         }, 0L, 3600L);

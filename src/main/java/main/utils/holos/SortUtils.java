@@ -3,34 +3,42 @@ package main.utils.holos;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
 import static main.commands.essentials.PlayTime.getTime;
+import static main.utils.storage.DB.connection;
 
 public class SortUtils {
     static LeaderBoardHolder[] sortedKills = new LeaderBoardHolder[10];
     static LeaderBoardHolder[] sortedDeaths = new LeaderBoardHolder[10];
     static StringLeaderBoardHolder[] sortedPlaytime = new StringLeaderBoardHolder[10];
 
-    public static void sortKills(Map<String, Integer> returnValue) {
-        Map<String, Integer> sortedMap = new TreeMap<>(Comparator.comparing(returnValue::get));
-        sortedMap.putAll(returnValue);
-        int iterations = 0;
-        for (String key : sortedMap.keySet()) {
-            sortedKills[iterations++] = new LeaderBoardHolder(key, sortedMap.get(key));
-            Bukkit.getLogger().warning("#" + iterations++ + " | " + key + ": " + sortedMap.get(key));
+    public static void sortKills() {
+        int i = -1;
+        try (PreparedStatement statement = connection.prepareStatement("SELECT ROW_NUMBER() OVER ( ORDER BY pd DESC ) name, pk FROM data LIMIT 10;")) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    sortedKills[i++] = new LeaderBoardHolder(resultSet.getString(1), resultSet.getInt(2));
+                }
+            }
+        } catch (SQLException ignored) {
         }
     }
 
-    public static void sortDeaths(Map<String, Integer> returnValue) {
-        Map<String, Integer> sortedMap = new TreeMap<>(Comparator.comparing(returnValue::get));
-        sortedMap.putAll(returnValue);
-        int iterations = 0;
-        for (String key : sortedMap.keySet()) {
-            sortedDeaths[iterations++] = new LeaderBoardHolder(key, sortedMap.get(key));
-            Bukkit.getLogger().warning("#" + iterations++ + " | " + key + ": " + sortedMap.get(key));
+    public static void sortDeaths() {
+        int i = -1;
+        try (PreparedStatement statement = connection.prepareStatement("SELECT ROW_NUMBER() OVER ( ORDER BY pd DESC ) name, pd FROM data LIMIT 10;")) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    sortedDeaths[i++] = new LeaderBoardHolder(resultSet.getString(1), resultSet.getInt(2));
+                }
+            }
+        } catch (SQLException ignored) {
         }
     }
 

@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -208,15 +207,13 @@ public class Utils {
                 space,
                 b);
         TpaRequest request = new TpaRequest(sn, receiver.getName(), tpahere);
-        requests.add(request);
-
-        BukkitTask runnable = new BukkitRunnable() {
+        request.setRunnableid(new BukkitRunnable() {
             @Override
             public void run() {
                 requests.remove(request);
             }
-        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
-        request.setRunnableid(runnable.getTaskId());
+        }.runTaskLater(Initializer.p, 1200L).getTaskId());
+        requests.add(request);
     }
 
     public static ItemStack getHead(String name, String player) {
