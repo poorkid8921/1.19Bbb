@@ -1,0 +1,120 @@
+name: CatSMP
+version: 1.0
+main: main.Practice
+api-version: '1.19'
+softdepend:
+  - ViaVersion
+  - ViaBackwards
+
+commands:
+  kit:
+    description: <required> [optional], no arguments -> open player's kit menu
+    usage: /<command> [kitname]
+    aliases: k
+  kit1:
+    description: Loads kit1
+    usage: /<command>
+    aliases: k1
+  kit2:
+    description: Loads kit2
+    usage: /<command>
+    aliases: k2
+  kit3:
+    description: Loads kit3
+    usage: /<command>
+    aliases: k3
+  spawn:
+    usage: /<command>
+  discord:
+    usage: /<command>
+    aliases: dc
+  ffa:
+    usage: /<command>
+    aliases: [ hole, field ]
+  flat:
+    usage: /<command>
+  tpa:
+    usage: /<command>
+    aliases: tpr
+  tpahere:
+    usage: /<command>
+  tpdeny:
+    usage: /<command>
+    aliases: [ tpd, tpno ]
+  tpaccept:
+    usage: /<command>
+    aliases: [ tpy, tpyes ]
+  tpall:
+    usage: /<command>
+  msg:
+    usage: /<command>
+    aliases: [ tell, whisper, w, t ]
+  reply:
+    usage: /<command>
+    aliases: r
+  report:
+    usage: /<command>
+  killeffect:
+    aliases: shop
+    usage: /<command>
+  msglock:
+    usage: /<command>
+    aliases: [ msgtoggle, togglemsg ]
+  tpalock:
+    usage: /<command>
+    aliases: [ tpatoggle, toggletpa ]
+  back:
+    usage: /<command>
+  help:
+    usage: /<command>
+  acreate:
+    usage: /<command>
+  rtp:
+    usage: /<command>
+    aliases: wild
+  gmc:
+    usage: /<command>
+  gms:
+    usage: /<command>
+    aliases: [ s, survival ]
+  gmsp:
+    usage: /<command>
+    aliases: [ sp, spectator ]
+  playtime:
+    usage: /<command>
+  list:
+    usage: /<command>
+  ban:
+    usage: /<command>
+  unban:
+    usage: /<command>
+  warp:
+    usage: /<command>
+  setwarp:
+    usage: /<command>
+  tp:
+    usage: /<command>
+  tphere:
+    usage: /<command>
+  irename:
+    usage: /<command>
+    aliases: [ name, iname, itemname, itemrename ]
+  clear:
+    usage: /<command>
+  nethpot:
+    usage: /<command>
+    aliases: npot
+  setrank:
+    usage: /<command>
+  broadcast:
+    usage: /<command>
+    aliases: bc
+  areset:
+    usage: /<command>
+  settings:
+    usage: /<command>
+    aliases: config
+  banip:
+    usage: /<command>
+  fastcrystals:
+    usage: /<command>
