@@ -1,27 +1,24 @@
 package main.commands.tpa;
 
-import main.Practice;
 import main.utils.Instances.TpaRequest;
-import main.utils.Languages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.RequestManager.addTPArequest;
-import static main.utils.RequestManager.getTPArequest;
+import static main.utils.Initializer.playerData;
+import static main.utils.Utils.*;
 
 public class Tpa implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
-            sender.sendMessage(Languages.WHO_TPA);
+        if (args.length == 0) {
+            sender.sendMessage("§7You must specify who you want to teleport to!");
             return true;
         }
 
         Player recipient = Bukkit.getPlayer(args[0]);
-
         if (recipient == null) {
             sender.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
@@ -29,26 +26,23 @@ public class Tpa implements CommandExecutor {
 
         String ren = recipient.getName();
         String sn = sender.getName();
-        if (ren.equals(sn)) {
+        if (ren == sn) {
             sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
-        TpaRequest tpr = getTPArequest(ren);
-
-        if (tpr != null) {
-            if (tpr.getSenderF().equals(sn)) {
-                sender.sendMessage(Languages.GLOBAL_EXCEPTION_ALREADY_REQ);
-                return true;
-            }
+        TpaRequest tpr = getRequest(ren);
+        if (tpr != null && hasRequestedThePlayer(sn, ren)) {
+            sender.sendMessage("§7You already have an ongoing request to this player.");
+            return true;
         }
 
-        if (Practice.config.get("r." + ren + ".t") != null) {
+        if (playerData.get(ren).getTptoggle() == 1) {
             sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
 
-        addTPArequest((Player) sender, recipient, false);
+        addRequest((Player) sender, recipient, false);
         return true;
     }
 }

@@ -1,4 +1,4 @@
-package main.commands.tpa;
+package main.commands.essentials;
 
 import main.utils.Initializer;
 import main.utils.Instances.CustomPlayerDataHolder;
@@ -9,24 +9,24 @@ import org.bukkit.command.TabExecutor;
 
 import java.util.Collections;
 
+import static main.utils.Initializer.msg;
 import static main.utils.Initializer.playerData;
-import static main.utils.Initializer.tpa;
 
-public class TpaLock implements CommandExecutor, TabExecutor {
+public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String name = sender.getName();
-        CustomPlayerDataHolder T = playerData.get(name);
-        if (T.getTptoggle() == 0) {
-            sender.sendMessage("§7You will no longer receive tp requests from players.");
-            T.setTptoggle(1);
-            tpa.remove(name);
-            Initializer.tpa.sort(String::compareToIgnoreCase);
+        CustomPlayerDataHolder M = playerData.get(name);
+        if (M.getMtoggle() == 0) {
+            sender.sendMessage("§7You will no longer receive messages from players.");
+            M.setMtoggle(1);
+            msg.remove(name);
+            Initializer.msg.sort(String::compareToIgnoreCase);
         } else {
-            sender.sendMessage("§7You can receive tp requests again.");
-            T.setTptoggle(0);
-            tpa.add(name);
-            Initializer.tpa.sort(String::compareToIgnoreCase);
+            sender.sendMessage("§7You can receive messages from players again.");
+            M.setMtoggle(0);
+            msg.add(name);
+            Initializer.msg.sort(String::compareToIgnoreCase);
         }
         return true;
     }

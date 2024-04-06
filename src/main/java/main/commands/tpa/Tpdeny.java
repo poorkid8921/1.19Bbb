@@ -7,19 +7,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static main.utils.Languages.MAIN_COLOR;
-import static main.utils.RequestManager.getTPArequest;
-import static main.utils.RequestManager.tpa;
-import static main.utils.Utils.translate;
+import static main.utils.Initializer.*;
+import static main.utils.Utils.getRequest;
 
-@SuppressWarnings("deprecation")
 public class Tpdeny implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String msg = "§7You got no active teleport request.";
         TpaRequest request;
+        String name = sender.getName();
 
         if (args.length == 0) {
-            request = getTPArequest(sender.getName());
+            request = getRequest(name);
         } else {
             String n = args[0];
             Player p = Bukkit.getPlayer(n);
@@ -28,7 +26,7 @@ public class Tpdeny implements CommandExecutor {
                 return true;
             } else
                 n = p.getName();
-            request = getTPArequest(sender.getName(), n);
+            request = getRequest(name, n);
             msg = "§7You got no active teleport request from " + MAIN_COLOR + n + ".";
         }
 
@@ -38,9 +36,11 @@ public class Tpdeny implements CommandExecutor {
         }
 
         Player recipient = request.getSender();
-        recipient.sendMessage(MAIN_COLOR + ((Player) sender).getDisplayName() + " §7denied your teleportation request.");
-        sender.sendMessage("§7You have successfully deny " + MAIN_COLOR + translate(recipient.getDisplayName()) + "§7's request.");
-        tpa.remove(request);
+        String recipientName = recipient.getName();
+        recipient.sendMessage(MAIN_COLOR + playerData.get(name).getFRank(name) + " §7denied your teleportation request.");
+        sender.sendMessage("§7You have successfully deny " + MAIN_COLOR + playerData.get(recipientName).getFRank(recipientName) + "§7's request.");
+        Bukkit.getScheduler().cancelTask(request.getRunnableid());
+        requests.remove(request);
         return true;
     }
 }

@@ -1,17 +1,24 @@
 package main.utils.Instances;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class TpaRequest {
     private final String sender;
+    @Getter
     private final String receiver;
-    private final boolean type;
+    @Getter
+    private final boolean here;
+    @Getter
+    @Setter
+    private int runnableid;
 
-    public TpaRequest(String sender, String reciever, boolean type) {
+    public TpaRequest(String sender, String reciever, boolean here) {
         this.sender = sender;
         this.receiver = reciever;
-        this.type = type;
+        this.here = here;
     }
 
     public Player getSender() {
@@ -20,13 +27,5 @@ public class TpaRequest {
 
     public String getSenderF() {
         return sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public boolean isHere() {
-        return type;
     }
 }
