@@ -25,7 +25,7 @@ public class RTP implements CommandExecutor, TabExecutor {
         String sn = sender.getName();
         CustomPlayerDataHolder D0 = playerData.get(sn);
         if (D0.getLastRTPed() > System.currentTimeMillis()) {
-            sender.sendMessage("§7You must wait " + MAIN_COLOR + getTime(D0.getLastRTPed() - System.currentTimeMillis()) + " §7to RTP again.");
+            sender.sendMessage("§7You are on a cooldown of " + SECOND_COLOR + getTime(D0.getLastRTPed() - System.currentTimeMillis()) + "!");
             return true;
         }
         D0.setLastRTPed(System.currentTimeMillis() + 180000L);

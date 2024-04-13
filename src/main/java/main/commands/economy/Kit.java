@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static main.utils.Initializer.MAIN_COLOR;
+import static main.utils.Initializer.SECOND_COLOR;
 
 public class Kit implements CommandExecutor, TabCompleter {
     private static final Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
@@ -167,12 +168,14 @@ public class Kit implements CommandExecutor, TabCompleter {
                 inv.setItem(2, gap);
                 inv.setItem(3, crystal);
                 inv.setItem(4, obi);
+                inv.setItem(5, elytra);
+                inv.setItem(6, fireworks);
             } else if (freespace == 0) p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
             else inv.addItem(shulker_kit);
-            cooldowns.put(sender.getName(), System.currentTimeMillis() + 1200000L);
+            cooldowns.put(sender.getName(), System.currentTimeMillis() + 3600000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else
-            sender.sendMessage("§7You must wait " + MAIN_COLOR + Utils.getTime(D0 - System.currentTimeMillis()) + " §7in order to be able to claim your kit!");
+            sender.sendMessage("§7You are on a cooldown of " + SECOND_COLOR + Utils.getTime(D0 - System.currentTimeMillis()) + "!");
         return true;
     }
 

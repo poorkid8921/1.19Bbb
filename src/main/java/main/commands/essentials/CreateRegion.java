@@ -19,8 +19,10 @@ public class CreateRegion implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender.isOp()) {
             int newLength = regions.length + 1;
-            System.arraycopy(regions, 0, new AbstractRegionHolder[newLength], 0, regions.length);
-            regions[newLength - 1] = new RegionHolder(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+            AbstractRegionHolder[] newArray = new AbstractRegionHolder[newLength];
+            System.arraycopy(regions, 0, newArray, 0, regions.length);
+            newArray[newLength - 1] = new RegionHolder(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+            regions = newArray;
             sender.sendMessage("§7Successfully created the region.");
             Bukkit.getPluginManager().registerEvents(new CreateListener(), p);
         }

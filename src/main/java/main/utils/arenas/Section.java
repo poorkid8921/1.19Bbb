@@ -1,10 +1,12 @@
 package main.utils.arenas;
 
+import io.papermc.lib.PaperLib;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.ItemStack;
+
+import static main.utils.arenas.BlockChanger.getBlockData;
 
 public class Section {
     @Getter
@@ -49,18 +51,17 @@ public class Section {
             resetLocationIndex = 0;
         int count = 0;
         Material[] keys = this.getParent().getKeys();
-        Material cachedMat = keys[this.blockTypes[resetTypeIndex]];
-        BlockData blockData = cachedMat.createBlockData();
-        Material currentMat;
+        ItemStack currentMat = new ItemStack(Material.AIR);
+        Location loc;
+        Object blockData;
         while (resetTypeIndex < blockTypes.length) {
-            if ((currentMat = keys[this.blockTypes[resetTypeIndex]]) != cachedMat) {
-                blockData = currentMat.createBlockData();
-                cachedMat = currentMat;
-            }
+            currentMat.setType(keys[this.blockTypes[resetTypeIndex]]);
+            blockData = getBlockData(currentMat);
+            Object finalBlockData = blockData;
             while (resetCurrentTypeIndex < this.blockAmounts[resetTypeIndex]) {
-                Block block = start.clone().add(Arena.getLocationAtIndex(w, l, resetLocationIndex)).getBlock();
-                if (block.getType() != currentMat)
-                    block.setBlockData(blockData, false);
+                loc = start.clone().add(Arena.getLocationAtIndex(w, l, resetLocationIndex));
+                Location finalLoc = loc;
+                PaperLib.getChunkAtAsync(loc).thenAccept(z -> BlockChanger.setChunkBlockAsynchronouslyUpdate(finalLoc, finalBlockData, false));
                 resetCurrentTypeIndex++;
                 resetLocationIndex++;
                 if (max > 0 && count++ > max) return false;

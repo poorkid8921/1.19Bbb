@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import static main.utils.Initializer.playerData;

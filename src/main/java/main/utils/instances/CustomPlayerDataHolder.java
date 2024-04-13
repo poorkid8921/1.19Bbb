@@ -1,5 +1,6 @@
 package main.utils.instances;
 
+import com.github.retrooper.packetevents.util.Vector3d;
 import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import static main.utils.Initializer.*;
 
 public class CustomPlayerDataHolder {
+    private final int hashCode;
     @Getter
     @Setter
     private int mtoggle;
@@ -27,6 +29,9 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private int lastPacket = 5;
+    @Getter
+    @Setter
+    private int lastItemPacket = 0;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -60,7 +65,10 @@ public class CustomPlayerDataHolder {
     private boolean fastCrystals;
     @Getter
     @Setter
-    private int bounty;
+    private long lastTagged = 0L;
+    @Getter
+    @Setter
+    private int preLastPacket = 0;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
@@ -68,8 +76,7 @@ public class CustomPlayerDataHolder {
                                   int deaths,
                                   int kills,
                                   HomeHolder[] homes,
-                                  int rank,
-                                  int bounty) {
+                                  int rank) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
@@ -78,7 +85,7 @@ public class CustomPlayerDataHolder {
         this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = rank;
-        this.bounty = bounty;
+        this.hashCode = customPlayerDataHashCode++;
     }
 
     public CustomPlayerDataHolder(int m,
@@ -86,8 +93,7 @@ public class CustomPlayerDataHolder {
                                   double z,
                                   int deaths,
                                   int kills,
-                                  HomeHolder[] homes,
-                                  int bounty) {
+                                  HomeHolder[] homes) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
@@ -96,7 +102,7 @@ public class CustomPlayerDataHolder {
         this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = 0;
-        this.bounty = bounty;
+        this.hashCode = customPlayerDataHashCode++;
     }
 
     public String getFRank(String name) {
@@ -117,10 +123,6 @@ public class CustomPlayerDataHolder {
             case 13 -> EXECUTIVE + name;
             default -> "";
         };
-    }
-
-    public void incrementBounty(double add) {
-        this.bounty += add;
     }
 
     public int incrementFlags() {
@@ -169,5 +171,15 @@ public class CustomPlayerDataHolder {
     public void setTagTime(Player player) {
         this.currentTagTime = 10;
         player.sendActionBar("§7ᴄᴏᴍʙᴀᴛ: §410");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o.hashCode() == hashCode;
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
     }
 }

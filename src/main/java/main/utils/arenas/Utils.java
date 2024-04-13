@@ -1,10 +1,8 @@
 package main.utils.arenas;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.Deflater;
 
 public class Utils {
     public static boolean isMatch(byte[] pattern, byte[] input, int pos) {

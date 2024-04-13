@@ -1,12 +1,15 @@
 package main.commands.tpa;
 
+import main.Economy;
 import main.utils.Initializer;
 import main.utils.instances.TpaRequest;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -79,6 +82,13 @@ public class Tpaccept implements CommandExecutor {
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
         Location loc = target.getLocation();
         user.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND);
+        if (Economy.spawnDistance.distance(loc.getBlockX(), loc.getBlockZ()) < 128) {
+            ServerGamePacketListenerImpl connection = ((CraftPlayer) user).getHandle().connection;
+            main.utils.holos.Utils.showForPlayerTickable(connection);
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                main.utils.npcs.Utils.showForPlayer(connection);
+            }, 3L);
+        }
         teleportEffect(loc.getWorld(), loc);
         Initializer.requests.remove(request);
         return true;

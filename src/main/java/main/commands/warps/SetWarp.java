@@ -22,13 +22,14 @@ public class SetWarp implements CommandExecutor {
             return true;
         }
 
-        String sanitized = args[0].replaceAll("[A-Za-z0-9]", "");
+        String lowerCaseArg = args[0].toLowerCase();
+        String sanitized = lowerCaseArg.replaceAll("[a-z0-9]", "");
         if (!sanitized.isEmpty()) {
             sender.sendMessage(errMSG);
             return true;
         }
 
-        File file = new File(Economy.dataFolder + "/warps/" + args[0] + ".yml");
+        File file = new File(Economy.dataFolder + "/warps/" + lowerCaseArg + ".yml");
         if (file.exists()) {
             if (!sender.isOp()) {
                 sender.sendMessage("§7You must specify a warp that doesn't already exist!");
@@ -36,7 +37,6 @@ public class SetWarp implements CommandExecutor {
             } else
                 file.delete();
         }
-
         try {
             file.createNewFile();
         } catch (IOException ignored) {

@@ -6,6 +6,7 @@ depend:
   - ViaVersion
   - ViaBackwards
   - Vault
+  - Essentials
 
 commands:
   spawn:
@@ -41,9 +42,6 @@ commands:
   tpalock:
     usage: /<command>
     aliases: [ tpatoggle, toggletpa ]
-  stats:
-    usage: /<command>
-    aliases: statistics
   rbalance:
     uasge: /<command>
     aliases: rbal
@@ -64,10 +62,8 @@ commands:
     usage: /<command>
   kit:
     usage: /<command>
-  acreate:
-    usage: /<command>
-  enderchest:
-    aliases: [ ec, echest ]
+  ec:
+    aliases: [ enderchest, echest ]
     uasge: /<command>
   setrank:
     usage: /<command>
@@ -76,8 +72,6 @@ commands:
   rpay:
     usage: /<command>
   rbaltop:
-    usage: /<command>
-  anvil:
     usage: /<command>
   grindstone:
     usage: /<command>
@@ -90,11 +84,11 @@ commands:
     usage: /<command>
   banip:
     uasge: /<command>
-  areset:
-    usage: /<command>
   suicide:
     usage: /<command>
+    aliases: kill
   fastcrystals:
     usage: /<command>
-  bounty:
+  irename:
     usage: /<command>
+    aliases: [ name, iname, itemname, itemrename ]

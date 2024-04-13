@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftEnderCrystal;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.event.CraftEventFactory;
@@ -31,7 +32,7 @@ import org.bukkit.util.Vector;
 import static main.utils.Initializer.*;
 
 public class InteractionListeners extends SimplePacketListenerAbstract {
-    Holder<DamageType> cachedHolder = Holder.direct(new DamageType("player", 0.1f));
+    private static final Holder<DamageType> cachedHolder = Holder.direct(new DamageType("player", 0.1f));
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
@@ -40,27 +41,30 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                 Player player = (Player) event.getPlayer();
                 if (player.hasPotionEffect(PotionEffectType.WEAKNESS))
                     return;
-                CustomPlayerDataHolder user = playerData.get(player.getName());
+                String name = player.getName();
+                CustomPlayerDataHolder user = playerData.get(name);
                 if (!user.isFastCrystals())
+                    return;
+                if (player.getPing() < 50)
                     return;
                 int lastPacket = user.getLastPacket();
                 if (lastPacket == 3) return;
                 if (user.isIgnoreAnim()) return;
+                Location eyeLoc = player.getEyeLocation();
                 Bukkit.getScheduler().runTask(p, () -> {
-                    Location eyeLoc = player.getEyeLocation();
                     RayTraceResult result = player.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0,
                             entity -> {
                                 if (entity.getType() != EntityType.PLAYER)
                                     return true;
                                 Player p = (Player) entity;
-                                return !player.getUniqueId().equals(p.getUniqueId()) && player.canSee(p);
+                                return !name.equals(p.getName()) && player.canSee(p);
                             });
                     if (result == null) return;
                     Entity entity = result.getHitEntity();
                     if (entity == null || entity.getType() != EntityType.ENDER_CRYSTAL) return;
                     if (entity.getTicksLived() == 0) return;
                     if (!entity.getBoundingBox().contains(eyeLoc.toVector())) {
-                        RayTraceResult bResult = player.rayTraceBlocks(4.5);
+                        RayTraceResult bResult = player.rayTraceBlocks(4.5D);
                         if (bResult != null && bResult.getHitBlock() != null) {
                             Vector eyeLocV = eyeLoc.toVector();
                             if (eyeLocV.distanceSquared(bResult.getHitPosition()) <=
@@ -99,12 +103,16 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                 if (entity == null) return;
                 Location blockLoc = entity.clone().subtract(0.5D, 1.0D, 0.5D);
                 RayTraceResult result = player.rayTraceBlocks(4.5D, FluidCollisionMode.NEVER);
-                if (result == null || result.getHitBlock().getType() != Material.OBSIDIAN) return;
-                if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
+                if (result == null) return;
+                Block hitBlock = result.getHitBlock();
+                Material material = hitBlock.getType();
+                if (material != Material.OBSIDIAN &&
+                        material != Material.BEDROCK)
+                    return;
+                if (!hitBlock.getLocation().equals(blockLoc)) return;
+                Location clonedLoc = entity.clone().subtract(0.5D, 0.0D, 0.5D);
                 Bukkit.getScheduler().runTask(p, () -> {
-                    Location clonedLoc = entity.clone().subtract(0.5D, 0.0D, 0.5D);
                     if (clonedLoc.getBlock().getType() != Material.AIR) return;
-
                     clonedLoc.add(0.5D, 1.0D, 0.5D);
                     if (clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5D, 1D, 0.5D).isEmpty()) {
                         entity.getWorld().spawn(clonedLoc.subtract(0.0D, 1.0D, 0.0D), EnderCrystal.class, c -> c.setShowingBottom(false));

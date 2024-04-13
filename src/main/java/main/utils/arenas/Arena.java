@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
 import main.Economy;
-import main.utils.Initializer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,10 +18,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+
+import static main.utils.Initializer.p;
 
 public class Arena {
     @Getter
@@ -160,7 +159,7 @@ public class Arena {
                 arena.getSections().addAll(data.sections);
                 Arena.arenas.put(arena.name, arena);
 
-                File file = new File(Initializer.p.getDataFolder(), "/arenas/" + name + ".json");
+                File file = new File(p.getDataFolder(), "/arenas/" + name + ".json");
                 try {
                     FileOutputStream stream = new FileOutputStream(file);
                     Location l = arena.c1;
@@ -224,7 +223,7 @@ public class Arena {
             }
         };
 
-        loopyCreate(data, 500000, runnable);
+        Bukkit.getScheduler().runTaskLater(p, () -> loopyCreate(data, 500000, runnable), 1L);
     }
 
     private static void loopyCreate(CreationLoopinData data, final int amount, Runnable onFinished) {
@@ -309,10 +308,10 @@ public class Arena {
             data.sections.put(s.getID(), sectionAmount);
             data.sectionIDs.add(s.getID());
         }
-        loopyReset(data, speed);
+        loopyReset(data);
     }
 
-    private void loopyReset(ResetLoopinData data, int speed) {
+    private void loopyReset(ResetLoopinData data) {
         ObjectOpenHashSet<Section> z = ObjectOpenHashSet.of();
         for (int sectionsIterated = 0; sectionsIterated < data.sections.size(); sectionsIterated++) {
             int id = data.sectionIDs.get(sectionsIterated % data.sections.size()) % getSections().size();
@@ -324,18 +323,15 @@ public class Arena {
                 for (int k : data.sections.keySet()) {
                     z.add(getSections().get(k));
                 }
-                int newTotalAmount = data.sections.keySet().parallelStream().mapToInt(sectionid -> getSections().get(sectionid).getTotalBlocks()).sum();
                 for (Section s : z) {
-                    int sectionAmount = speed / newTotalAmount * s.getTotalBlocks();
-                    if (sectionAmount <= 0) sectionAmount = 1;
-                    data.sections.put(s.getID(), sectionAmount);
+                    data.sections.put(s.getID(), 1);
                 }
                 z.clear();
             }
         }
 
         if (data.sections.isEmpty()) return;
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> loopyReset(data, speed), 1L);
+        Bukkit.getScheduler().runTaskLater(p, () -> loopyReset(data), 1L);
     }
 
     Material[] getKeys() {

@@ -1,9 +1,12 @@
 package main.utils;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
 import main.utils.instances.*;
@@ -21,24 +24,26 @@ import org.bukkit.scoreboard.Team;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
     public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(-24, 23, 22, -23);
+    public static final YDeficientRegionHolder flatRegionHolder = new YDeficientRegionHolder(-46, -45, 44, 45);
     public static final Color[] color = new Color[]{org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW};
-    public static final AbstractRegionHolder[] regions = new AbstractRegionHolder[]{
-            spawnRegionHolder,
-            new RegionHolder(-45, 133, -44, 44, 3, 45),// flat
-            new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
-            new YDeficientRegionHolder(-129, -128, 127, -128),// wall1
-            new YDeficientRegionHolder(127, -127, 127, 128),// wall2
-            new YDeficientRegionHolder(-129, 128, 126, 128),// wall3
-            new YDeficientRegionHolder(-129, -127, -129, 127),// wall4
-            new RegionHolder(-128, 2, -127, 126, 2, 127) // underarena
+    public static AbstractRegionHolder[] regions = new AbstractRegionHolder[]{spawnRegionHolder,
+            new RegionHolder(-46, 133, 45, 44, 3, -45),// flat
+            new RegionHolder(-128, 137, -127, 126, 198, 127),// arena            
+            new YDeficientRegionHolder(112, -112, -113, -112),// wall1
+            new YDeficientRegionHolder(111, -111, 111, 112),// wall2
+            new YDeficientRegionHolder(-113, 112, 110, 112),// wall3
+            new YDeficientRegionHolder(-113, -111, -113, 111),// wall4
+            new RegionHolder(110, 2, 111, -112, 2, -111) // underarena
     };
-    public static Map<String, Long> cooldowns = new Object2LongOpenHashMap<>();
+    public static Cache<String, Integer> leverFlickCount = Caffeine.newBuilder().expireAfterWrite(Duration.ofMillis(500L)).build();
     public static Map<Integer, Location> crystalsToBeOptimized = new Int2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static Location[] overworldRTP = new Location[100];
@@ -73,11 +78,9 @@ public class Initializer {
     public static String MAIN_COLOR = Utils.translateA("#fc282f");
     public static String SECOND_COLOR = Utils.translateA("#d6a7eb");
     public static String EXCEPTION_INTERACTION;
-    public static String EXCEPTION_BLOCK_PLACE;
-    public static String EXCEPTION_BLOCK_BREAK;
+    public static String EXCEPTION_PVP;
     public static String EXCEPTION_TAGGED;
-    public static String EXPLOITING_KICK = MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴄᴀᴛ ɴᴇᴛᴡᴏʀᴋ!\n\n" +
-            "§7ʙᴀɴɴᴇᴅ ᴏɴ " + MAIN_COLOR + "» §7";
+    public static String EXPLOITING_KICK = MAIN_COLOR + "ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴄᴀᴛ ɴᴇᴛᴡᴏʀᴋ!\n\n" + "§7ʙᴀɴɴᴇᴅ ᴏɴ " + MAIN_COLOR + "» §7";
     public static MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public static Scoreboard scoreboard;
@@ -95,6 +98,7 @@ public class Initializer {
     public static Team cattoHatesTeam;
     public static Team gayTeam;
     public static net.milkbowl.vault.economy.Economy economyHandler;
+    public static int customPlayerDataHashCode;
 
     public static void init() {
         try {
@@ -174,18 +178,14 @@ public class Initializer {
             gayTeam.removeEntries(gayTeam.getEntries());
         }
         EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ!";
-        EXCEPTION_INTERACTION = MAIN_COLOR + "Sorry, §7buy you can't interact here.";
-        EXCEPTION_BLOCK_PLACE = MAIN_COLOR + "Sorry, §7but you can't place blocks here.";
-        EXCEPTION_BLOCK_BREAK = MAIN_COLOR + "Sorry, §7but you can't break blocks here.";
-        EXPLOITING_KICK += new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + "\n" +
-                "§7ʙᴀɴɴᴇᴅ ʙʏ " + MAIN_COLOR + "» §7ᴀɴᴛɪᴄʜᴇᴀᴛ\n" +
-                "§7ʀᴇᴀsᴏɴ " + MAIN_COLOR + "» §7ᴄʜᴇᴀᴛɪɴɢ\n" +
-                "§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» §75 days\n\n" +
-                "§7ᴅɪsᴄᴏʀᴅ " + MAIN_COLOR + "» §7discord.gg/catsmp";
-
+        EXCEPTION_INTERACTION = SECOND_COLOR + "You can't interact here!";
+        EXCEPTION_PVP = SECOND_COLOR + "You can't PvP here!";
+        EXPLOITING_KICK += new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + "\n" + "§7ʙᴀɴɴᴇᴅ ʙʏ " + MAIN_COLOR + "» §7ᴀɴᴛɪᴄʜᴇᴀᴛ\n" + "§7ʀᴇᴀsᴏɴ " + MAIN_COLOR + "» §7ᴄʜᴇᴀᴛɪɴɢ\n" + "§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» §75 days\n\n" + "§7ᴅɪsᴄᴏʀᴅ " + MAIN_COLOR + "» §7discord.gg/catsmp";
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
         DB.init();
+        main.utils.npcs.Utils.init();
+        main.utils.holos.Utils.init();
         main.utils.tab.Utils.init();
     }
 }

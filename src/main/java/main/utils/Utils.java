@@ -10,7 +10,16 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ThreadedLevelLightEngine;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -19,22 +28,23 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static main.Economy.d;
 import static main.utils.Initializer.*;
 import static main.utils.storage.DB.connection;
 import static org.bukkit.ChatColor.COLOR_CHAR;
@@ -44,56 +54,101 @@ public class Utils {
     public static final HomeHolder[] NULL_HOMES = new HomeHolder[3];
     private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
     private static final char[] c = new char[]{'K', 'M', 'B'};
+    public static ServerLevel nmsOverworld;
+    private static final ServerChunkCache chunkSource = nmsOverworld.getChunkSource();
+    private static final ThreadedLevelLightEngine lightEngine = chunkSource.getLightEngine();
     public static TextComponent space = new TextComponent("  ");
     public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+
+    public static void setCuboid(int startX, int startY, int startZ, int endX, int endY, int endZ, Block block, BlockState material, boolean performLightUpdates) {
+        int x1 = Math.min(startX, endX), y1 = Math.min(startY, endY), z1 = Math.min(startZ, endZ);
+        int x2 = Math.max(startX, endX), y2 = Math.max(startY, endY), z2 = Math.max(startZ, endZ);
+        int sizeX = Math.abs(x2 - x1) + 1, sizeY = Math.abs(y2 - y1) + 1;
+        int x3 = 0, y3 = 0, z3 = 0;
+        int locx = x1 + x3, locy = y1 + y3, locz = z1 + z3;
+        BlockPos blockPos;
+        LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+        LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(locy)];
+        int lastChunkX = 0, lastChunkZ = 0;
+        for (int i = 0; i < sizeX * sizeY * (Math.abs(z2 - z1) + 1); i++) {
+            blockPos = new BlockPos(locx, locy, locz);
+            int sectionX = locx >> 4;
+            int sectionZ = locz >> 4;
+            if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                lastChunkX = sectionX;
+                lastChunkZ = sectionZ;
+                chunk = nmsOverworld.getChunkAt(blockPos);
+                section = chunk.getSections()[chunk.getSectionIndex(locy)];
+            }
+            if (chunk.getBlockState(blockPos).getBlock() != block) {
+                if (nmsOverworld.capturedTileEntities.get(blockPos) != null) nmsOverworld.capturedTileEntities.remove(blockPos);
+                section.setBlockState(locx & 15, locy & 15, locz & 15, material);
+                chunkSource.blockChanged(blockPos);
+                if (performLightUpdates) lightEngine.checkBlock(blockPos);
+            }
+            if (++x3 >= sizeX) {
+                x3 = 0;
+                if (++y3 >= sizeY) {
+                    y3 = 0;
+                    ++z3;
+                }
+            }
+            locx = x1 + x3;
+            locy = y1 + y3;
+            locz = z1 + z3;
+        }
+    }
+
+    public static void sendWebhook(String json, URL webhook) {
+        try {
+            final HttpsURLConnection connection = (HttpsURLConnection) webhook.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
+            connection.setDoOutput(true);
+            try (final OutputStream outputStream = connection.getOutputStream()) {
+                outputStream.write(json.getBytes(StandardCharsets.UTF_8));
+            }
+            connection.getInputStream();
+        } catch (IOException ignored) {
+        }
+    }
+
+    public static void banEffect(Player player) {
+        World world = player.getWorld();
+        Location loc = player.getLocation();
+        for (int index = 1; index < 16; index++) {
+            double p1 = (index * Math.PI) / 8;
+            double p2 = (index - 1) * Math.PI / 8;
+            double x1 = Math.cos(p1) * 3;
+            double xx2 = Math.cos(p2) * 3;
+            double z1 = Math.sin(p1) * 3;
+            double z2 = Math.sin(p2) * 3;
+            world.spawnParticle(Particle.FLAME, loc.clone().add(xx2 - x1, 0, z2 - z1), 50);
+        }
+        world.strikeLightningEffect(loc);
+    }
 
     public static String shortFormat(double n, int iteration) {
         double d = n / 1000;
         boolean isRound = (d * 10) % 10 == 0;
-        return (d < 1000 ?
-                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
-                        (int) d * 10 / 10 : d + ""
-                ) + "" + c[iteration])
-                : shortFormat(d, iteration + 1));
+        return (d < 1000 ? ((d > 99.9 || isRound || (!isRound && d > 9.99) ? (int) d * 10 / 10 : d + "") + "" + c[iteration]) : shortFormat(d, iteration + 1));
     }
 
     public static CustomPlayerDataHolder getPlayerData(String name) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ez,ed,ek,b FROM data WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ez,ed,ek FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     //String[] copyHomes = resultSet.getString(7).split(";");
                     //HomeHolder[] homes = new HomeHolder[copyHomes.length];
-                    return new CustomPlayerDataHolder(
-                            resultSet.getInt(2),
-                            resultSet.getInt(3),
-                            resultSet.getInt(4),
-                            resultSet.getInt(5),
-                            resultSet.getInt(6),
-                            NULL_HOMES, //homes == null ? NULL_HOMES : homes,
-                            resultSet.getInt(1),
-                            resultSet.getInt(8)
-                    );
-                } else
-                    return new CustomPlayerDataHolder(
-                            0,
-                            0,
-                            -1,
-                            0,
-                            0,
-                            NULL_HOMES,
-                            0);
+                    return new CustomPlayerDataHolder(resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6), NULL_HOMES, //homes == null ? NULL_HOMES : homes,
+                            resultSet.getInt(1));
+                }
             }
         } catch (SQLException ignored) {
         }
-        return new CustomPlayerDataHolder(
-                0,
-                0,
-                -1,
-                0,
-                0,
-                NULL_HOMES,
-                0);
+        return new CustomPlayerDataHolder(0, 0, -1, 0, 0, NULL_HOMES, 0);
     }
 
     public static void teleportEffect(World w, Location locC) {
@@ -168,7 +223,7 @@ public class Utils {
         Firework firework = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
         FireworkMeta meta = firework.getFireworkMeta();
         meta.setPower(2);
-        meta.addEffect(FireworkEffect.builder().withColor(Initializer.color[Initializer.RANDOM.nextInt(Initializer.color.length)]).withColor(Initializer.color[Initializer.RANDOM.nextInt(Initializer.color.length)]).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
+        meta.addEffect(FireworkEffect.builder().withColor(color[RANDOM.nextInt(color.length)]).withColor(color[RANDOM.nextInt(color.length)]).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
         firework.setFireworkMeta(meta);
     }
 
@@ -224,20 +279,7 @@ public class Utils {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (playerData.get(p.getName()).getRank() > 6) p.sendMessage(staffMSG);
         }
-        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-            try {
-                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
-                connection.setDoOutput(true);
-                try (final OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write((reason == null ? "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" : "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}").getBytes(StandardCharsets.UTF_8));
-                }
-                connection.getInputStream();
-            } catch (IOException ignored) {
-            }
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(p, () -> sendWebhook(reason == null ? "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" : "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}", CACHED_WEBHOOK));
         sender.sendMessage("§7Successfully submitted your report.");
     }
 
@@ -247,39 +289,39 @@ public class Utils {
                 if ((r.getReceiver() == name && r.getSenderF() == requester) || (r.getSenderF() == name && r.getReceiver() == requester))
                     return true;
             } catch (Exception ignored) {
-
             }
         }
         return false;
     }
 
     public static TpaRequest getRequest(String user) {
-        for (TpaRequest r : requests) {
+        ObjectArrayList<TpaRequest> clone = requests.clone();
+        Collections.reverse(clone);
+        for (TpaRequest request : clone) {
             try {
-                if (r.getReceiver() == user || r.getSenderF() == user) return r;
+                if (request.getReceiver() == user || request.getSenderF() == user) return request;
             } catch (Exception ignored) {
             }
         }
-
         return null;
     }
 
     public static TpaRequest getRequest(String user, String lookup) {
-        for (TpaRequest r : requests) {
+        ObjectArrayList<TpaRequest> clone = requests.clone();
+        Collections.reverse(clone);
+        for (TpaRequest request : clone) {
             try {
-                if ((r.getReceiver() == user || r.getSenderF() == user) && (r.getReceiver() == lookup || r.getSenderF() == lookup))
-                    return r;
+                if ((request.getReceiver() == user || request.getSenderF() == user) && (request.getReceiver() == lookup || request.getSenderF() == lookup))
+                    return request;
             } catch (Exception ignored) {
             }
         }
-
         return null;
     }
 
     public static HomeHolder getHome(String x, HomeHolder[] y) {
         for (HomeHolder k : y) {
-            if (k.getName() == x)
-                return k;
+            if (k.getName() == x) return k;
         }
         return null;
     }
@@ -304,22 +346,21 @@ public class Utils {
 
         receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0], new TextComponent(tpahere ? " §7has requested that you teleport to them. " : " §7has requested to teleport to you. "), a, space, b);
 
-        requests.add(request);
-        BukkitTask runnable = new BukkitRunnable() {
+        request.setRunnableid(new BukkitRunnable() {
             @Override
             public void run() {
                 requests.remove(request);
             }
-        }.runTaskLaterAsynchronously(Initializer.p, 2400L);
-        request.setRunnableid(runnable.getTaskId());
+        }.runTaskLater(p, 1200L).getTaskId());
+        requests.add(request);
     }
 
-    public static ItemStack getHead(Player player, String killed) {
+    public static ItemStack getHead(String pname, String cname) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
         SkullMeta skull = (SkullMeta) item.getItemMeta();
-        skull.setDisplayName(player.getDisplayName());
-        skull.setOwner(player.getName());
-        skull.setLore(List.of("§7ᴋɪʟʟᴇʀ " + MAIN_COLOR + "» " + killed));
+        skull.setDisplayName(cname);
+        skull.setOwner(pname);
+        skull.setLore(List.of("§7ᴋɪʟʟᴇʀ " + MAIN_COLOR + "» " + cname));
         item.setItemMeta(skull);
         return item;
     }

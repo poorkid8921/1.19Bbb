@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 
 import static main.utils.Initializer.miniMessage;
-import static main.utils.Utils.translate;
 
 public class Broadcast implements CommandExecutor, TabExecutor {
     @Override
@@ -21,7 +20,7 @@ public class Broadcast implements CommandExecutor, TabExecutor {
                 StringBuilder msg = new StringBuilder();
                 for (String arg : args)
                     msg.append(arg).append(" ");
-                Component msg1 = miniMessage.deserialize("<gold>[<dark_red>Broadcast<gold>] <green>" + translate(msg.toString()));
+                Component msg1 = miniMessage.deserialize("<gold>[<dark_red>Broadcast<gold>] <green>" + msg.toString());
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(msg1);
                 }

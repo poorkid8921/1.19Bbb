@@ -28,13 +28,13 @@ public class DB {
     }
 
     public static int setUsefulData(String name, CustomPlayerDataHolder D0) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,fc FROM data WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    int rank = resultSet.getInt(1);
+                    int rank = resultSet.getInt(3);
                     D0.setRank(rank);
-                    D0.setFastCrystals(resultSet.getBoolean(2));
+                    D0.setFastCrystals(resultSet.getBoolean(14));
                     return rank;
                 }
             }
