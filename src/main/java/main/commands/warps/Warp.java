@@ -2,6 +2,9 @@ package main.commands.warps;
 
 import com.google.common.io.Files;
 import main.Economy;
+import main.utils.Initializer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -10,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -35,7 +39,15 @@ public class Warp implements CommandExecutor, TabExecutor {
         String worldString = cf.getString("a");
         World world = worldString.equals("world") ? Economy.d : Economy.d0;
         Location loc = new Location(world, cf.getDouble("b"), cf.getDouble("c"), cf.getDouble("d"), (float) cf.getDouble("e"), (float) cf.getDouble("f"));
-        ((Player) sender).teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> teleportEffect(world, loc));
+        Player player = (Player) sender;
+        player.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> teleportEffect(world, loc));
+        if (Economy.spawnDistance.distance(loc.getBlockX(), loc.getBlockZ()) < 128) {
+            ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
+            main.utils.holos.Utils.showForPlayerTickable(connection);
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                main.utils.npcs.Utils.showForPlayer(connection);
+            }, 3L);
+        }
         sender.sendMessage("§7Successfully warped to " + SECOND_COLOR + Files.getNameWithoutExtension(f.getName()) + "!");
         return true;
     }

@@ -52,9 +52,6 @@ public class CustomPlayerDataHolder {
     private long lastRTPed;
     @Getter
     @Setter
-    private HomeHolder[] homes;
-    @Getter
-    @Setter
     private int rank;
     @Getter
     @Setter
@@ -75,14 +72,12 @@ public class CustomPlayerDataHolder {
                                   double z,
                                   int deaths,
                                   int kills,
-                                  HomeHolder[] homes,
                                   int rank) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
-        this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = rank;
         this.hashCode = customPlayerDataHashCode++;
@@ -92,14 +87,12 @@ public class CustomPlayerDataHolder {
                                   int t,
                                   double z,
                                   int deaths,
-                                  int kills,
-                                  HomeHolder[] homes) {
+                                  int kills) {
         this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
-        this.homes = homes;
         this.lastChatMS = 0L;
         this.rank = 0;
         this.hashCode = customPlayerDataHashCode++;

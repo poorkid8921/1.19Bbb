@@ -3,7 +3,6 @@ package main.utils;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.HomeHolder;
 import main.utils.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -19,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.bukkit.*;
-import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -37,65 +35,124 @@ import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static main.Economy.d;
 import static main.utils.Initializer.*;
 import static main.utils.storage.DB.connection;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
 public class Utils {
-    public static final HomeHolder[] NULL_HOMES = new HomeHolder[3];
     private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
-    private static final char[] c = new char[]{'K', 'M', 'B'};
-    public static ServerLevel nmsOverworld;
-    private static final ServerChunkCache chunkSource = nmsOverworld.getChunkSource();
-    private static final ThreadedLevelLightEngine lightEngine = chunkSource.getLightEngine();
     public static TextComponent space = new TextComponent("  ");
-    public static NumberFormat economyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+    public static ServerLevel nmsOverworld;
+    public static ServerChunkCache chunkSource = null;
+    public static ThreadedLevelLightEngine lightEngine = null;
 
-    public static void setCuboid(int startX, int startY, int startZ, int endX, int endY, int endZ, Block block, BlockState material, boolean performLightUpdates) {
-        int x1 = Math.min(startX, endX), y1 = Math.min(startY, endY), z1 = Math.min(startZ, endZ);
-        int x2 = Math.max(startX, endX), y2 = Math.max(startY, endY), z2 = Math.max(startZ, endZ);
-        int sizeX = Math.abs(x2 - x1) + 1, sizeY = Math.abs(y2 - y1) + 1;
-        int x3 = 0, y3 = 0, z3 = 0;
-        int locx = x1 + x3, locy = y1 + y3, locz = z1 + z3;
-        BlockPos blockPos;
-        LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
-        LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(locy)];
-        int lastChunkX = 0, lastChunkZ = 0;
-        for (int i = 0; i < sizeX * sizeY * (Math.abs(z2 - z1) + 1); i++) {
-            blockPos = new BlockPos(locx, locy, locz);
-            int sectionX = locx >> 4;
-            int sectionZ = locz >> 4;
-            if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
-                lastChunkX = sectionX;
-                lastChunkZ = sectionZ;
-                chunk = nmsOverworld.getChunkAt(blockPos);
-                section = chunk.getSections()[chunk.getSectionIndex(locy)];
-            }
-            if (chunk.getBlockState(blockPos).getBlock() != block) {
-                if (nmsOverworld.capturedTileEntities.get(blockPos) != null) nmsOverworld.capturedTileEntities.remove(blockPos);
-                section.setBlockState(locx & 15, locy & 15, locz & 15, material);
-                chunkSource.blockChanged(blockPos);
-                if (performLightUpdates) lightEngine.checkBlock(blockPos);
-            }
-            if (++x3 >= sizeX) {
-                x3 = 0;
-                if (++y3 >= sizeY) {
-                    y3 = 0;
-                    ++z3;
+    public static void setCuboid(short[][] positions, Block block, BlockState material) {
+        short startX;
+        short startY;
+        short startZ;
+        short endX;
+        short endY;
+        short endZ;
+        for (short[] k : positions) {
+            startX = k[0];
+            startY = k[1];
+            startZ = k[2];
+            endX = k[3];
+            endY = k[4];
+            endZ = k[5];
+            int x1 = Math.min(startX, endX), y1 = Math.min(startY, endY), z1 = Math.min(startZ, endZ);
+            int x2 = Math.max(startX, endX), y2 = Math.max(startY, endY), z2 = Math.max(startZ, endZ);
+            int sizeX = Math.abs(x2 - x1) + 1, sizeY = Math.abs(y2 - y1) + 1;
+            int x3 = 0, y3 = 0, z3 = 0;
+            int locx = x1 + x3, locy = y1 + y3, locz = z1 + z3;
+            BlockPos blockPos;
+            LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+            LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(locy)];
+            int lastChunkX = 0, lastChunkZ = 0;
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
+                while (System.currentTimeMillis() - start > 50L) {
+                    blockPos = new BlockPos(locx, locy, locz);
+                    int sectionX = locx >> 4;
+                    int sectionZ = locz >> 4;
+                    if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                        lastChunkX = sectionX;
+                        lastChunkZ = sectionZ;
+                        chunk = nmsOverworld.getChunkAt(blockPos);
+                        section = chunk.getSections()[chunk.getSectionIndex(locy)];
+                    }
+                    if (chunk.getBlockState(blockPos).getBlock() != block) {
+                        if (nmsOverworld.capturedTileEntities.get(blockPos) != null)
+                            nmsOverworld.capturedTileEntities.remove(blockPos);
+                        section.setBlockState(locx & 15, locy & 15, locz & 15, material);
+                        chunkSource.blockChanged(blockPos);
+                    }
+                    if (++x3 >= sizeX) {
+                        x3 = 0;
+                        if (++y3 >= sizeY) {
+                            y3 = 0;
+                            ++z3;
+                        }
+                    }
+                    locx = x1 + x3;
+                    locy = y1 + y3;
+                    locz = z1 + z3;
+                    break;
                 }
             }
-            locx = x1 + x3;
-            locy = y1 + y3;
-            locz = z1 + z3;
+        }
+    }
+
+    public static void setArea(int absY, short[][] positions, BlockState material) {
+        short startX;
+        short startZ;
+        short endX;
+        short endZ;
+        for (short[] k : positions) {
+            startX = k[0];
+            startZ = k[1];
+            endX = k[2];
+            endZ = k[3];
+            int x1 = Math.min(startX, endX), z1 = Math.min(startZ, endZ);
+            int x2 = Math.max(startX, endX), z2 = Math.max(startZ, endZ);
+            int sizeX = Math.abs(x2 - x1) + 1;
+            int x3 = 0, z3 = 0;
+            int locx = x1 + x3, locz = z1 + z3;
+            BlockPos blockPos;
+            LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+            int absY15 = absY & 15;
+            LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(absY)];
+            int lastChunkX = 0, lastChunkZ = 0;
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
+                while (System.currentTimeMillis() - start > 50L) {
+                    blockPos = new BlockPos(locx, absY, locz);
+                    int sectionX = locx >> 4;
+                    int sectionZ = locz >> 4;
+                    if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                        lastChunkX = sectionX;
+                        lastChunkZ = sectionZ;
+                        chunk = nmsOverworld.getChunkAt(blockPos);
+                        section = chunk.getSections()[chunk.getSectionIndex(absY)];
+                    }
+                    section.setBlockState(locx & 15, absY15, locz & 15, material);
+                    chunkSource.blockChanged(blockPos);
+                    lightEngine.checkBlock(blockPos);
+                    if (++x3 >= sizeX) {
+                        x3 = 0;
+                        ++z3;
+                    }
+                    locx = x1 + x3;
+                    locz = z1 + z3;
+                    break;
+                }
+            }
         }
     }
 
@@ -129,26 +186,17 @@ public class Utils {
         world.strikeLightningEffect(loc);
     }
 
-    public static String shortFormat(double n, int iteration) {
-        double d = n / 1000;
-        boolean isRound = (d * 10) % 10 == 0;
-        return (d < 1000 ? ((d > 99.9 || isRound || (!isRound && d > 9.99) ? (int) d * 10 / 10 : d + "") + "" + c[iteration]) : shortFormat(d, iteration + 1));
-    }
-
     public static CustomPlayerDataHolder getPlayerData(String name) {
         try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ez,ed,ek FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    //String[] copyHomes = resultSet.getString(7).split(";");
-                    //HomeHolder[] homes = new HomeHolder[copyHomes.length];
-                    return new CustomPlayerDataHolder(resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6), NULL_HOMES, //homes == null ? NULL_HOMES : homes,
-                            resultSet.getInt(1));
+                    return new CustomPlayerDataHolder(resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6), resultSet.getInt(1));
                 }
             }
         } catch (SQLException ignored) {
         }
-        return new CustomPlayerDataHolder(0, 0, -1, 0, 0, NULL_HOMES, 0);
+        return new CustomPlayerDataHolder(0, 0, -1, 0, 0, 0);
     }
 
     public static void teleportEffect(World w, Location locC) {
@@ -165,15 +213,6 @@ public class Utils {
 
     public static boolean isPlayerUnRanked(String name) {
         return playerData.get(name).getRank() < 4;
-    }
-
-    public static double getMoneyValue(double i, char sanitized) {
-        switch (Character.toLowerCase(sanitized)) {
-            case 'k' -> i *= 1000;
-            case 'm' -> i *= 1_000_000;
-            case 'b' -> i *= 1_000_000_000;
-        }
-        return i;
     }
 
     public static String getTime(Player p) {
@@ -315,13 +354,6 @@ public class Utils {
                     return request;
             } catch (Exception ignored) {
             }
-        }
-        return null;
-    }
-
-    public static HomeHolder getHome(String x, HomeHolder[] y) {
-        for (HomeHolder k : y) {
-            if (k.getName() == x) return k;
         }
         return null;
     }

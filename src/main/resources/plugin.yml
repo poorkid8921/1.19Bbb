@@ -52,12 +52,6 @@ commands:
   rtp:
     usage: /<command>
     aliases: wild
-  rsethome:
-    usage: /<command>
-  rhome:
-    usage: /<command>
-  rdelhome:
-    usage: /<command>
   playtime:
     usage: /<command>
   kit:
@@ -68,10 +62,6 @@ commands:
   setrank:
     usage: /<command>
   rgc:
-    usage: /<command>
-  rpay:
-    usage: /<command>
-  rbaltop:
     usage: /<command>
   grindstone:
     usage: /<command>

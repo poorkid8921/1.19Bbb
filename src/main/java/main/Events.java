@@ -207,11 +207,10 @@ public class Events implements Listener {
 
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
-        Inventory c = e.getClickedInventory();
+        if (e.getClickedInventory() instanceof PlayerInventory)
+            return;
         Player p = (Player) e.getWhoClicked();
         String name = p.getName();
-        if (c instanceof PlayerInventory)
-            return;
         CustomPlayerDataHolder D0 = playerData.get(name);
         Pair<Integer, String> inv = D0.getInventoryInfo();
         if (inv == null) return;
@@ -300,7 +299,7 @@ public class Events implements Listener {
             } else w.strikeLightningEffect(loc);
 
             if (Initializer.RANDOM.nextInt(100) < 6)
-                w.dropItemNaturally(loc, Utils.getHead(name, D1.getFRank(name)));
+                e.getDrops().add(Utils.getHead(name, D1.getFRank(kp)));
         }
     }
 
@@ -339,7 +338,7 @@ public class Events implements Listener {
             Initializer.msg.add(name);
             Initializer.tpa.sort(String::compareToIgnoreCase);
             Initializer.msg.sort(String::compareToIgnoreCase);
-            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0, NULL_HOMES, 0));
+            playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0));
             return;
         }
         CustomPlayerDataHolder D = playerData.get(name);

@@ -45,7 +45,7 @@ public class AutoTotem extends SimplePacketListenerAbstract {
     }
 
     public static boolean tryBanningSync(Player player, String name, CustomPlayerDataHolder D0) {
-        if (!name.startsWith(".") && player.getPing() < 300 && D0.incrementFlags() == 10) {
+        if (!name.startsWith(".") && player.getPing() < 300 && D0.incrementFlags() == 5) {
             Bukkit.getScheduler().runTask(p, () -> {
                 banEffect(player);
                 player.kickPlayer(EXPLOITING_KICK);

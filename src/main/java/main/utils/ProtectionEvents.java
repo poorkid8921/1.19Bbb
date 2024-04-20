@@ -42,10 +42,7 @@ public class ProtectionEvents implements Listener {
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
         if (flatRegionHolder.test(x, z) && block.getType() != Material.OBSIDIAN) {
-            Player p = e.getPlayer();
-            if (p.isOp()) return;
-            p.sendMessage(EXCEPTION_INTERACTION);
-            e.setCancelled(true);
+            if (!e.getPlayer().isOp()) e.setCancelled(true);
             return;
         }
         int y = loc.getBlockY();
@@ -75,9 +72,8 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onPlayerTeleport(PlayerTeleportEvent e) {
-        if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND)
-            return;
-        if (playerData.get(e.getPlayer().getName()).isTagged())
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND &&
+                playerData.get(e.getPlayer().getName()).isTagged())
             e.setCancelled(true);
     }
 
