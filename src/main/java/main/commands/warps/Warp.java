@@ -26,13 +26,11 @@ public class Warp implements CommandExecutor, TabExecutor {
             sender.sendMessage("§7You must specify a warp!");
             return true;
         }
-
-        File f = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
+        File f = new File(Practice.dataFolder + "/warps/" + args[0].toLowerCase() + ".yml");
         if (!f.exists()) {
             sender.sendMessage("§7The specified warp doesn't exist.");
             return true;
         }
-
         FileConfiguration cf = YamlConfiguration.loadConfiguration(f);
         String worldString = cf.getString("a");
         World world = worldString.equals("world") ? Practice.d : Practice.d0;

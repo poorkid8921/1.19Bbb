@@ -33,7 +33,10 @@ public class CustomPlayerDataHolder {
     private Location back;
     @Getter
     @Setter
-    private int lastPacket = 0;
+    private int lastPacket = 5;
+    @Getter
+    @Setter
+    private int lastItemPacket = 0;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -52,6 +55,8 @@ public class CustomPlayerDataHolder {
     @Setter
     private long lastChatMS = 0L;
     private int flags;
+    @Setter
+    private int flatFlags;
     @Getter
     @Setter
     private boolean fastCrystals = true;
@@ -61,6 +66,9 @@ public class CustomPlayerDataHolder {
     @Getter
     @Setter
     private long lastTagged;
+    @Getter
+    @Setter
+    private int preLastPacket = 0;
 
     public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills) {
         this.killeffect = c;
@@ -109,6 +117,10 @@ public class CustomPlayerDataHolder {
         return flags++;
     }
 
+    public int incrementFlatFlags() {
+        return flatFlags++;
+    }
+
     public void setupCombatRunnable(Player player) {
         this.currentTagTime = 10;
         this.runnableid = new BukkitRunnable() {
@@ -155,7 +167,7 @@ public class CustomPlayerDataHolder {
 
     @Override
     public boolean equals(Object o) {
-        return o.hashCode() == hashCode;
+        return this == o || o.hashCode() == hashCode;
     }
 
     @Override

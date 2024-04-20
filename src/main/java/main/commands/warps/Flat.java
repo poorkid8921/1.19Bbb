@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static main.utils.Initializer.MAIN_COLOR;
-import static main.utils.Initializer.inFlat;
 
 public class Flat implements CommandExecutor, TabExecutor {
     @Override
@@ -27,7 +26,6 @@ public class Flat implements CommandExecutor, TabExecutor {
         p.setHealth(20D);
         //showForPlayer(((CraftPlayer) p).getHandle().connection);
         p.teleportAsync(Initializer.flat, PlayerTeleportEvent.TeleportCause.COMMAND);
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> inFlat.add(p), 3L);
         return true;
     }
 

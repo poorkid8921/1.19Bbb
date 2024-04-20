@@ -24,7 +24,7 @@ public class RegionHolder extends AbstractRegionHolder {
     }
 
     @Override
-    public boolean damageTest(int x, int y, int z) {
+    public boolean testDamage(int x, int y, int z) {
         return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
     }
 }

@@ -9,7 +9,7 @@ import net.minecraft.world.item.Item;
 
 public class Utils {
     public static LoopableHologramHolder[] holos = new LoopableHologramHolder[2];
-    public static LoopableHologramHolder[] tickableHolos = new LoopableHologramHolder[8];
+    public static LoopableHologramHolder[] tickableHolos = new LoopableHologramHolder[6];
     public static ClientboundAddEntityPacket[] itemHolos = new ClientboundAddEntityPacket[1];
 
     public static void init() {

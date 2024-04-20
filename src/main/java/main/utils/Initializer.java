@@ -35,8 +35,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
     public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(-36, 36, 36, -36);
-    public static final AbstractRegionHolder nethPotSpawnRegionHolder = new YDeficientRegionHolder(-287, 64, -301, 77);
-    public static final AbstractRegionHolder nethPotArenaRegionHolder = new DamageAllowedAndYDeficientRegionHolder(-232, 132, -356, 8);
     public static final Color[] color = new Color[]{org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW};
     public static final YDeficientRegionHolder disallowedTntMinecartsRegionHolder = new YDeficientRegionHolder(92, 458, -98, 268);
     public static final AbstractRegionHolder[] regions = new AbstractRegionHolder[]{
@@ -48,18 +46,16 @@ public class Initializer {
             new YDeficientRegionHolder(5, -301, -120, -301),// ffa_3
             new YDeficientRegionHolder(-120, -300, -120, -176),// ffa_4
             new RegionHolder(92, 177, 458, -98, 118, 268),// flat
-            new RegionHolder(92, 114, 458, -98, 114, 268), // flatdown
-            nethPotSpawnRegionHolder, // nethpot spawn
-            nethPotArenaRegionHolder // nethpot arena
+            new RegionHolder(92, 114, 458, -98, 114, 268) // flatdown
     };
-    public static Cache<Integer, Location> crystalsToBeOptimized = Caffeine.newBuilder().expireAfterWrite(Duration.ofSeconds(2)).build();
+    public static Map<Integer, Location> crystalsToBeOptimized = new Int2ObjectOpenHashMap<>();
     public static Map<String, CustomPlayerDataHolder> playerData = new Object2ObjectOpenHashMap<>();
     public static ObjectArrayList<TpaRequest> requests = ObjectArrayList.of();
     public static ObjectOpenHashSet<String> bannedFromflat = ObjectOpenHashSet.of();
     public static ObjectArrayList<String> tpa = ObjectArrayList.of();
     public static ObjectArrayList<String> msg = ObjectArrayList.of();
     public static ObjectOpenHashSet<Player> inFFA = ObjectOpenHashSet.of();
-    public static ObjectOpenHashSet<Player> inFlat = ObjectOpenHashSet.of();
+    public static ObjectOpenHashSet<String> inFlat = ObjectOpenHashSet.of();
     public static ObjectOpenHashSet<String> atSpawn = ObjectOpenHashSet.of();
     public static ObjectOpenHashSet<String> playersRTPing = ObjectOpenHashSet.of();
     public static Location[] overworldRTP = new Location[100];
@@ -67,7 +63,6 @@ public class Initializer {
     public static Location ffa;
     public static Location flat;
     public static Location spawn;
-    public static Location nethpot;
     public static Practice p;
     public static ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
@@ -195,6 +190,9 @@ public class Initializer {
         }
         EXCEPTION_TAGGED = MAIN_COLOR + "ʏᴏᴜ ᴄᴀɴ'ᴛ ᴜsᴇ ᴄᴏᴍᴍᴀɴᴅs ɪɴ ᴄᴏᴍʙᴀᴛ!";
         BC_KITS = "§7ᴛʏᴘᴇ " + MAIN_COLOR + "/kit §7ᴏʀ " + MAIN_COLOR + "/k §7ᴛᴏ ɢᴇᴛ ꜱᴛᴀʀᴛᴇᴅ";
+        MOTD = new String[]{"§7---------------------------------------",
+                BC_KITS,
+                "§7---------------------------------------"};
         BACK = MiniMessage.miniMessage().deserialize("<gray>Use <#fc282f>/back <gray>to return to your death location.");
         EXCEPTION_INTERACTION = SECOND_COLOR + "You can't interact here!";
         EXCEPTION_PVP = SECOND_COLOR + "You can't PvP here!";
@@ -203,9 +201,6 @@ public class Initializer {
                 "§7ʀᴇᴀsᴏɴ " + MAIN_COLOR + "» §7ᴄʜᴇᴀᴛɪɴɢ\n" +
                 "§7ᴅᴜʀᴀᴛɪᴏɴ " + MAIN_COLOR + "» §75 days\n\n" +
                 "§7ᴅɪsᴄᴏʀᴅ " + MAIN_COLOR + "» §7discord.gg/catsmp";
-        MOTD = new String[]{"§7---------------------------------------",
-                Initializer.BC_KITS,
-                "§7---------------------------------------"};
 
         Bukkit.getPluginManager().registerEvents(new Events(), p);
         Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), p);
@@ -231,17 +226,10 @@ public class Initializer {
                 0.5D,
                 86.06250D,
                 0.5D);
-        Initializer.nethpot = new Location(Practice.d,
-                -293.5D,
-                118.0625D,
-                70.5D);
         Initializer.spawn.setYaw(
                 90F
         );
         Initializer.flat.setYaw(
-                90F
-        );
-        Initializer.nethpot.setYaw(
                 90F
         );
         DB.init();
@@ -250,17 +238,16 @@ public class Initializer {
         main.utils.tab.Utils.init();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
             long expireDate = System.currentTimeMillis() - 1800000L;
-            for (Map.Entry<String, CustomPlayerDataHolder> D0 : playerData.entrySet()) {
-                CustomPlayerDataHolder value = D0.getValue();
-                if (expireDate > value.getLastTimeKitWasUsed()) {
+            Player p;
+            for (Map.Entry<String, CustomPlayerDataHolder> D0 : playerData.entrySet())
+                if (expireDate > D0.getValue().getLastTimeKitWasUsed()) {
                     String key = D0.getKey();
-                    Player p = Bukkit.getPlayer(key);
+                    p = Bukkit.getPlayer(key);
                     if (p != null) {
                         p.kickPlayer("§7You have been kicked for being too inactive!");
-                        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> playerData.remove(key), 5L);
+                        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> playerData.remove(key), 1L);
                     }
                 }
-            }
         }, 0L, 3600L);
     }
 }

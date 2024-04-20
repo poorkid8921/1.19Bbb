@@ -28,6 +28,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
@@ -72,12 +73,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerRegisterChannel(PlayerRegisterChannelEvent e) {
-        if (e.getChannel().equals("hcscr:haram"))
-            e.getPlayer().sendPluginMessage(p, "hcscr:haram", new byte[] {1});
-    }
-
-    @EventHandler
     private void onEntitySpawn(EntitySpawnEvent event) {
         Entity ent = event.getEntity();
         if (ent instanceof EnderCrystal) {
@@ -91,6 +86,12 @@ public class Events implements Listener {
             }
         }
         event.setCancelled(ent.getChunk().getEntities().length > 32);
+    }
+
+    @EventHandler
+    private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent e) {
+        if (e.getEntity() instanceof EnderCrystal ent)
+            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(ent.getEntityId()), 40L);
     }
 
     @EventHandler
@@ -130,8 +131,8 @@ public class Events implements Listener {
             Player p = e.getPlayer();
             String name = p.getName();
             atSpawn.remove(name);
+            inFlat.remove(name);
             inFFA.remove(p);
-            inFlat.remove(p);
         }
     }
 
@@ -168,14 +169,16 @@ public class Events implements Listener {
         msg.sort(String::compareToIgnoreCase);
         tpa.sort(String::compareToIgnoreCase);
 
-        atSpawn.remove(name);
         inFFA.remove(p);
-        inFlat.remove(p);
+        atSpawn.remove(name);
+        inFlat.remove(name);
     }
 
     @EventHandler
     private void onInventoryClick(InventoryClickEvent e) {
         Inventory c = e.getClickedInventory();
+        if (c instanceof PlayerInventory)
+            return;
         Player p = (Player) e.getWhoClicked();
         String name = p.getName();
         Pair<Integer, String> inv = inInventory.getOrDefault(name, null);
@@ -193,7 +196,6 @@ public class Events implements Listener {
                     case 13 -> Utils.killeffect(p, 0, "ᴛʜᴇ ʟɪɢʜᴛɴɪɴɢ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 150);
                     case 14 -> Utils.killeffect(p, 1, "ᴛʜᴇ ᴇxᴘʟᴏꜱɪᴏɴ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 250);
                     case 15 -> Utils.killeffect(p, 2, "ᴛʜᴇ ꜰɪʀᴇᴡᴏʀᴋ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 450);
-                    case 16 -> Utils.killeffect(p, 3, "ᴛʜᴇ ᴅᴇʟᴀʏᴇᴅ ᴅᴇᴀᴛʜ ᴋɪʟʟ ᴇꜰꜰᴇᴄᴛ", 625);
                 }
             } // settings: killeffect
             case 1 -> {
@@ -257,8 +259,9 @@ public class Events implements Listener {
     private void onDeath(PlayerDeathEvent e) {
         Player p = e.getPlayer();
         String name = p.getName();
-        if (inFFA.contains(p)) inFFA.remove(p);
-        else e.getDrops().clear();
+        if (inFlat.contains(name))
+            e.getDrops().clear();
+        else if(inFFA.contains(p)) inFFA.remove(p);
         Location l = p.getLocation();
         CustomPlayerDataHolder D0 = playerData.get(name);
         D0.untag();
@@ -266,14 +269,17 @@ public class Events implements Listener {
         D0.setBack(l);
         p.sendMessage(BACK);
         Player killer = p.getKiller();
-        if (killer == null || killer == p) {
-            String lastTaggedBy = D0.getLastTaggedBy();
-            if (lastTaggedBy != null) {
-                CustomPlayerDataHolder lastTaggedD0 = playerData.get(lastTaggedBy);
-                if (lastTaggedD0.getLastTaggedBy() == lastTaggedBy) lastTaggedD0.untag();
-                D0.setLastTaggedBy(null);
+        String lastTaggedBy = D0.getLastTaggedBy();
+        if (lastTaggedBy != null) {
+            CustomPlayerDataHolder lastTaggedD0 = playerData.get(lastTaggedBy);
+            if (lastTaggedD0.getLastTaggedBy() == lastTaggedBy) {
+                lastTaggedD0.untag();
+                lastTaggedD0.setLastTaggedBy(null);
             }
-            e.setDeathMessage(SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
+            D0.setLastTaggedBy(null);
+        }
+        if (killer == null || killer == p) {
+            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (p.getLastDamageCause().getCause()) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -288,15 +294,9 @@ public class Events implements Listener {
                 case HOT_FLOOR -> "was heated up pretty good";
                 case VOID -> "fell into the void";
                 default -> "suicided";
-            });
+            };
+            e.setDeathMessage(death);
         } else {
-            String lastTaggedBy = D0.getLastTaggedBy();
-            if (lastTaggedBy != null) {
-                CustomPlayerDataHolder lastTaggedD0 = playerData.get(lastTaggedBy);
-                if (lastTaggedD0.getLastTaggedBy() == lastTaggedBy) lastTaggedD0.untag();
-                D0.setLastTaggedBy(null);
-            }
-
             String killerName = killer.getName();
             CustomPlayerDataHolder D1 = playerData.get(killerName);
             D1.untag();
@@ -342,10 +342,10 @@ public class Events implements Listener {
         e.setJoinMessage(JOIN_PREFIX + name);
         p.teleport(spawn);
         ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        main.utils.holos.Utils.showForPlayerTickable(connection);
         Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-            main.utils.npcs.Utils.showForPlayerUnique(connection);
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> main.utils.holos.Utils.showForPlayerTickable(connection), 2L);
-        }, 2L);
+            main.utils.npcs.Utils.showForPlayer(connection);
+        }, 3L);
         atSpawn.add(name);
         CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
@@ -407,10 +407,10 @@ public class Events implements Listener {
         String name = p.getName();
         atSpawn.add(name);
         e.setRespawnLocation(spawn);
+        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        main.utils.holos.Utils.showForPlayerTickable(connection);
         Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-            ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
             main.utils.npcs.Utils.showForPlayer(connection);
-            main.utils.holos.Utils.showForPlayerTickable(connection);
             for (main.utils.npcs.Utils.LoopableNPCHolder NPC : NPCs) {
                 Entity entity = NPC.NPC().getBukkitEntity();
                 Location loc = entity.getLocation();

@@ -5,19 +5,16 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 import static main.utils.Initializer.MAIN_COLOR;
-import static main.utils.Initializer.SECOND_COLOR;
 
-public class SetWarp implements CommandExecutor, TabExecutor {
+public class SetWarp implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String errMSG = "§7You must specify a warp!";
         if (args.length == 0) {
@@ -25,18 +22,21 @@ public class SetWarp implements CommandExecutor, TabExecutor {
             return true;
         }
 
-        String sanitized = args[0].replaceAll("[A-Za-z0-9]", "");
+        String lowerCaseArg = args[0].toLowerCase();
+        String sanitized = lowerCaseArg.replaceAll("[a-z0-9]", "");
         if (!sanitized.isEmpty()) {
             sender.sendMessage(errMSG);
             return true;
         }
 
-        File file = new File(Practice.dataFolder + "/warps/" + args[0] + ".yml");
+        File file = new File(Practice.dataFolder + "/warps/" + lowerCaseArg + ".yml");
         if (file.exists()) {
-            sender.sendMessage("§7You must specify a warp that doesn't already exist!");
-            return true;
+            if (!sender.isOp()) {
+                sender.sendMessage("§7You must specify a warp that doesn't already exist!");
+                return true;
+            } else
+                file.delete();
         }
-
         try {
             file.createNewFile();
         } catch (IOException ignored) {
@@ -55,12 +55,7 @@ public class SetWarp implements CommandExecutor, TabExecutor {
             config.save(file);
         } catch (IOException ignored) {
         }
-        sender.sendMessage("§7Successfully setted the warp " + SECOND_COLOR + args[0] + "!");
+        sender.sendMessage("§7Successfully setted the warp " + MAIN_COLOR + args[0]);
         return true;
-    }
-
-    @Override
-    public java.util.List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return Collections.emptyList();
     }
 }

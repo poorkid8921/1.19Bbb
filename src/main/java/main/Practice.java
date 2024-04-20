@@ -11,15 +11,11 @@ import main.ac.events.*;
 import main.ac.events.worldreader.PacketWorldReaderEighteen;
 import main.ac.player.GrimPlayer;
 import main.commands.FastCrystals;
-import main.commands.essentials.*;
 import main.commands.essentials.List;
+import main.commands.essentials.*;
 import main.commands.tpa.*;
 import main.commands.warps.*;
-import main.utils.AutoTotem;
-import main.utils.Gui;
-import main.utils.Initializer;
-import main.utils.TeleportCompleter;
-import main.utils.arenas.*;
+import main.utils.*;
 import main.utils.kits.ClaimCommand;
 import main.utils.kits.KitCommand;
 import main.utils.kits.storage.KitRoomFile;
@@ -27,13 +23,18 @@ import main.utils.kits.storage.KitsFile;
 import main.utils.npcs.InteractAtNPC;
 import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
+import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,9 +48,11 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
-import static org.bukkit.Bukkit.getMessenger;
+import static main.utils.Utils.chunkSource;
+import static main.utils.Utils.nmsOverworld;
 
 public class Practice extends JavaPlugin {
+    private static final Point point = new Point(0, 0);
     public static File dataFolder;
     public static World d;
     public static World d0;
@@ -91,110 +94,23 @@ public class Practice extends JavaPlugin {
         }
     }
 
-    private Location getRandomLoc(World w) {
+    private Location getRandomLoc(World w,  Location[] RTP) {
         Location loc = null;
         while (loc == null) {
             int boundX = Initializer.RANDOM.nextInt(-10000, 10000);
             int boundZ = Initializer.RANDOM.nextInt(-10000, 10000);
-            Block b = w.getHighestBlockAt(boundX, boundZ);
-            if (b.isSolid()) loc = new Location(w, boundX, b.getY() + 1, boundZ);
-            Point point = new Point(0, 0);
-            for (Location loc1 : overworldRTP) {
+            for (Location loc1 : RTP) {
                 if (loc1 == null)
                     break;
-                int x = loc1.getBlockX();
-                int z = loc1.getBlockZ();
-                point.setLocation(x, z);
-                if (point.distance(boundX, boundZ) < 50) {
-                    loc = null;
+                point.setLocation(loc1.getBlockX(), loc1.getBlockZ());
+                if (point.distance(boundX, boundZ) < 1000)
                     break;
-                }
             }
+            Block b = w.getHighestBlockAt(boundX, boundZ);
+            if (b.isSolid())
+                loc = new Location(w, boundX, b.getY() + 1, boundZ);
         }
         return loc;
-    }
-
-    private void setupArenas() {
-        for (File file : new File(dataFolder, "arenas").listFiles()) {
-            Arena arena;
-            try {
-                byte[] readBytes = Files.readAllBytes(file.toPath());
-                int firstSectionSplit = ArrayUtils.indexOf(readBytes, (byte) '\u0002');
-                byte[] header = Arrays.copyOfRange(readBytes, 0, firstSectionSplit);
-                String headerString = new String(header, StandardCharsets.US_ASCII);
-                String name = headerString.split(",")[0];
-                int xx1 = Integer.parseInt(headerString.split(",")[1]);
-                int yy1 = Integer.parseInt(headerString.split(",")[2]);
-                int zz1 = Integer.parseInt(headerString.split(",")[3]);
-
-                World w = Bukkit.getWorld("world");
-                Location corner1 = new Location(w, xx1, yy1, zz1);
-
-                int xx2 = Integer.parseInt(headerString.split(",")[4]);
-                int yy2 = Integer.parseInt(headerString.split(",")[5]);
-                int zz2 = Integer.parseInt(headerString.split(",")[6]);
-
-                Location corner2 = new Location(w, xx2, yy2, zz2);
-                int keySectionSplit = ArrayUtils.indexOf(readBytes, (byte) '\u0002', firstSectionSplit + 1);
-                byte[] keyBytes = Arrays.copyOfRange(readBytes, firstSectionSplit + 1, keySectionSplit);
-                java.util.List<Material> blockDataSet = new ArrayList<>();
-
-                for (byte[] key : Utils.split(new byte[]{'\u0003'}, keyBytes)) {
-                    String blockData = new String(key, StandardCharsets.US_ASCII);
-                    try {
-                        blockDataSet.add(Material.valueOf(blockData));
-                    } catch (IllegalArgumentException e) {
-                        try {
-                            blockDataSet.add(Material.valueOf(blockData.split("\\[")[0]));
-                        } catch (IllegalArgumentException ignored) {
-                            return;
-                        }
-                    }
-                }
-
-                arena = new Arena(name, corner1, corner2);
-                arena.setKeys(blockDataSet);
-                byte[] blockBytes = Arrays.copyOfRange(readBytes, keySectionSplit + 1, readBytes.length);
-
-                ByteBuffer bb = ByteBuffer.allocate(2);
-                bb.put(blockBytes[0]);
-                bb.put(blockBytes[1]);
-                short sectionCount = bb.getShort(0);
-                short currentSection = 0;
-                blockBytes = Arrays.copyOfRange(blockBytes, 2, blockBytes.length);
-
-                ByteBuffer buffer = ByteBuffer.allocate(blockBytes.length);
-                buffer.put(blockBytes);
-                buffer.position(0);
-
-                while (currentSection < sectionCount) {
-                    int x1 = buffer.getInt();
-                    int y1 = buffer.getInt();
-                    int z1 = buffer.getInt();
-                    int x2 = buffer.getInt();
-                    int y2 = buffer.getInt();
-                    int z2 = buffer.getInt();
-                    Location start = new Location(corner1.getWorld(), x1, y1, z1);
-                    Location end = new Location(corner1.getWorld(), x2, y2, z2);
-                    int left = buffer.getInt();
-                    int numLeft = left / 2;
-
-                    short[] amounts = new short[numLeft];
-                    short[] types = new short[numLeft];
-
-                    for (int i = 0; i < numLeft; i++) {
-                        amounts[i] = buffer.getShort();
-                        types[i] = buffer.getShort();
-                    }
-
-                    arena.getSections().add(new Section(arena, currentSection, start, end, types, amounts));
-                    currentSection++;
-                }
-            } catch (Exception ignored) {
-                arena = null;
-            }
-            if (arena != null) Arena.arenas.put(arena.getName(), arena);
-        }
     }
 
     public void saveKitMap() {
@@ -235,10 +151,8 @@ public class Practice extends JavaPlugin {
         this.getCommand("spawn").setExecutor(new Spawn());
         this.getCommand("ffa").setExecutor(new Ffa());
         this.getCommand("flat").setExecutor(new Flat());
-        this.getCommand("nethpot").setExecutor(new Nethpot());
         this.getCommand("warp").setExecutor(new Warp());
         this.getCommand("setwarp").setExecutor(new SetWarp());
-        this.getCommand("acreate").setExecutor(new CreateCommand());
         this.getCommand("gmc").setExecutor(new GMc());
         this.getCommand("gms").setExecutor(new GMs());
         this.getCommand("gmsp").setExecutor(new GMsp());
@@ -251,7 +165,6 @@ public class Practice extends JavaPlugin {
         this.getCommand("tpall").setExecutor(new TeleportAll());
         this.getCommand("setrank").setExecutor(new SetRank());
         this.getCommand("broadcast").setExecutor(new Broadcast());
-        this.getCommand("areset").setExecutor(new ResetCommand());
         this.getCommand("settings").setExecutor(new Settings());
         this.getCommand("banip").setExecutor(new BanIP());
         this.getCommand("fastcrystals").setExecutor(new FastCrystals());
@@ -270,21 +183,7 @@ public class Practice extends JavaPlugin {
     }
 
     private void registerPacketListeners() {
-        PacketEvents.getAPI().getEventManager().registerListeners(new InteractionListeners(), new LastPacketEvent(), new AutoTotem(), new InteractAtNPC(),
-                new PacketPlayerJoinQuit(),
-                new PacketPingListener(),
-                new PacketPlayerDigging(),
-                new PacketPlayerAttack(),
-                new PacketEntityAction(),
-                new PacketBlockAction(),
-                new PacketSelfMetadataListener(),
-                new PacketServerTeleport(),
-                new PacketPlayerCooldown(),
-                new PacketPlayerRespawn(),
-                new CheckManagerListener(),
-                new PacketPlayerSteer(),
-                new PacketWorldReaderEighteen(),
-                new PacketSetWrapperNull());
+        PacketEvents.getAPI().getEventManager().registerListeners(new InteractionListeners(), new LastPacketEvent(), new AutoTotem(), new InteractAtNPC());
         PacketEvents.getAPI().init();
     }
 
@@ -313,58 +212,102 @@ public class Practice extends JavaPlugin {
         Bukkit.getScheduler().runTaskLater(this, () -> {
             d = Bukkit.getWorld("world");
             d0 = Bukkit.getWorld("world_the_end");
-            for (int i = 0; i < 101; i++) {
+            nmsOverworld = ((CraftWorld) d).getHandle();
+            chunkSource = nmsOverworld.getChunkSource();
+            main.utils.Utils.lightEngine = chunkSource.getLightEngine();
+            for (short i = 0; i < 101; i++) {
                 if (i == 100) {
                     getCommand("rtp").setExecutor(new RTP());
-                    Arena flat = Arena.getArenas().get("flat");
-                    Arena ffa = Arena.getArenas().get("ffa");
                     Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
                         for (Entity ent : d.getEntities()) {
-                            if (!(ent instanceof EnderPearl) && !(ent instanceof Player))
-                                ent.remove();
+                            if (!(ent instanceof EnderPearl) && !(ent instanceof Player)) ent.remove();
                         }
                         ticked++;
-                        flat.reset(10000000);
+                        main.utils.Utils.setCuboid(92, 115, 268, -98, 117, 458, Blocks.AIR, Blocks.AIR.defaultBlockState());
                         if (ticked == 3) {
-                            if (flatstr++ == 6) flatstr = 1;
-                            Arena.getArenas().get("f_p" + flatstr).reset(10000000);
-                            String UNBAN_MSG = "§7You are now unbanned from " + MAIN_COLOR + "/flat!";
+                            switch (flatstr++) {
+                                case 1 -> {
+                                    main.utils.Utils.setArea(114, -98, 458, 92, 268, Blocks.NETHERITE_BLOCK.defaultBlockState());
+                                }
+                                case 2 -> {
+                                    main.utils.Utils.setArea(114, -98, 458, 92, 268,
+                                            new BlockState[]{
+                                                    Blocks.STRIPPED_DARK_OAK_WOOD.defaultBlockState(),
+                                                    Blocks.STRIPPED_OAK_WOOD.defaultBlockState(),
+                                                    Blocks.STRIPPED_BIRCH_WOOD.defaultBlockState(),
+                                                    Blocks.STRIPPED_SPRUCE_WOOD.defaultBlockState()
+                                            },
+                                            5);
+                                }
+                                case 3 -> {
+                                    main.utils.Utils.setArea(114, -98, 458, 92, 268,
+                                            new BlockState[]{
+                                                    Blocks.STONE.defaultBlockState(),
+                                                    Blocks.MOSSY_COBBLESTONE.defaultBlockState(),
+                                                    Blocks.MOSS_BLOCK.defaultBlockState(),
+                                                    Blocks.GRASS_BLOCK.defaultBlockState()
+                                            },
+                                            5);
+                                }
+                                case 4 -> {
+                                    main.utils.Utils.setArea(114, -98, 458, 92, 268, Blocks.STONE_BRICKS.defaultBlockState());
+                                }
+                                case 5 -> {
+                                    main.utils.Utils.setArea(114, -98, 458, 92, 268,
+                                            new BlockState[]{
+                                                    Blocks.STONE.defaultBlockState(),
+                                                    Blocks.SMOOTH_QUARTZ.defaultBlockState()
+                                            },
+                                            3);
+                                    flatstr = 1;
+                                }
+                            }
+                            String UNBAN_MSG = "§7You are now unbanned from " + SECOND_COLOR + "/flat!";
                             for (String p : bannedFromflat)
                                 Bukkit.getPlayer(p).sendMessage(UNBAN_MSG);
                             bannedFromflat.clear();
                         } else if (ticked == 4) {
                             ticked = 0;
-                            ffa.reset(10000000);
+                            main.utils.Utils.setCuboid(-119, 96, -300, 5, 94, -176,
+                                    Blocks.AIR,
+                                    Blocks.AIR.defaultBlockState());
+                            main.utils.Utils.setArea(93, -119, -300, 5, -176, Blocks.GRASS_BLOCK.defaultBlockState());
+                            main.utils.Utils.setCuboid(-119, 92, -300, 5, 89, -176,
+                                    Blocks.DIRT,
+                                    Blocks.DIRT.defaultBlockState());
+                            main.utils.Utils.setCuboid(-119, 88, -300, 5, -63, -176,
+                                    Blocks.STONE,
+                                    Blocks.STONE.defaultBlockState());
+                            Location location;
                             for (Player k : inFFA) {
-                                Location location = k.getLocation();
+                                location = k.getLocation();
                                 location.setY(94);
                                 k.teleport(location);
                             }
-                            for (String msg : Initializer.MOTD)
-                                for (Player p : Bukkit.getOnlinePlayers())
+                            for (Player p : Bukkit.getOnlinePlayers())
+                                for (String msg : Initializer.MOTD)
                                     p.sendMessage(msg);
                         }
                     }, 0L, 2400L);
                     Bukkit.getLogger().warning("Finished RTP population.");
                     return;
                 }
-                overworldRTP[i] = getRandomLoc(d);
-                endRTP[i] = getRandomLoc(d0);
+                short finalI = i;
+                Bukkit.getScheduler().runTaskLater(this, () -> {
+                    overworldRTP[finalI] = getRandomLoc(d, overworldRTP);
+                    endRTP[finalI] = getRandomLoc(d0, endRTP);
+                }, 1L);
             }
         }, 100L);
         registerCommands();
-        setupArenas();
         Gui.init();
         registerPacketListeners();
         Initializer.init();
-        setupAnticheat();
 
         KitsFile.setup();
         KitRoomFile.setup();
-        if (KitsFile.get().contains("data"))
-            restoreKitMap();
+        if (KitsFile.get().contains("data")) restoreKitMap();
         restoreKitRoom();
-        getMessenger().registerOutgoingPluginChannel(this, "hcscr:haram");
     }
 
     @Override

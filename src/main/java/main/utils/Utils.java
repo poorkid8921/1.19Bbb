@@ -9,7 +9,16 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ThreadedLevelLightEngine;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.bukkit.*;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +49,129 @@ public class Utils {
     static TextComponent space = new TextComponent("  ");
     static Text ACCEPT_TEXT = new Text("§7Click to accept the teleportation request");
     static Text DENY_TEXT = new Text("§7Click to deny the teleportation request");
+
+    public static ServerLevel nmsOverworld;
+    public static ServerChunkCache chunkSource = null;
+    public static ThreadedLevelLightEngine lightEngine = null;
+
+    public static void setCuboid(int startX, int startY, int startZ, int endX, int endY, int endZ, Block block, BlockState material) {
+        int x1 = Math.min(startX, endX), y1 = Math.min(startY, endY), z1 = Math.min(startZ, endZ);
+        int x2 = Math.max(startX, endX), y2 = Math.max(startY, endY), z2 = Math.max(startZ, endZ);
+        int sizeX = Math.abs(x2 - x1) + 1, sizeY = Math.abs(y2 - y1) + 1;
+        int x3 = 0, y3 = 0, z3 = 0;
+        int locx = x1 + x3, locy = y1 + y3, locz = z1 + z3;
+        BlockPos blockPos;
+        LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+        LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(locy)];
+        int lastChunkX = 0, lastChunkZ = 0;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < sizeX * sizeY * (Math.abs(z2 - z1) + 1); i++) {
+            while (System.currentTimeMillis() - start > 50L) {
+                start = System.currentTimeMillis();
+                blockPos = new BlockPos(locx, locy, locz);
+                int sectionX = locx >> 4;
+                int sectionZ = locz >> 4;
+                if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                    lastChunkX = sectionX;
+                    lastChunkZ = sectionZ;
+                    chunk = nmsOverworld.getChunkAt(blockPos);
+                    section = chunk.getSections()[chunk.getSectionIndex(locy)];
+                }
+                if (chunk.getBlockState(blockPos).getBlock() != block) {
+                    if (nmsOverworld.capturedTileEntities.get(blockPos) != null)
+                        nmsOverworld.capturedTileEntities.remove(blockPos);
+                    section.setBlockState(locx & 15, locy & 15, locz & 15, material);
+                    chunkSource.blockChanged(blockPos);
+                }
+                if (++x3 >= sizeX) {
+                    x3 = 0;
+                    if (++y3 >= sizeY) {
+                        y3 = 0;
+                        ++z3;
+                    }
+                }
+                locx = x1 + x3;
+                locy = y1 + y3;
+                locz = z1 + z3;
+                break;
+            }
+        }
+    }
+
+    public static void setArea(int absY, int startX, int startZ, int endX, int endZ, BlockState material) {
+        int x1 = Math.min(startX, endX), z1 = Math.min(startZ, endZ);
+        int x2 = Math.max(startX, endX), z2 = Math.max(startZ, endZ);
+        int sizeX = Math.abs(x2 - x1) + 1;
+        int x3 = 0, z3 = 0;
+        int locx = x1 + x3, locz = z1 + z3;
+        BlockPos blockPos;
+        LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+        int absY15 = absY & 15;
+        LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(absY)];
+        int lastChunkX = 0, lastChunkZ = 0;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
+            while (System.currentTimeMillis() - start > 50L) {
+                start = System.currentTimeMillis();
+                blockPos = new BlockPos(locx, absY, locz);
+                int sectionX = locx >> 4;
+                int sectionZ = locz >> 4;
+                if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                    lastChunkX = sectionX;
+                    lastChunkZ = sectionZ;
+                    chunk = nmsOverworld.getChunkAt(blockPos);
+                    section = chunk.getSections()[chunk.getSectionIndex(absY)];
+                }
+                section.setBlockState(locx & 15, absY15, locz & 15, material);
+                chunkSource.blockChanged(blockPos);
+                lightEngine.checkBlock(blockPos);
+                if (++x3 >= sizeX) {
+                    x3 = 0;
+                    ++z3;
+                }
+                locx = x1 + x3;
+                locz = z1 + z3;
+                break;
+            }
+        }
+    }
+
+    public static void setArea(int absY, int startX, int startZ, int endX, int endZ, BlockState[] materials, int size) {
+        int x1 = Math.min(startX, endX), z1 = Math.min(startZ, endZ);
+        int x2 = Math.max(startX, endX), z2 = Math.max(startZ, endZ);
+        int sizeX = Math.abs(x2 - x1) + 1;
+        int x3 = 0, z3 = 0;
+        int locx = x1 + x3, locz = z1 + z3;
+        BlockPos blockPos;
+        LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
+        int absY15 = absY & 15;
+        LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(absY)];
+        int lastChunkX = 0, lastChunkZ = 0;
+        long lastUpdated = System.currentTimeMillis();
+        for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
+            while (System.currentTimeMillis() - lastUpdated > 50L) {
+                blockPos = new BlockPos(locx, absY, locz);
+                int sectionX = locx >> 4;
+                int sectionZ = locz >> 4;
+                if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                    lastChunkX = sectionX;
+                    lastChunkZ = sectionZ;
+                    chunk = nmsOverworld.getChunkAt(blockPos);
+                    section = chunk.getSections()[chunk.getSectionIndex(absY)];
+                }
+                section.setBlockState(locx & 15, absY15, locz & 15, materials[RANDOM.nextInt(size)]);
+                chunkSource.blockChanged(blockPos);
+                lightEngine.checkBlock(blockPos);
+                if (++x3 >= sizeX) {
+                    x3 = 0;
+                    ++z3;
+                }
+                locx = x1 + x3;
+                locz = z1 + z3;
+                break;
+            }
+        }
+    }
 
     public static void banEffect(Player player) {
         World world = player.getWorld();
@@ -119,6 +252,21 @@ public class Utils {
         return matcher.appendTail(buffer).toString();
     }
 
+    public static void sendWebhook(String json, URL webhook) {
+        try {
+            final HttpsURLConnection connection = (HttpsURLConnection) webhook.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
+            connection.setDoOutput(true);
+            try (final OutputStream outputStream = connection.getOutputStream()) {
+                outputStream.write(json.getBytes(StandardCharsets.UTF_8));
+            }
+            connection.getInputStream();
+        } catch (IOException ignored) {
+        }
+    }
+
     public static void killeffect(Player p, int toset, String fancy, int money) {
         String name = p.getName();
         p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
@@ -149,23 +297,10 @@ public class Utils {
             if (playerData.get(p.getName()).getRank() > 6)
                 p.sendMessage(staffMSG);
         }
-        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> {
-            try {
-                final HttpsURLConnection connection = (HttpsURLConnection) CACHED_WEBHOOK.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
-                connection.setDoOutput(true);
-                try (final OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write((reason == null ?
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" :
-                            "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}")
-                            .getBytes(StandardCharsets.UTF_8));
-                }
-                connection.getInputStream();
-            } catch (IOException ignored) {
-            }
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(Initializer.p, () -> sendWebhook(reason == null ?
+                    "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" :
+                    "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Practice\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}",
+                    CACHED_WEBHOOK));
         sender.sendMessage("§7Successfully submitted your report.");
     }
 

@@ -99,7 +99,7 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                         player.getInventory().getItemInOffHand();
                 if (item.getType() != Material.END_CRYSTAL) return;
                 int entityId = wrapper.getEntityId();
-                Location entity = crystalsToBeOptimized.getIfPresent(entityId);
+                Location entity = crystalsToBeOptimized.get(entityId);
                 if (entity == null) return;
                 Location blockLoc = entity.clone().subtract(0.5D, 1.0D, 0.5D);
                 RayTraceResult result = player.rayTraceBlocks(4.5D, FluidCollisionMode.NEVER);

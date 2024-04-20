@@ -32,36 +32,33 @@ public class EditorClickEvent implements Listener {
                     }
 
                     int j;
-                    if (event.getSlot() == 47) {
+                    if (event.getSlot() == 51)
                         for (j = 0; j <= 40; ++j) {
                             event.getInventory().setItem(j, player.getInventory().getItem(j));
                         }
-                        return;
-                    } else {
-                        if (event.getSlot() != 48 && event.getSlot() != 49) {
-                            if (event.getSlot() == 50) {
-                                for (j = 0; j <= 40; ++j) {
-                                    event.getInventory().setItem(j, (ItemStack) null);
-                                }
-                            } else if (event.getSlot() != 52 && event.getSlot() == 53) {
-                                SaveEditor.save(player, i, false);
-                                if (!Practice.kitMap.get(key).containsKey("public")) {
-                                    if (Practice.kitMap.get(key).containsKey("items")) {
-                                        player.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
-                                        Practice.kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
-                                        event.getInventory().setItem(53, ItemCreator.getItem(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PRIVATE", Material.FIREWORK_STAR));
-                                    } else {
-                                        player.sendMessage("§cCannot publish an empty kit.");
-                                    }
+                    else {
+                        if (event.getSlot() == 52) {
+                            for (j = 0; j <= 40; ++j) {
+                                event.getInventory().setItem(j, (ItemStack) null);
+                            }
+                        } else if (event.getSlot() == 53) {
+                            SaveEditor.save(player, i, false);
+                            if (!Practice.kitMap.get(key).containsKey("public")) {
+                                if (Practice.kitMap.get(key).containsKey("items")) {
+                                    player.sendMessage("§dPublished kit! Other players can now see it by clicking the §bglobe §din §b/kit§d.");
+                                    Practice.kitMap.get(key).put("public", "to make kit private, delete this entire line (incliding \"public\")");
+                                    event.getInventory().setItem(53, ItemCreator.getItem(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PRIVATE", Material.FIREWORK_STAR));
                                 } else {
-                                    Practice.kitMap.get(key).remove("public");
-                                    player.sendMessage("§dKit made private.");
-                                    event.getInventory().setItem(53, ItemCreator.getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos"));
+                                    player.sendMessage("§cCannot publish an empty kit.");
                                 }
+                            } else {
+                                Practice.kitMap.get(key).remove("public");
+                                player.sendMessage("§dKit made private.");
+                                event.getInventory().setItem(53, ItemCreator.getHead(ChatColor.GREEN + "" + ChatColor.BOLD + "MAKE PUBLIC", "Kevos"));
                             }
                         }
-                        break;
                     }
+                    break;
                 }
             }
         }

@@ -2,11 +2,13 @@ package main.commands.tpa;
 
 import main.utils.Initializer;
 import main.utils.Instances.TpaRequest;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -83,10 +85,14 @@ public class Tpaccept implements CommandExecutor {
         user.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(r -> {
             if (inFFA.contains(target))
                 inFFA.add(user);
-            else if (inFlat.contains(target))
-                inFlat.add(user);
-            else if (atSpawn.contains(recName))
+            else if (inFlat.contains(recName))
+                inFlat.add(sn);
+            else if (atSpawn.contains(recName)) {
+                ServerGamePacketListenerImpl connection = ((CraftPlayer) user).getHandle().connection;
+                main.utils.holos.Utils.showForPlayerTickable(connection);
+                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> main.utils.npcs.Utils.showForPlayer(connection), 3L);
                 atSpawn.add(sn);
+            }
         });
         teleportEffect(loc.getWorld(), loc);
         Initializer.requests.remove(request);

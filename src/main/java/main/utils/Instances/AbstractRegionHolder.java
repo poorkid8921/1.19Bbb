@@ -5,5 +5,5 @@ public abstract class AbstractRegionHolder {
 
     public abstract boolean test(int x, int z);
 
-    public abstract boolean damageTest(int x, int y, int z);
+    public abstract boolean testDamage(int x, int y, int z);
 }

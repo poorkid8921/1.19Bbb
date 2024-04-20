@@ -22,7 +22,7 @@ public class YDeficientRegionHolder extends AbstractRegionHolder {
     }
 
     @Override
-    public boolean damageTest(int x, int y, int z) {
-        return minX <= x && x <= maxX && minZ <= z && z <= maxZ;
+    public boolean testDamage(int x, int y, int z) {
+        return test(x, z);
     }
 }

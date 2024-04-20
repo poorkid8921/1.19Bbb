@@ -1,6 +1,7 @@
 package main.commands.warps;
 
 import main.utils.Initializer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,8 +21,13 @@ public class Spawn implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player p = (Player) sender;
         main.utils.npcs.Utils.showForPlayer(((CraftPlayer) p).getHandle().connection);
-        p.teleportAsync(spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> atSpawn.add(p.getName()), 3L);
+        p.teleport(spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+            atSpawn.add(p.getName());
+            ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+            main.utils.holos.Utils.showForPlayerTickable(connection);
+            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> main.utils.npcs.Utils.showForPlayer(connection), 3L);
+        }, 1L);
         return true;
     }
 

@@ -3,9 +3,9 @@ package main.utils;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.Instances.AbstractRegionHolder;
 import main.utils.Instances.CustomPlayerDataHolder;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -17,17 +17,18 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.List;
 
 import static main.Practice.d;
 import static main.utils.Initializer.*;
+import static main.utils.Utils.banEffect;
 
 public class ProtectionEvents implements Listener {
-    ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
+    private final ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
 
     private void handleBlockPlace(BlockPlaceEvent e) {
         Player p = e.getPlayer();
@@ -36,10 +37,8 @@ public class ProtectionEvents implements Listener {
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
         for (AbstractRegionHolder r : regions) {
-            if (!r.testY(x, y, z))
-                continue;
-            if (p.isOp())
-                return;
+            if (!r.testY(x, y, z)) continue;
+            if (p.isOp()) return;
             p.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
             return;
@@ -52,8 +51,7 @@ public class ProtectionEvents implements Listener {
             int y = b.getY();
             int z = b.getZ();
             for (AbstractRegionHolder r : regions) {
-                if (!r.testY(x, y, z))
-                    continue;
+                if (!r.testY(x, y, z)) continue;
                 inRegion.add(b);
                 break;
             }
@@ -76,22 +74,17 @@ public class ProtectionEvents implements Listener {
         Location loc = e.getEntity().getLocation();
         int x = loc.getBlockX();
         int z = loc.getBlockZ();
-        if (!spawnRegionHolder.test(x, z) &&
-                !nethPotArenaRegionHolder.test(x, z) &&
-                !nethPotSpawnRegionHolder.test(x, z))
-            return;
+        if (!spawnRegionHolder.test(x, z)) return;
         e.setCancelled(true);
     }
 
     @EventHandler
     private void onPlayerInteract(PlayerInteractEvent e) {
         Block b = e.getClickedBlock();
-        if (b == null)
-            return;
+        if (b == null) return;
         if (b.getType() == Material.SPRUCE_TRAPDOOR) {
             Player p = e.getPlayer();
-            if (p.isOp())
-                return;
+            if (p.isOp()) return;
             p.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
         }
@@ -99,61 +92,61 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (e.isCancelled())
-            return;
+        if (e.isCancelled()) return;
         Entity attacker = e.getDamager();
         boolean playerAttacker = attacker instanceof Player;
         Entity ent = e.getEntity();
-        if (!(ent instanceof Player p) ||
-                (!playerAttacker &&
-                        !(attacker instanceof Arrow) &&
-                        !(attacker instanceof ThrownPotion)))
+        if (!(ent instanceof Player p) || (!playerAttacker && !(attacker instanceof Arrow) && !(attacker instanceof ThrownPotion)))
             return;
         Location loc = p.getLocation();
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
         if (playerAttacker) {
-            if (p.getWorld() == d)
-                for (AbstractRegionHolder r : regions) {
-                    if (!r.damageTest(x, y, z))
-                        continue;
-                    attacker.sendMessage(EXCEPTION_PVP);
-                    e.setCancelled(true);
-                    return;
-                }
+            if (p.getWorld() == d) for (AbstractRegionHolder r : regions) {
+                if (!r.testY(x, y, z)) continue;
+                attacker.sendMessage(EXCEPTION_PVP);
+                e.setCancelled(true);
+                return;
+            }
             Player damagePlayer = (Player) attacker;
             String name = damagePlayer.getName();
             String pn = p.getName();
             CustomPlayerDataHolder D1 = playerData.get(name);
             D1.setLastTaggedBy(pn);
             D1.setLastTagged(System.currentTimeMillis());
-            if (D1.isTagged())
-                D1.setTagTime(damagePlayer);
-            else
-                D1.setupCombatRunnable(damagePlayer);
+            if (D1.isTagged()) D1.setTagTime(damagePlayer);
+            else D1.setupCombatRunnable(damagePlayer);
             CustomPlayerDataHolder D0 = playerData.get(pn);
+            String lastTaggedBy = D0.getLastTaggedBy();
+            if (inFlat.contains(name) &&
+                    lastTaggedBy != null &&
+                    lastTaggedBy != name &&
+                    D1.incrementFlatFlags() == 5) {
+                D0.setFlatFlags(0);
+                Initializer.bannedFromflat.add(name);
+                banEffect(damagePlayer);
+                p.teleportAsync(spawn, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
+                    damagePlayer.sendMessage("§7You are now banned in flat for " + SECOND_COLOR + "Interrupting");
+                    atSpawn.add(name);
+                });
+            }
             D0.setLastTaggedBy(name);
             D0.setLastTagged(System.currentTimeMillis());
-            if (D0.isTagged())
-                D0.setTagTime(p);
+            if (D0.isTagged()) D0.setTagTime(p);
             else {
                 D0.setLastTaggedBy(name);
                 D0.setupCombatRunnable(p);
             }
         } else {
-            if (p.getWorld() == d)
-                for (AbstractRegionHolder r : regions) {
-                    if (!r.damageTest(x, y, z))
-                        continue;
-                    e.setCancelled(true);
-                    return;
-                }
+            if (p.getWorld() == d) for (AbstractRegionHolder r : regions) {
+                if (!r.testY(x, y, z)) continue;
+                e.setCancelled(true);
+                return;
+            }
             CustomPlayerDataHolder D0 = playerData.get(p.getName());
-            if (D0.isTagged())
-                D0.setTagTime(p);
-            else
-                D0.setupCombatRunnable(p);
+            if (D0.isTagged()) D0.setTagTime(p);
+            else D0.setupCombatRunnable(p);
             D0.setLastTagged(System.currentTimeMillis());
         }
     }
@@ -166,25 +159,11 @@ public class ProtectionEvents implements Listener {
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
         for (AbstractRegionHolder r : regions) {
-            if (!r.testY(x, y, z))
-                continue;
-            if (p.isOp())
-                return;
+            if (!r.testY(x, y, z)) continue;
+            if (p.isOp()) return;
             p.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
             return;
-        }
-    }
-
-    @EventHandler
-    private void onPlayerGlide(EntityToggleGlideEvent e) {
-        Player p = (Player) e.getEntity();
-        CustomPlayerDataHolder D0 = playerData.get(p.getName());
-        if (D0.getLastTagged() == 0L)
-            return;
-        if ((System.currentTimeMillis() - D0.getLastTagged()) < 30000L && inFlat.contains(p)) {
-            p.playSound(p.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
-            e.setCancelled(true);
         }
     }
 

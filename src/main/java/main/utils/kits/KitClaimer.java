@@ -21,20 +21,20 @@ public class KitClaimer {
             CustomPlayerDataHolder D0 = playerData.get(name);
             D0.setLastTimeKitWasUsed(System.currentTimeMillis());
             ObjectArrayList<Player> players = new ObjectArrayList<>(Bukkit.getOnlinePlayers());
-            players.remove(player);
-            if (players.size() > 48) {
+            if (players.size() > 99) {
+                player.sendMessage("§7Loaded " + SECOND_COLOR + kit + "!");
                 String lastTaggedBy = D0.getLastTaggedBy();
                 if (lastTaggedBy == null) return;
                 Player player1 = Bukkit.getPlayer(D0.getLastTaggedBy());
                 if (player1 != null) player1.sendMessage("§4▪§7 " + name + " loaded a kit.");
             } else {
                 Component component = Component.translatable("§4▪§7 " + name + " loaded a kit.");
+                players.remove(player);
                 for (Player p : players) {
                     p.sendMessage(component);
                 }
+                player.sendMessage("§7Loaded " + SECOND_COLOR + kit + "!");
             }
-            player.setHealth(20D);
-            player.sendMessage("§7Loaded " + SECOND_COLOR + kit + "!");
         } catch (Exception e) {
             player.sendMessage(fromCommand ? ChatColor.GOLD + kit + ChatColor.RED + " has not been created! Type" + ChatColor.GOLD + " /kit" + ChatColor.RED + " or" + ChatColor.GOLD + " /k" + ChatColor.RED + " to get started!" : ChatColor.GOLD + kit + ChatColor.RED + " has not been created! Right click the chest to customize!");
         }
@@ -47,18 +47,19 @@ public class KitClaimer {
         CustomPlayerDataHolder D0 = playerData.get(pn);
         D0.setLastTimeKitWasUsed(System.currentTimeMillis());
         ObjectArrayList<Player> players = new ObjectArrayList<>(Bukkit.getOnlinePlayers());
-        players.remove(player);
-        if (players.size() > 98) {
+        if (players.size() > 99) {
+            player.sendMessage("§7Loaded " + SECOND_COLOR + name + "'s §7kit!");
             String lastTaggedBy = D0.getLastTaggedBy();
             if (lastTaggedBy == null) return;
             Player player1 = Bukkit.getPlayer(D0.getLastTaggedBy());
             if (player1 != null) player1.sendMessage("§4▪§7 " + pn + " loaded " + name + "'s kit.");
         } else {
             Component component = Component.translatable("§4▪§7 " + pn + " loaded " + name + "'s kit");
+            players.remove(player);
             for (Player p : players) {
                 p.sendMessage(component);
             }
+            player.sendMessage("§7Loaded " + SECOND_COLOR + name + "'s §7kit!");
         }
-        player.sendMessage("§7Loaded " + SECOND_COLOR + name + "'s §7kit!");
     }
 }
