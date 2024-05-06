@@ -1,12 +1,10 @@
 package main.utils;
 
-import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.instances.AbstractRegionHolder;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -20,16 +18,13 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.PlayerInventory;
 
 import java.util.List;
 
 import static main.Economy.d;
-import static main.Economy.spawnDistance;
 import static main.utils.Initializer.*;
 
 public class ProtectionEvents implements Listener {
@@ -57,10 +52,9 @@ public class ProtectionEvents implements Listener {
     }
 
     private ObjectOpenHashSet<Block> handleExplosion(List<Block> blockList) {
+        int x, y, z;
         for (Block b : blockList) {
-            int x = b.getX();
-            int y = b.getY();
-            int z = b.getZ();
+            x = b.getX(); y = b.getY(); z = b.getZ();
             for (AbstractRegionHolder r : regions) {
                 if (!r.testY(x, y, z)) continue;
                 inRegion.add(b);

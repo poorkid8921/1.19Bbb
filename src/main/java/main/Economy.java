@@ -8,7 +8,10 @@ import main.commands.economy.Kit;
 import main.commands.essentials.List;
 import main.commands.essentials.*;
 import main.commands.tpa.*;
-import main.commands.warps.*;
+import main.commands.warps.RTP;
+import main.commands.warps.SetWarp;
+import main.commands.warps.Spawn;
+import main.commands.warps.Warp;
 import main.utils.*;
 import main.utils.instances.CommandHolder;
 import main.utils.instances.CustomPlayerDataHolder;
@@ -16,7 +19,6 @@ import main.utils.npcs.InteractAtNPC;
 import main.utils.optimizer.InteractionListeners;
 import main.utils.optimizer.LastPacketEvent;
 import net.minecraft.world.level.block.Blocks;
-import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
@@ -28,11 +30,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.awt.*;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
@@ -129,11 +126,11 @@ public class Economy extends JavaPlugin {
                             if (ent instanceof EnderCrystal || ent instanceof Arrow) ent.remove();
                         }
                         // flat
-                        Utils.setCuboid(new short[][] {
-                                new short[] { 44, 136, 45, -46, 134, 24 },
-                                new short[] { 23, 136, -45, 44, 134, 23 },
-                                new short[] { -46, 136, -24, 22, 134, -45 },
-                                new short[] { -46, 136, -231, -25, 134, 23 }
+                        Utils.setCuboid(new short[][]{
+                                        new short[]{44, 136, 45, -46, 134, 24},
+                                        new short[]{23, 136, -45, 44, 134, 23},
+                                        new short[]{-46, 136, -24, 22, 134, -45},
+                                        new short[]{-46, 136, -231, -25, 134, 23}
                                 },
                                 Blocks.AIR,
                                 Blocks.AIR.defaultBlockState());
@@ -145,37 +142,37 @@ public class Economy extends JavaPlugin {
                             }
 
                             // arena air
-                            Utils.setCuboid(new short[][] {
-                                            new short[] { -47, 136, -111, -112, 134, 111 },
-                                            new short[] { -46, 136, -111, 110, 134, -46 },
-                                            new short[] { 45, 136, 111, 110, 134, -45 },
-                                            new short[] { -46, 136, 111, 44, 134, 46 }
+                            Utils.setCuboid(new short[][]{
+                                            new short[]{-47, 136, -111, -112, 134, 111},
+                                            new short[]{-46, 136, -111, 110, 134, -46},
+                                            new short[]{45, 136, 111, 110, 134, -45},
+                                            new short[]{-46, 136, 111, 44, 134, 46}
                                     },
                                     Blocks.AIR,
                                     Blocks.AIR.defaultBlockState());
                             // grass layer
-                            Utils.setArea(133, new short[][] {
-                                            new short[] { -47, -111, -112, 111 },
-                                            new short[] { -46, -111, 110, -46 },
-                                            new short[] { 45, 111, 110, -45 },
-                                            new short[] { -46, 111, 44, 46 }
+                            Utils.setArea(133, new short[][]{
+                                            new short[]{-47, -111, -112, 111},
+                                            new short[]{-46, -111, 110, -46},
+                                            new short[]{45, 111, 110, -45},
+                                            new short[]{-46, 111, 44, 46}
                                     },
                                     Blocks.GRASS_BLOCK.defaultBlockState());
                             // dirt layer
-                            Utils.setCuboid(new short[][] {
-                                            new short[] { -47, 132, -111, -112, 129, 111 },
-                                            new short[] { -46, 132, -111, 110, 129, -46 },
-                                            new short[] { 45, 132, 111, 110, 129, -45 },
-                                            new short[] { -46, 132, 111, 44, 129, 46 }
+                            Utils.setCuboid(new short[][]{
+                                            new short[]{-47, 132, -111, -112, 129, 111},
+                                            new short[]{-46, 132, -111, 110, 129, -46},
+                                            new short[]{45, 132, 111, 110, 129, -45},
+                                            new short[]{-46, 132, 111, 44, 129, 46}
                                     },
                                     Blocks.DIRT,
                                     Blocks.DIRT.defaultBlockState());
                             // stone layer
-                            Utils.setCuboid(new short[][] {
-                                            new short[] { -47, 128, -111, -112, 3, 111 },
-                                            new short[] { -46, 128, -111, 110, 3, -46 },
-                                            new short[] { 45, 128, 111, 110, 3, -45 },
-                                            new short[] { -46, 128, 111, 44, 3, 46 }
+                            Utils.setCuboid(new short[][]{
+                                            new short[]{-47, 128, -111, -112, 3, 111},
+                                            new short[]{-46, 128, -111, 110, 3, -46},
+                                            new short[]{45, 128, 111, 110, 3, -45},
+                                            new short[]{-46, 128, 111, 44, 3, 46}
                                     },
                                     Blocks.STONE,
                                     Blocks.STONE.defaultBlockState());
@@ -200,7 +197,7 @@ public class Economy extends JavaPlugin {
                     overworldRTP[finalI] = getRandomLoc(d, 5000, overworldRTP);
                     netherRTP[finalI] = getNetherRandomLoc();
                     endRTP[finalI] = getRandomLoc(d1, 1500, endRTP);
-                }, i);
+                }, finalI);
             }
         }, 100L);
         registerCommands();

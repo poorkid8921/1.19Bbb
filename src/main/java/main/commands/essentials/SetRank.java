@@ -49,7 +49,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             name = Bukkit.getPlayer(name).getName();
         } catch (Exception ignored) {
         }
-        int transformedArg = switch (args[1].toLowerCase()) {
+        short transformedArg = switch (args[1].toLowerCase()) {
             case "lub" -> 1;
             case "nigger" -> 2;
             case "gay" -> 3;
@@ -63,7 +63,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             case "admin" -> 11;
             case "manager" -> 12;
             case "executive" -> 13;
-            default -> Integer.parseInt(args[1]);
+            default -> Short.parseShort(args[1]);
         };
         if (transformedArg > 3 && !sender.isOp()) {
             sender.sendMessage("§7You can't rank other players that rank!");

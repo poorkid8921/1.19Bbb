@@ -43,12 +43,11 @@ public class Spawn implements CommandExecutor, TabExecutor {
             Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                 main.utils.npcs.Utils.showForPlayer(connection);
             }, 3L);
-        }
-        else {
+        } else {
             spawnQueue.add(name);
             new BukkitRunnable() {
-                int sec = 4;
                 final Location oldLoc = p.getLocation();
+                int sec = 4;
 
                 @Override
                 public void run() {

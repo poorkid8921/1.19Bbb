@@ -66,46 +66,44 @@ public class Utils {
             endX = k[3];
             endY = k[4];
             endZ = k[5];
-            int x1 = Math.min(startX, endX), y1 = Math.min(startY, endY), z1 = Math.min(startZ, endZ);
-            int x2 = Math.max(startX, endX), y2 = Math.max(startY, endY), z2 = Math.max(startZ, endZ);
-            int sizeX = Math.abs(x2 - x1) + 1, sizeY = Math.abs(y2 - y1) + 1;
-            int x3 = 0, y3 = 0, z3 = 0;
-            int locx = x1 + x3, locy = y1 + y3, locz = z1 + z3;
+            int minX = Math.min(startX, endX);
+            int minY = Math.min(startY, endY);
+            int minZ = Math.min(startZ, endZ);
+            int maxX = Math.max(startX, endX);
+            int maxY = Math.max(startY, endY);
+            int maxZ = Math.max(startZ, endZ);
+            int lastY = minY;
             BlockPos blockPos;
-            LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
-            LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(locy)];
+            LevelChunk chunk = nmsOverworld.getChunk(minX, minZ);
+            LevelChunkSection[] sections = chunk.getSections();
+            LevelChunkSection section = sections[chunk.getSectionIndex(minY)];
             int lastChunkX = 0, lastChunkZ = 0;
             long start = System.currentTimeMillis();
-            for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
-                while (System.currentTimeMillis() - start > 50L) {
-                    blockPos = new BlockPos(locx, locy, locz);
-                    int sectionX = locx >> 4;
-                    int sectionZ = locz >> 4;
-                    if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
-                        lastChunkX = sectionX;
-                        lastChunkZ = sectionZ;
-                        chunk = nmsOverworld.getChunkAt(blockPos);
-                        section = chunk.getSections()[chunk.getSectionIndex(locy)];
-                    }
-                    if (chunk.getBlockState(blockPos).getBlock() != block) {
-                        if (nmsOverworld.capturedTileEntities.get(blockPos) != null)
-                            nmsOverworld.capturedTileEntities.remove(blockPos);
-                        section.setBlockState(locx & 15, locy & 15, locz & 15, material);
-                        chunkSource.blockChanged(blockPos);
-                    }
-                    if (++x3 >= sizeX) {
-                        x3 = 0;
-                        if (++y3 >= sizeY) {
-                            y3 = 0;
-                            ++z3;
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                    for (int z = minZ; z <= maxZ; z++)
+                        while (System.currentTimeMillis() - start > 50L) {
+                            start = System.currentTimeMillis();
+                            blockPos = new BlockPos(x, y, z);
+                            int sectionX = x >> 4;
+                            int sectionZ = z >> 4;
+                            if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                                lastChunkX = sectionX;
+                                lastChunkZ = sectionZ;
+                                chunk = nmsOverworld.getChunkAt(blockPos);
+                                sections = chunk.getSections();
+                                section = sections[chunk.getSectionIndex(y)];
+                            } else if (lastY != y) {
+                                section = sections[chunk.getSectionIndex(y)];
+                                lastY = y;
+                            }
+                            if (chunk.getBlockState(blockPos).getBlock() != block) {
+                                nmsOverworld.capturedTileEntities.remove(blockPos);
+                                section.setBlockState(x & 15, y & 15, z & 15, material);
+                                chunkSource.blockChanged(blockPos);
+                            }
+                            break;
                         }
-                    }
-                    locx = x1 + x3;
-                    locy = y1 + y3;
-                    locz = z1 + z3;
-                    break;
-                }
-            }
         }
     }
 
@@ -114,45 +112,42 @@ public class Utils {
         short startZ;
         short endX;
         short endZ;
+        int absY15 = absY & 15;
         for (short[] k : positions) {
             startX = k[0];
             startZ = k[1];
             endX = k[2];
             endZ = k[3];
-            int x1 = Math.min(startX, endX), z1 = Math.min(startZ, endZ);
-            int x2 = Math.max(startX, endX), z2 = Math.max(startZ, endZ);
-            int sizeX = Math.abs(x2 - x1) + 1;
-            int x3 = 0, z3 = 0;
-            int locx = x1 + x3, locz = z1 + z3;
+            int minX = Math.min(startX, endX);
+            int minZ = Math.min(startZ, endZ);
+            int maxX = Math.max(startX, endX);
+            int maxZ = Math.max(startZ, endZ);
             BlockPos blockPos;
-            LevelChunk chunk = nmsOverworld.getChunk(locx, locz);
-            int absY15 = absY & 15;
-            LevelChunkSection section = chunk.getSections()[chunk.getSectionIndex(absY)];
+            LevelChunk chunk = nmsOverworld.getChunk(minX, minZ);
+            LevelChunkSection[] sections = chunk.getSections();
+            LevelChunkSection section = sections[chunk.getSectionIndex(absY)];
             int lastChunkX = 0, lastChunkZ = 0;
             long start = System.currentTimeMillis();
-            for (int i = 0; i < sizeX * (Math.abs(z2 - z1) + 1); i++) {
-                while (System.currentTimeMillis() - start > 50L) {
-                    blockPos = new BlockPos(locx, absY, locz);
-                    int sectionX = locx >> 4;
-                    int sectionZ = locz >> 4;
-                    if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
-                        lastChunkX = sectionX;
-                        lastChunkZ = sectionZ;
-                        chunk = nmsOverworld.getChunkAt(blockPos);
-                        section = chunk.getSections()[chunk.getSectionIndex(absY)];
+            for (int x = minX; x <= maxX; x++)
+                for (int z = minZ; z <= maxZ; z++)
+                    while (System.currentTimeMillis() - start > 50L) {
+                        start = System.currentTimeMillis();
+                        blockPos = new BlockPos(x, absY, z);
+                        int sectionX = x >> 4;
+                        int sectionZ = z >> 4;
+                        if (lastChunkX != sectionX || lastChunkZ != sectionZ) {
+                            lastChunkX = sectionX;
+                            lastChunkZ = sectionZ;
+                            chunk = nmsOverworld.getChunkAt(blockPos);
+                            sections = chunk.getSections();
+                            section = sections[chunk.getSectionIndex(absY)];
+                        }
+                        nmsOverworld.capturedTileEntities.remove(blockPos);
+                        section.setBlockState(x & 15, absY15, z & 15, material);
+                        chunkSource.blockChanged(blockPos);
+                        lightEngine.checkBlock(blockPos);
+                        break;
                     }
-                    section.setBlockState(locx & 15, absY15, locz & 15, material);
-                    chunkSource.blockChanged(blockPos);
-                    lightEngine.checkBlock(blockPos);
-                    if (++x3 >= sizeX) {
-                        x3 = 0;
-                        ++z3;
-                    }
-                    locx = x1 + x3;
-                    locz = z1 + z3;
-                    break;
-                }
-            }
         }
     }
 
@@ -187,16 +182,16 @@ public class Utils {
     }
 
     public static CustomPlayerDataHolder getPlayerData(String name) {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ez,ed,ek FROM data WHERE name = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ed,ek FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return new CustomPlayerDataHolder(resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6), resultSet.getInt(1));
+                    return new CustomPlayerDataHolder(resultSet.getShort(2), resultSet.getShort(3), resultSet.getInt(5), resultSet.getInt(6), resultSet.getShort(1));
                 }
             }
         } catch (SQLException ignored) {
         }
-        return new CustomPlayerDataHolder(0, 0, -1, 0, 0, 0);
+        return new CustomPlayerDataHolder(0, 0, -1, 0, 0);
     }
 
     public static void teleportEffect(World w, Location locC) {
@@ -377,7 +372,6 @@ public class Utils {
         }
 
         receiver.sendMessage(new ComponentBuilder(sn).color(net.md_5.bungee.api.ChatColor.of("#fc282f")).create()[0], new TextComponent(tpahere ? " §7has requested that you teleport to them. " : " §7has requested to teleport to you. "), a, space, b);
-
         request.setRunnableid(new BukkitRunnable() {
             @Override
             public void run() {

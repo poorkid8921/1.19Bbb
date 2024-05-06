@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.Pair;
 import main.utils.Initializer;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.TpaRequest;
 import main.utils.storage.DB;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -26,13 +25,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.NumberConversions;
@@ -43,14 +40,12 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import static main.Economy.d;
-import static main.Economy.spawnDistance;
 import static main.utils.Initializer.*;
-import static main.utils.Utils.*;
+import static main.utils.Utils.getPlayerData;
+import static main.utils.Utils.spawnFirework;
 import static main.utils.npcs.Utils.NPCs;
 import static main.utils.npcs.Utils.moveNPCs;
 import static main.utils.storage.DB.connection;
-import static net.minecraft.world.damagesource.DamageTypes.SONIC_BOOM;
-import static org.bukkit.Sound.BLOCK_PORTAL_TRAVEL;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -96,16 +91,21 @@ public class Events implements Listener {
                 to.getZ() == from.getZ())
             return;
         ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
+        Entity entity;
+        Location loc;
+        Vector vector;
+        double x;
+        double z;
+        double yaw;
         for (ServerPlayer NPC : moveNPCs) {
-            Entity entity = NPC.getBukkitEntity();
-            Location loc = entity.getLocation();
-            Vector vector = pLoc.clone().subtract(loc).toVector();
-            double x = vector.getX();
-            double z = vector.getZ();
-            double yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
-            double pitch = Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z))));
+            entity = NPC.getBukkitEntity();
+            loc = entity.getLocation();
+            vector = to.clone().subtract(loc).toVector();
+            x = vector.getX();
+            z = vector.getZ();
+            yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
             connection.send(new ClientboundRotateHeadPacket(NPC, (byte) ((yaw % 360) * 256 / 360)));
-            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((pitch % 360.) * 256 / 360), false));
+            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z)))) % 360.) * 256 / 360), false));
         }
     }
 
@@ -186,15 +186,13 @@ public class Events implements Listener {
             if (D1.getLastReceived() == name) D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
-        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET m = ?, t = ?, ez = ?, ed = ?, ek = ?, fc = ? WHERE name = '?'")) {
+        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET m = ?, t = ?, ed = ?, ek = ?, fc = ? WHERE name = '?'")) {
             statement.setInt(1, D0.getMtoggle());
             statement.setInt(2, D0.getTptoggle());
-            statement.setDouble(3, D0.getMoney());
-            statement.setInt(4, D0.getDeaths());
-            statement.setInt(5, D0.getKills());
-            statement.setBoolean(6, D0.isFastCrystals());
-            //statement.setString(8, HOMES);
-            statement.setString(7, name);
+            statement.setInt(3, D0.getDeaths());
+            statement.setInt(4, D0.getKills());
+            statement.setBoolean(5, D0.isFastCrystals());
+            statement.setString(6, name);
             statement.executeUpdate();
         } catch (SQLException ignored) {
         }
@@ -214,14 +212,12 @@ public class Events implements Listener {
         CustomPlayerDataHolder D0 = playerData.get(name);
         Pair<Integer, String> inv = D0.getInventoryInfo();
         if (inv == null) return;
-
-        int slot = e.getSlot();
         if (inv.first() == 0) {
             e.setCancelled(true);
             if (!e.getCurrentItem().getItemMeta().hasLore()) return;
             p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
             D0.setInventoryInfo(null);
-            Utils.submitReport(p, inv.second(), switch (slot) {
+            Utils.submitReport(p, inv.second(), switch (e.getSlot()) {
                 case 10 -> "Cheating";
                 case 11 -> "Doxxing";
                 case 12 -> "Ban Evading";
@@ -297,7 +293,6 @@ public class Events implements Listener {
                     }
                 }
             } else w.strikeLightningEffect(loc);
-
             if (Initializer.RANDOM.nextInt(100) < 6)
                 e.getDrops().add(Utils.getHead(name, D1.getFRank(kp)));
         }
@@ -305,13 +300,13 @@ public class Events implements Listener {
 
     @EventHandler
     private void onExplosion(EntityDamageEvent e) {
-        if (e.getEntity() instanceof Item a) {
-            EntityDamageEvent.DamageCause c = e.getCause();
-            if (c != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
-                    c != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
-                return;
-            e.setCancelled(a.getItemStack().getType().name().contains("NETHERITE"));
-        }
+        if (!(e.getEntity() instanceof Item ent))
+            return;
+        EntityDamageEvent.DamageCause cause = e.getCause();
+        if (cause != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
+                cause != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
+            return;
+        e.setCancelled(ent.getItemStack().getType().name().contains("NETHERITE"));
     }
 
     @EventHandler
@@ -349,7 +344,7 @@ public class Events implements Listener {
             Initializer.msg.sort(String::compareToIgnoreCase);
             playerData.put(name, getPlayerData(name));
         } else {
-            int rank = DB.setUsefulData(name, D);
+            short rank = DB.setUsefulData(name, D);
             ServerPlayer craftPlayer = ((CraftPlayer) p).getHandle();
             craftPlayer.listName = CraftChatMessage.fromString(D.getFRank(name))[0];
             for (ServerPlayer player : DedicatedServer.getServer().getPlayerList().players) {

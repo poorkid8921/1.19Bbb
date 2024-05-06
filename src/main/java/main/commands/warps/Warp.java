@@ -20,7 +20,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import java.io.File;
 import java.util.Collections;
 
-import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.SECOND_COLOR;
 import static main.utils.Utils.teleportEffect;
 

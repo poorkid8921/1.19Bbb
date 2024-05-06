@@ -10,8 +10,6 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import main.utils.AutoTotem;
 import main.utils.instances.CustomPlayerDataHolder;
-import net.minecraft.network.protocol.Packet;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import static main.utils.Initializer.playerData;
@@ -43,8 +41,9 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
                 user.setLastItemPacket(animPacket);
             }
         }
-        if (user.isFastCrystals() && user.getLastPacket() == 0)
-            user.setIgnoreAnim(animPacket == 3);
+        if (!user.isFastCrystals())
+            return;
+        user.setIgnoreAnim(animPacket == 3 && user.getLastPacket() == 0);
         user.setLastPacket(animPacket);
     }
 

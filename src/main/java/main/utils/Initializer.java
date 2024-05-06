@@ -3,10 +3,8 @@ package main.utils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.Economy;
 import main.Events;
 import main.utils.instances.*;
@@ -27,14 +25,14 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Initializer {
     public static final YDeficientRegionHolder spawnRegionHolder = new YDeficientRegionHolder(-24, 23, 22, -23);
     public static final YDeficientRegionHolder flatRegionHolder = new YDeficientRegionHolder(-46, -45, 44, 45);
     public static final Color[] color = new Color[]{org.bukkit.Color.LIME, org.bukkit.Color.ORANGE, org.bukkit.Color.RED, org.bukkit.Color.BLUE, org.bukkit.Color.OLIVE, org.bukkit.Color.PURPLE, org.bukkit.Color.WHITE, org.bukkit.Color.AQUA, org.bukkit.Color.BLACK, org.bukkit.Color.FUCHSIA, org.bukkit.Color.GRAY, org.bukkit.Color.GREEN, org.bukkit.Color.MAROON, org.bukkit.Color.NAVY, org.bukkit.Color.SILVER, org.bukkit.Color.TEAL, org.bukkit.Color.YELLOW};
-    public static AbstractRegionHolder[] regions = new AbstractRegionHolder[]{spawnRegionHolder,
+    public static AbstractRegionHolder[] regions = new AbstractRegionHolder[]{
+            spawnRegionHolder,
             new RegionHolder(-128, 137, -127, 126, 198, 127),// arena
             new YDeficientRegionHolder(112, -112, -113, -112),// wall1
             new YDeficientRegionHolder(111, -111, 111, 112),// wall2

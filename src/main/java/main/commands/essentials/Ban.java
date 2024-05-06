@@ -1,25 +1,19 @@
 package main.commands.essentials;
 
 import com.google.common.collect.ImmutableList;
-import main.utils.Initializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import static main.utils.Initializer.playerData;
 import static main.utils.Utils.banEffect;

@@ -1,6 +1,5 @@
 package main.utils.instances;
 
-import com.github.retrooper.packetevents.util.Vector3d;
 import it.unimi.dsi.fastutil.Pair;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,18 +19,15 @@ public class CustomPlayerDataHolder {
     @Setter
     private int tptoggle;
     @Getter
-    @Setter
-    private double money;
-    @Getter
     private int deaths;
     @Getter
     private int kills;
     @Getter
     @Setter
-    private int lastPacket = 5;
+    private int lastPacket;
     @Getter
     @Setter
-    private int lastItemPacket = 0;
+    private int lastItemPacket;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -65,15 +61,13 @@ public class CustomPlayerDataHolder {
     private long lastTagged = 0L;
     @Getter
     @Setter
-    private int preLastPacket = 0;
+    private int preLastPacket;
 
     public CustomPlayerDataHolder(int m,
                                   int t,
-                                  double z,
                                   int deaths,
                                   int kills,
                                   int rank) {
-        this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
@@ -85,10 +79,8 @@ public class CustomPlayerDataHolder {
 
     public CustomPlayerDataHolder(int m,
                                   int t,
-                                  double z,
                                   int deaths,
                                   int kills) {
-        this.money = z;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
@@ -143,14 +135,6 @@ public class CustomPlayerDataHolder {
     public void untag() {
         this.tagged = false;
         Bukkit.getScheduler().cancelTask(this.runnableid);
-    }
-
-    public void incrementMoney(double money) {
-        this.money += money;
-    }
-
-    public void decrementMoney(double money) {
-        this.money -= money;
     }
 
     public void incrementDeaths() {

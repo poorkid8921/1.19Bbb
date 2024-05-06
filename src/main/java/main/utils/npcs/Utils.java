@@ -27,7 +27,6 @@ import org.bukkit.scoreboard.Team;
 import java.util.List;
 import java.util.UUID;
 
-import static main.Economy.d;
 import static main.utils.Utils.translateA;
 import static main.utils.holos.Utils.tickableHolos;
 import static net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER;
@@ -35,7 +34,7 @@ import static net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePac
 public class Utils {
     public static LoopableNPCHolder[] NPCs = new LoopableNPCHolder[3];
     public static ServerPlayer[] moveNPCs = new ServerPlayer[3];
-    static ObjectArrayList<UUID> UUIDs = ObjectArrayList.of();
+    private static final ObjectArrayList<UUID> UUIDs = ObjectArrayList.of();
 
     public static void init() {
         Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("K");

@@ -43,16 +43,13 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                     return;
                 String name = player.getName();
                 CustomPlayerDataHolder user = playerData.get(name);
-                if (!user.isFastCrystals())
-                    return;
-                if (player.getPing() < 50)
+                if (!user.isFastCrystals() || player.getPing() < 50)
                     return;
                 int lastPacket = user.getLastPacket();
-                if (lastPacket == 3) return;
-                if (user.isIgnoreAnim()) return;
+                if (lastPacket == 3 || user.isIgnoreAnim()) return;
                 Location eyeLoc = player.getEyeLocation();
                 Bukkit.getScheduler().runTask(p, () -> {
-                    RayTraceResult result = player.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0,
+                    RayTraceResult result = eyeLoc.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0,
                             entity -> {
                                 if (entity.getType() != EntityType.PLAYER)
                                     return true;

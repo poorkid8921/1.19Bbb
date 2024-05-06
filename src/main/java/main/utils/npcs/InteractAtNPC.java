@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Sound;
