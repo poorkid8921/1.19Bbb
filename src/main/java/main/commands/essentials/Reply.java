@@ -17,26 +17,25 @@ public class Reply implements CommandExecutor {
             return true;
         }
 
-        String name = sender.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
+        final String name = sender.getName();
+        final CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.getLastReceived() == null) {
             sender.sendMessage("§7You have no one to reply to.");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(D0.getLastReceived());
+        final Player target = Bukkit.getPlayer(D0.getLastReceived());
         if (target == null) {
             sender.sendMessage("§7You have no one to reply to.");
             return true;
         }
 
-        StringBuilder msgargs = new StringBuilder();
-        for (String arg : args) msgargs.append(arg).append(" ");
-
-        CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
+        final StringBuilder msg = new StringBuilder();
+        for (final String arg : args) msg.append(arg).append(" ");
+        final CustomPlayerDataHolder D1 = playerData.get(D0.getLastReceived());
         D1.setLastReceived(name);
-        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(D0.getLastReceived()) + "§6] §r" + msgargs);
-        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msgargs);
+        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(D0.getLastReceived()) + "§6] §r" + msg);
+        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msg);
         return true;
     }
 }

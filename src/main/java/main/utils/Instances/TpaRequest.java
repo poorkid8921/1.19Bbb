@@ -15,9 +15,9 @@ public class TpaRequest {
     @Setter
     private int runnableid;
 
-    public TpaRequest(String sender, String reciever, boolean here) {
+    public TpaRequest(String sender, String receiver, boolean here) {
         this.sender = sender;
-        this.receiver = reciever;
+        this.receiver = receiver;
         this.here = here;
     }
 

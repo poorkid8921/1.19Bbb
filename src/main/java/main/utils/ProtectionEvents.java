@@ -1,14 +1,17 @@
 package main.utils;
 
+import com.destroystokyo.paper.event.player.PlayerElytraBoostEvent;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import main.utils.Instances.AbstractRegionHolder;
 import main.utils.Instances.CustomPlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
@@ -24,39 +27,34 @@ import static main.Practice.d;
 import static main.utils.Initializer.*;
 
 public class ProtectionEvents implements Listener {
-    ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
+    private final ObjectOpenHashSet<Block> inRegion = ObjectOpenHashSet.of();
 
     private void handleBlockPlace(BlockPlaceEvent e) {
-        Player p = e.getPlayer();
-        if (inNethpot.contains(p.getName())) {
-            if (!p.isOp())
-                e.setCancelled(true);
+        final Location location = e.getBlock().getLocation();
+        if (location.getWorld() != d)
             return;
-        }
-        Location loc = e.getBlock().getLocation();
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
-        for (AbstractRegionHolder r : regions) {
-            if (!r.testY(x, y, z))
-                continue;
-            if (p.isOp())
-                return;
-            p.sendMessage(EXCEPTION_BLOCK_PLACE);
+        final int x = location.getBlockX();
+        final int y = location.getBlockY();
+        final int z = location.getBlockZ();
+        final Player player = e.getPlayer();
+        for (final AbstractRegionHolder region : regions) {
+            if (!region.testY(x, y, z)) continue;
+            if (player.isOp()) return;
+            player.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
             return;
         }
     }
 
     private ObjectOpenHashSet<Block> handleExplosion(List<Block> blockList) {
-        for (Block b : blockList) {
-            int x = b.getX();
-            int y = b.getY();
-            int z = b.getZ();
-            for (AbstractRegionHolder r : regions) {
-                if (!r.testY(x, y, z))
-                    continue;
-                inRegion.add(b);
+        int x, y, z;
+        for (final Block block : blockList) {
+            x = block.getX();
+            y = block.getY();
+            z = block.getZ();
+            for (final AbstractRegionHolder region : regions) {
+                if (!region.testY(x, y, z)) continue;
+                inRegion.add(block);
                 break;
             }
         }
@@ -74,112 +72,92 @@ public class ProtectionEvents implements Listener {
     }
 
     @EventHandler
+    private void onPlayerBoostElytra(PlayerElytraBoostEvent e) {
+        final Player player = e.getPlayer();
+        if (inFlat.contains(player.getName())) {
+            player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.f, 1.f);
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     private void onPlayerShootArrow(EntityShootBowEvent e) {
-        Location loc = e.getEntity().getLocation();
-        int x = loc.getBlockX();
-        int z = loc.getBlockZ();
-        if (!spawnRegionHolder.test(x, z) && !nethPotRegionHolder.test(x, z))
-            return;
+        final Location location = e.getEntity().getLocation();
+        if (!spawnRegionHolder.test(location.getBlockX(), location.getBlockZ())) return;
         e.setCancelled(true);
     }
 
     @EventHandler
     private void onPlayerInteract(PlayerInteractEvent e) {
-        Block b = e.getClickedBlock();
-        if (b == null)
-            return;
-        if (b.getType() == Material.SPRUCE_TRAPDOOR) {
-            Player p = e.getPlayer();
-            if (p.isOp())
-                return;
-            p.sendMessage(EXCEPTION_INTERACTION);
+        final Block block = e.getClickedBlock();
+        if (block == null) return;
+        if (block.getType() == Material.SPRUCE_TRAPDOOR) {
+            final Player player = e.getPlayer();
+            if (player.isOp()) return;
+            player.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
         }
     }
 
     @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
-        if (e.isCancelled())
+        final Entity attacker = e.getDamager();
+        final boolean playerAttacker = attacker instanceof Player;
+        if (!(e.getEntity() instanceof Player damaged) || (!playerAttacker && !(attacker instanceof Arrow) && !(attacker instanceof ThrownPotion)))
             return;
-        Entity attacker = e.getDamager();
-        EntityType entType = attacker.getType();
-        boolean playerAttacker = entType == EntityType.PLAYER;
-        Entity ent = e.getEntity();
-        if (ent.getType() != EntityType.PLAYER ||
-                (!playerAttacker && entType != EntityType.SPLASH_POTION) && entType != EntityType.ARROW)
-            return;
-        Player p = (Player) ent;
-        if (inNethpot.contains(p.getName())) {
-            Location loc = p.getLocation();
-            if (nethPotRegionHolder.test(loc.getBlockX(), loc.getBlockZ()))
-                e.setCancelled(true);
-            return;
-        }
-        Location loc = p.getLocation();
-        if (loc.getWorld() != d)
-            return;
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
+        final Location location = damaged.getLocation();
+        final int x = location.getBlockX();
+        final int y = location.getBlockY();
+        final int z = location.getBlockZ();
         if (playerAttacker) {
-            for (AbstractRegionHolder r : regions) {
-                if (!r.testY(x, y, z))
-                    continue;
-                e.setCancelled(true);
-                return;
-            }
-            Player damagePlayer = (Player) attacker;
-            String name = damagePlayer.getName();
-            CustomPlayerDataHolder D1 = playerData.get(name);
-            if (D1.isTagged())
-                D1.setTagTime(damagePlayer);
-            else
-                D1.setupCombatRunnable(damagePlayer);
-            String pn = p.getName();
-            CustomPlayerDataHolder D0 = playerData.get(pn);
-            if (D0.isTagged())
-                D0.setTagTime(p);
-            else {
-                D0.setLastTaggedBy(name);
-                D0.setupCombatRunnable(p);
+            if (location.getWorld() == d)
+                for (AbstractRegionHolder region : regions) {
+                    if (!region.testY(x, y, z)) continue;
+                    attacker.sendMessage(EXCEPTION_PVP);
+                    e.setCancelled(true);
+                    return;
+                }
+            final Player damager = (Player) attacker;
+            final String damagerName = damager.getName();
+            final String damagedName = damaged.getName();
+            final CustomPlayerDataHolder D0 = playerData.get(damagedName);
+            final CustomPlayerDataHolder D1 = playerData.get(damagerName);
+            // check
+            //if (!ModerationAssist.checkFlat(damager, damagerName, D0, D1))
+            //return;
+            D1.setLastTaggedBy(damagedName);
+            D1.setLastTagged(System.currentTimeMillis());
+            if (D1.isTagged()) D1.setTagTime(damager);
+            else D1.setupCombatRunnable(damager);
 
-                D1.setLastTaggedBy(pn);
-            }
+            D0.setLastTaggedBy(damagerName);
+            D0.setLastTagged(System.currentTimeMillis());
+            if (D0.isTagged()) D0.setTagTime(damaged);
+            else D0.setupCombatRunnable(damaged);
         } else {
-            for (AbstractRegionHolder r : regions) {
-                if (!r.testY(x, y, z))
-                    continue;
+            if (location.getWorld() == d) for (final AbstractRegionHolder region : regions) {
+                if (!region.testY(x, y, z)) continue;
                 e.setCancelled(true);
                 return;
             }
-            CustomPlayerDataHolder D0 = playerData.get(p.getName());
-            if (D0.isTagged())
-                D0.setTagTime(p);
-            else
-                D0.setupCombatRunnable(p);
+            final CustomPlayerDataHolder D0 = playerData.get(damaged.getName());
+            D0.setLastTagged(System.currentTimeMillis());
+            if (D0.isTagged()) D0.setTagTime(damaged);
+            else D0.setupCombatRunnable(damaged);
         }
     }
 
     @EventHandler
     private void onBlockBreak(BlockBreakEvent e) {
-        Player p = e.getPlayer();
-        if (inNethpot.contains(p.getName())) {
-            if (p.isOp())
-                return;
-            p.sendMessage(EXCEPTION_BLOCK_BREAK);
-            e.setCancelled(true);
-            return;
-        }
-        Location loc = e.getBlock().getLocation();
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
-        for (AbstractRegionHolder r : regions) {
-            if (!r.testY(x, y, z))
-                continue;
-            if (p.isOp())
-                return;
-            p.sendMessage(EXCEPTION_BLOCK_BREAK);
+        final Player player = e.getPlayer();
+        final Location location = e.getBlock().getLocation();
+        final int x = location.getBlockX();
+        final int y = location.getBlockY();
+        final int z = location.getBlockZ();
+        for (final AbstractRegionHolder region : regions) {
+            if (!region.testY(x, y, z)) continue;
+            if (player.isOp()) return;
+            player.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
             return;
         }
@@ -197,7 +175,10 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onPlayerBucketEmpty(PlayerBucketEmptyEvent e) {
-        e.setCancelled(true);
+        final Player player = e.getPlayer();
+        final String name = player.getName();
+        if (inFlat.contains(name) || atSpawn.contains(name) || inFFA.contains(player))
+            e.setCancelled(true);
     }
 
     @EventHandler

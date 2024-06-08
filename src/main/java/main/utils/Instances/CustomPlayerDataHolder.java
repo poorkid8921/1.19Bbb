@@ -33,7 +33,10 @@ public class CustomPlayerDataHolder {
     private Location back;
     @Getter
     @Setter
-    private int lastPacket = 0;
+    private int lastPacket;
+    @Getter
+    @Setter
+    private int lastItemPacket;
     @Getter
     @Setter
     private boolean ignoreAnim = false;
@@ -52,14 +55,22 @@ public class CustomPlayerDataHolder {
     @Setter
     private long lastChatMS = 0L;
     private int flags;
+    @Setter
+    private int flatFlags;
     @Getter
     @Setter
     private boolean fastCrystals = true;
     @Getter
     @Setter
     private long lastTimeKitWasUsed;
+    @Getter
+    @Setter
+    private long lastTagged;
+    @Getter
+    @Setter
+    private int preLastPacket;
 
-    public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills) {
+    public CustomPlayerDataHolder(final int c, final int m, final int t, final int z, final int deaths, final int kills) {
         this.killeffect = c;
         this.mtoggle = m;
         this.tptoggle = t;
@@ -70,14 +81,14 @@ public class CustomPlayerDataHolder {
         this.hashCode = customPlayerDataHashCode++;
     }
 
-    public CustomPlayerDataHolder(int c, int m, int t, int z, int deaths, int kills, int rank) {
+    public CustomPlayerDataHolder(final int rank, final int c, final int m, final int t, final int z, final int deaths, final int kills) {
+        this.rank = rank;
         this.killeffect = c;
         this.mtoggle = m;
         this.tptoggle = t;
         this.money = z;
         this.deaths = deaths;
         this.kills = kills;
-        this.rank = rank;
         this.lastTimeKitWasUsed = System.currentTimeMillis();
         this.hashCode = customPlayerDataHashCode++;
     }
@@ -104,6 +115,10 @@ public class CustomPlayerDataHolder {
 
     public int incrementFlags() {
         return flags++;
+    }
+
+    public int incrementFlatFlags() {
+        return flatFlags++;
     }
 
     public void setupCombatRunnable(Player player) {
@@ -152,7 +167,7 @@ public class CustomPlayerDataHolder {
 
     @Override
     public boolean equals(Object o) {
-        return this == o && o.hashCode() == hashCode;
+        return this == o || o.hashCode() == hashCode;
     }
 
     @Override

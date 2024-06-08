@@ -15,8 +15,8 @@ import static main.utils.Initializer.playerData;
 public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String name = sender.getName();
-        CustomPlayerDataHolder M = playerData.get(name);
+        final String name = sender.getName();
+        final CustomPlayerDataHolder M = playerData.get(name);
         if (M.getMtoggle() == 0) {
             sender.sendMessage("§7You will no longer receive messages from players.");
             M.setMtoggle(1);

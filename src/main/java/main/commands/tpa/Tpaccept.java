@@ -7,12 +7,12 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Initializer.*;
-import static main.utils.Utils.getRequest;
-import static main.utils.Utils.teleportEffect;
+import static main.utils.Utils.*;
 
 public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -47,7 +47,7 @@ public class Tpaccept implements CommandExecutor {
         Player user;
         Player target;
         String recName;
-        String sn;
+        String name;
         if (request.isHere()) {
             user = (Player) sender;
             target = request.getSender();
@@ -60,7 +60,7 @@ public class Tpaccept implements CommandExecutor {
             sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(recName).getFRank(recName) + "§7's teleport request.",
                     "§7Teleporting...");
             String userName = sender.getName();
-            sn = user.getName();
+            name = user.getName();
             target.sendMessage(MAIN_COLOR + playerData.get(userName).getFRank(userName) + " §7has accepted your teleport request.");
         } else {
             user = request.getSender();
@@ -74,21 +74,22 @@ public class Tpaccept implements CommandExecutor {
             sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(userName).getFRank(userName) + "§7's teleport request.",
                     "§7Teleporting...");
             recName = sender.getName();
-            sn = user.getName();
+            name = user.getName();
             user.sendMessage(MAIN_COLOR + playerData.get(recName).getFRank(recName) + " §7has accepted your teleport request");
         }
-
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
-        Location loc = target.getLocation();
-        user.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(r -> {
+        Location location = target.getLocation();
+        user.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(r -> {
             if (inFFA.contains(target))
                 inFFA.add(user);
-            else if (inNethpot.contains(recName))
-                inNethpot.add(sn);
-            else if (atSpawn.contains(recName))
-                atSpawn.add(sn);
+            else if (inFlat.contains(recName))
+                inFlat.add(name);
+            else if (atSpawn.contains(recName)) {
+                atSpawn.add(name);
+                showCosmetics(((CraftPlayer) user).getHandle().connection);
+            }
         });
-        teleportEffect(loc.getWorld(), loc);
+        teleportEffect(location.getWorld(), location);
         Initializer.requests.remove(request);
         return true;
     }

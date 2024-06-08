@@ -15,8 +15,8 @@ import static main.utils.Initializer.tpa;
 public class TpaLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String name = sender.getName();
-        CustomPlayerDataHolder T = playerData.get(name);
+        final String name = sender.getName();
+        final CustomPlayerDataHolder T = playerData.get(name);
         if (T.getTptoggle() == 0) {
             sender.sendMessage("§7You will no longer receive tp requests from players.");
             T.setTptoggle(1);

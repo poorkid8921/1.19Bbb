@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,16 +22,15 @@ public class Report implements CommandExecutor, TabCompleter {
         if (args.length < 2)
             Gui.openReport((Player) sender, args[0]);
         else {
-            StringBuilder msg = new StringBuilder();
-            for (String arg : args) msg.append(arg).append(" ");
-
+            final StringBuilder msg = new StringBuilder();
+            for (final String arg : args) msg.append(arg).append(" ");
             Utils.submitReport((Player) sender, msg.toString(), null);
         }
         return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         return args.length < 2 ? null : Collections.emptyList();
     }
 }

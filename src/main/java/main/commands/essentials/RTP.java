@@ -2,8 +2,6 @@ package main.commands.essentials;
 
 import com.google.common.collect.ImmutableList;
 import main.Practice;
-import main.utils.Initializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -23,57 +21,18 @@ import static main.utils.Utils.teleportEffect;
 public class RTP implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player p = (Player) sender;
-        if (args.length > 0 && args[0].equals("end")) {
-            if (playersRTPing.contains(sender.getName())) return true;
-
-            Location locH = endRTP[RANDOM.nextInt(100)];
-            p.teleportAsync(locH, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
-                p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getBlockX() + " " + locH.getBlockY() + " " + locH.getBlockZ());
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-                p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-                teleportEffect(Practice.d0, locH);
-            });
-            return true;
-        }
-
-        String sn = sender.getName();
-        if (playersRTPing.contains(sn)) return true;
-        else {
-            if (!playersRTPing.isEmpty()) {
-                Location locH = overworldRTP[RANDOM.nextInt(100)];
-                p.teleportAsync(locH, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
-                    playersRTPing.remove(sn);
-                    p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getBlockX() + " " + locH.getBlockY() + " " + locH.getBlockZ());
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-                    teleportEffect(Practice.d, locH);
-                });
-
-                String name = playersRTPing.get(Initializer.RANDOM.nextInt(playersRTPing.size()));
-                Player pd = Bukkit.getPlayer(name);
-                pd.teleportAsync(locH, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
-                    playersRTPing.remove(name);
-                    p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-                    p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getBlockX() + " " + locH.getBlockY() + " " + locH.getBlockZ());
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-                });
-                return true;
-            }
-            playersRTPing.add(sn);
-        }
-
-        Location locH = overworldRTP[RANDOM.nextInt(100)];
-        p.teleportAsync(locH, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
-            playersRTPing.remove(sn);
-            p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-            p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locH.getBlockX() + " " + locH.getBlockY() + " " + locH.getBlockZ());
-            p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-            p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-            teleportEffect(Practice.d, locH);
+        final String name = sender.getName();
+        if (playersRTPing.contains(name)) return true;
+        playersRTPing.add(name);
+        final Player player = (Player) sender;
+        final Location location = args.length > 0 && args[0].equals("end") ? endRTP[RANDOM.nextInt(100)] : overworldRTP[RANDOM.nextInt(100)];
+        player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
+            playersRTPing.remove(name);
+            player.playSound(player, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+            player.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ());
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+            teleportEffect(Practice.d, location);
         });
         return true;
     }

@@ -11,9 +11,9 @@ public class List implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof ConsoleCommandSender) {
-            Collection<? extends Player> p = Bukkit
+            final Collection<? extends Player> players = Bukkit
                     .getOnlinePlayers();
-            sender.sendMessage(p.size() + " | " + p
+            sender.sendMessage(players.size() + " | " + players
                     .stream()
                     .map(Player::getName)
                     .sorted()

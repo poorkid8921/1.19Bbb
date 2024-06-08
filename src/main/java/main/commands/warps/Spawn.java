@@ -1,5 +1,8 @@
 package main.commands.warps;
 
+import main.utils.Initializer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,13 +15,20 @@ import java.util.Collections;
 
 import static main.utils.Initializer.atSpawn;
 import static main.utils.Initializer.spawn;
+import static main.utils.Utils.rotateNPCs;
+import static main.utils.Utils.showCosmetics;
 
 public class Spawn implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player p = (Player) sender;
-        main.utils.npcs.Utils.showForPlayer(((CraftPlayer) p).getHandle().connection);
-        p.teleportAsync(spawn, PlayerTeleportEvent.TeleportCause.PLUGIN).thenAccept(r -> atSpawn.add(p.getName()));
+        final Player player = (Player) sender;
+        final ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
+        player.teleport(spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+            atSpawn.add(player.getName());
+            showCosmetics(connection);
+            rotateNPCs(spawn, connection);
+        }, 1L);
         return true;
     }
 

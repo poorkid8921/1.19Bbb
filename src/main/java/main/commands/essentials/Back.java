@@ -15,7 +15,7 @@ import static main.utils.Initializer.playerData;
 public class Back implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        CustomPlayerDataHolder D = playerData.get(sender.getName());
+        final CustomPlayerDataHolder D = playerData.get(sender.getName());
         if (D.getBack() == null) {
             sender.sendMessage("§7You got no back location.");
             return true;

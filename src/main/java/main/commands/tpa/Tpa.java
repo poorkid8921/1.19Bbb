@@ -1,6 +1,5 @@
 package main.commands.tpa;
 
-import main.utils.Instances.TpaRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,31 +16,25 @@ public class Tpa implements CommandExecutor {
             sender.sendMessage("§7You must specify who you want to teleport to!");
             return true;
         }
-
-        Player recipient = Bukkit.getPlayer(args[0]);
+        final Player recipient = Bukkit.getPlayer(args[0]);
         if (recipient == null) {
             sender.sendMessage("§7You can't send teleport requests to offline players.");
             return true;
         }
-
-        String ren = recipient.getName();
-        String sn = sender.getName();
-        if (ren == sn) {
+        final String targetName = recipient.getName();
+        final String name = sender.getName();
+        if (targetName == name) {
             sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
-
-        TpaRequest tpr = getRequest(ren);
-        if (tpr != null && hasRequestedThePlayer(sn, ren)) {
+        if (getRequest(targetName) != null && hasRequest(name, targetName)) {
             sender.sendMessage("§7You already have an ongoing request to this player.");
             return true;
         }
-
-        if (playerData.get(ren).getTptoggle() == 1) {
+        if (playerData.get(targetName).getTptoggle() == 1) {
             sender.sendMessage("§7You can't request this player since they've locked their tp requests.");
             return true;
         }
-
         addRequest((Player) sender, recipient, false);
         return true;
     }
