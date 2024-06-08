@@ -17,36 +17,32 @@ import static main.utils.Utils.tabCompleteFilter;
 public class Msg implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            sender.sendMessage("§7You must specify who you want to message!");
-            return true;
-        } else if (args.length == 1) {
-            sender.sendMessage("§7You must specify a message to send to the player!");
+        if (args.length < 2) {
+            sender.sendMessage(args.length == 0 ? "§7You must specify who you want to message!" : "§7You must specify a message to send to the player!");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[0]);
+        final Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
             sender.sendMessage("§7You can't message offline players.");
             return true;
         }
 
-        String name = sender.getName();
-        String tn = target.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
-        CustomPlayerDataHolder D1 = playerData.get(tn);
+        final String name = sender.getName();
+        final String targetName = target.getName();
+        final CustomPlayerDataHolder D0 = playerData.get(name);
+        final CustomPlayerDataHolder D1 = playerData.get(targetName);
         if (D1.getMtoggle() == 1 && D0.getRank() < 9) {
             sender.sendMessage("§7You can't message this player since they've locked their messages.");
             return true;
         }
 
-        StringBuilder msg = new StringBuilder();
+        final StringBuilder msg = new StringBuilder();
         for (int i = 1; i < args.length; i++)
             msg.append(args[i]).append(" ");
-
-        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(tn) + "§6] §r" + msg);
+        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(targetName) + "§6] §r" + msg);
         target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msg);
-        D0.setLastReceived(tn);
+        D0.setLastReceived(targetName);
         D1.setLastReceived(name);
         return true;
     }

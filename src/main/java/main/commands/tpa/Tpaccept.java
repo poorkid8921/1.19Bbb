@@ -14,8 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static main.utils.Initializer.*;
-import static main.utils.Utils.getRequest;
-import static main.utils.Utils.teleportEffect;
+        import static main.utils.Utils.*;
 
 public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -42,13 +41,14 @@ public class Tpaccept implements CommandExecutor {
         if (request == null) {
             sender.sendMessage(msg);
             return true;
-        } else if (un == n) {
+        } else if (un.equals(n)) {
             sender.sendMessage("§7You can't teleport to yourself.");
             return true;
         }
 
         Player user;
         Player target;
+        String recName;
         if (request.isHere()) {
             user = (Player) sender;
             target = request.getSender();
@@ -57,7 +57,7 @@ public class Tpaccept implements CommandExecutor {
                 sender.sendMessage(msg);
                 return true;
             }
-            String recName = target.getName();
+            recName = target.getName();
             sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(recName).getFRank(recName) + "§7's teleport request.",
                     "§7Teleporting...");
             if (request.getTpaAll()) {
@@ -75,21 +75,22 @@ public class Tpaccept implements CommandExecutor {
             String userName = user.getName();
             sender.sendMessage("§7You have accepted " + MAIN_COLOR + playerData.get(userName).getFRank(userName) + "§7's teleport request.",
                     "§7Teleporting...");
-            String recName = sender.getName();
+            recName = sender.getName();
             user.sendMessage(MAIN_COLOR + playerData.get(recName).getFRank(recName) + " §7has accepted your teleport request");
         }
 
         Bukkit.getScheduler().cancelTask(request.getRunnableid());
-        Location loc = target.getLocation();
-        user.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.COMMAND);
-        if (Economy.spawnDistance.distance(loc.getBlockX(), loc.getBlockZ()) < 128) {
-            ServerGamePacketListenerImpl connection = ((CraftPlayer) user).getHandle().connection;
-            main.utils.holos.Utils.showForPlayerTickable(connection);
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                main.utils.npcs.Utils.showForPlayer(connection);
-            }, 3L);
-        }
-        teleportEffect(loc.getWorld(), loc);
+        Location location = target.getLocation();
+        user.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(r -> {
+            if (Economy.spawnDistance.distance(location.getBlockX(), location.getBlockZ()) < 128) {
+                final ServerGamePacketListenerImpl connection = ((CraftPlayer) user).getHandle().connection;
+                main.utils.modules.holos.Utils.showForPlayerTickable(connection);
+                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                    main.utils.modules.npcs.Utils.showForPlayer(connection);
+                }, 3L);
+            }
+        });
+        teleportEffect(location.getWorld(), location);
         Initializer.requests.remove(request);
         return true;
     }

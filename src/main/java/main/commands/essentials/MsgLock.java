@@ -15,16 +15,16 @@ import static main.utils.Initializer.playerData;
 public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String name = sender.getName();
-        CustomPlayerDataHolder M = playerData.get(name);
+        final String name = sender.getName();
+        final CustomPlayerDataHolder M = playerData.get(name);
         if (M.getMtoggle() == 0) {
             sender.sendMessage("§7You will no longer receive messages from players.");
-            playerData.get(name).setMtoggle(1);
+            M.setMtoggle(1);
             msg.remove(name);
             Initializer.msg.sort(String::compareToIgnoreCase);
         } else {
             sender.sendMessage("§7You can receive messages from players again.");
-            playerData.get(name).setMtoggle(0);
+            M.setMtoggle(0);
             msg.add(name);
             Initializer.msg.sort(String::compareToIgnoreCase);
         }

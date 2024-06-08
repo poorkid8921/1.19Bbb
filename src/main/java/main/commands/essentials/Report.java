@@ -22,8 +22,8 @@ public class Report implements CommandExecutor, TabExecutor {
         }
         if (args.length < 2) Gui.openReport((Player) sender, args[0]);
         else {
-            StringBuilder msg = new StringBuilder();
-            for (String arg : args) msg.append(arg).append(" ");
+            final StringBuilder msg = new StringBuilder();
+            for (final String arg : args) msg.append(arg).append(" ");
             submitReport((Player) sender, msg.toString(), null);
         }
         return true;

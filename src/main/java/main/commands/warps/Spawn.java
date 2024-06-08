@@ -3,8 +3,6 @@ package main.commands.warps;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Initializer;
 import main.utils.instances.CustomPlayerDataHolder;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,63 +16,52 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Collections;
 
 import static main.utils.Initializer.playerData;
+import static main.utils.Utils.showCosmetics;
 
 public class Spawn implements CommandExecutor, TabExecutor {
     private final ObjectArrayList<String> spawnQueue = ObjectArrayList.of();
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player p = (Player) sender;
-        String name = sender.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
+        final Player player = (Player) sender;
+        final String name = sender.getName();
+        final CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.getLastTagged() == 0L) {
-            p.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
-            ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
-            main.utils.holos.Utils.showForPlayerTickable(connection);
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                main.utils.npcs.Utils.showForPlayer(connection);
-            }, 3L);
+            player.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+            showCosmetics(((CraftPlayer) player).getHandle().connection);
             return true;
         }
         if ((System.currentTimeMillis() - D0.getLastTagged()) > 30000L) {
-            p.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
-            ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
-            main.utils.holos.Utils.showForPlayerTickable(connection);
-            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                main.utils.npcs.Utils.showForPlayer(connection);
-            }, 3L);
+            player.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+            showCosmetics(((CraftPlayer) player).getHandle().connection);
         } else {
             spawnQueue.add(name);
             new BukkitRunnable() {
-                final Location oldLoc = p.getLocation();
+                final Location oldLoc = player.getLocation();
                 int sec = 4;
 
                 @Override
                 public void run() {
-                    boolean online = p.isOnline();
+                    final boolean online = player.isOnline();
                     sec--;
                     if (sec == 0 || !online) {
                         spawnQueue.remove(name);
                         if (online) {
-                            p.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
-                            ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
-                            main.utils.holos.Utils.showForPlayerTickable(connection);
-                            Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-                                main.utils.npcs.Utils.showForPlayer(connection);
-                            }, 3L);
+                            player.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
+                            showCosmetics(((CraftPlayer) player).getHandle().connection);
                         }
                         this.cancel();
                         return;
                     }
-                    if (p.getWorld() == oldLoc.getWorld() && oldLoc.distance(p.getLocation()) > 0.5D) {
-                        p.sendActionBar("§aTeleport cancelled. You moved!");
+                    if (player.getWorld() == oldLoc.getWorld() && oldLoc.distance(player.getLocation()) > 0.5D) {
+                        player.sendActionBar("§aTeleport cancelled. You moved!");
                         this.cancel();
                         return;
                     } else if (D0.isTagged()) {
                         this.cancel();
                         return;
                     }
-                    p.sendActionBar("§aTeleporting to spawn in " + (sec == 1 ? "a second!" : sec + " seconds!"));
+                    player.sendActionBar("§aTeleporting to spawn in " + (sec == 1 ? "a second!" : sec + " seconds!"));
                 }
             }.runTaskTimer(Initializer.p, 0L, 20L);
         }

@@ -17,18 +17,18 @@ public class CreateListener implements Listener {
     @EventHandler
     private void onPlayerDamage(EntityDamageByEntityEvent e) {
         if (e.isCancelled()) return;
-        Entity attacker = e.getDamager();
-        Entity ent = e.getEntity();
-        if (ent.getType() != EntityType.PLAYER)
+        final Entity attacker = e.getDamager();
+        final Entity entity = e.getEntity();
+        if (entity.getType() != EntityType.PLAYER)
             return;
-        Player p = (Player) ent;
-        if (p.getWorld() != d) return;
-        Location loc = p.getLocation();
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
-        for (AbstractRegionHolder k : regions) {
-            if (k.testY(x, y, z)) {
+        Player player = (Player) entity;
+        Location location = player.getLocation();
+        if (location.getWorld() != d) return;
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        for (final AbstractRegionHolder region : regions) {
+            if (region.testY(x, y, z)) {
                 attacker.sendMessage(EXCEPTION_PVP);
                 e.setCancelled(true);
                 return;

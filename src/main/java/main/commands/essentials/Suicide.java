@@ -12,7 +12,7 @@ import java.util.Collections;
 public class Suicide implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player player = ((Player) sender);
+        final Player player = ((Player) sender);
         player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.SONIC_BOOM, 0.0D));
         player.setHealth(0D);
         return true;

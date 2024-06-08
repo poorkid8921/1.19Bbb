@@ -22,24 +22,22 @@ import static main.utils.Utils.teleportEffect;
 public class RTP implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String sn = sender.getName();
-        CustomPlayerDataHolder D0 = playerData.get(sn);
+        final CustomPlayerDataHolder D0 = playerData.get(sender.getName());
         if (D0.getLastRTPed() > System.currentTimeMillis()) {
-            sender.sendMessage("§7You are on a cooldown of " + SECOND_COLOR + getTime(D0.getLastRTPed() - System.currentTimeMillis()) + "!");
+            sender.sendMessage("§7You are on a cooldoname of " + SECOND_COLOR + getTime(D0.getLastRTPed() - System.currentTimeMillis()) + "!");
             return true;
         }
         D0.setLastRTPed(System.currentTimeMillis() + 180000L);
-
-        Player p = (Player) sender;
-        World w = p.getWorld();
-        String wn = w.getName();
-        Location locC = (wn.equals("world_nether") ? netherRTP : wn.equals("world_the_end") ? endRTP : overworldRTP)[RANDOM.nextInt(100)];
-        p.teleportAsync(locC, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
-            p.playSound(p, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-            p.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locC.getBlockX() + " " + locC.getBlockY() + " " + locC.getBlockZ());
-            p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
-            p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-            teleportEffect(w, locC);
+        final Player player = (Player) sender;
+        final World world = player.getWorld();
+        final String name = world.getName();
+        final Location locC = (name.equals("world_nether") ? netherRTP : name.equals("world_the_end") ? endRTP : overworldRTP)[RANDOM.nextInt(100)];
+        player.teleportAsync(locC, PlayerTeleportEvent.TeleportCause.COMMAND).thenAccept(result -> {
+            player.playSound(player, Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+            player.sendTitle(SECOND_COLOR + "ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ", "§7" + locC.getBlockX() + " " + locC.getBlockY() + " " + locC.getBlockZ());
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+            teleportEffect(world, locC);
         });
         return true;
     }

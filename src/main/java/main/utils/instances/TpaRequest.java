@@ -3,6 +3,7 @@ package main.utils.instances;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class TpaRequest {
@@ -11,7 +12,6 @@ public class TpaRequest {
     private final String receiver;
     @Getter
     private final boolean here;
-    @Getter
     private final boolean showacceptmsg;
     @Getter
     @Setter

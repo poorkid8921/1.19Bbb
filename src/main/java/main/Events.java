@@ -5,10 +5,8 @@ import it.unimi.dsi.fastutil.Pair;
 import main.utils.Initializer;
 import main.utils.Utils;
 import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.storage.DB;
-import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import main.utils.modules.storage.DB;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -17,7 +15,6 @@ import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.util.CraftChatMessage;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,8 +29,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.util.NumberConversions;
-import org.bukkit.util.Vector;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -41,11 +36,8 @@ import java.util.Map;
 
 import static main.Economy.d;
 import static main.utils.Initializer.*;
-import static main.utils.Utils.getPlayerData;
-import static main.utils.Utils.spawnFirework;
-import static main.utils.npcs.Utils.NPCs;
-import static main.utils.npcs.Utils.moveNPCs;
-import static main.utils.storage.DB.connection;
+import static main.utils.Utils.*;
+import static main.utils.modules.storage.DB.connection;
 
 @SuppressWarnings("deprecation")
 public class Events implements Listener {
@@ -78,80 +70,62 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
-        Player p = e.getPlayer();
-        if (p.getWorld() != d)
+        final Player player = e.getPlayer();
+        final Location location = player.getLocation();
+        if (location.getWorld() != d)
             return;
-        Location pLoc = p.getLocation();
-        if (Economy.spawnDistance.distance(pLoc.getX(), pLoc.getZ()) > 128)
+        if (Economy.spawnDistance.distance(location.getX(), location.getZ()) > 128)
             return;
-        Location to = e.getTo();
-        Location from = e.getFrom();
+        final Location to = e.getTo();
+        final Location from = e.getFrom();
         if (to.getX() == from.getX() &&
                 to.getY() == from.getY() &&
                 to.getZ() == from.getZ())
             return;
-        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
-        Entity entity;
-        Location loc;
-        Vector vector;
-        double x;
-        double z;
-        double yaw;
-        for (ServerPlayer NPC : moveNPCs) {
-            entity = NPC.getBukkitEntity();
-            loc = entity.getLocation();
-            vector = to.clone().subtract(loc).toVector();
-            x = vector.getX();
-            z = vector.getZ();
-            yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
-            connection.send(new ClientboundRotateHeadPacket(NPC, (byte) ((yaw % 360) * 256 / 360)));
-            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z)))) % 360.) * 256 / 360), false));
-        }
+        rotateNPCs(to, ((CraftPlayer) player).getHandle().connection);
     }
 
     @EventHandler
     private void onEntitySpawn(EntitySpawnEvent e) {
-        if (e.getEntity() instanceof EnderCrystal ent)
-            crystalsToBeOptimized.put(ent.getEntityId(), ent.getLocation());
+        if (e.getEntity() instanceof EnderCrystal entity)
+            crystalsToBeOptimized.put(entity.getEntityId(), entity.getLocation());
     }
 
     @EventHandler
     private void onEntityRemoveFromWorld(EntityRemoveFromWorldEvent e) {
-        if (e.getEntity() instanceof EnderCrystal ent)
-            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(ent.getEntityId()), 40L);
+        if (e.getEntity() instanceof EnderCrystal entity)
+            Bukkit.getScheduler().runTaskLater(p, () -> crystalsToBeOptimized.remove(entity.getEntityId()), 40L);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onChat(AsyncPlayerChatEvent e) {
-        String message = e.getMessage();
+        final String message = e.getMessage();
         if (message.length() > 128) {
             e.setCancelled(true);
             return;
         }
-        Player p = e.getPlayer();
-        String name = p.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
+        final CustomPlayerDataHolder D0 = playerData.get(e.getPlayer().getName());
         if (System.currentTimeMillis() < D0.getLastChatMS()) {
             e.setCancelled(true);
             return;
         }
         D0.setLastChatMS(System.currentTimeMillis() + 500L);
-        /*Team team = p.getScoreboard().getPlayerTeam(p);
-        e.setFormat(team == null ? playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
+        /*Team team = player.getScoreboard().getPlayerTeam(p);
+        e.setFormat(team == null ? playerData.get(player.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%") :
                 ("§7[§6" + team.getDisplayName() + "§7] §f" +
-                        playerData.get(p.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
+                        playerData.get(player.getName()).getFRank(name) + SECOND_COLOR + " » §r" + e.getMessage().replace("%", "%%")));
         */
     }
 
     @EventHandler
     private void onCommand(PlayerCommandPreprocessEvent e) {
-        Player p = e.getPlayer();
-        if (playerData.get(p.getName()).isTagged()) {
-            String command = e.getMessage();
-            for (String k : allowedCmds) {
+        final Player player = e.getPlayer();
+        if (playerData.get(player.getName()).isTagged()) {
+            final String command = e.getMessage();
+            for (final String k : allowedCmds) {
                 if (command.startsWith(k)) return;
             }
-            p.sendMessage(Initializer.EXCEPTION_TAGGED);
+            player.sendMessage(Initializer.EXCEPTION_TAGGED);
             e.setCancelled(true);
         }
     }
@@ -160,8 +134,8 @@ public class Events implements Listener {
     private void onInteract(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK ||
                 e.getClickedBlock().getType() != Material.LEVER) return;
-        String name = e.getPlayer().getName();
-        Integer o = leverFlickCount.getIfPresent(name);
+        final String name = e.getPlayer().getName();
+        final Integer o = leverFlickCount.getIfPresent(name);
         int count = o == null ? 0 : o;
         if (count++ > 4) e.setCancelled(true);
         leverFlickCount.put(name, count);
@@ -169,14 +143,14 @@ public class Events implements Listener {
 
     @EventHandler
     private void onQuit(PlayerQuitEvent e) {
-        Player p = e.getPlayer();
-        String name = p.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
+        final Player player = e.getPlayer();
+        final String name = player.getName();
+        final CustomPlayerDataHolder D0 = playerData.get(name);
         if (D0.isTagged()) {
             D0.untag();
-            p.setLastDamageCause(new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SONIC_BOOM, 0.0D));
-            p.setHealth(0.0D);
-            ((CraftPlayer) p).getHandle().setPosRaw(-0.5D, 140.0D, 0.5D);
+            player.setLastDamageCause(new EntityDamageEvent(player, EntityDamageEvent.DamageCause.SONIC_BOOM, 0.0D));
+            player.setHealth(0.0D);
+            ((CraftPlayer) player).getHandle().setPosRaw(-0.5D, 140.0D, 0.5D);
         }
         e.setQuitMessage(MAIN_COLOR + "← " + name);
         Initializer.requests.remove(Utils.getRequest(name));
@@ -186,7 +160,7 @@ public class Events implements Listener {
             if (D1.getLastReceived() == name) D1.setLastReceived(null);
         }
         D0.setLastReceived(null);
-        try (PreparedStatement statement = connection.prepareStatement("UPDATE data SET m = ?, t = ?, ed = ?, ek = ?, fc = ? WHERE name = '?'")) {
+        try (final PreparedStatement statement = connection.prepareStatement("UPDATE data SET m = ?, t = ?, ed = ?, ek = ?, fc = ? WHERE name = '?'")) {
             statement.setInt(1, D0.getMtoggle());
             statement.setInt(2, D0.getTptoggle());
             statement.setInt(3, D0.getDeaths());
@@ -207,17 +181,16 @@ public class Events implements Listener {
     private void onInventoryClick(InventoryClickEvent e) {
         if (e.getClickedInventory() instanceof PlayerInventory)
             return;
-        Player p = (Player) e.getWhoClicked();
-        String name = p.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
-        Pair<Integer, String> inv = D0.getInventoryInfo();
+        final Player player = (Player) e.getWhoClicked();
+        final CustomPlayerDataHolder D0 = playerData.get(player.getName());
+        final Pair<Integer, String> inv = D0.getInventoryInfo();
         if (inv == null) return;
         if (inv.first() == 0) {
             e.setCancelled(true);
             if (!e.getCurrentItem().getItemMeta().hasLore()) return;
-            p.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+            player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
             D0.setInventoryInfo(null);
-            Utils.submitReport(p, inv.second(), switch (e.getSlot()) {
+            Utils.submitReport(player, inv.second(), switch (e.getSlot()) {
                 case 10 -> "Cheating";
                 case 11 -> "Doxxing";
                 case 12 -> "Ban Evading";
@@ -229,15 +202,15 @@ public class Events implements Listener {
 
     @EventHandler
     private void onDeath(PlayerDeathEvent e) {
-        Player p = e.getPlayer();
-        String name = p.getName();
-        Player killer = p.getKiller();
-        CustomPlayerDataHolder D0 = playerData.get(name);
+        final Player player = e.getPlayer();
+        final String name = player.getName();
+        final Player killer = player.getKiller();
+        final CustomPlayerDataHolder D0 = playerData.get(name);
         D0.untag();
         D0.incrementDeaths();
-        if (killer == null || killer == p) {
-            EntityDamageEvent.DamageCause cause = p.getLastDamageCause().getCause();
-            String death = SECOND_COLOR + "☠ " + name + " §7" + switch (cause) {
+        if (killer == null || killer == player) {
+            final EntityDamageEvent.DamageCause cause = player.getLastDamageCause().getCause();
+            final String death = SECOND_COLOR + "☠ " + name + " §7" + switch (cause) {
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> "blasted themselves";
                 case FALL -> "broke their legs";
                 case FALLING_BLOCK -> "suffocated";
@@ -254,14 +227,14 @@ public class Events implements Listener {
                 default -> "suicided";
             };
             if (cause == EntityDamageEvent.DamageCause.SONIC_BOOM)
-                p.setStatistic(Statistic.DEATHS, p.getStatistic(Statistic.DEATHS) - 1);
+                player.setStatistic(Statistic.DEATHS, player.getStatistic(Statistic.DEATHS) - 1);
             e.setDeathMessage(death);
         } else {
-            String kp = killer.getName();
-            CustomPlayerDataHolder D1 = playerData.get(kp);
+            final String killerName = killer.getName();
+            final CustomPlayerDataHolder D1 = playerData.get(killerName);
             D1.untag();
             D1.incrementKills();
-            String death = SECOND_COLOR + "☠ " + kp + " §7" + switch (p.getLastDamageCause().getCause()) {
+            final String death = SECOND_COLOR + "☠ " + killerName + " §7" + switch (player.getLastDamageCause().getCause()) {
                 case CONTACT -> "pricked " + SECOND_COLOR + name + " §7to death";
                 case ENTITY_EXPLOSION -> "crystalled " + SECOND_COLOR + name;
                 case BLOCK_EXPLOSION -> "imploded " + SECOND_COLOR + name;
@@ -273,28 +246,28 @@ public class Events implements Listener {
                 default -> "suicided";
             };
             e.setDeathMessage(death);
-            Location loc = p.getLocation();
-            World w = p.getWorld();
+            final Location location = player.getLocation();
+            final World world = location.getWorld();
             if (D1.getRank() > 0) {
-                loc.add(0, 1, 0);
+                location.add(0, 1, 0);
                 switch (Initializer.RANDOM.nextInt(5)) {
-                    case 0 -> spawnFirework(loc);
-                    case 1 -> w.spawnParticle(Particle.TOTEM, loc, 50, 3, 1, 3, 0.0);
-                    case 2 -> w.strikeLightningEffect(loc);
+                    case 0 -> spawnFirework(location);
+                    case 1 -> world.spawnParticle(Particle.TOTEM, location, 50, 3, 1, 3, 0.0);
+                    case 2 -> world.strikeLightningEffect(location);
                     case 3 -> {
                         for (double y = 0; y < 11; y += 0.05) {
-                            w.spawnParticle(Particle.TOTEM, new Location(w, (float) (loc.getX() + (2 * Math.cos(y))), (float) (loc.getY() + (2 * Math.sin(y))), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
+                            world.spawnParticle(Particle.TOTEM, new Location(world, (float) (location.getX() + (2 * Math.cos(y))), (float) (location.getY() + (2 * Math.sin(y))), (float) (location.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                         }
                     }
                     case 4 -> {
                         for (double y = 0; y < 11; y += 0.05) {
-                            w.spawnParticle(Particle.FLAME, new Location(w, (float) (loc.getX() + (2 * Math.cos(y))), (float) (loc.getY() + (2 * Math.sin(y))), (float) (loc.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
+                            world.spawnParticle(Particle.FLAME, new Location(world, (float) (location.getX() + (2 * Math.cos(y))), (float) (location.getY() + (2 * Math.sin(y))), (float) (location.getZ() + 2 * Math.sin(y))), 2, 0, 0, 0, 1.0);
                         }
                     }
                 }
-            } else w.strikeLightningEffect(loc);
+            } else world.strikeLightningEffect(location);
             if (Initializer.RANDOM.nextInt(100) < 6)
-                e.getDrops().add(Utils.getHead(name, D1.getFRank(kp)));
+                e.getDrops().add(Utils.getHead(name, D1.getFRank(killerName)));
         }
     }
 
@@ -302,7 +275,7 @@ public class Events implements Listener {
     private void onExplosion(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof Item ent))
             return;
-        EntityDamageEvent.DamageCause cause = e.getCause();
+        final EntityDamageEvent.DamageCause cause = e.getCause();
         if (cause != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION &&
                 cause != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)
             return;
@@ -311,16 +284,12 @@ public class Events implements Listener {
 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent e) {
-        Player p = e.getPlayer();
-        String name = p.getName();
+        final Player player = e.getPlayer();
+        final String name = player.getName();
         e.setJoinMessage(JOIN_PREFIX + name);
-        ServerGamePacketListenerImpl connection = ((CraftPlayer) p).getHandle().connection;
-        main.utils.holos.Utils.showForPlayerTickable(connection);
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-            main.utils.npcs.Utils.showForPlayer(connection);
-        }, 3L);
-        if (!p.hasPlayedBefore()) {
-            PlayerInventory inv = p.getInventory();
+        showCosmetics(((CraftPlayer) player).getHandle().connection);
+        if (!player.hasPlayedBefore()) {
+            final PlayerInventory inv = player.getInventory();
             inv.addItem(sword);
             inv.addItem(pick);
             inv.setHelmet(helmet);
@@ -328,7 +297,7 @@ public class Events implements Listener {
             inv.setLeggings(leggings);
             inv.setBoots(boots);
             inv.setItemInOffHand(gap);
-            p.teleport(Initializer.spawn);
+            player.teleport(Initializer.spawn);
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
             Initializer.tpa.sort(String::compareToIgnoreCase);
@@ -336,7 +305,7 @@ public class Events implements Listener {
             playerData.put(name, new CustomPlayerDataHolder(0, 0, 0, 0, 0));
             return;
         }
-        CustomPlayerDataHolder D = playerData.get(name);
+        final CustomPlayerDataHolder D = playerData.get(name);
         if (D == null) {
             Initializer.tpa.add(name);
             Initializer.msg.add(name);
@@ -344,11 +313,11 @@ public class Events implements Listener {
             Initializer.msg.sort(String::compareToIgnoreCase);
             playerData.put(name, getPlayerData(name));
         } else {
-            short rank = DB.setUsefulData(name, D);
-            ServerPlayer craftPlayer = ((CraftPlayer) p).getHandle();
+            final int rank = DB.setUsefulData(name, D);
+            final ServerPlayer craftPlayer = ((CraftPlayer) player).getHandle();
             craftPlayer.listName = CraftChatMessage.fromString(D.getFRank(name))[0];
-            for (ServerPlayer player : DedicatedServer.getServer().getPlayerList().players) {
-                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, craftPlayer));
+            for (final ServerPlayer k : DedicatedServer.getServer().getPlayerList().players) {
+                k.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, craftPlayer));
             }
             Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
                 switch (rank) {
@@ -381,21 +350,10 @@ public class Events implements Listener {
     @EventHandler
     private void onRespawn(PlayerRespawnEvent e) {
         e.setRespawnLocation(spawn);
-        ServerGamePacketListenerImpl connection = ((CraftPlayer) e.getPlayer()).getHandle().connection;
-        main.utils.holos.Utils.showForPlayerTickable(connection);
+        final ServerGamePacketListenerImpl connection = ((CraftPlayer) e.getPlayer()).getHandle().connection;
         Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
-            main.utils.npcs.Utils.showForPlayer(connection);
-        }, 3L);
-        for (main.utils.npcs.Utils.LoopableNPCHolder NPC : NPCs) {
-            Entity entity = NPC.NPC().getBukkitEntity();
-            Location loc = entity.getLocation();
-            Vector vector = spawn.clone().subtract(loc).toVector();
-            double x = vector.getX();
-            double z = vector.getZ();
-            double yaw = Math.toDegrees((Math.atan2(-x, z) + 6.283185307179586D) % 6.283185307179586D);
-            double pitch = Math.toDegrees(Math.atan(-vector.getY() / Math.sqrt(NumberConversions.square(x) + NumberConversions.square(z))));
-            connection.send(new ClientboundRotateHeadPacket(NPC.NPC(), (byte) ((yaw % 360) * 256 / 360)));
-            connection.send(new ClientboundMoveEntityPacket.Rot(entity.getEntityId(), (byte) ((yaw % 360.) * 256 / 360), (byte) ((pitch % 360.) * 256 / 360), false));
-        }
+            showCosmetics(connection);
+            rotateNPCs(spawn, connection);
+        }, 2L);
     }
 }

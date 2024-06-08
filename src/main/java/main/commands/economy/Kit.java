@@ -2,6 +2,7 @@ package main.commands.economy;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import main.utils.Utils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
@@ -24,6 +25,7 @@ import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.SECOND_COLOR;
 
 public class Kit implements CommandExecutor, TabCompleter {
+    private static final String name = MAIN_COLOR + "ᴄᴀᴛsᴍᴘ.ꜰᴜɴ";
     private static final Map<String, Long> cooldowns = new Object2ObjectOpenHashMap<>();
     private static final ItemStack shulker_kit = new ItemStack(Material.RED_SHULKER_BOX);
     private static final ItemStack crystal = new ItemStack(Material.END_CRYSTAL, 64);
@@ -40,14 +42,12 @@ public class Kit implements CommandExecutor, TabCompleter {
     private static ItemStack pickaxe;
 
     public Kit() {
-        String name = MAIN_COLOR + "ᴄᴀᴛsᴍᴘ.ꜰᴜɴ";
-
-        BlockStateMeta shulkmeta = (BlockStateMeta) shulker_kit.getItemMeta();
-        ShulkerBox box = (ShulkerBox) shulkmeta.getBlockState();
+        final BlockStateMeta shulkmeta = (BlockStateMeta) shulker_kit.getItemMeta();
+        final ShulkerBox box = (ShulkerBox) shulkmeta.getBlockState();
         shulkmeta.setDisplayName(name);
-        Inventory shulker_inv = box.getInventory();
+        final Inventory shulker_inv = box.getInventory();
 
-        ItemStack helmet = new ItemStack(Material.NETHERITE_HELMET);
+        helmet = new ItemStack(Material.NETHERITE_HELMET);
         ItemMeta meta = helmet.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -57,9 +57,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         helmet.setItemMeta(meta);
         shulker_inv.setItem(0, helmet);
-        Kit.helmet = helmet;
 
-        ItemStack chestplate = new ItemStack(Material.NETHERITE_CHESTPLATE);
+        chestplate = new ItemStack(Material.NETHERITE_CHESTPLATE);
         meta = chestplate.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -68,9 +67,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         chestplate.setItemMeta(meta);
         shulker_inv.setItem(1, chestplate);
-        Kit.chestplate = chestplate;
 
-        ItemStack leggings = new ItemStack(Material.NETHERITE_LEGGINGS);
+        leggings = new ItemStack(Material.NETHERITE_LEGGINGS);
         meta = leggings.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -79,9 +77,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         leggings.setItemMeta(meta);
         shulker_inv.setItem(2, leggings);
-        Kit.leggings = leggings;
 
-        ItemStack boots = new ItemStack(Material.NETHERITE_BOOTS);
+        boots = new ItemStack(Material.NETHERITE_BOOTS);
         meta = boots.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -91,9 +88,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
         boots.setItemMeta(meta);
         shulker_inv.setItem(3, boots);
-        Kit.boots = boots;
 
-        ItemStack sword = new ItemStack(Material.NETHERITE_SWORD);
+        sword = new ItemStack(Material.NETHERITE_SWORD);
         meta = sword.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -103,9 +99,8 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.SWEEPING_EDGE, 3, true);
         sword.setItemMeta(meta);
         shulker_inv.setItem(4, sword);
-        Kit.sword = sword;
 
-        ItemStack pickaxe = new ItemStack(Material.NETHERITE_PICKAXE);
+        pickaxe = new ItemStack(Material.NETHERITE_PICKAXE);
         meta = pickaxe.getItemMeta();
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.MENDING, 1, false);
@@ -114,7 +109,6 @@ public class Kit implements CommandExecutor, TabCompleter {
         meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 3, true);
         pickaxe.setItemMeta(meta);
         shulker_inv.setItem(5, pickaxe);
-        Kit.pickaxe = pickaxe;
 
         shulker_inv.setItem(6, gap);
         shulker_inv.setItem(7, crystal);
@@ -138,25 +132,31 @@ public class Kit implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String sn = sender.getName();
-        if (Utils.isPlayerUnRanked(sn)) {
+        final String name = sender.getName();
+        if (Utils.isPlayerUnRanked(name)) {
             sender.sendMessage("§7You must be ranked in order to use this command!");
             return true;
         }
 
-        Player p = (Player) sender;
-        long D0 = cooldowns.getOrDefault(sn, 0L);
+        final Player p = (Player) sender;
+        final long D0 = cooldowns.getOrDefault(name, 0L);
         if (System.currentTimeMillis() > D0) {
             PlayerInventory inv = p.getInventory();
-            int freespace = 0;
-            int specialspace = 0;
-            for (ItemStack item : inv.getContents()) {
-                if (item == null) freespace++;
+            boolean anyFreeSpace = false;
+            boolean anyFreeArmorSpace = false;
+            for (final ItemStack item : inv.getContents()) {
+                if (item == null) {
+                    anyFreeSpace = true;
+                    break;
+                }
             }
-            for (ItemStack item : inv.getArmorContents()) {
-                if (item == null) specialspace++;
+            for (final ItemStack item : inv.getArmorContents()) {
+                if (item == null) {
+                    anyFreeArmorSpace = true;
+                    break;
+                }
             }
-            if (specialspace == 4 && freespace == 41) {
+            if (anyFreeArmorSpace && anyFreeSpace) {
                 inv.setBoots(boots);
                 inv.setLeggings(leggings);
                 inv.setChestplate(chestplate);
@@ -170,8 +170,10 @@ public class Kit implements CommandExecutor, TabCompleter {
                 inv.setItem(4, obi);
                 inv.setItem(5, elytra);
                 inv.setItem(6, fireworks);
-            } else if (freespace == 0) p.getWorld().dropItemNaturally(p.getLocation(), shulker_kit);
-            else inv.addItem(shulker_kit);
+            } else if (!anyFreeSpace) {
+                final Location loc = p.getLocation();
+                loc.getWorld().dropItemNaturally(loc, shulker_kit);
+            } else inv.addItem(shulker_kit);
             cooldowns.put(sender.getName(), System.currentTimeMillis() + 3600000L);
             sender.sendMessage("§7You have claimed your kit.");
         } else

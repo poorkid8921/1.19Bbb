@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 import static main.utils.Initializer.MAIN_COLOR;
 import static main.utils.Initializer.playerData;
-import static main.utils.storage.DB.setRank;
+import static main.utils.modules.storage.DB.setRank;
 
 public class SetRank implements CommandExecutor, TabExecutor {
-    String[] ranks = new String[]{
+    private final String[] ranks = new String[]{
             "lub",
             "nigger",
             "gay",
@@ -34,13 +34,10 @@ public class SetRank implements CommandExecutor, TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.isOp() && playerData.get(sender.getName()).getRank() < 8 && !sender.isOp())
+        if (!sender.isOp() && playerData.get(sender.getName()).getRank() < 8)
             return true;
-        if (args.length == 0) {
-            sender.sendMessage("§7You must specify a player you want to rank!");
-            return true;
-        } else if (args.length == 1) {
-            sender.sendMessage("§7You must specify a rank you want to give to the desired player!");
+        if (args.length < 2) {
+            sender.sendMessage(args.length == 1 ? "§7You must specify a player you want to rank!" : "§7You must specify a rank you want to give to the desired player!");
             return true;
         }
 
@@ -49,7 +46,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             name = Bukkit.getPlayer(name).getName();
         } catch (Exception ignored) {
         }
-        short transformedArg = switch (args[1].toLowerCase()) {
+        final int transformedArg = switch (args[1].toLowerCase()) {
             case "lub" -> 1;
             case "nigger" -> 2;
             case "gay" -> 3;
@@ -63,7 +60,7 @@ public class SetRank implements CommandExecutor, TabExecutor {
             case "admin" -> 11;
             case "manager" -> 12;
             case "executive" -> 13;
-            default -> Short.parseShort(args[1]);
+            default -> Integer.parseInt(args[1]);
         };
         if (transformedArg > 3 && !sender.isOp()) {
             sender.sendMessage("§7You can't rank other players that rank!");

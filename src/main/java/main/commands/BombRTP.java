@@ -17,9 +17,9 @@ public class BombRTP implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.isOp())
             return true;
-        int amt = args.length == 1 ? Integer.parseInt(args[0]) : 5;
+        final int amt = args.length == 1 ? Integer.parseInt(args[0]) : 5;
         for (int id = 0; id < amt; id++) {
-            for (Location l : overworldRTP) {
+            for (final Location l : overworldRTP) {
                 l.setY(l.getY() + 1);
                 Economy.d.spawnEntity(l, EntityType.MINECART_TNT);
             }

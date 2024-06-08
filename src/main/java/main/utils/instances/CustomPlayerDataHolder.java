@@ -63,24 +63,24 @@ public class CustomPlayerDataHolder {
     @Setter
     private int preLastPacket;
 
-    public CustomPlayerDataHolder(int m,
-                                  int t,
-                                  int deaths,
-                                  int kills,
-                                  int rank) {
+    public CustomPlayerDataHolder(final int rank,
+                                  final int m,
+                                  final int t,
+                                  final int deaths,
+                                  final int kills) {
+        this.rank = rank;
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;
         this.kills = kills;
         this.lastChatMS = 0L;
-        this.rank = rank;
         this.hashCode = customPlayerDataHashCode++;
     }
 
-    public CustomPlayerDataHolder(int m,
-                                  int t,
-                                  int deaths,
-                                  int kills) {
+    public CustomPlayerDataHolder(final int m,
+                                  final int t,
+                                  final int deaths,
+                                  final int kills) {
         this.mtoggle = m;
         this.tptoggle = t;
         this.deaths = deaths;

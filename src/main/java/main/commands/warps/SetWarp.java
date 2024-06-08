@@ -16,20 +16,20 @@ import static main.utils.Initializer.MAIN_COLOR;
 
 public class SetWarp implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String errMSG = "§7You must specify a warp!";
+        final String errMSG = "§7You must specify a warp!";
         if (args.length == 0) {
             sender.sendMessage(errMSG);
             return true;
         }
 
-        String lowerCaseArg = args[0].toLowerCase();
-        String sanitized = lowerCaseArg.replaceAll("[a-z0-9]", "");
+        final String lowerCaseArg = args[0].toLowerCase();
+        final String sanitized = lowerCaseArg.replaceAll("[a-z0-9]", "");
         if (!sanitized.isEmpty()) {
             sender.sendMessage(errMSG);
             return true;
         }
 
-        File file = new File(Economy.dataFolder + "/warps/" + lowerCaseArg + ".yml");
+        final File file = new File(Economy.dataFolder + "/warps/" + lowerCaseArg + ".yml");
         if (file.exists()) {
             if (!sender.isOp()) {
                 sender.sendMessage("§7You must specify a warp that doesn't already exist!");
@@ -41,16 +41,16 @@ public class SetWarp implements CommandExecutor {
             file.createNewFile();
         } catch (IOException ignored) {
         }
-        Player p = (Player) sender;
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-        config.set("a", p.getWorld().getName());
+        final Player player = (Player) sender;
+        final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        config.set("a", player.getWorld().getName());
 
-        Location l = p.getLocation();
-        config.set("b", l.getX());
-        config.set("c", l.getY());
-        config.set("d", l.getZ());
-        config.set("e", l.getYaw());
-        config.set("f", l.getPitch());
+        final Location location = player.getLocation();
+        config.set("b", location.getX());
+        config.set("c", location.getY());
+        config.set("d", location.getZ());
+        config.set("e", location.getYaw());
+        config.set("f", location.getPitch());
         try {
             config.save(file);
         } catch (IOException ignored) {

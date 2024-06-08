@@ -15,9 +15,8 @@ import static main.utils.Initializer.playerData;
 public class FastCrystals implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String name = sender.getName();
-        CustomPlayerDataHolder D0 = playerData.get(name);
-        boolean newValue = !D0.isFastCrystals();
+        final CustomPlayerDataHolder D0 = playerData.get(sender.getName());
+        final boolean newValue = !D0.isFastCrystals();
         D0.setFastCrystals(newValue);
         sender.sendMessage(newValue ? "§7Successfully enabled the crystal optimizer." : "§7Successfully disabled the crystal optimizer.");
         return true;

@@ -16,12 +16,12 @@ public class PlayTime implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length > 0) {
-            Player p = Bukkit.getPlayer(args[0]);
-            if (p == null) {
+            Player player = Bukkit.getPlayer(args[0]);
+            if (player == null) {
                 sender.sendMessage("§7You must specify a valid player!");
                 return true;
             }
-            sender.sendMessage("§6Playtime of " + p.getName() + ": §c" + Utils.getTime(p));
+            sender.sendMessage("§6Playtime of " + player.getName() + ": §c" + Utils.getTime(player));
             return true;
         }
         sender.sendMessage("§6Playtime: §c" + Utils.getTime((Player) sender));

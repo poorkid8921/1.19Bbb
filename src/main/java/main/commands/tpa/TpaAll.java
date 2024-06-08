@@ -3,6 +3,7 @@ package main.commands.tpa;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,22 +13,22 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 
 import static main.utils.Initializer.playerData;
-import static main.utils.Utils.hasRequestedThePlayer;
+import static main.utils.Utils.hasRequest;
 
 public class TpaAll implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         sender.sendMessage("§7Requested everyone to teleport to you.");
-
-        ObjectArrayList<Player> c = new ObjectArrayList<>(Bukkit.getOnlinePlayers());
-        Player user = (Player) sender;
-        String name = sender.getName();
+        final ObjectArrayList<Player> c = new ObjectArrayList<>(Bukkit.getOnlinePlayers());
+        final Player user = (Player) sender;
         c.remove(user);
-        for (Player k : c) {
-            String in = k.getName();
-            if (hasRequestedThePlayer(name, in) || playerData.get(in).getTptoggle() == 1)
+        final String name = sender.getName();
+        String in;
+        for (final Player k : c) {
+            in = k.getName();
+            if (hasRequest(name, in) || playerData.get(in).getTptoggle() == 1)
                 continue;
-            Utils.addRequest(user, k, true, false);
+            Utils.addRequest(user, k, true, true);
         }
         return true;
     }
