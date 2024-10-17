@@ -1,6 +1,6 @@
 package main.commands.essentials;
 
-import main.utils.Gui;
+import main.managers.GUIManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
+import static main.Economy.guiManager;
 import static main.utils.Utils.submitReport;
 
 public class Report implements CommandExecutor, TabExecutor {
@@ -20,7 +21,7 @@ public class Report implements CommandExecutor, TabExecutor {
             sender.sendMessage("§7You must specify who you want to report!");
             return true;
         }
-        if (args.length < 2) Gui.openReport((Player) sender, args[0]);
+        if (args.length < 2) guiManager.openReport((Player) sender, args[0]);
         else {
             final StringBuilder msg = new StringBuilder();
             for (final String arg : args) msg.append(arg).append(" ");

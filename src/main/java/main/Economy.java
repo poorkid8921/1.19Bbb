@@ -2,7 +2,6 @@ package main;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import main.commands.BombRTP;
 import main.commands.FastCrystals;
 import main.commands.economy.Kit;
 import main.commands.essentials.List;
@@ -12,16 +11,19 @@ import main.commands.warps.RTP;
 import main.commands.warps.SetWarp;
 import main.commands.warps.Spawn;
 import main.commands.warps.Warp;
-import main.utils.*;
-import main.utils.instances.CommandHolder;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.*;
+import main.utils.AutoTotem;
+import main.managers.GUIManager;
+import main.utils.Initializer;
+import main.utils.ProtectionEvents;
+import main.utils.TeleportCompleter;
+import main.managers.instances.PlayerDataHolder;
 import main.utils.modules.npcs.InteractAtNPC;
 import main.utils.modules.optimizer.InteractionListeners;
 import main.utils.modules.optimizer.LastPacketEvent;
 import net.minecraft.world.level.block.Blocks;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
@@ -33,18 +35,26 @@ import java.io.File;
 import java.util.Map;
 
 import static main.utils.Initializer.*;
-import static main.utils.modules.arenas.Utils.chunkSource;
-import static main.utils.modules.arenas.Utils.nmsOverworld;
-import static main.utils.modules.arenas.Utils.setArea;
-import static main.utils.modules.arenas.Utils.setCuboid;
 
 public class Economy extends JavaPlugin {
     public static final Point spawnDistance = new Point(0, 0);
     private static final Point point = new Point(0, 0);
+    public static Economy INSTANCE;
     public static File dataFolder;
-    public static World d;
-    public static World d0;
-    public static World d1;
+
+    public static World overworld;
+    public static World nether;
+    public static World end;
+
+    public static DatabaseManager databaseManager;
+    public static ArenaManager arenaManager;
+    public static ScheduleManager scheduleManager;
+    public static FileManager fileManager;
+    public static GUIManager guiManager;
+    public static TeamManager teamManager;
+    public static EffectManager effectManager;
+    public static MessageManager messageManager;
+
     private static boolean flatSwitch = false;
     private static boolean layerSwitch = false;
 
@@ -73,8 +83,8 @@ public class Economy extends JavaPlugin {
             boundX = Initializer.RANDOM.nextInt(-1500, 1500);
             boundZ = Initializer.RANDOM.nextInt(-1500, 1500);
             for (int y = 30; y < 128; y++) {
-                if (d0.getBlockAt(boundX, y, boundZ).getType() == Material.AIR && d0.getBlockAt(boundX, y - 1, boundZ).isSolid()) {
-                    location = new Location(d0, boundX, y, boundZ);
+                if (nether.getBlockAt(boundX, y, boundZ).getType() == Material.AIR && nether.getBlockAt(boundX, y - 1, boundZ).isSolid()) {
+                    location = new Location(nether, boundX, y, boundZ);
                     break;
                 }
             }
@@ -83,50 +93,53 @@ public class Economy extends JavaPlugin {
     }
 
     private void registerCommands() {
-        final CommandHolder[] ignored = {
-                new CommandHolder("msg", new Msg()),
-                new CommandHolder("reply", new Reply()),
-                new CommandHolder("tpa", new Tpa()),
-                new CommandHolder("tpaall", new TpaAll()),
-                new CommandHolder("tpaccept", new Tpaccept()),
-                new CommandHolder("tpahere", new Tpahere()),
-                new CommandHolder("tpdeny", new TpDeny()),
-                new CommandHolder("report", new Report()),
-                new CommandHolder("msglock", new MsgLock()),
-                new CommandHolder("tpalock", new TpaLock()),
-                new CommandHolder("spawn", new Spawn()),
-                new CommandHolder("discord", new Discord()),
-                new CommandHolder("warp", new Warp()),
-                new CommandHolder("setwarp", new SetWarp()),
-                new CommandHolder("playtime", new PlayTime()),
-                new CommandHolder("kit", new Kit()),
-                new CommandHolder("ec", new EnderChest()),
-                new CommandHolder("setrank", new SetRank()),
-                new CommandHolder("rgc", new CreateRegion()),
-                new CommandHolder("grindstone", new GrindStone()),
-                new CommandHolder("list", new List()),
-                new CommandHolder("broadcast", new Broadcast()),
-                new CommandHolder("bombrtp", new BombRTP()),
-                new CommandHolder("banip", new Ban()),
-                new CommandHolder("suicide", new Suicide()),
-                new CommandHolder("fastcrystals", new FastCrystals()),
-                new CommandHolder("irename", new ItemRename())
-        };
-        final TeleportCompleter tabCompleter = new TeleportCompleter();
-        this.getCommand("tpa").setTabCompleter(tabCompleter);
-        this.getCommand("tpaccept").setTabCompleter(tabCompleter);
-        this.getCommand("tpahere").setTabCompleter(tabCompleter);
-        this.getCommand("tpdeny").setTabCompleter(tabCompleter);
+        CommandManager.registerCommand("msg", new Msg());
+        CommandManager.registerCommand("reply", new Reply());
+        CommandManager.registerCommand("tpa", new Tpa());
+        CommandManager.registerCommand("tpaall", new TpaAll());
+        CommandManager.registerCommand("tpaccept", new Tpaccept());
+        CommandManager.registerCommand("tpahere", new Tpahere());
+        CommandManager.registerCommand("tpdeny", new TpDeny());
+        CommandManager.registerCommand("report", new Report());
+        CommandManager.registerCommand("msglock", new MsgLock());
+        CommandManager.registerCommand("tpalock", new TpaLock());
+        CommandManager.registerCommand("spawn", new Spawn());
+        CommandManager.registerCommand("discord", new Discord());
+        CommandManager.registerCommand("warp", new Warp());
+        CommandManager.registerCommand("setwarp", new SetWarp());
+        CommandManager.registerCommand("playtime", new PlayTime());
+        CommandManager.registerCommand("kit", new Kit());
+        CommandManager.registerCommand("ec", new EnderChest());
+        CommandManager.registerCommand("setrank", new SetRank());
+        CommandManager.registerCommand("grindstone", new GrindStone());
+        CommandManager.registerCommand("list", new List());
+        CommandManager.registerCommand("broadcast", new Broadcast());
+        CommandManager.registerCommand("banip", new Ban());
+        CommandManager.registerCommand("suicide", new Suicide());
+        CommandManager.registerCommand("fastcrystals", new FastCrystals());
+        CommandManager.registerCommand("irename", new ItemRename());
+
+        TeleportCompleter tabCompleter = new TeleportCompleter();
+        CommandManager.tabCompleter("tpa", tabCompleter);
+        CommandManager.tabCompleter("tpaccept", tabCompleter);
+        CommandManager.tabCompleter("tpahere", tabCompleter);
+        CommandManager.tabCompleter("tpdeny", tabCompleter);
     }
 
     private void registerPacketListeners() {
-        PacketEvents.getAPI().getEventManager().registerListeners(new InteractionListeners(), new LastPacketEvent(), new AutoTotem(), new InteractAtNPC());
+        PacketEvents.getAPI().getEventManager().registerListeners(
+                new InteractionListeners(),
+                new LastPacketEvent(),
+                new AutoTotem(),
+                new InteractAtNPC()
+        );
         PacketEvents.getAPI().init();
     }
 
     @Override
     public void onLoad() {
-        p = this;
+        INSTANCE = this;
+
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
         PacketEvents.getAPI().getSettings().checkForUpdates(false).reEncodeByDefault(false);
         PacketEvents.getAPI().load();
@@ -135,29 +148,40 @@ public class Economy extends JavaPlugin {
     @Override
     public void onEnable() {
         dataFolder = getDataFolder();
-        d = Bukkit.getWorld("world");
-        d0 = Bukkit.getWorld("world_nether");
-        d1 = Bukkit.getWorld("world_the_end");
-        nmsOverworld = ((CraftWorld) d).getHandle();
-        chunkSource = nmsOverworld.getChunkSource();
-        main.utils.modules.arenas.Utils.lightEngine = chunkSource.getLightEngine();
-        WorldBorder wb = d0.getWorldBorder();
-        wb.setCenter(0D, 0D);
-        wb.setSize(12500D);
-        wb = d1.getWorldBorder();
-        wb.setCenter(0D, 0D);
-        wb.setSize(100000D);
-        spawn = new Location(d, -0.5D, 140.0D, 0.5D, 90F, 0F);
-        Bukkit.getScheduler().runTaskLater(this, () -> {
+
+        overworld = Bukkit.getWorld("world");
+        nether = Bukkit.getWorld("world_nether");
+        end = Bukkit.getWorld("world_the_end");
+
+        spawn = new Location(overworld, -0.5D, 140.0D, 0.5D, 90F, 0F);
+
+        databaseManager = new DatabaseManager();
+        arenaManager = new ArenaManager();
+        scheduleManager = new ScheduleManager();
+        fileManager = new FileManager();
+        guiManager = new GUIManager();
+        teamManager = new TeamManager();
+        effectManager = new EffectManager();
+        messageManager = new MessageManager();
+
+        WorldBorder netherWorldBorder = nether.getWorldBorder();
+        netherWorldBorder.setCenter(0D, 0D);
+        netherWorldBorder.setSize(12500D);
+
+        WorldBorder endWorldBorder = end.getWorldBorder();
+        endWorldBorder.setCenter(0D, 0D);
+        endWorldBorder.setSize(100000D);
+
+        scheduleManager.later(() -> {
             for (short i = 0; i < 101; i++) {
                 if (i == 100) {
                     getCommand("rtp").setExecutor(new RTP());
-                    Bukkit.getScheduler().scheduleSyncRepeatingTask(p, () -> {
-                        for (final Entity entity : d.getEntities()) {
+                    Bukkit.getScheduler().scheduleSyncRepeatingTask(INSTANCE, () -> {
+                        for (final Entity entity : overworld.getEntities()) {
                             if (entity instanceof EnderCrystal || entity instanceof Arrow) entity.remove();
                         }
                         // flat
-                        setCuboid(new short[][]{
+                        arenaManager.setCuboid(new short[][]{
                                         new short[]{44, 136, 45, -46, 134, 24},
                                         new short[]{23, 136, -45, 44, 134, 23},
                                         new short[]{-46, 136, -24, 22, 134, -45},
@@ -167,13 +191,13 @@ public class Economy extends JavaPlugin {
                                 Blocks.AIR.defaultBlockState());
                         if (!flatSwitch) {
                             String key;
-                            for (final Map.Entry<String, CustomPlayerDataHolder> D0 : playerData.entrySet()) {
+                            for (final Map.Entry<String, PlayerDataHolder> D0 : playerData.entrySet()) {
                                 key = D0.getKey();
                                 if (Bukkit.getPlayer(key) != null) playerData.remove(key);
                             }
 
                             // arena air
-                            setCuboid(new short[][]{
+                            arenaManager.setCuboid(new short[][]{
                                             new short[]{-47, 136, -111, -112, 134, 111},
                                             new short[]{-46, 136, -111, 110, 134, -46},
                                             new short[]{45, 136, 111, 110, 134, -45},
@@ -183,7 +207,7 @@ public class Economy extends JavaPlugin {
                                     Blocks.AIR.defaultBlockState());
                             if (!layerSwitch) {
                                 // grass layer
-                                setArea(133, new short[][]{
+                                arenaManager.setArea(133, new short[][]{
                                                 new short[]{-47, -111, -112, 111},
                                                 new short[]{-46, -111, 110, -46},
                                                 new short[]{45, 111, 110, -45},
@@ -191,7 +215,7 @@ public class Economy extends JavaPlugin {
                                         },
                                         Blocks.GRASS_BLOCK.defaultBlockState());
                                 // dirt layer
-                                setCuboid(new short[][]{
+                                arenaManager.setCuboid(new short[][]{
                                                 new short[]{-47, 132, -111, -112, 129, 111},
                                                 new short[]{-46, 132, -111, 110, 129, -46},
                                                 new short[]{45, 132, 111, 110, 129, -45},
@@ -201,7 +225,7 @@ public class Economy extends JavaPlugin {
                                         Blocks.DIRT.defaultBlockState());
                             } else {
                                 // sand layer
-                                setCuboid(new short[][]{
+                                arenaManager.setCuboid(new short[][]{
                                                 new short[]{-47, 133, -111, -112, 129, 111},
                                                 new short[]{-46, 133, -111, 110, 129, -46},
                                                 new short[]{45, 133, 111, 110, 129, -45},
@@ -212,7 +236,7 @@ public class Economy extends JavaPlugin {
                             }
                             layerSwitch = !layerSwitch;
                             // stone layer
-                            setCuboid(new short[][]{
+                            arenaManager.setCuboid(new short[][]{
                                             new short[]{-47, 128, -111, -112, 3, 111},
                                             new short[]{-46, 128, -111, 110, 3, -46},
                                             new short[]{45, 128, 111, 110, 3, -45},
@@ -226,7 +250,7 @@ public class Economy extends JavaPlugin {
                                 if (k.isGliding()) continue;
                                 location = k.getLocation();
                                 location.setY(200);
-                                if (Economy.d.getBlockAt(location).getType() != Material.BARRIER) continue;
+                                if (overworld.getBlockAt(location).getType() != Material.BARRIER) continue;
                                 location.setY(135);
                                 k.teleport(location);
                             }
@@ -238,15 +262,19 @@ public class Economy extends JavaPlugin {
                 }
                 short finalI = i;
                 Bukkit.getScheduler().runTaskLater(this, () -> {
-                    overworldRTP[finalI] = getRandomLoc(d, 5000, overworldRTP);
+                    overworldRTP[finalI] = getRandomLoc(overworld, 5000, overworldRTP);
                     netherRTP[finalI] = getNetherRandomLoc();
-                    endRTP[finalI] = getRandomLoc(d1, 1500, endRTP);
+                    endRTP[finalI] = getRandomLoc(end, 1500, endRTP);
                 }, finalI);
             }
         }, 100L);
+
         registerCommands();
-        Gui.init();
         registerPacketListeners();
+
+        Bukkit.getPluginManager().registerEvents(new Events(), Economy.INSTANCE);
+        Bukkit.getPluginManager().registerEvents(new ProtectionEvents(), Economy.INSTANCE);
+
         Initializer.init();
     }
 

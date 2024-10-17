@@ -1,8 +1,8 @@
 package main.utils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import main.utils.instances.AbstractRegionHolder;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.AbstractRegionHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -24,8 +24,9 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.List;
 
-import static main.Economy.d;
+import static main.Economy.overworld;
 import static main.Economy.spawnDistance;
+import static main.managers.MessageManager.EXCEPTION_PVP;
 import static main.utils.Initializer.*;
 
 public class ProtectionEvents implements Listener {
@@ -33,7 +34,8 @@ public class ProtectionEvents implements Listener {
 
     private void handleBlockPlace(BlockPlaceEvent e) {
         final Location location = e.getBlock().getLocation();
-        if (location.getWorld() != d) return;
+        if (location.getWorld() != overworld) return;
+
         final int x = location.getBlockX();
         final int z = location.getBlockZ();
         final int y = location.getBlockY();
@@ -80,18 +82,26 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onPlayerShootArrow(EntityShootBowEvent e) {
         final Location location = e.getEntity().getLocation();
-        if (location.getWorld() == d && spawnRegionHolder.test(location.getBlockX(), location.getBlockZ()))
-            e.setCancelled(true);
+        if (location.getWorld() != overworld)
+            return;
+
+        if (!spawnRegionHolder.test(location.getBlockX(), location.getBlockZ()))
+            return;
+
+        e.setCancelled(true);
     }
 
     @EventHandler
     private void onPlayerPearlCollide(PlayerTeleportEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
             final Location location = e.getTo();
-            if (location.getWorld() != d) return;
+            if (location.getWorld() != overworld) return;
+
             if (!spawnRegionHolder.test(location.getBlockX(), location.getBlockZ())) return;
+
             final Player player = e.getPlayer();
             if ((System.currentTimeMillis() - playerData.get(player.getName()).getLastTagged()) > 30000L) return;
+
             player.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
         }
@@ -101,11 +111,14 @@ public class ProtectionEvents implements Listener {
     private void onPlayerInteract(PlayerInteractEvent e) {
         final Block block = e.getClickedBlock();
         if (block == null) return;
+
         if (block.getType() == Material.SPRUCE_TRAPDOOR) {
             final Player player = e.getPlayer();
             final Location location = player.getLocation();
+
             int x = location.getBlockX();
             int z = location.getBlockZ();
+
             for (AbstractRegionHolder region : regions) {
                 if (!region.test(x, z)) continue;
                 if (player.isOp()) return;
@@ -118,12 +131,18 @@ public class ProtectionEvents implements Listener {
 
     @EventHandler
     private void onBlockExplosion(BlockExplodeEvent e) {
-        if (e.getBlock().getWorld() == d) e.blockList().removeAll(handleExplosion(e.blockList()));
+        if (e.getBlock().getWorld() != overworld)
+            return;
+
+        e.blockList().removeAll(handleExplosion(e.blockList()));
     }
 
     @EventHandler
     private void onEntityExplosion(EntityExplodeEvent e) {
-        if (e.getEntity().getWorld() == d) e.blockList().removeAll(handleExplosion(e.blockList()));
+        if (e.getEntity().getWorld() != overworld)
+            return;
+
+        e.blockList().removeAll(handleExplosion(e.blockList()));
     }
 
     @EventHandler
@@ -131,7 +150,8 @@ public class ProtectionEvents implements Listener {
         final Entity damager = e.getDamager();
         final Entity entity = e.getEntity();
         if (damager instanceof EnderCrystal && entity instanceof Player damaged) {
-            if (damaged.getWorld() != d) return;
+            if (damaged.getWorld() != overworld) return;
+
             final Location location = damaged.getLocation();
             if (spawnRegionHolder.test(location.getBlockX(), location.getBlockZ())) e.setCancelled(true);
             return;
@@ -143,26 +163,29 @@ public class ProtectionEvents implements Listener {
         final int x = location.getBlockX();
         final int z = location.getBlockZ();
         if (playerAttacker) {
-            if (location.getWorld() == d && spawnRegionHolder.test(x, z)) {
+            if (location.getWorld() == overworld && spawnRegionHolder.test(x, z)) {
                 damager.sendMessage(EXCEPTION_PVP);
                 e.setCancelled(true);
                 return;
             }
-            final CustomPlayerDataHolder D0 = playerData.get(damaged.getName());
+
+            final PlayerDataHolder D0 = playerData.get(damaged.getName());
             if (D0.isTagged()) D0.setTagTime(damaged);
             else D0.setupCombatRunnable(damaged);
             D0.setLastTagged(System.currentTimeMillis());
-            final CustomPlayerDataHolder D1 = playerData.get(damager.getName());
+
+            final PlayerDataHolder D1 = playerData.get(damager.getName());
             final Player damagePlayer = (Player) damager;
             if (D1.isTagged()) D1.setTagTime(damagePlayer);
             else D1.setupCombatRunnable(damagePlayer);
             D1.setLastTagged(System.currentTimeMillis());
         } else {
-            if (location.getWorld() == d && spawnRegionHolder.test(x, z)) {
+            if (location.getWorld() == overworld && spawnRegionHolder.test(x, z)) {
                 e.setCancelled(true);
                 return;
             }
-            final CustomPlayerDataHolder D0 = playerData.get(damaged.getName());
+
+            final PlayerDataHolder D0 = playerData.get(damaged.getName());
             if (D0.isTagged()) D0.setTagTime(damaged);
             else D0.setupCombatRunnable(damaged);
             D0.setLastTagged(System.currentTimeMillis());
@@ -172,14 +195,18 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onBlockBreak(BlockBreakEvent e) {
         final Location location = e.getBlock().getLocation();
-        if (location.getWorld() != d) return;
+        if (location.getWorld() != overworld) return;
+
         final int x = location.getBlockX();
         final int y = location.getBlockY();
         final int z = location.getBlockZ();
+
         for (AbstractRegionHolder region : regions) {
             if (!region.testY(x, y, z)) continue;
+
             final Player player = e.getPlayer();
             if (player.isOp()) return;
+
             player.sendMessage(EXCEPTION_INTERACTION);
             e.setCancelled(true);
             return;
@@ -199,7 +226,11 @@ public class ProtectionEvents implements Listener {
     @EventHandler
     private void onBucketEmpty(PlayerBucketEmptyEvent e) {
         final Location location = e.getBlock().getLocation();
-        if (location.getWorld() != d) return;
-        if (spawnDistance.distance(location.getBlockX(), location.getBlockZ()) < 128) e.setCancelled(true);
+        if (location.getWorld() != overworld) return;
+
+        if (spawnDistance.distance(location.getBlockX(), location.getBlockZ()) > 128)
+            return;
+
+        e.setCancelled(true);
     }
 }

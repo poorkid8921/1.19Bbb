@@ -21,6 +21,7 @@ public class PlayTime implements CommandExecutor, TabExecutor {
                 sender.sendMessage("§7You must specify a valid player!");
                 return true;
             }
+
             sender.sendMessage("§6Playtime of " + player.getName() + ": §c" + Utils.getTime(player));
             return true;
         }

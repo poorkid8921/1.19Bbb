@@ -3,7 +3,6 @@ package main.commands.tpa;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import main.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

@@ -1,6 +1,6 @@
 package main.commands.tpa;
 
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,7 +15,7 @@ public class TpaLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         final String name = sender.getName();
-        final CustomPlayerDataHolder T = playerData.get(name);
+        final PlayerDataHolder T = playerData.get(name);
         if (T.getTptoggle() == 0) {
             sender.sendMessage("§7You will no longer receive tp requests.");
             playerData.get(name).setTptoggle(1);

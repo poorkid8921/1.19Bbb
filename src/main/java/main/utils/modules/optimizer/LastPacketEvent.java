@@ -9,7 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import main.utils.AutoTotem;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.entity.Player;
 
 import static main.utils.Initializer.playerData;
@@ -26,7 +26,7 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
             return;
         final Player p = (Player) uncastedPlayer;
         final String name = p.getName();
-        final CustomPlayerDataHolder user = playerData.get(name);
+        final PlayerDataHolder user = playerData.get(name);
         final PacketType.Play.Client type = event.getPacketType();
         final int animPacket = getAnimPacket(event, type);
         switch (type) {
@@ -34,7 +34,7 @@ public class LastPacketEvent extends SimplePacketListenerAbstract {
                 final int oldLastPacket = user.getLastItemPacket();
                 final int preLastPacket = user.getPreLastPacket();
                 if (((preLastPacket == 5 && oldLastPacket == 6 && animPacket == 5 &&
-                        AutoTotem.tryBanningSync(p, name, user, true)) ||
+                        AutoTotem.tryBanningSync(plugin, name, user, true)) ||
                         (preLastPacket == 4 && oldLastPacket == 5 && animPacket == 4) //&&
                         /*AutoTotem.tryBanningSync(player, name, user, false)*/))
                     return;

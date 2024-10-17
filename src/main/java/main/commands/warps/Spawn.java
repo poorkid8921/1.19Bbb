@@ -1,8 +1,9 @@
 package main.commands.warps;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import main.Economy;
 import main.utils.Initializer;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,12 +26,13 @@ public class Spawn implements CommandExecutor, TabExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         final Player player = (Player) sender;
         final String name = sender.getName();
-        final CustomPlayerDataHolder D0 = playerData.get(name);
+        final PlayerDataHolder D0 = playerData.get(name);
         if (D0.getLastTagged() == 0L) {
             player.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
             showCosmetics(((CraftPlayer) player).getHandle().connection);
             return true;
         }
+
         if ((System.currentTimeMillis() - D0.getLastTagged()) > 30000L) {
             player.teleport(Initializer.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
             showCosmetics(((CraftPlayer) player).getHandle().connection);
@@ -63,7 +65,7 @@ public class Spawn implements CommandExecutor, TabExecutor {
                     }
                     player.sendActionBar("§aTeleporting to spawn in " + (sec == 1 ? "a second!" : sec + " seconds!"));
                 }
-            }.runTaskTimer(Initializer.p, 0L, 20L);
+            }.runTaskTimer(Economy.INSTANCE, 0L, 20L);
         }
         return true;
     }

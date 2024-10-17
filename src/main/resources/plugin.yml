@@ -59,16 +59,12 @@ commands:
     uasge: /<command>
   setrank:
     usage: /<command>
-  rgc:
-    usage: /<command>
   grindstone:
     usage: /<command>
   list:
     usage: /<command>
   broadcast:
     aliases: bc
-    usage: /<command>
-  bombrtp:
     usage: /<command>
   banip:
     uasge: /<command>

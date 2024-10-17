@@ -2,7 +2,7 @@ package main.commands.tpa;
 
 import main.Economy;
 import main.utils.Initializer;
-import main.utils.instances.TpaRequest;
+import main.managers.instances.TpaRequest;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,8 +13,10 @@ import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
+import static main.Economy.scheduleManager;
 import static main.utils.Initializer.*;
-        import static main.utils.Utils.*;
+import static main.utils.Utils.getRequest;
+import static main.utils.Utils.teleportEffect;
 
 public class Tpaccept implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -85,7 +87,7 @@ public class Tpaccept implements CommandExecutor {
             if (Economy.spawnDistance.distance(location.getBlockX(), location.getBlockZ()) < 128) {
                 final ServerGamePacketListenerImpl connection = ((CraftPlayer) user).getHandle().connection;
                 main.utils.modules.holos.Utils.showForPlayerTickable(connection);
-                Bukkit.getScheduler().runTaskLater(Initializer.p, () -> {
+                scheduleManager.later(() -> {
                     main.utils.modules.npcs.Utils.showForPlayer(connection);
                 }, 3L);
             }

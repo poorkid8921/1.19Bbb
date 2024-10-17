@@ -1,7 +1,7 @@
 package main.commands.essentials;
 
 import main.utils.Initializer;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,20 +30,18 @@ public class Msg implements CommandExecutor, TabCompleter {
 
         final String name = sender.getName();
         final String targetName = target.getName();
-        final CustomPlayerDataHolder D0 = playerData.get(name);
-        final CustomPlayerDataHolder D1 = playerData.get(targetName);
+        final PlayerDataHolder D0 = playerData.get(name);
+        final PlayerDataHolder D1 = playerData.get(targetName);
         if (D1.getMtoggle() == 1 && D0.getRank() < 9) {
             sender.sendMessage("§7You can't message this player since they've locked their messages.");
             return true;
         }
 
-        final StringBuilder msg = new StringBuilder();
-        for (int i = 1; i < args.length; i++)
-            msg.append(args[i]).append(" ");
-        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(targetName) + "§6] §r" + msg);
-        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msg);
+        String msg = String.join(" ", args).substring(args[0].length() + 1);
         D0.setLastReceived(targetName);
         D1.setLastReceived(name);
+        sender.sendMessage("§6[§cme §6-> §c" + D1.getFRank(targetName) + "§6] §r" + msg);
+        target.sendMessage("§6[§c" + D0.getFRank(name) + " §6-> §cme§6] §r" + msg);
         return true;
     }
 

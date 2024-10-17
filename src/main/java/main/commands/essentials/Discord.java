@@ -7,14 +7,13 @@ import org.bukkit.command.TabExecutor;
 
 import java.util.Collections;
 
-import static main.utils.Initializer.D_LINK;
-import static main.utils.Initializer.D_USING;
+import static main.utils.Initializer.*;
 
 @SuppressWarnings("deprecation")
 public class Discord implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        sender.sendMessage(D_USING, D_LINK);
+        sender.sendMessage(DISCORD_USING, DISCORD_LINK);
         return true;
     }
 

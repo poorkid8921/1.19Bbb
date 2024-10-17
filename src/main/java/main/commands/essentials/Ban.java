@@ -1,6 +1,7 @@
 package main.commands.essentials;
 
 import com.google.common.collect.ImmutableList;
+import main.managers.DatabaseManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,13 +16,13 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 
+import static main.Economy.databaseManager;
+import static main.Economy.effectManager;
 import static main.utils.Initializer.playerData;
-import static main.utils.Utils.banEffect;
-import static main.utils.modules.storage.DB.connection;
 
 public class Ban implements CommandExecutor, TabExecutor {
     private byte[] getIP(String name) {
-        try (final PreparedStatement statement = connection.prepareStatement("SELECT * FROM data WHERE name = ?")) {
+        try (final PreparedStatement statement = databaseManager.prepareStatement("SELECT * FROM data WHERE name = ?")) {
             statement.setString(1, name);
             final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) return resultSet.getBytes(4);
@@ -47,12 +48,12 @@ public class Ban implements CommandExecutor, TabExecutor {
         }
         final Player target = Bukkit.getPlayer(args[0]);
         if (target != null) {
-            banEffect(target);
+            effectManager.banEffect(target);
             target.kickPlayer("Connection with the remote server has been closed.");
         }
         final String outputName = target == null ? args[0] : target.getName();
         final long time = args.length == 2 ? Integer.parseInt(args[1].replaceAll("d", "")) * 86400000L : 432000000L;
-        try (final PreparedStatement statement = connection.prepareStatement("INSERT INTO bans (ip, bantime, banner) VALUES (?, ?, ?)")) {
+        try (final PreparedStatement statement = databaseManager.prepareStatement("INSERT INTO bans (ip, bantime, banner) VALUES (?, ?, ?)")) {
             statement.setBytes(1, ip);
             statement.setTimestamp(2, new Timestamp(System.currentTimeMillis() + time));
             statement.setString(3, name.equals("CONSOLE") ? "Catto69420" : name);

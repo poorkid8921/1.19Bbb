@@ -2,23 +2,18 @@ package main.utils;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import main.utils.instances.CustomPlayerDataHolder;
-import main.utils.instances.TpaRequest;
+import main.Economy;
+import main.managers.instances.PlayerDataHolder;
+import main.managers.instances.TpaRequest;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
-import net.minecraft.server.level.*;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -40,17 +35,14 @@ import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static main.Economy.databaseManager;
 import static main.utils.Initializer.*;
-import static main.utils.modules.arenas.Utils.WORKLOAD_RUNNABLE;
 import static main.utils.modules.npcs.Utils.moveNPCs;
-import static main.utils.modules.storage.DB.connection;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
 @SuppressWarnings("deprecation")
@@ -95,38 +87,17 @@ public class Utils {
         }
     }
 
-    public static void banEffect(Player player) {
-        final Location location = player.getLocation();
-        final World world = location.getWorld();
-        double p1, p2;
-        for (short index = 1; index < 16; index++) {
-            p1 = (index * Math.PI) / 8;
-            p2 = (index - 1) * Math.PI / 8;
-            world.spawnParticle(Particle.FLAME, location.clone().add((Math.cos(p2) * 3) - (Math.cos(p1) * 3), 0, (Math.sin(p2) * 3) - (Math.sin(p1) * 3)), 50);
-        }
-        world.strikeLightningEffect(location);
-    }
-
-    public static void teleportEffect(World world, Location loc) {
-        double p1, p2;
-        for (short index = 1; index < 16; index++) {
-            p1 = (index * Math.PI) / 8;
-            p2 = (index - 1) * Math.PI / 8;
-            world.spawnParticle(Particle.TOTEM, loc.clone().add((Math.cos(p2) * 3) - (Math.cos(p1) * 3), 0, (Math.sin(p2) * 3) - (Math.sin(p1) * 3)), 50);
-        }
-    }
-
-    public static CustomPlayerDataHolder getPlayerData(String name) {
-        try (final PreparedStatement statement = connection.prepareStatement("SELECT rank,m,t,ed,ek FROM data WHERE name = ?")) {
+    public static PlayerDataHolder getPlayerData(String name) {
+        try (final PreparedStatement statement = databaseManager.prepareStatement("SELECT rank,m,t,ed,ek FROM data WHERE name = ?")) {
             statement.setString(1, name);
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return new CustomPlayerDataHolder(resultSet.getInt(1), resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(5), resultSet.getInt(6));
+                    return new PlayerDataHolder(resultSet.getInt(1), resultSet.getInt(2), resultSet.getInt(3), resultSet.getInt(5), resultSet.getInt(6));
                 }
             }
         } catch (SQLException ignored) {
         }
-        return new CustomPlayerDataHolder(0, 0, -1, 0, 0);
+        return new PlayerDataHolder(0, 0, -1, 0, 0);
     }
 
     public static boolean isPlayerUnRanked(String name) {
@@ -164,14 +135,6 @@ public class Utils {
         og2.removeIf(s -> !s.toLowerCase().startsWith(arg));
         og2.sort(String::compareToIgnoreCase);
         return og2;
-    }
-
-    public static void spawnFirework(Location loc) {
-        final Firework firework = (Firework) loc.getWorld().spawnEntity(loc.add(0, 1, 0), EntityType.FIREWORK);
-        FireworkMeta meta = firework.getFireworkMeta();
-        meta.setPower(2);
-        meta.addEffect(FireworkEffect.builder().withColor(color[RANDOM.nextInt(color.length)]).withColor(color[RANDOM.nextInt(color.length)]).with(FireworkEffect.Type.BALL_LARGE).flicker(true).build());
-        firework.setFireworkMeta(meta);
     }
 
     public static String translate(String text) {
@@ -221,12 +184,12 @@ public class Utils {
 
     public static void submitReport(Player sender, String target, String reason) {
         final String name = sender.getName();
-        final CustomPlayerDataHolder D0 = playerData.get(name);
+        final PlayerDataHolder D0 = playerData.get(name);
         final String staffMSG = reason == null ? (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report: " + MAIN_COLOR + target) : (MAIN_COLOR + D0.getFRank(name) + " §7submitted a report against " + MAIN_COLOR + target + " §7with the reason of " + MAIN_COLOR + reason);
         for (final Player k : Bukkit.getOnlinePlayers()) {
             if (playerData.get(k.getName()).getRank() > 6) k.sendMessage(staffMSG);
         }
-        Bukkit.getScheduler().runTaskAsynchronously(p, () -> sendWebhook(reason == null ? "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" : "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}", CACHED_WEBHOOK));
+        Bukkit.getScheduler().runTaskAsynchronously(Economy.INSTANCE, () -> sendWebhook(reason == null ? "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Report\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/\" + name + \"/100\"}}]}" : "{\"tts\":false,\"username\":\"Report\",\"avatar_url\":\"https://mc-heads.net/avatar/" + name + "/100\",\"embeds\":[{\"color\":16762880,\"fields\":[{\"value\":\"Economy\",\"name\":\"Server\",\"inline\":true},{\"value\":\"" + name + "\",\"name\":\"Sender\",\"inline\":true},{\"value\":\"" + target + "\",\"name\":\"Target\",\"inline\":true},{\"value\":\"" + reason + "\",\"name\":\"Reason\",\"inline\":true}],\"title\":\"Report\",\"thumbnail\":{\"url\":\"https://mc-heads.net/avatar/" + name + "/100\"}}]}", CACHED_WEBHOOK));
         sender.sendMessage("§7Successfully submitted your report.");
     }
 
@@ -280,7 +243,7 @@ public class Utils {
             public void run() {
                 requests.remove(request);
             }
-        }.runTaskLater(p, 1200L).getTaskId());
+        }.runTaskLater(Economy.INSTANCE, 1200L).getTaskId());
         requests.add(request);
     }
 

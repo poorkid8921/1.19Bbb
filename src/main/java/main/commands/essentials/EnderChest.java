@@ -17,6 +17,7 @@ public class EnderChest implements CommandExecutor, TabExecutor {
             sender.sendMessage("§7You must be ranked in order to use this command!");
             return true;
         }
+
         final Player player = (Player) sender;
         player.openInventory(player.getEnderChest());
         return true;

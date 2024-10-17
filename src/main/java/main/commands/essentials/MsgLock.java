@@ -1,7 +1,7 @@
 package main.commands.essentials;
 
 import main.utils.Initializer;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +16,7 @@ public class MsgLock implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         final String name = sender.getName();
-        final CustomPlayerDataHolder M = playerData.get(name);
+        final PlayerDataHolder M = playerData.get(name);
         if (M.getMtoggle() == 0) {
             sender.sendMessage("§7You will no longer receive messages from players.");
             M.setMtoggle(1);

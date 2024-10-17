@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
+import main.Economy;
 import main.utils.Initializer;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -25,8 +26,9 @@ import org.bukkit.scoreboard.Team;
 import java.util.List;
 import java.util.UUID;
 
+import static main.Economy.arenaManager;
+import static main.Economy.scheduleManager;
 import static main.utils.Utils.translateA;
-import static main.utils.modules.arenas.Utils.nmsOverworld;
 import static main.utils.modules.holos.Utils.tickableHolos;
 import static net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER;
 
@@ -54,7 +56,7 @@ public class Utils {
             final String name = "K" + ++count;
             final GameProfile gameProfile = new GameProfile(ID, name);
             gameProfile.getProperties().put("textures", new Property("textures", k.getUnsigned(), k.getSignature()));
-            final ServerPlayer NPC = new ServerPlayer(MinecraftServer.getServer(), nmsOverworld, gameProfile);
+            final ServerPlayer NPC = new ServerPlayer(MinecraftServer.getServer(), arenaManager.nmsOverworld, gameProfile);
             team.addEntry(name);
             NPC.setPos(k.getX(), k.getY(), k.getZ());
             NPC.setId(count);
@@ -65,7 +67,7 @@ public class Utils {
             UUIDs.add(ID);
             double y = k.getY() + 1.8D;
             for (final String c : k.getLines()) {
-                final ArmorStand holo = new ArmorStand(nmsOverworld, k.getX(), y, k.getZ());
+                final ArmorStand holo = new ArmorStand(arenaManager.nmsOverworld, k.getX(), y, k.getZ());
                 holo.setInvisible(true);
                 holo.setCustomNameVisible(true);
                 holo.setMarker(true);
@@ -84,7 +86,7 @@ public class Utils {
             connection.send(k.EQUIPMENT1);
             connection.send(k.EQUIPMENT2);
         }
-        Bukkit.getScheduler().runTaskLater(Initializer.p, () -> connection.send(new ClientboundPlayerInfoRemovePacket(UUIDs)), 15L);
+        scheduleManager.later(() -> connection.send(new ClientboundPlayerInfoRemovePacket(UUIDs)), 15L);
     }
 
     public record LoopableNPCHolder(ServerPlayer NPC, String[] lines, SynchedEntityData data,

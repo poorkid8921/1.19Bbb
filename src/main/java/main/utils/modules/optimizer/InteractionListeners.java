@@ -4,8 +4,7 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
-import main.utils.instances.CustomPlayerDataHolder;
+import main.managers.instances.PlayerDataHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -26,7 +25,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import static main.utils.Initializer.*;
+import static main.utils.Initializer.crystalsToBeOptimized;
+import static main.utils.Initializer.playerData;
 
 public class InteractionListeners extends SimplePacketListenerAbstract {
     private static final Holder<DamageType> cachedHolder = Holder.direct(new DamageType("player", 0.1f));
@@ -39,13 +39,13 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                 if (player.hasPotionEffect(PotionEffectType.WEAKNESS))
                     return;
                 final String name = player.getName();
-                final CustomPlayerDataHolder user = playerData.get(name);
+                final PlayerDataHolder user = playerData.get(name);
                 if (!user.isFastCrystals() || player.getPing() < 50)
                     return;
                 final int lastPacket = user.getLastPacket();
                 if (lastPacket == 3 || user.isIgnoreAnim()) return;
                 final Location eyeLoc = player.getEyeLocation();
-                Bukkit.getScheduler().runTask(p, () -> {
+                Bukkit.getScheduler().runTask(plugin, () -> {
                     final RayTraceResult result = eyeLoc.getWorld().rayTraceEntities(eyeLoc, player.getLocation().getDirection(), 3.0, 0.0,
                             entity -> {
                                 if (entity.getType() != EntityType.PLAYER)
@@ -104,7 +104,7 @@ public class InteractionListeners extends SimplePacketListenerAbstract {
                     return;
                 if (!hitBlock.getLocation().equals(blockLoc)) return;
                 final Location clonedLoc = entity.add(0D, 1.0D, 0D);
-                Bukkit.getScheduler().runTask(p, () -> {
+                Bukkit.getScheduler().runTask(plugin, () -> {
                     if (clonedLoc.getBlock().getType() != Material.AIR) return;
                     clonedLoc.add(0.5D, 1.0D, 0.5D);
                     final World world = clonedLoc.getWorld();

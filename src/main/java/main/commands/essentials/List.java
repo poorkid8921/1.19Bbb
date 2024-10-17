@@ -10,15 +10,16 @@ import java.util.Collections;
 public class List implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof ConsoleCommandSender) {
-            final Collection<? extends Player> players = Bukkit
-                    .getOnlinePlayers();
-            sender.sendMessage(players.size() + " | " + players
-                    .stream()
-                    .map(Player::getName)
-                    .sorted()
-                    .toList());
-        }
+        Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+
+        int playerSize = players.size();
+        java.util.List<String> playerList = players
+                .stream()
+                .map(Player::getName)
+                .sorted()
+                .toList();
+
+        sender.sendMessage(playerSize + " | " + playerList);
         return true;
     }
 
